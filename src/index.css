@@ -127,4 +127,11 @@
   .card-hover:hover {
     box-shadow: var(--shadow-md);
   }
+  .prose h2 { @apply text-lg font-semibold mt-4 mb-2; }
+  .prose h3 { @apply text-base font-semibold mt-3 mb-1.5; }
+  .prose p { @apply text-sm leading-relaxed my-2; }
+  .prose ul { @apply list-disc pl-5 my-2 text-sm; }
+  .prose ol { @apply list-decimal pl-5 my-2 text-sm; }
+  .prose li { @apply my-1; }
+  .prose strong { @apply font-semibold; }
 }
