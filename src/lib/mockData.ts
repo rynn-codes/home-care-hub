@@ -246,11 +246,13 @@ const goals: Goal[] = [
   ["Complete annual HIPAA training", 95],
   ["Reduce overtime by 20%", 55],
   ["Improve client NPS to 70", 45],
-].map(([title, progress], i) => {
+].map((row, i) => {
+  const title = row[0] as string;
+  const progress = row[1] as number;
   const status: GoalStatus = progress >= 90 ? "done" : progress >= 60 ? "on-track" : progress >= 40 ? "at-risk" : "off-track";
   return {
     id: uid(),
-    title: title as string,
+    title,
     description: "Strategic goal aligned with quarterly objectives.",
     ownerId: employees[i % employees.length].id,
     dueDate: iso(addDays(today, 30 + i * 15)),
