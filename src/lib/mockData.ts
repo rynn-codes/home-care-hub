@@ -237,7 +237,7 @@ const documents: DocumentFile[] = [
   permission: (["everyone", "admins", "managers", "everyone"] as const)[i % 4],
 }));
 
-const goals: Goal[] = [
+const goalSeed: [string, number][] = [
   ["Reach 100 active clients", 78],
   ["Reduce missed shifts by 50%", 62],
   ["Onboard 10 new caregivers in Q2", 40],
@@ -246,9 +246,9 @@ const goals: Goal[] = [
   ["Complete annual HIPAA training", 95],
   ["Reduce overtime by 20%", 55],
   ["Improve client NPS to 70", 45],
-].map((row, i) => {
-  const title = row[0] as string;
-  const progress = row[1] as number;
+];
+
+const goals: Goal[] = goalSeed.map(([title, progress], i) => {
   const status: GoalStatus = progress >= 90 ? "done" : progress >= 60 ? "on-track" : progress >= 40 ? "at-risk" : "off-track";
   return {
     id: uid(),
@@ -257,7 +257,7 @@ const goals: Goal[] = [
     ownerId: employees[i % employees.length].id,
     dueDate: iso(addDays(today, 30 + i * 15)),
     status,
-    progress: progress as number,
+    progress,
     milestones: [
       { id: uid(), title: "Define plan", done: true, due: iso(addDays(today, -20)) },
       { id: uid(), title: "Kick off with team", done: progress > 30, due: iso(addDays(today, -5)) },
