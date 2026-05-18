@@ -28,7 +28,7 @@ export default function Dashboard() {
         actions={<Button><Plus className="h-4 w-4 mr-1.5" />New Shift</Button>}
       />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Active Clients" value={activeClients} delta={6} icon={Users} accent="primary" />
+        <KpiCard label="Active Clients" value={activeClients} delta={6} icon={Users} accent="primary" featured />
         <KpiCard label="Active Caregivers" value={activeCaregivers} delta={3} icon={UserCog} accent="info" />
         <KpiCard label="Weekly Hours" value={Math.round(weekly)} delta={-2} icon={Clock} accent="warning" />
         <KpiCard label="Weekly Revenue" value={formatMoney(revenue)} delta={9} icon={DollarSign} accent="success" />
