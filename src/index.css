@@ -4,31 +4,32 @@
 
 @layer base {
   :root {
-    /* Surfaces */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Surfaces — soft, airy, modern */
+    --background: 230 45% 97%;
+    --foreground: 248 40% 12%;
     --surface: 0 0% 100%;
-    --surface-muted: 210 40% 96%;
+    --surface-muted: 230 40% 95%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 248 40% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 248 40% 12%;
 
-    /* Brand — calm teal/blue */
-    --primary: 187 85% 35%;
+    /* Brand — deep indigo #1407a2 */
+    --primary: 248 92% 33%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 187 70% 94%;
+    --primary-soft: 248 90% 95%;
+    --primary-glow: 252 95% 65%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 230 40% 95%;
+    --secondary-foreground: 248 40% 18%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 230 35% 94%;
+    --muted-foreground: 240 12% 48%;
 
-    --accent: 187 70% 94%;
-    --accent-foreground: 187 85% 25%;
+    --accent: 248 90% 95%;
+    --accent-foreground: 248 92% 28%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -40,24 +41,28 @@
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 187 85% 35%;
+    --border: 235 30% 90%;
+    --input: 235 30% 90%;
+    --ring: 248 92% 33%;
 
-    --radius: 0.75rem;
+    --radius: 1.25rem;
 
-    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.04);
-    --shadow-md: 0 4px 12px -2px hsl(222 47% 11% / 0.08);
-    --shadow-lg: 0 12px 32px -8px hsl(222 47% 11% / 0.12);
+    --gradient-primary: linear-gradient(135deg, hsl(248 92% 33%), hsl(252 95% 55%));
+    --gradient-soft: linear-gradient(135deg, hsl(248 90% 97%), hsl(230 50% 96%));
+
+    --shadow-sm: 0 1px 2px 0 hsl(248 40% 15% / 0.04);
+    --shadow-md: 0 8px 24px -8px hsl(248 60% 25% / 0.08);
+    --shadow-lg: 0 20px 48px -12px hsl(248 70% 25% / 0.16);
+    --shadow-glow: 0 16px 40px -12px hsl(248 92% 33% / 0.35);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 22% 30%;
-    --sidebar-primary: 187 85% 35%;
+    --sidebar-foreground: 240 18% 32%;
+    --sidebar-primary: 248 92% 33%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 187 70% 96%;
-    --sidebar-accent-foreground: 187 85% 25%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 187 85% 35%;
+    --sidebar-accent: 248 90% 96%;
+    --sidebar-accent-foreground: 248 92% 28%;
+    --sidebar-border: 235 30% 92%;
+    --sidebar-ring: 248 92% 33%;
   }
 
   .dark {
