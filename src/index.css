@@ -127,15 +127,20 @@
 
 @layer components {
   .card-elevated {
-    @apply bg-card border border-border rounded-xl;
+    @apply bg-card border border-border/60 rounded-2xl;
     box-shadow: var(--shadow-sm);
   }
   .card-hover {
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
   }
   .card-hover:hover {
     box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
+  .bg-gradient-primary { background-image: var(--gradient-primary); }
+  .bg-gradient-soft { background-image: var(--gradient-soft); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+
   .prose h2 { @apply text-lg font-semibold mt-4 mb-2; }
   .prose h3 { @apply text-base font-semibold mt-3 mb-1.5; }
   .prose p { @apply text-sm leading-relaxed my-2; }
