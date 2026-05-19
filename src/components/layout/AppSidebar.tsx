@@ -1,8 +1,9 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, UserCog, CalendarDays, Receipt, BarChart3,
-  FolderOpen, Target, BookOpen, Settings, Heart,
+  FolderOpen, Target, BookOpen, Settings,
 } from "lucide-react";
+import logo from "@/assets/logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
