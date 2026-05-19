@@ -13,10 +13,10 @@ const sev = {
 export function AlertsPanel() {
   const { alerts } = useData();
   return (
-    <Card className="p-5">
+    <Card className="p-6 rounded-3xl border-0 shadow-md">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">Alerts & Tasks</h3>
-        <span className="text-xs text-muted-foreground">{alerts.length} open</span>
+        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-destructive/10 text-destructive">{alerts.length} open</span>
       </div>
       <div className="space-y-3">
         {alerts.map((a) => {
