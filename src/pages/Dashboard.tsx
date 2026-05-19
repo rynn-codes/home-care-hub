@@ -1,5 +1,4 @@
-import { Users, Plus, CalendarPlus, UserPlus, HeartHandshake } from "lucide-react";
-import { KpiCard } from "@/components/dashboard/KpiCard";
+import { Plus, CalendarPlus, UserPlus, HeartHandshake } from "lucide-react";
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar";
 import { TodayShifts } from "@/components/dashboard/TodayShifts";
 import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
