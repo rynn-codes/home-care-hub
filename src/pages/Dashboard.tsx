@@ -5,7 +5,7 @@ import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
 import { UpcomingDates } from "@/components/dashboard/UpcomingDates";
-import { UpcomingDates } from "@/components/dashboard/UpcomingDates";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
