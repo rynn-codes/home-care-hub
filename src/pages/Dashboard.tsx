@@ -26,14 +26,8 @@ function getGreeting() {
 }
 
 export default function Dashboard() {
-  const { clients, employees, shifts, invoices } = useData();
+  const { clients } = useData();
   const activeClients = clients.filter((c) => c.status === "active").length;
-  const activeCaregivers = employees.filter((e) => e.status === "active").length;
-  const weekly = shifts.reduce((sum, s) => {
-    const h = (new Date(s.end).getTime() - new Date(s.start).getTime()) / 36e5;
-    return sum + h;
-  }, 0);
-  const revenue = invoices.filter((i) => i.status === "paid" || i.status === "sent").reduce((s, i) => s + i.amount, 0);
 
   return (
     <>
