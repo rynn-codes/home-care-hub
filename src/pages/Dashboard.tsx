@@ -57,18 +57,18 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
       </div>
-      <div className="mb-6">
-        <UpcomingDates />
+      <div className="grid gap-6 lg:grid-cols-3 mb-6">
+        <div className="lg:col-span-2">
+          <UpcomingDates />
+        </div>
+        <MiniCalendar />
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <ActivityFeed />
           <TodayShifts />
         </div>
-        <div className="space-y-6">
-          <MiniCalendar />
-          <AlertsPanel />
-        </div>
+        <AlertsPanel />
       </div>
     </>
   );
