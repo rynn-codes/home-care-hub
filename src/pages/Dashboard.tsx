@@ -57,11 +57,13 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-3 mb-6">
-        <div className="lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-5 mb-6">
+        <div className="lg:col-span-3">
           <UpcomingDates />
         </div>
-        <MiniCalendar />
+        <div className="lg:col-span-2">
+          <MiniCalendar />
+        </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
