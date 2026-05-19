@@ -49,7 +49,24 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-3">
           <WeatherWidget />
-          <Button><Plus className="h-4 w-4 mr-1.5" />New Shift</Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" aria-label="Quick add">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem>
+                <CalendarPlus className="h-4 w-4 mr-2" />Add new shift
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <UserPlus className="h-4 w-4 mr-2" />Add employee
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <HeartHandshake className="h-4 w-4 mr-2" />Add new client
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
