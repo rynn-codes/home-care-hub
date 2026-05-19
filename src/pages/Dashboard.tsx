@@ -1,14 +1,22 @@
-import { Users, UserCog, Clock, DollarSign } from "lucide-react";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { Users, UserCog, Clock, DollarSign, Plus } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar";
 import { TodayShifts } from "@/components/dashboard/TodayShifts";
 import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
 import { useData } from "@/context/DataProvider";
 import { formatMoney } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+
+const USER_NAME = "Karynn";
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function Dashboard() {
   const { clients, employees, shifts, invoices } = useData();
