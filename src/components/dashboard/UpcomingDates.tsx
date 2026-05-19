@@ -56,23 +56,25 @@ export function UpcomingDates() {
     .slice(0, 5);
 
   return (
-    <Card className="p-5">
+    <Card className="p-6 rounded-3xl border-0 shadow-md">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          <div className="h-8 w-8 rounded-xl bg-primary-soft flex items-center justify-center">
+            <CalendarDays className="h-4 w-4 text-primary" />
+          </div>
           <h3 className="font-semibold">What's on in {format(new Date(), "MMMM")}?</h3>
         </div>
       </div>
 
-      <div className="bg-muted/60 rounded-lg p-1 flex gap-1 mb-4 overflow-x-auto">
+      <div className="bg-muted/60 rounded-full p-1 flex gap-1 mb-4 overflow-x-auto">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={cn(
-              "flex-1 min-w-fit text-xs font-medium px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
+              "flex-1 min-w-fit text-xs font-medium px-3 py-1.5 rounded-full transition-colors whitespace-nowrap",
               tab === t.key
-                ? "bg-background text-primary shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >

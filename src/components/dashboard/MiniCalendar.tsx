@@ -3,6 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { useData } from "@/context/DataProvider";
 import { isSameDay } from "date-fns";
+import { CalendarDays } from "lucide-react";
 
 export function MiniCalendar() {
   const { shifts } = useData();
@@ -12,10 +13,15 @@ export function MiniCalendar() {
   const dayShifts = date ? shifts.filter((s) => isSameDay(new Date(s.start), date)) : [];
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-sm">Calendar</h3>
-        <span className="text-xs text-muted-foreground">{dayShifts.length} shifts</span>
+    <Card className="p-4 rounded-3xl bg-primary-soft border-0 shadow-md">
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-lg bg-background flex items-center justify-center">
+            <CalendarDays className="h-4 w-4 text-primary" />
+          </div>
+          <h3 className="font-semibold text-sm text-primary">Calendar</h3>
+        </div>
+        <span className="text-xs font-medium text-primary/70">{dayShifts.length} shifts</span>
       </div>
       <Calendar
         mode="single"
