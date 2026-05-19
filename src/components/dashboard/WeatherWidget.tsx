@@ -16,20 +16,15 @@ export function WeatherWidget({ city = "Springfield" }: { city?: string }) {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border bg-card/80 backdrop-blur px-4 py-2.5 shadow-sm">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="leading-tight">
-        <div className="flex items-baseline gap-1.5">
-          <span className="font-display text-xl font-bold">{temp}°</span>
-          <span className="text-xs text-muted-foreground">F</span>
-        </div>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" />
-          {city} · {label}
-        </div>
-      </div>
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Icon className="h-4 w-4 text-foreground/70" />
+      <span className="font-medium text-foreground">{temp}°</span>
+      <span className="hidden sm:inline">·</span>
+      <span className="hidden sm:inline">{label}</span>
+      <span className="hidden md:inline-flex items-center gap-1">
+        <MapPin className="h-3 w-3" />
+        {city}
+      </span>
     </div>
   );
 }
