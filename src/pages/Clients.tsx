@@ -33,13 +33,22 @@ export default function Clients() {
     (c.name.toLowerCase().includes(q.toLowerCase()) || c.address.toLowerCase().includes(q.toLowerCase()))
   );
 
+  const activeClients = clients.filter((c) => c.status === "active").length;
+  const activeCaregivers = employees.filter((e) => e.status === "active").length;
+  const weeklyHours = Math.round(employees.reduce((s, e) => s + (e.hoursThisWeek ?? 0), 0));
+
   return (
     <>
       <PageHeader
         title="Clients"
-        description={`${clients.length} total · ${clients.filter((c) => c.status === "active").length} active`}
+        description={`${clients.length} total · ${activeClients} active`}
         actions={<Button><Plus className="h-4 w-4 mr-1.5" />Add Client</Button>}
       />
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
+        <KpiCard label="Active Clients" value={activeClients} icon={Users} accent="primary" />
+        <KpiCard label="Active Caregivers" value={activeCaregivers} icon={UserCog} accent="info" />
+        <KpiCard label="Weekly Hours" value={weeklyHours} icon={Clock} accent="warning" />
+      </div>
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
