@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useData } from "@/context/DataProvider";
 import { formatMoney } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, DollarSign, Clock } from "lucide-react";
+import { KpiCard } from "@/components/dashboard/KpiCard";
 import { format } from "date-fns";
 import type { InvoiceStatus } from "@/lib/mockData";
 
