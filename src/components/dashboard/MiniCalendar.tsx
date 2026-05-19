@@ -12,19 +12,19 @@ export function MiniCalendar() {
   const dayShifts = date ? shifts.filter((s) => isSameDay(new Date(s.start), date)) : [];
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-sm">Calendar</h3>
-        <span className="text-xs text-muted-foreground">{dayShifts.length} shifts</span>
+    <Card className="p-3">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="font-semibold text-xs">Calendar</h3>
+        <span className="text-[10px] text-muted-foreground">{dayShifts.length} shifts</span>
       </div>
       <Calendar
         mode="single"
         selected={date}
         onSelect={setDate}
-        className="p-0 pointer-events-auto"
+        className="p-0 pointer-events-auto text-xs [&_table]:w-full [&_button]:h-7 [&_button]:w-7 [&_button]:text-xs [&_th]:text-[10px] [&_th]:font-normal [&_caption_label]:text-xs"
         modifiers={{ hasShift: shiftDays }}
         modifiersClassNames={{
-          hasShift: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-primary",
+          hasShift: "relative after:content-[''] after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-primary",
         }}
       />
     </Card>
