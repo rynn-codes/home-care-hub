@@ -57,8 +57,8 @@ export default function Dashboard() {
           <ActivityFeed />
         </div>
         <div className="space-y-6">
-          <MiniCalendar />
           <UpcomingDates />
+          <MiniCalendar />
           <AlertsPanel />
         </div>
       </div>
