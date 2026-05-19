@@ -43,9 +43,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-            <Heart className="h-4 w-4" />
-          </div>
+          <img src={logo} alt="CareHub logo" className="h-8 w-8 rounded-lg object-contain bg-white" />
           {!collapsed && (
             <div className="flex flex-col leading-none">
               <span className="font-display font-bold text-base">CareHub</span>
