@@ -1,4 +1,4 @@
-import { Users, UserCog, Clock, DollarSign, Plus } from "lucide-react";
+import { Users, UserCog, Clock, DollarSign, Plus, CalendarPlus, UserPlus, HeartHandshake } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar";
 import { TodayShifts } from "@/components/dashboard/TodayShifts";
@@ -9,6 +9,13 @@ import { UpcomingDates } from "@/components/dashboard/UpcomingDates";
 import { useData } from "@/context/DataProvider";
 import { formatMoney } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 
 const USER_NAME = "Karynn";
 
