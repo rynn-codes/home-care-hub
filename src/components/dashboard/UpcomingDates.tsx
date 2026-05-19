@@ -60,9 +60,8 @@ export function UpcomingDates() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-semibold">Upcoming Dates</h3>
+          <h3 className="font-semibold">What's on in {format(new Date(), "MMMM")}?</h3>
         </div>
-        <span className="text-xs text-muted-foreground">Next 30 days</span>
       </div>
 
       <div className="bg-muted/60 rounded-lg p-1 flex gap-1 mb-4 overflow-x-auto">
