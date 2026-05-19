@@ -62,11 +62,8 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4">
         <KpiCard label="Active Clients" value={activeClients} delta={6} icon={Users} accent="primary" featured />
-        <KpiCard label="Active Caregivers" value={activeCaregivers} delta={3} icon={UserCog} accent="info" />
-        <KpiCard label="Weekly Hours" value={Math.round(weekly)} delta={-2} icon={Clock} accent="warning" />
-        <KpiCard label="Weekly Revenue" value={formatMoney(revenue)} delta={9} icon={DollarSign} accent="success" />
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
