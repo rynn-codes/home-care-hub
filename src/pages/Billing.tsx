@@ -24,11 +24,15 @@ export default function Billing() {
   const outstanding = invoices.filter((i) => i.status === "sent" || i.status === "overdue").reduce((s, i) => s + i.amount, 0);
   const paid = invoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0);
   const payroll = employees.reduce((s, e) => s + e.hoursThisWeek * 22, 0);
+  const weeklyRevenue = invoices.filter((i) => i.status === "paid" || i.status === "sent").reduce((s, i) => s + i.amount, 0);
+  const weeklyHours = Math.round(employees.reduce((s, e) => s + (e.hoursThisWeek ?? 0), 0));
 
   return (
     <>
       <PageHeader title="Billing" description="Invoices, payroll, and payers." actions={<Button><Plus className="h-4 w-4 mr-1.5" />New Invoice</Button>} />
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
+        <KpiCard label="Weekly Revenue" value={formatMoney(weeklyRevenue)} icon={DollarSign} accent="success" />
+        <KpiCard label="Weekly Hours" value={weeklyHours} icon={Clock} accent="warning" />
         <Card className="p-5"><p className="text-sm text-muted-foreground">Outstanding</p><p className="font-display text-2xl font-bold mt-2">{formatMoney(outstanding)}</p></Card>
         <Card className="p-5"><p className="text-sm text-muted-foreground">Paid this month</p><p className="font-display text-2xl font-bold mt-2 text-[hsl(var(--success))]">{formatMoney(paid)}</p></Card>
         <Card className="p-5"><p className="text-sm text-muted-foreground">Upcoming payroll</p><p className="font-display text-2xl font-bold mt-2">{formatMoney(payroll)}</p></Card>
