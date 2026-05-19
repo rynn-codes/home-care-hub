@@ -42,14 +42,12 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-3">
-          <img src={logo} alt="CareHub logo" className="h-8 w-8 rounded-lg object-contain bg-white" />
-          {!collapsed && (
-            <div className="flex flex-col leading-none">
-              <span className="font-display font-bold text-base">CareHub</span>
-              <span className="text-xs text-muted-foreground">Home Care OS</span>
-            </div>
-          )}
+        <div className="flex items-center justify-center px-2 py-3">
+          <img
+            src={logo}
+            alt="Company logo"
+            className={cn("object-contain transition-all", collapsed ? "h-8 w-8" : "h-16 w-auto")}
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>
