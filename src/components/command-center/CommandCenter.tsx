@@ -181,29 +181,19 @@ function ChatThread({ thread }: { thread: StoredThread }) {
     id: thread.id,
     messages: thread.messages,
     transport,
-    sendAutomaticallyWhen: ({ messages }) => {
-      // Continue model loop after a tool result was added
-      const last = messages[messages.length - 1];
-      if (!last || last.role !== "assistant") return false;
-      const lastPart = last.parts?.[last.parts.length - 1];
-      return !!lastPart && typeof lastPart === "object" && "type" in lastPart &&
-        typeof (lastPart as any).type === "string" &&
-        (lastPart as any).type.startsWith("tool-") &&
-        (lastPart as any).state === "output-available";
-    },
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onToolCall: async ({ toolCall }) => {
       const name = toolCall.toolName;
-      // Auto-run read-only tools immediately
       if (name === "query_clients" || name === "query_employees" || name === "query_shifts") {
         const output = runner.readonlyRun(name, toolCall.input);
         addToolResult({ tool: name, toolCallId: toolCall.toolCallId, output });
       }
-      // add_shift / update_shift wait for human approval inside the message UI
+      // add_shift / update_shift wait for human approval in the UI
     },
   });
 
   // Persist on every change
-  useMemo(() => {
+  useEffect(() => {
     if (messages.length > 0) {
       threadStore.upsert({
         ...thread,
