@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Users, UserCog, Clock } from "lucide-react";
 import { useData } from "@/context/DataProvider";
+import { KpiCard } from "@/components/dashboard/KpiCard";
 import { initials } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import type { Client } from "@/lib/mockData";
