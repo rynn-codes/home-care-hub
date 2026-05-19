@@ -63,8 +63,8 @@ export default function Dashboard() {
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <TodayShifts />
           <ActivityFeed />
+          <TodayShifts />
         </div>
         <div className="space-y-6">
           <AlertsPanel />
