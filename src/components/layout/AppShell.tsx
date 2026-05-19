@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
+import { CommandCenter } from "@/components/command-center/CommandCenter";
 
 export function AppShell() {
   return (
@@ -14,6 +15,7 @@ export function AppShell() {
             <Outlet />
           </main>
         </div>
+        <CommandCenter />
       </div>
     </SidebarProvider>
   );
