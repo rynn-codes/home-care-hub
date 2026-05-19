@@ -5,6 +5,7 @@ import { TodayShifts } from "@/components/dashboard/TodayShifts";
 import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
+import { UpcomingDates } from "@/components/dashboard/UpcomingDates";
 import { useData } from "@/context/DataProvider";
 import { formatMoney } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
