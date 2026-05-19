@@ -30,11 +30,20 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        description="A snapshot of your home care operations."
-        actions={<Button><Plus className="h-4 w-4 mr-1.5" />New Shift</Button>}
-      />
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">
+            {getGreeting()}, {USER_NAME} <span className="inline-block">👋</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} · Here's what's happening across your agency today.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <WeatherWidget />
+          <Button><Plus className="h-4 w-4 mr-1.5" />New Shift</Button>
+        </div>
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Active Clients" value={activeClients} delta={6} icon={Users} accent="primary" featured />
         <KpiCard label="Active Caregivers" value={activeCaregivers} delta={3} icon={UserCog} accent="info" />
