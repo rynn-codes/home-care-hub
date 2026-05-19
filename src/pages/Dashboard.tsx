@@ -25,9 +25,6 @@ function getGreeting() {
 }
 
 export default function Dashboard() {
-  const { clients } = useData();
-  const activeClients = clients.filter((c) => c.status === "active").length;
-
   return (
     <>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -61,17 +58,16 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
       </div>
-      <div className="grid gap-4">
-        <KpiCard label="Active Clients" value={activeClients} delta={6} icon={Users} accent="primary" featured />
+      <div className="grid gap-6 lg:grid-cols-2 mb-6">
+        <UpcomingDates />
+        <MiniCalendar />
       </div>
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <TodayShifts />
           <ActivityFeed />
         </div>
         <div className="space-y-6">
-          <UpcomingDates />
-          <MiniCalendar />
           <AlertsPanel />
         </div>
       </div>
