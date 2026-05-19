@@ -27,7 +27,19 @@ export function MiniCalendar() {
         mode="single"
         selected={date}
         onSelect={setDate}
-        className="p-0 pointer-events-auto"
+        className="p-0 pointer-events-auto w-full"
+        classNames={{
+          months: "w-full",
+          month: "w-full space-y-3",
+          table: "w-full border-collapse",
+          head_row: "flex w-full",
+          head_cell: "text-primary/60 rounded-md flex-1 font-medium text-xs",
+          row: "flex w-full mt-1.5",
+          cell: "flex-1 aspect-square text-center text-sm p-0 relative [&:has([aria-selected])]:bg-transparent",
+          day: "h-full w-full p-0 font-medium rounded-lg hover:bg-background/60 aria-selected:opacity-100",
+          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+          day_today: "bg-background text-primary",
+        }}
         modifiers={{ hasShift: shiftDays }}
         modifiersClassNames={{
           hasShift: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-primary",
