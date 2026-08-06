@@ -16,6 +16,8 @@ import Goals from "./pages/Goals";
 import Sops from "./pages/Sops";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,9 @@ const App = () => (
       <DataProvider>
         <BrowserRouter>
           <Routes>
+            <Route element={<AppShell />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route element={<AppShell />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/clients" element={<Clients />} />
