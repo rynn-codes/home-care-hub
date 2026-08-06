@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://xembwxgilrsjeybuwxwt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "home-care-hub",
+      "version": "0.1.0",
+      "title": "Home Care Hub"
+    },
+    "tools": [
+      {
+        "name": "query_clients",
+        "title": "Query clients",
+        "description": "Search home-care clients by name or status. Returns matching clients with care plan, weekly hours, and primary caregiver.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Partial, case-insensitive name match",
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "on-hold",
+                "discharged"
+              ]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "query_employees",
+        "title": "Query caregivers",
+        "description": "Search caregivers and staff by name, role, or status. Includes hours this week and credential expiry dates.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "Caregiver",
+                "RN",
+                "LPN",
+                "Coordinator"
+              ]
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "on-leave",
+                "inactive"
+              ]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "query_shifts",
+        "title": "Query shifts",
+        "description": "Look up scheduled shifts in a date window, optionally filtered by caregiver, client, or shift status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "when": {
+              "default": "today",
+              "type": "string",
+              "enum": [
+                "today",
+                "tomorrow",
+                "this-week",
+                "next-week",
+                "past-week"
+              ]
+            },
+            "caregiverName": {
+              "type": "string"
+            },
+            "clientName": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "clocked-in",
+                "completed",
+                "missed",
+                "cancelled"
+              ]
+            },
+            "limit": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "query_invoices",
+        "title": "Query invoices",
+        "description": "List billing invoices, optionally filtered by status or client name, with totals for the matching set.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "sent",
+                "paid",
+                "overdue"
+              ]
+            },
+            "clientName": {
+              "type": "string"
+            },
+            "limit": {
+              "default": 25,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_sops",
+        "title": "Get SOPs",
+        "description": "List standard operating procedures, or fetch the latest content of one SOP by id or title match.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Title or id to fetch full content for",
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
