@@ -29,7 +29,6 @@ const App = () => (
       <DataProvider>
         <BrowserRouter>
           <Routes>
-            <Route element={<AppShell />}>
             <Route path="/login" element={<Login />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route element={<AppShell />}>
