@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DataProvider } from "@/context/DataProvider";
 import { AppShell } from "@/components/layout/AppShell";
+import { RequireAuth } from "@/components/layout/RequireAuth";
 import Dashboard from "./pages/Dashboard";
 import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
@@ -35,6 +36,10 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+            {/* Everything inside the shell requires a session. The real boundary
+                is row level security in the database; this only keeps people out
+                of screens they have no right to see. */}
+            <Route element={<RequireAuth />}>
             <Route element={<AppShell />}>
               {/* Joy navigation, section 6. Home keeps "/" as its path; /home redirects to it. */}
               <Route path="/" element={<Dashboard />} />
@@ -60,6 +65,7 @@ const App = () => (
               {/* Clients and Employees moved under People. Keep old links working. */}
               <Route path="/clients" element={<Navigate to="/people/clients" replace />} />
               <Route path="/employees" element={<Navigate to="/people/employees" replace />} />
+            </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
