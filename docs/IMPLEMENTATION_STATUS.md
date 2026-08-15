@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 16 August 2026 (Sprint 1, steps 1–3 and referral entry)
+**Last updated:** 16 August 2026 (Sprint 1 steps 1–3, referral entry, outbox)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -41,6 +41,14 @@ No second frontend was created and no framework was replaced, per section 3.
 - **Autosave primitive** — `useAutosave` with debounce, local draft recovery and
   stale-write protection, plus the `SaveState` indicator.
 - **Feature flags** — the six flags from section 41, all defaulting to off.
+- **Audit writer** — validates the actor, redacts sensitive fields, and reports
+  a store failure rather than throwing into a business transaction.
+- **Outbox worker** — `processOutbox` with exponential backoff, per-handler
+  isolation and attempt exhaustion. Written against a store port, so its retry
+  paths are tested in CI rather than by hand.
+- **Messaging port and mock** — `MessagingProvider` with an in-memory
+  implementation that can be told to fail, and that refuses to send when its
+  flag is off rather than faking success.
 - **Admissions** — the work queue, organised as Needs You / Waiting / Moving
   Forward with stage filters. Schema, stage-transition rules, work-queue
   classification and duplicate detection are implemented and tested; the screen
@@ -61,10 +69,13 @@ No second frontend was created and no framework was replaced, per section 3.
   in its confirmation; nothing is written to a database yet.
 - Any real persistence for the existing screens. `DataProvider` is still
   `useState` over `mockData.ts`.
-- Domain services, the outbox worker, and the Spruce, OpenAI, GHL and Gusto
-  adapters. Only the tables and flags exist.
+- A Postgres implementation of `DomainEventStore` and `AuditStore`. Both are
+  ports today with in-memory implementations only.
+- A scheduled runner for the outbox. `processOutbox` is a pure function and
+  nothing calls it on a timer, so events would accumulate unprocessed.
+- The live Spruce, OpenAI, GHL and Gusto adapters.
 - Offline draft and resume for field assessment.
-- `docs/ARCHITECTURE.md`, `INTEGRATIONS.md`, `DOMAIN_EVENTS.md`.
+- `docs/ARCHITECTURE.md` and `INTEGRATIONS.md`.
 
 ## Migrations
 
@@ -102,8 +113,9 @@ Supabase project.
 2. **Existing screens still read mock data.** Clients, Employees, Scheduling and
    Billing must move onto the real schema, which means mapping the old separate
    `Client` and `Employee` records onto one `people` row each.
-3. **No outbox worker.** `domain_events` accumulates rows with nothing draining
-   them. Needed before assessment scheduling can notify anyone.
+3. **The outbox has no runner and no Postgres store.** The worker logic exists
+   and is tested, but nothing invokes it on a schedule and it has no database
+   implementation, so `domain_events` would still accumulate unprocessed.
 4. **Four approved specs are missing from the repository** — the Hiring Screen
    Roadmap, the Product Bible, the two-page Client Intake Form and the Joy
    nursing assessment. Hiring and Phone Intake should not be considered fully
@@ -120,7 +132,8 @@ Supabase project.
 Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
 
 - [ ] Apply migrations to Supabase and regenerate `src/integrations/supabase/types.ts`
-- [ ] Audit and domain-event write services, used by the first business operation
+- [x] Audit and domain-event write services, with the outbox worker
+- [ ] Postgres implementations of the store ports, plus a scheduled runner
 - [ ] Private document storage abstraction
 - [ ] Move existing screens off mock data onto `people`
 - [x] Sprint 1 step 1–3: Admissions schema, domain services, work-queue UI shell
@@ -130,7 +143,7 @@ Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
 
 ## Test and build state
 
-As of the latest commit: `npm run build` passes, `npm test` passes with 47
+As of the latest commit: `npm run build` passes, `npm test` passes with 71
 tests, and the database suites pass 29 assertions across `rls_test.sql` and
 `admissions_test.sql`. `npm run lint` reports 39 errors and 8 warnings — 22 are
 pre-existing in shadcn UI components and `tailwind.config.ts`, and 17 are
