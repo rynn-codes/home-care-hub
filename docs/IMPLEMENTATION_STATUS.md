@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 16 August 2026 (Sprint 1, step 1–3)
+**Last updated:** 16 August 2026 (Sprint 1, steps 1–3 and referral entry)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -45,6 +45,10 @@ No second frontend was created and no framework was replaced, per section 3.
   Forward with stage filters. Schema, stage-transition rules, work-queue
   classification and duplicate detection are implemented and tested; the screen
   still reads demo seed.
+- **Referral entry** — the new-referral drawer with live duplicate checking.
+  A match shows what it found and why, and offers Open Existing Record or
+  Continue as New; a person with an open admission cannot get a second one.
+  Validation covers the malformed-email and missing-contact failure cases.
 - **Clients, Employees, Scheduling, Billing, Reports, Documents, SOPs** — earlier
   screens, still reading in-memory mock data. They predate this work and have not
   been rebuilt to the Joy visual system.
@@ -53,8 +57,8 @@ No second frontend was created and no framework was replaced, per section 3.
 
 - Phone Intake, RN Assessment, Consents, Payroll, Hiring. Their routes render a
   screen stating the module is unbuilt and what it will contain.
-- Referral creation. The duplicate check is written and tested but has no form
-  in front of it yet, and no service writing to the database.
+- A create service. The referral drawer adds to the in-memory queue and says so
+  in its confirmation; nothing is written to a database yet.
 - Any real persistence for the existing screens. `DataProvider` is still
   `useState` over `mockData.ts`.
 - Domain services, the outbox worker, and the Spruce, OpenAI, GHL and Gusto
@@ -120,13 +124,13 @@ Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
 - [ ] Private document storage abstraction
 - [ ] Move existing screens off mock data onto `people`
 - [x] Sprint 1 step 1–3: Admissions schema, domain services, work-queue UI shell
-- [ ] Referral create form, wired to the duplicate check
+- [x] Referral create form, wired to the duplicate check
 - [ ] Manual Phone Intake — **blocked** on the two-page Client Intake Form,
       which section 11 calls the data basis for `phone_intakes`
 
 ## Test and build state
 
-As of the latest commit: `npm run build` passes, `npm test` passes with 32
+As of the latest commit: `npm run build` passes, `npm test` passes with 47
 tests, and the database suites pass 29 assertions across `rls_test.sql` and
 `admissions_test.sql`. `npm run lint` reports 39 errors and 8 warnings — 22 are
 pre-existing in shadcn UI components and `tailwind.config.ts`, and 17 are

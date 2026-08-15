@@ -110,3 +110,108 @@ export const seedAdmissions: SeedAdmission[] = [
     overdue: true,
   },
 ];
+
+/**
+ * The people behind the seeded admissions.
+ *
+ * Every admission points at a person, so every seeded admission appears here —
+ * otherwise the duplicate check would miss a record that is visibly sitting in
+ * the queue, and entering "Tammy Wilson" would quietly create a second referral
+ * for someone who already has one.
+ */
+export interface SeedPerson {
+  personId: string;
+  firstName: string;
+  lastName: string;
+  preferredName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  dateOfBirth?: string | null;
+  responsiblePartyName?: string | null;
+  openAdmissionStage?: string | null;
+}
+
+export const seedPeople: SeedPerson[] = [
+  {
+    personId: "per-tammy",
+    firstName: "Tammy",
+    lastName: "Wilson",
+    phone: "(713) 555-0142",
+    email: null,
+    dateOfBirth: null,
+    responsiblePartyName: "Denise Wilson",
+    openAdmissionStage: "new_referral",
+  },
+  {
+    personId: "per-ruth",
+    firstName: "Ruth",
+    lastName: "Alvarez",
+    phone: "(832) 555-0119",
+    email: null,
+    dateOfBirth: "1941-09-08",
+    responsiblePartyName: null,
+    openAdmissionStage: "new_referral",
+  },
+  {
+    personId: "per-susan-m",
+    firstName: "Susan",
+    lastName: "Miller",
+    phone: "(713) 555-0163",
+    email: "s.miller@example.com",
+    dateOfBirth: "1948-01-30",
+    responsiblePartyName: "Paul Miller",
+    openAdmissionStage: "pre_onboarding",
+  },
+  {
+    personId: "per-robert",
+    firstName: "Robert",
+    lastName: "Green",
+    phone: "(281) 555-0104",
+    email: null,
+    dateOfBirth: "1937-05-19",
+    responsiblePartyName: "Angela Green",
+    openAdmissionStage: "ready_for_admission",
+  },
+  {
+    personId: "per-marcus",
+    firstName: "Marcus",
+    lastName: "Bell",
+    phone: "(713) 555-0134",
+    email: "susan.bell@example.com",
+    dateOfBirth: "1946-03-02",
+    responsiblePartyName: "Susan Bell",
+    openAdmissionStage: "assessment",
+  },
+  {
+    personId: "per-evelyn",
+    firstName: "Evelyn",
+    lastName: "Carter",
+    phone: "(281) 555-0177",
+    email: null,
+    dateOfBirth: "1939-11-20",
+    responsiblePartyName: "Grace Carter",
+    openAdmissionStage: "pre_onboarding",
+  },
+  {
+    personId: "per-harold",
+    firstName: "Harold",
+    lastName: "Nguyen",
+    phone: "(713) 555-0195",
+    email: null,
+    dateOfBirth: "1950-02-11",
+    responsiblePartyName: "Mai Nguyen",
+    openAdmissionStage: "phone_intake",
+  },
+  {
+    // No open admission — a past client, so a fresh enquiry is legitimate and
+    // should surface the history without blocking.
+    personId: "per-lian",
+    firstName: "Lian",
+    lastName: "Huang",
+    phone: "(713) 555-0188",
+    email: "family.huang@example.com",
+    dateOfBirth: "1944-06-14",
+    responsiblePartyName: "Johnathan Huang",
+    openAdmissionStage: null,
+  },
+];

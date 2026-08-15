@@ -5,7 +5,10 @@ import { WorkQueueSection } from "@/components/work-queue/WorkQueueSection";
 import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
 import { classifyAdmission } from "@/domain/admissions/classify";
 import { STAGE_LABELS, type AdmissionStage } from "@/domain/admissions/stages";
-import { seedAdmissions, type SeedAdmission } from "@/lib/admissionsSeed";
+import { NewReferralDrawer } from "@/components/admissions/NewReferralDrawer";
+import { seedAdmissions, seedPeople, type SeedAdmission } from "@/lib/admissionsSeed";
+import type { ReferralDraft } from "@/domain/admissions/referral";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 /**
@@ -54,10 +57,40 @@ function AdmissionRow({ item }: { item: SeedAdmission }) {
 
 export default function Admissions() {
   const [stage, setStage] = useState<AdmissionStage | "all">("all");
+  const [referralOpen, setReferralOpen] = useState(false);
+  const [created, setCreated] = useState<SeedAdmission[]>([]);
+
+  // Stands in for the create service until the migrations are applied. The
+  // record is added to the queue so the flow can be walked end to end, and the
+  // toast says plainly that nothing was persisted rather than implying success.
+  const handleCreate = (draft: ReferralDraft) => {
+    const name = [draft.preferredName || draft.firstName, draft.lastName]
+      .filter(Boolean)
+      .join(" ");
+    setCreated((prev) => [
+      {
+        id: `adm-new-${prev.length + 1}`,
+        name,
+        stage: "new_referral",
+        status: "active",
+        service: draft.serviceRequested ? draft.serviceRequested.replace(/_/g, " ") : "Not specified",
+        location: draft.serviceArea || "Not specified",
+        headline: "New referral — no one has called back yet",
+        meta: draft.referralNote || "Just added",
+        action: "Start intake",
+      },
+      ...prev,
+    ]);
+    toast.success("Referral added to the queue", {
+      description: "Not saved to a database yet — the migrations are not applied.",
+    });
+  };
+
+  const all = useMemo(() => [...created, ...seedAdmissions], [created]);
 
   const filtered = useMemo(
-    () => seedAdmissions.filter((a) => stage === "all" || a.stage === stage),
-    [stage],
+    () => all.filter((a) => stage === "all" || a.stage === stage),
+    [all, stage],
   );
 
   const sections = useMemo(() => buildWorkQueue(filtered, classifyAdmission), [filtered]);
@@ -68,7 +101,7 @@ export default function Admissions() {
       <PageHeader
         title="Admissions"
         description="Move a referral to a ready client without losing a step."
-        actions={<Button>New referral</Button>}
+        actions={<Button onClick={() => setReferralOpen(true)}>New referral</Button>}
       />
 
       <p className="mb-5 text-sm text-muted-foreground">
@@ -110,6 +143,14 @@ export default function Admissions() {
           }
         />
       ))}
+
+      <NewReferralDrawer
+        open={referralOpen}
+        onOpenChange={setReferralOpen}
+        existingPeople={seedPeople}
+        onCreate={handleCreate}
+        onOpenExisting={() => toast.info("Opening the existing record is not built yet.")}
+      />
 
       <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
         Showing demo seed data. The queue logic, stage rules and duplicate check are
