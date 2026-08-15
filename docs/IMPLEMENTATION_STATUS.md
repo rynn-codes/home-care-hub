@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 16 August 2026
+**Last updated:** 16 August 2026 (Sprint 1, step 1–3)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -41,14 +41,20 @@ No second frontend was created and no framework was replaced, per section 3.
 - **Autosave primitive** — `useAutosave` with debounce, local draft recovery and
   stale-write protection, plus the `SaveState` indicator.
 - **Feature flags** — the six flags from section 41, all defaulting to off.
+- **Admissions** — the work queue, organised as Needs You / Waiting / Moving
+  Forward with stage filters. Schema, stage-transition rules, work-queue
+  classification and duplicate detection are implemented and tested; the screen
+  still reads demo seed.
 - **Clients, Employees, Scheduling, Billing, Reports, Documents, SOPs** — earlier
   screens, still reading in-memory mock data. They predate this work and have not
   been rebuilt to the Joy visual system.
 
 ## What does not exist
 
-- Admissions, Phone Intake, RN Assessment, Consents, Payroll, Hiring. Their
-  routes render a screen stating the module is unbuilt and what it will contain.
+- Phone Intake, RN Assessment, Consents, Payroll, Hiring. Their routes render a
+  screen stating the module is unbuilt and what it will contain.
+- Referral creation. The duplicate check is written and tested but has no form
+  in front of it yet, and no service writing to the database.
 - Any real persistence for the existing screens. `DataProvider` is still
   `useState` over `mockData.ts`.
 - Domain services, the outbox worker, and the Spruce, OpenAI, GHL and Gusto
@@ -66,6 +72,7 @@ the Supabase project.
 supabase/migrations/0001_foundation.sql        identity, people, profiles, relationships
 supabase/migrations/0002_audit_and_events.sql  audit, outbox, communications
 supabase/migrations/0003_rls.sql               grants, helper functions, policies
+supabase/migrations/0004_admissions.sql        admissions, referral fields, stage enums
 ```
 
 To verify locally:
@@ -75,7 +82,9 @@ psql -f supabase/tests/local_shim.sql       # stands in for Supabase's auth sche
 psql -f supabase/migrations/0001_foundation.sql
 psql -f supabase/migrations/0002_audit_and_events.sql
 psql -f supabase/migrations/0003_rls.sql
-psql -f supabase/tests/rls_test.sql         # 17 assertions, exits non-zero on failure
+psql -f supabase/migrations/0004_admissions.sql
+psql -f supabase/tests/rls_test.sql         # 19 assertions
+psql -f supabase/tests/admissions_test.sql  # 10 assertions
 ```
 
 `local_shim.sql` is for local verification only and must never run against a
@@ -110,12 +119,17 @@ Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
 - [ ] Audit and domain-event write services, used by the first business operation
 - [ ] Private document storage abstraction
 - [ ] Move existing screens off mock data onto `people`
-- [ ] Then Sprint 1: Admissions schema and services, referral create and
-      duplicate check, and the complete manual Phone Intake vertical slice
+- [x] Sprint 1 step 1–3: Admissions schema, domain services, work-queue UI shell
+- [ ] Referral create form, wired to the duplicate check
+- [ ] Manual Phone Intake — **blocked** on the two-page Client Intake Form,
+      which section 11 calls the data basis for `phone_intakes`
 
 ## Test and build state
 
-As of the latest commit: `npm run build` passes, `npm test` passes with 11
-tests, and the database policy suite passes 17 assertions. `npm run lint`
-reports 22 errors and 8 warnings, all pre-existing in shadcn UI components, the
-generated edge function and `tailwind.config.ts`, none in code written here.
+As of the latest commit: `npm run build` passes, `npm test` passes with 32
+tests, and the database suites pass 29 assertions across `rls_test.sql` and
+`admissions_test.sql`. `npm run lint` reports 39 errors and 8 warnings — 22 are
+pre-existing in shadcn UI components and `tailwind.config.ts`, and 17 are
+`no-var` inside the generated `supabase/functions/mcp/index.ts` bundle. None are
+in hand-written code added here. Adding `supabase/functions/**` to eslint's
+ignores would return the count to 22 and keep the signal meaningful.
