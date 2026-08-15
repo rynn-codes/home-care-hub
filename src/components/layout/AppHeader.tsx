@@ -1,4 +1,5 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Plus, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
+/** The six Quick Add actions specified in the Dashboard Revision Request. */
+const quickAddActions = [
+  { label: "New Client", to: "/admissions" },
+  { label: "New Employee", to: "/operations/hiring" },
+  { label: "Schedule Assessment", to: "/admissions" },
+  { label: "Create Shift", to: "/scheduling" },
+  { label: "Run Payroll", to: "/payroll" },
+  { label: "Billing Review", to: "/billing" },
+];
+
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface/80 backdrop-blur px-4">
@@ -18,6 +29,23 @@ export function AppHeader() {
         <Input placeholder="Search clients, caregivers, shifts…" className="pl-9 bg-surface-muted border-transparent focus-visible:bg-surface" />
       </div>
       <div className="ml-auto flex items-center gap-2">
+        {/* Quick Add belongs in the top bar so it is reachable from every screen. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Quick Add</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            {quickAddActions.map((action) => (
+              <DropdownMenuItem key={action.label} asChild>
+                <Link to={action.to}>{action.label}</Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-4 w-4" />
           <Badge className="absolute -top-1 -right-1 h-4 min-w-4 p-0 px-1 text-[10px]" variant="destructive">3</Badge>

@@ -1,77 +1,59 @@
-import { Plus, CalendarPlus, UserPlus, HeartHandshake } from "lucide-react";
-import { MiniCalendar } from "@/components/dashboard/MiniCalendar";
-import { TodayShifts } from "@/components/dashboard/TodayShifts";
-import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
-import { UpcomingDates } from "@/components/dashboard/UpcomingDates";
-import { Button } from "@/components/ui/button";
+import { GreetingBand } from "@/components/home/GreetingBand";
+import { PriorityStrip } from "@/components/home/PriorityStrip";
+import { TodaySchedule } from "@/components/home/TodaySchedule";
+import { JoyAssistant } from "@/components/home/JoyAssistant";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  AdmissionsSummary,
+  BillingPanel,
+  CompliancePanel,
+  EmployeeTasks,
+  PayrollPanel,
+  QuickActions,
+  RecentActivity,
+  UpcomingDeadlines,
+} from "@/components/home/SummaryPanels";
 
-
-const USER_NAME = "Karynn";
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
-
+/**
+ * Home — the CEO / Operations Command Center.
+ *
+ * Structure is fixed by Dashboard Revision 3 and section 25 of the Codex
+ * Engineering Kickoff: greeting band, compact priority strip, then three
+ * columns, with Joy Assistant collapsed at the bottom.
+ *
+ * Deliberately absent, because three separate specs forbid them: KPI card rows,
+ * revenue or pie charts, and a large AI hero panel.
+ *
+ * The panels currently read deterministic demo seed from lib/joySeed. Section 25
+ * requires them to query the real domain once Sprint 0 lands — and forbids
+ * creating dashboard-specific tables to back them.
+ */
 export default function Dashboard() {
   return (
     <>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">
-            {getGreeting()}, {USER_NAME} <span className="inline-block">👋</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} · Here's what's happening across your agency today.
-          </p>
+      <GreetingBand />
+      <PriorityStrip />
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
+          <TodaySchedule />
+          <AdmissionsSummary />
         </div>
-        <div className="flex items-center gap-3">
-          <WeatherWidget />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" aria-label="Quick add">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
-                <CalendarPlus className="h-4 w-4 mr-2" />Add new shift
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <UserPlus className="h-4 w-4 mr-2" />Add employee
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HeartHandshake className="h-4 w-4 mr-2" />Add new client
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+
+        <div className="flex flex-col gap-4">
+          <EmployeeTasks />
+          <CompliancePanel />
+          <RecentActivity />
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <QuickActions />
+          <PayrollPanel />
+          <BillingPanel />
+          <UpcomingDeadlines />
         </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-5 mb-6">
-        <div className="lg:col-span-3">
-          <UpcomingDates />
-        </div>
-        <div className="lg:col-span-2">
-          <MiniCalendar />
-        </div>
-      </div>
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <ActivityFeed />
-          <TodayShifts />
-        </div>
-        <AlertsPanel />
-      </div>
+
+      <JoyAssistant />
     </>
   );
 }
