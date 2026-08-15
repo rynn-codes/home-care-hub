@@ -3,12 +3,271 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.2";
 
 // src/lib/mcp/tools/query-clients.ts
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z } from "npm:zod@^4.4.3";
-import { mockDB } from "npm:@/lib/mockData";
+
+// src/lib/mockData.ts
+var uid = /* @__PURE__ */ (() => {
+  let i = 1;
+  return () => `id_${i++}`;
+})();
+var today = /* @__PURE__ */ new Date();
+var dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+var weekStart = new Date(dayStart);
+weekStart.setDate(dayStart.getDate() - dayStart.getDay());
+function iso(d) {
+  return d.toISOString();
+}
+function addDays(d, n) {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+function addHours(d, n) {
+  const x = new Date(d);
+  x.setHours(x.getHours() + n);
+  return x;
+}
+function setTime(d, h, m = 0) {
+  const x = new Date(d);
+  x.setHours(h, m, 0, 0);
+  return x;
+}
+var employees = [
+  ["Maya Patel", "RN"],
+  ["Jordan Lee", "Caregiver"],
+  ["Sofia Ramirez", "Caregiver"],
+  ["Daniel Kim", "Caregiver"],
+  ["Aisha Bello", "LPN"],
+  ["Liam O'Connor", "Caregiver"],
+  ["Priya Singh", "Caregiver"],
+  ["Marcus Chen", "Coordinator"],
+  ["Elena Rossi", "Caregiver"],
+  ["Noah Williams", "Caregiver"],
+  ["Hana Suzuki", "RN"],
+  ["Diego Martinez", "Caregiver"],
+  ["Grace Olusanya", "LPN"],
+  ["Tom\xE1s Herrera", "Caregiver"],
+  ["Isabelle Dubois", "Caregiver"]
+].map(([name, role], i) => ({
+  id: uid(),
+  name,
+  role,
+  status: i === 4 ? "on-leave" : "active",
+  hoursThisWeek: 18 + i * 7 % 24,
+  email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@homecare.co",
+  phone: `555-01${(20 + i).toString().padStart(2, "0")}`,
+  hireDate: iso(addDays(today, -300 - i * 40)),
+  credentials: [
+    { name: "CPR", expires: iso(addDays(today, 30 + i * 13 % 200 - 50)) },
+    { name: "First Aid", expires: iso(addDays(today, 90 + i * 17 % 250)) }
+  ],
+  assignedClientIds: []
+}));
+var clientNames = [
+  "Eleanor Whitfield",
+  "Harold Stein",
+  "Margaret O'Hara",
+  "Walter Nakamura",
+  "Beatrice Coleman",
+  "Frank Delgado",
+  "Doris Kapoor",
+  "Arthur Brennan",
+  "Vivian Cho",
+  "Stanley Park",
+  "Ruth Abernathy",
+  "George Mwangi",
+  "Helen Petrov",
+  "Samuel Greene",
+  "Joyce Tanaka",
+  "Edwin Foster",
+  "Mildred Sanchez",
+  "Roy Bauer",
+  "Pearl Jackson",
+  "Norman Wells",
+  "Iris Thompson",
+  "Clarence Fox",
+  "Estelle Romano",
+  "Henry M\xFCller",
+  "Nora Bryant"
+];
+var clients = clientNames.map((name, i) => ({
+  id: uid(),
+  name,
+  status: i % 11 === 0 ? "on-hold" : i % 17 === 0 ? "discharged" : "active",
+  primaryCaregiverId: employees[i % employees.length].id,
+  carePlan: ["Standard Care", "Memory Care", "Post-Op Recovery", "Companion Care", "Skilled Nursing"][i % 5],
+  hoursPerWeek: 8 + i * 5 % 40,
+  address: `${100 + i * 7} ${["Maple", "Oak", "Cedar", "Pine", "Birch"][i % 5]} St, Springfield`,
+  phone: `555-02${(10 + i).toString().padStart(2, "0")}`,
+  email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@example.com",
+  dob: iso(addDays(today, -365 * (65 + i % 25))),
+  notes: ""
+}));
+clients.forEach((c) => {
+  if (c.primaryCaregiverId) {
+    const e = employees.find((x) => x.id === c.primaryCaregiverId);
+    if (e) e.assignedClientIds.push(c.id);
+  }
+});
+var shifts = [];
+for (let day = 0; day < 7; day++) {
+  for (let s = 0; s < 12; s++) {
+    const date = addDays(weekStart, day);
+    const startHour = [7, 9, 11, 13, 15, 17][s % 6];
+    const start = setTime(date, startHour);
+    const end = addHours(start, 2 + s % 3);
+    const cg = employees[(day * 3 + s) % employees.length];
+    const cl = clients[(day * 5 + s * 2) % clients.length];
+    let status = "scheduled";
+    if (date < dayStart) status = s % 9 === 0 ? "missed" : "completed";
+    else if (date.getTime() === dayStart.getTime() && start < today) {
+      status = today < end ? "clocked-in" : s % 11 === 0 ? "missed" : "completed";
+    }
+    shifts.push({
+      id: uid(),
+      caregiverId: cg.id,
+      clientId: cl.id,
+      start: iso(start),
+      end: iso(end),
+      status
+    });
+  }
+}
+var invoices = clients.slice(0, 12).map((c, i) => ({
+  id: uid(),
+  number: `INV-${2025}-${(100 + i).toString().padStart(4, "0")}`,
+  clientId: c.id,
+  amount: 800 + i * 137 % 4e3,
+  status: ["paid", "sent", "draft", "overdue", "paid", "sent"][i % 6],
+  periodStart: iso(addDays(today, -30)),
+  periodEnd: iso(addDays(today, -1)),
+  issuedAt: iso(addDays(today, -(i * 3 % 25)))
+}));
+var documents = [
+  ["Employee Handbook 2025.pdf", "Policies", "pdf"],
+  ["HIPAA Compliance Guide.pdf", "Compliance", "pdf"],
+  ["Onboarding Checklist.docx", "Onboarding", "docx"],
+  ["W-2 Template.pdf", "HR", "pdf"],
+  ["Care Plan Template.docx", "Templates", "docx"],
+  ["Q1 Financials.xlsx", "Finance", "xlsx"],
+  ["Brand Guidelines.pdf", "Marketing", "pdf"],
+  ["Office Photo.jpg", "Marketing", "image"],
+  ["Insurance Certificate.pdf", "Compliance", "pdf"],
+  ["Caregiver Performance Reviews.xlsx", "HR", "xlsx"],
+  ["Emergency Contact List.docx", "HR", "docx"],
+  ["State License.pdf", "Compliance", "pdf"]
+].map(([name, folder, type], i) => ({
+  id: uid(),
+  name,
+  folder,
+  type,
+  ownerId: employees[i % employees.length].id,
+  uploadedAt: iso(addDays(today, -(i * 4 % 90))),
+  size: 5e4 + i * 18e3,
+  permission: ["everyone", "admins", "managers", "everyone"][i % 4]
+}));
+var goalSeed = [
+  ["Reach 100 active clients", 78],
+  ["Reduce missed shifts by 50%", 62],
+  ["Onboard 10 new caregivers in Q2", 40],
+  ["Achieve 95% billing on time", 88],
+  ["Launch caregiver mobile app", 25],
+  ["Complete annual HIPAA training", 95],
+  ["Reduce overtime by 20%", 55],
+  ["Improve client NPS to 70", 45]
+];
+var goals = goalSeed.map(([title, progress], i) => {
+  const status = progress >= 90 ? "done" : progress >= 60 ? "on-track" : progress >= 40 ? "at-risk" : "off-track";
+  return {
+    id: uid(),
+    title,
+    description: "Strategic goal aligned with quarterly objectives.",
+    ownerId: employees[i % employees.length].id,
+    dueDate: iso(addDays(today, 30 + i * 15)),
+    status,
+    progress,
+    milestones: [
+      { id: uid(), title: "Define plan", done: true, due: iso(addDays(today, -20)) },
+      { id: uid(), title: "Kick off with team", done: progress > 30, due: iso(addDays(today, -5)) },
+      { id: uid(), title: "Mid-point review", done: progress > 60, due: iso(addDays(today, 15)) },
+      { id: uid(), title: "Final delivery", done: progress >= 100, due: iso(addDays(today, 45)) }
+    ]
+  };
+});
+var sopTitles = [
+  ["New Caregiver Orientation", "Onboarding"],
+  ["Client Intake Process", "Onboarding"],
+  ["Hand Hygiene Protocol", "Care Procedures"],
+  ["Medication Reminders", "Care Procedures"],
+  ["Fall Prevention", "Care Procedures"],
+  ["Wound Care Basics", "Care Procedures"],
+  ["HIPAA Privacy Rules", "Compliance"],
+  ["Background Check Procedure", "Compliance"],
+  ["Incident Reporting", "Compliance"],
+  ["Fire Emergency Response", "Emergency"],
+  ["Medical Emergency Protocol", "Emergency"],
+  ["Severe Weather Plan", "Emergency"],
+  ["Invoice Generation", "Billing"],
+  ["Insurance Claim Submission", "Billing"],
+  ["Time Off Request Process", "HR"],
+  ["Performance Review Cycle", "HR"],
+  ["Disciplinary Process", "HR"],
+  ["End of Shift Documentation", "Care Procedures"],
+  ["Client Discharge Process", "Onboarding"],
+  ["Caregiver Termination", "HR"]
+];
+var sops = sopTitles.map(([title, category], i) => ({
+  id: uid(),
+  title,
+  category,
+  ownerId: employees[i % employees.length].id,
+  updatedAt: iso(addDays(today, -(i * 6 % 120))),
+  versions: [
+    {
+      version: 1,
+      updatedAt: iso(addDays(today, -(i * 6 % 120) - 30)),
+      updatedBy: employees[i % employees.length].id,
+      content: `<h2>Purpose</h2><p>This SOP outlines the standard procedure for ${title.toLowerCase()}.</p><h2>Scope</h2><p>Applies to all staff in the ${category} domain.</p><h2>Procedure</h2><ol><li>Identify the situation requiring action.</li><li>Follow company-approved checklist.</li><li>Document the action in the client record.</li><li>Notify supervisor if escalation is required.</li></ol><h2>References</h2><p>See related policies in the Documents section.</p>`
+    },
+    {
+      version: 2,
+      updatedAt: iso(addDays(today, -(i * 6 % 120))),
+      updatedBy: employees[(i + 1) % employees.length].id,
+      content: `<h2>Purpose</h2><p>This SOP outlines the standard procedure for ${title.toLowerCase()}, updated for 2025 compliance.</p><h2>Scope</h2><p>Applies to all staff in the ${category} domain.</p><h2>Procedure</h2><ol><li>Identify the situation requiring action.</li><li>Follow the updated 2025 company-approved checklist.</li><li>Document the action in the client record within 24 hours.</li><li>Notify supervisor and on-call manager if escalation is required.</li></ol><h2>References</h2><p>See related policies in the Documents section and the Compliance handbook.</p>`
+    }
+  ]
+}));
+var activity = [
+  { id: uid(), kind: "client", message: "New client Eleanor Whitfield admitted", at: iso(addHours(today, -1)) },
+  { id: uid(), kind: "shift", message: "Jordan Lee completed shift with Harold Stein", at: iso(addHours(today, -2)) },
+  { id: uid(), kind: "document", message: "Maya Patel uploaded Care Plan Template.docx", at: iso(addHours(today, -4)) },
+  { id: uid(), kind: "goal", message: "Goal 'Reduce overtime by 20%' updated to 55%", at: iso(addHours(today, -7)) },
+  { id: uid(), kind: "sop", message: "SOP 'Fall Prevention' was revised", at: iso(addHours(today, -10)) },
+  { id: uid(), kind: "shift", message: "Sofia Ramirez clocked in for Margaret O'Hara", at: iso(addHours(today, -12)) },
+  { id: uid(), kind: "client", message: "Doris Kapoor moved to On Hold", at: iso(addHours(today, -20)) }
+];
+var alerts = [
+  { id: uid(), severity: "danger", title: "Missed clock-in", detail: "Liam O'Connor missed 9:00 AM shift with Walter Nakamura", createdAt: iso(addHours(today, -1)) },
+  { id: uid(), severity: "warning", title: "Credential expiring", detail: "Aisha Bello's CPR cert expires in 12 days", createdAt: iso(addHours(today, -3)) },
+  { id: uid(), severity: "warning", title: "Unassigned shift", detail: "Tomorrow 2:00 PM \u2014 Beatrice Coleman has no caregiver", createdAt: iso(addHours(today, -5)) },
+  { id: uid(), severity: "info", title: "Care plan renewal", detail: "Frank Delgado's care plan expires in 7 days", createdAt: iso(addHours(today, -8)) },
+  { id: uid(), severity: "warning", title: "Overtime risk", detail: "Maya Patel will exceed 40h this week", createdAt: iso(addHours(today, -12)) }
+];
+var mockDB = {
+  clients,
+  employees,
+  shifts,
+  invoices,
+  documents,
+  goals,
+  sops,
+  activity,
+  alerts
+};
 
 // src/lib/mcp/auth.ts
 function requireAuth(ctx) {
@@ -54,9 +313,8 @@ var query_clients_default = defineTool({
 });
 
 // src/lib/mcp/tools/query-employees.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z2 } from "npm:zod@^4.4.3";
-import { mockDB as mockDB2 } from "npm:@/lib/mockData";
 var query_employees_default = defineTool2({
   name: "query_employees",
   title: "Query caregivers",
@@ -71,7 +329,7 @@ var query_employees_default = defineTool2({
   handler: ({ search, role, status, limit }, ctx) => {
     const denied = requireAuth(ctx);
     if (denied) return denied;
-    const rows = mockDB2.employees.filter((e) => role ? e.role === role : true).filter((e) => status ? e.status === status : true).filter((e) => search ? e.name.toLowerCase().includes(search.toLowerCase()) : true).slice(0, limit).map((e) => ({
+    const rows = mockDB.employees.filter((e) => role ? e.role === role : true).filter((e) => status ? e.status === status : true).filter((e) => search ? e.name.toLowerCase().includes(search.toLowerCase()) : true).slice(0, limit).map((e) => ({
       id: e.id,
       name: e.name,
       role: e.role,
@@ -88,9 +346,8 @@ var query_employees_default = defineTool2({
 });
 
 // src/lib/mcp/tools/query-shifts.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z3 } from "npm:zod@^4.4.3";
-import { mockDB as mockDB3 } from "npm:@/lib/mockData";
 function windowFor(when) {
   const now = /* @__PURE__ */ new Date();
   const start = new Date(now);
@@ -132,7 +389,7 @@ var query_shifts_default = defineTool3({
     const denied = requireAuth(ctx);
     if (denied) return denied;
     const [from, to] = windowFor(when);
-    const rows = mockDB3.shifts.filter((s) => {
+    const rows = mockDB.shifts.filter((s) => {
       const start = new Date(s.start);
       return start >= from && start < to;
     }).filter((s) => status ? s.status === status : true).map((s) => ({
@@ -140,8 +397,8 @@ var query_shifts_default = defineTool3({
       start: s.start,
       end: s.end,
       status: s.status,
-      caregiver: mockDB3.employees.find((e) => e.id === s.caregiverId)?.name ?? "Unknown",
-      client: mockDB3.clients.find((c) => c.id === s.clientId)?.name ?? "Unknown",
+      caregiver: mockDB.employees.find((e) => e.id === s.caregiverId)?.name ?? "Unknown",
+      client: mockDB.clients.find((c) => c.id === s.clientId)?.name ?? "Unknown",
       notes: s.notes ?? null
     })).filter(
       (s) => caregiverName ? s.caregiver.toLowerCase().includes(caregiverName.toLowerCase()) : true
@@ -156,9 +413,8 @@ var query_shifts_default = defineTool3({
 });
 
 // src/lib/mcp/tools/query-invoices.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z4 } from "npm:zod@^4.4.3";
-import { mockDB as mockDB4 } from "npm:@/lib/mockData";
 var query_invoices_default = defineTool4({
   name: "query_invoices",
   title: "Query invoices",
@@ -172,10 +428,10 @@ var query_invoices_default = defineTool4({
   handler: ({ status, clientName, limit }, ctx) => {
     const denied = requireAuth(ctx);
     if (denied) return denied;
-    const rows = mockDB4.invoices.filter((i) => status ? i.status === status : true).map((i) => ({
+    const rows = mockDB.invoices.filter((i) => status ? i.status === status : true).map((i) => ({
       id: i.id,
       number: i.number,
-      client: mockDB4.clients.find((c) => c.id === i.clientId)?.name ?? "Unknown",
+      client: mockDB.clients.find((c) => c.id === i.clientId)?.name ?? "Unknown",
       amount: i.amount,
       status: i.status,
       periodStart: i.periodStart,
@@ -195,9 +451,8 @@ var query_invoices_default = defineTool4({
 });
 
 // src/lib/mcp/tools/get-sop.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z5 } from "npm:zod@^4.4.3";
-import { mockDB as mockDB5 } from "npm:@/lib/mockData";
 var get_sop_default = defineTool5({
   name: "get_sops",
   title: "Get SOPs",
@@ -210,7 +465,7 @@ var get_sop_default = defineTool5({
   handler: ({ search, category }, ctx) => {
     const denied = requireAuth(ctx);
     if (denied) return denied;
-    const filtered = mockDB5.sops.filter(
+    const filtered = mockDB.sops.filter(
       (s) => category ? s.category.toLowerCase() === category.toLowerCase() : true
     );
     if (search) {
@@ -267,5 +522,5 @@ var mcp_default = defineMcp({
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.1/stacks/supabase";
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.2/stacks/supabase";
 Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
