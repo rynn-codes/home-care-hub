@@ -360,6 +360,8 @@ function QuestionInput({
     case "longtext":
       return (
         <Textarea
+          id={`answer-${question.id}`}
+          aria-label={question.question}
           rows={4}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
@@ -371,6 +373,8 @@ function QuestionInput({
     case "number":
       return (
         <Input
+          id={`answer-${question.id}`}
+          aria-label={question.question}
           type="number"
           min={0}
           value={value === undefined || value === null ? "" : String(value)}
@@ -383,6 +387,8 @@ function QuestionInput({
     case "date":
       return (
         <Input
+          id={`answer-${question.id}`}
+          aria-label={question.question}
           type="date"
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
@@ -486,6 +492,8 @@ function QuestionInput({
     default:
       return (
         <Input
+          id={`answer-${question.id}`}
+          aria-label={question.question}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
           autoFocus

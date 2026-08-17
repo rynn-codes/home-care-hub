@@ -117,8 +117,13 @@ export default function Admissions() {
       navigate(`/admissions/${item.id}/intake`);
       return;
     }
-    if (item.stage === "assessment" && !intakes[item.id]?.completedAt) {
-      navigate(`/admissions/${item.id}/intake`);
+    if (item.stage === "assessment") {
+      // Intake unfinished? Go back to it. Otherwise open the assessment.
+      navigate(
+        intakes[item.id]?.completedAt
+          ? `/admissions/${item.id}/assessment`
+          : `/admissions/${item.id}/intake`,
+      );
       return;
     }
     toast.info(`${item.action} is not built yet.`, {

@@ -6,6 +6,8 @@ import {
   saveDemoState,
   type DemoCommunication,
   type DemoDomainEvent,
+  type DemoAssessment,
+  type DemoConsentSession,
   type DemoIntake,
   type DemoScheduleEvent,
   type DemoState,
@@ -16,6 +18,8 @@ interface DemoContextValue extends DemoState {
   addReferral: (admission: SeedAdmission, person: DemoState["people"][number]) => void;
   saveIntake: (admissionId: string, intake: Partial<DemoIntake>) => void;
   completeIntake: (admissionId: string) => void;
+  saveAssessment: (admissionId: string, patch: Partial<DemoAssessment>) => void;
+  saveConsents: (admissionId: string, patch: Partial<DemoConsentSession>) => void;
   scheduleAssessment: (input: {
     admissionId: string;
     clientName: string;
@@ -114,6 +118,69 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const saveAssessment = useCallback<DemoContextValue["saveAssessment"]>((admissionId, patch) => {
+    setState((s) => {
+      const existing = s.assessments[admissionId] ?? {
+        admissionId,
+        answers: {},
+        startedAt: new Date().toISOString(),
+        completedAt: null,
+      };
+      return { ...s, assessments: { ...s.assessments, [admissionId]: { ...existing, ...patch } } };
+    });
+  }, []);
+
+  const saveConsents = useCallback<DemoContextValue["saveConsents"]>((admissionId, patch) => {
+    setState((s) => {
+      const existing = s.consentSessions[admissionId] ?? {
+        admissionId,
+        decisions: {},
+        signerName: null,
+        signerRelationship: null,
+        signedAt: null,
+      };
+      const session = { ...existing, ...patch };
+
+      // Signing the packet is what moves the admission on — the assessment is
+      // not finished until the client has actually agreed to something.
+      const admissions = patch.signedAt
+        ? s.admissions.map((a) =>
+            a.id === admissionId
+              ? {
+                  ...a,
+                  stage: "pre_onboarding" as const,
+                  headline: "Packet signed — ready for the office to review",
+                  meta: `Signed by ${session.signerName ?? "the client"}`,
+                  action: "Review for admission",
+                  scheduledAt: null,
+                }
+              : a,
+          )
+        : s.admissions;
+
+      const domainEvents = patch.signedAt
+        ? [
+            {
+              id: newId("evt"),
+              eventType: "agreement.signed",
+              aggregateType: "admission",
+              aggregateId: admissionId,
+              status: "processed" as const,
+              createdAt: new Date().toISOString(),
+            },
+            ...s.domainEvents,
+          ]
+        : s.domainEvents;
+
+      return {
+        ...s,
+        consentSessions: { ...s.consentSessions, [admissionId]: session },
+        admissions,
+        domainEvents,
+      };
+    });
+  }, []);
+
   const scheduleAssessment = useCallback<DemoContextValue["scheduleAssessment"]>((input) => {
     setState((s) => {
       const eventId = newId("sch");
@@ -204,11 +271,13 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       addReferral,
       saveIntake,
       completeIntake,
+      saveAssessment,
+      saveConsents,
       scheduleAssessment,
       retryCommunication,
       reset,
     }),
-    [state, addReferral, saveIntake, completeIntake, scheduleAssessment, retryCommunication, reset],
+    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, scheduleAssessment, retryCommunication, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

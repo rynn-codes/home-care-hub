@@ -62,10 +62,32 @@ export interface DemoDomainEvent {
   createdAt: string;
 }
 
+export interface DemoAssessment {
+  admissionId: string;
+  answers: Record<string, unknown>;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface DemoConsentSession {
+  admissionId: string;
+  /**
+   * One decision per consent key. Mirrors ConsentDecision in
+   * domain/consents/registry — kept as a literal union rather than `string` so
+   * a stored blob cannot widen the type the signing screen relies on.
+   */
+  decisions: Record<string, "agree" | "decline" | "not_applicable" | undefined>;
+  signerName: string | null;
+  signerRelationship: string | null;
+  signedAt: string | null;
+}
+
 export interface DemoState {
   admissions: SeedAdmission[];
   people: SeedPerson[];
   intakes: Record<string, DemoIntake>;
+  assessments: Record<string, DemoAssessment>;
+  consentSessions: Record<string, DemoConsentSession>;
   scheduleEvents: DemoScheduleEvent[];
   communications: DemoCommunication[];
   domainEvents: DemoDomainEvent[];
@@ -76,6 +98,8 @@ function initial(): DemoState {
     admissions: seedAdmissions,
     people: seedPeople,
     intakes: {},
+    assessments: {},
+    consentSessions: {},
     scheduleEvents: [],
     communications: [],
     domainEvents: [],

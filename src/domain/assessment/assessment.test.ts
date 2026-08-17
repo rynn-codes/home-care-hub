@@ -114,6 +114,13 @@ describe("consents", () => {
     }
   });
 
+  // The UI once said "Fifteen things" over a list of sixteen. Counts belong to
+  // the data, not to prose.
+  it("has a stable count the UI can derive rather than restate", () => {
+    expect(CONSENTS.length).toBe(16);
+    expect(new Set(CONSENTS.map((c) => c.key)).size).toBe(CONSENTS.length);
+  });
+
   it("carries the real document text, not a paraphrase", () => {
     const invoicing = CONSENTS.find((c) => c.key === "invoicing");
     expect(invoicing?.fullText).toContain("2.9%");
