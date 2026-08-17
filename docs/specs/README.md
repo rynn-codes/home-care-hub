@@ -15,6 +15,8 @@ these the source of truth for their modules.
 | `Joy_Health_Dashboard_Claude_Revision_3.md` | The Home / Command Center screen |
 | `Joy_Dashboard_Revision_Request.md` | Earlier Home revision. Superseded by Revision 3 where they disagree |
 | `Joy_Health_V1_Design_Brief_Part_1.md` | Foundation and visual direction |
+| `Patient_Consents_Packet.pdf` | The signing packet the RN assessment must fill. 16 pages |
+| `Patient_Consents_Packet.txt` | Extracted text of the same, so the consent registry quotes it verbatim |
 
 Where a module spec and the kickoff brief conflict, the brief wins on structure
 and data, the module spec wins on UI detail and behaviour. Document any mismatch
@@ -27,5 +29,8 @@ is under-specified until it arrives:
 
 - `Joy_Health_Hiring_Screen_Roadmap.md` — blocks Hiring
 - Client Intake Form, two pages — the data basis for `phone_intakes`
-- Joy nursing assessment — the RN assessment content
+- Joy nursing assessment — the RN's own clinical form. The consents packet defines
+  what the assessment must *produce*; the nursing assessment would define how the
+  RN captures it. The assessment is modelled from the packet's requirements in
+  the meantime.
 - Joy Product Bible v1.0 Builder Edition
