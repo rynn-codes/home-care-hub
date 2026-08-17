@@ -6,10 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { DataProvider } from "@/context/DataProvider";
 import { AppShell } from "@/components/layout/AppShell";
 import { RequireAuth } from "@/components/layout/RequireAuth";
+import { DemoDataProvider } from "@/context/DemoDataProvider";
 import Dashboard from "./pages/Dashboard";
 import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
 import Admissions from "./pages/Admissions";
+import PhoneIntake from "./pages/PhoneIntake";
 import People from "./pages/People";
 import Clients from "./pages/Clients";
 import Employees from "./pages/Employees";
@@ -32,6 +34,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <DataProvider>
+        <DemoDataProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -49,6 +52,7 @@ const App = () => (
               <Route path="/operations/hiring" element={<Hiring />} />
 
               <Route path="/admissions" element={<Admissions />} />
+              <Route path="/admissions/:id/intake" element={<PhoneIntake />} />
 
               <Route path="/people" element={<People />} />
               <Route path="/people/clients" element={<Clients />} />
@@ -70,6 +74,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+      </DemoDataProvider>
       </DataProvider>
     </TooltipProvider>
   </QueryClientProvider>

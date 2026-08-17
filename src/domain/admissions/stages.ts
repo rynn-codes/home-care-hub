@@ -81,7 +81,13 @@ export interface TransitionRefusal {
   reason: string;
 }
 
-export type TransitionCheck = { allowed: true } | TransitionRefusal;
+/**
+ * `reason` is declared on both branches so callers can read it without first
+ * narrowing the union. This repo does not run TypeScript in strict mode, and
+ * discriminated-union narrowing is unreliable without it — a refusal reason
+ * that only type-checks under strict is a trap for the next person.
+ */
+export type TransitionCheck = { allowed: true; reason?: undefined } | TransitionRefusal;
 
 /**
  * Validates a stage change and explains any refusal in words a user can act on.

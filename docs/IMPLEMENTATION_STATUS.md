@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 16 August 2026 (Sprint 1 steps 1–3, referral entry, outbox)
+**Last updated:** 16 August 2026 (Golden Demo path complete)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -57,14 +57,24 @@ No second frontend was created and no framework was replaced, per section 3.
   A match shows what it found and why, and offers Open Existing Record or
   Continue as New; a person with an open admission cannot get a second one.
   Validation covers the malformed-email and missing-contact failure cases.
+- **Manual phone intake** — the Typeform-style flow, one question at a time,
+  autosaving to localStorage. Prefills what the referral already told us,
+  reports missing required items on review, and completes the admission stage.
+- **Assessment scheduling** — books the visit, queues the family notification
+  separately, and reports it honestly as not sent while Spruce is disconnected,
+  with a retry. The booking is never undone by the message failing.
+- **Demo persistence** — `DemoDataProvider` over localStorage. The whole Golden
+  Demo survives a refresh. Prototype only; the Supabase repositories replace it.
 - **Clients, Employees, Scheduling, Billing, Reports, Documents, SOPs** — earlier
   screens, still reading in-memory mock data. They predate this work and have not
   been rebuilt to the Joy visual system.
 
 ## What does not exist
 
-- Phone Intake, RN Assessment, Consents, Payroll, Hiring. Their routes render a
-  screen stating the module is unbuilt and what it will contain.
+- RN Assessment, Consents, Payroll, Hiring. Their routes render a screen stating
+  the module is unbuilt and what it will contain.
+- AI conversation mode for intake. Manual mode is built first by design (§34);
+  the AI path sits behind `AI_PHONE_INTAKE_ENABLED`, which is off.
 - A create service. The referral drawer adds to the in-memory queue and says so
   in its confirmation; nothing is written to a database yet.
 - Any real persistence for the existing screens. `DataProvider` is still
@@ -138,8 +148,10 @@ Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
 - [ ] Move existing screens off mock data onto `people`
 - [x] Sprint 1 step 1–3: Admissions schema, domain services, work-queue UI shell
 - [x] Referral create form, wired to the duplicate check
-- [ ] Manual Phone Intake — **blocked** on the two-page Client Intake Form,
-      which section 11 calls the data basis for `phone_intakes`
+- [x] Manual Phone Intake and assessment scheduling — the Golden Demo path
+- [ ] Reconcile the intake field list against the two-page Client Intake Form.
+      The list is PROVISIONAL: every field traces to the kickoff brief or the
+      Phone Intake spec, so reconciliation should be additive, not a reshape
 
 ## Test and build state
 

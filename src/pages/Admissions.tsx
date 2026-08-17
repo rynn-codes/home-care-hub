@@ -6,7 +6,10 @@ import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
 import { classifyAdmission } from "@/domain/admissions/classify";
 import { STAGE_LABELS, type AdmissionStage } from "@/domain/admissions/stages";
 import { NewReferralDrawer } from "@/components/admissions/NewReferralDrawer";
-import { seedAdmissions, seedPeople, type SeedAdmission } from "@/lib/admissionsSeed";
+import { type SeedAdmission } from "@/lib/admissionsSeed";
+import { useDemo } from "@/context/DemoDataProvider";
+import { useNavigate } from "react-router-dom";
+import { newId } from "@/lib/demoStore";
 import type { ReferralDraft } from "@/domain/admissions/referral";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -32,7 +35,7 @@ const STAGE_FILTERS: Array<{ label: string; stage: AdmissionStage | "all" }> = [
   { label: "Ready for Admission", stage: "ready_for_admission" },
 ];
 
-function AdmissionRow({ item }: { item: SeedAdmission }) {
+function AdmissionRow({ item, onAction }: { item: SeedAdmission; onAction: (item: SeedAdmission) => void }) {
   return (
     <div className="flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-surface-muted sm:flex-row sm:items-center sm:gap-4">
       <div className="min-w-0 flex-1">
@@ -48,7 +51,12 @@ function AdmissionRow({ item }: { item: SeedAdmission }) {
           {item.service} · {item.location} · {item.meta}
         </p>
       </div>
-      <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-center">
+      <Button
+        variant="outline"
+        size="sm"
+        className="shrink-0 self-start sm:self-center"
+        onClick={() => onAction(item)}
+      >
         {item.action}
       </Button>
     </div>
@@ -58,42 +66,75 @@ function AdmissionRow({ item }: { item: SeedAdmission }) {
 export default function Admissions() {
   const [stage, setStage] = useState<AdmissionStage | "all">("all");
   const [referralOpen, setReferralOpen] = useState(false);
-  const [created, setCreated] = useState<SeedAdmission[]>([]);
+  const navigate = useNavigate();
+  const { admissions, people, intakes, addReferral } = useDemo();
 
-  // Stands in for the create service until the migrations are applied. The
-  // record is added to the queue so the flow can be walked end to end, and the
-  // toast says plainly that nothing was persisted rather than implying success.
+  // Stands in for the create service until the migrations are applied. It
+  // persists to localStorage so the demo survives a refresh, and the
+  // confirmation says plainly that this is not a database write.
   const handleCreate = (draft: ReferralDraft) => {
     const name = [draft.preferredName || draft.firstName, draft.lastName]
       .filter(Boolean)
       .join(" ");
-    setCreated((prev) => [
+    const id = newId("adm");
+
+    addReferral(
       {
-        id: `adm-new-${prev.length + 1}`,
+        id,
         name,
         stage: "new_referral",
         status: "active",
-        service: draft.serviceRequested ? draft.serviceRequested.replace(/_/g, " ") : "Not specified",
+        service: draft.serviceRequested
+          ? draft.serviceRequested.replace(/_/g, " ")
+          : "Not specified",
         location: draft.serviceArea || "Not specified",
         headline: "New referral — no one has called back yet",
         meta: draft.referralNote || "Just added",
         action: "Start intake",
       },
-      ...prev,
-    ]);
-    toast.success("Referral added to the queue", {
-      description: "Not saved to a database yet — the migrations are not applied.",
+      {
+        personId: newId("per"),
+        firstName: draft.firstName,
+        lastName: draft.lastName,
+        preferredName: draft.preferredName || null,
+        phone: draft.phone || draft.contactPhone || null,
+        email: draft.email || null,
+        dateOfBirth: draft.dateOfBirth || null,
+        responsiblePartyName: draft.contactIsSomeoneElse ? draft.contactName : null,
+        openAdmissionStage: "new_referral",
+      },
+    );
+
+    toast.success("Referral added", {
+      description: "Saved on this device. Not yet written to a database.",
     });
   };
 
-  const all = useMemo(() => [...created, ...seedAdmissions], [created]);
+  // Every row's button goes somewhere. A count or an action that leads nowhere
+  // is a dead end, which the definition of done rules out.
+  const handleAction = (item: SeedAdmission) => {
+    if (item.stage === "new_referral" || item.stage === "phone_intake") {
+      navigate(`/admissions/${item.id}/intake`);
+      return;
+    }
+    if (item.stage === "assessment" && !intakes[item.id]?.completedAt) {
+      navigate(`/admissions/${item.id}/intake`);
+      return;
+    }
+    toast.info(`${item.action} is not built yet.`, {
+      description: "The admissions flow through intake and assessment scheduling is.",
+    });
+  };
 
   const filtered = useMemo(
-    () => all.filter((a) => stage === "all" || a.stage === stage),
-    [all, stage],
+    () => admissions.filter((a) => stage === "all" || a.stage === stage),
+    [admissions, stage],
   );
 
-  const sections = useMemo(() => buildWorkQueue(filtered, classifyAdmission), [filtered]);
+  const sections = useMemo(
+    () => buildWorkQueue<SeedAdmission>(filtered, classifyAdmission),
+    [filtered],
+  );
   const needsYou = countNeedsYou(sections);
 
   return (
@@ -133,7 +174,7 @@ export default function Admissions() {
         <WorkQueueSection
           key={section.group}
           section={section}
-          renderItem={(item) => <AdmissionRow item={item} />}
+          renderItem={(item) => <AdmissionRow item={item} onAction={handleAction} />}
           emptyNote={
             section.group === "needs_you"
               ? "Nothing needs you in this view."
@@ -147,14 +188,14 @@ export default function Admissions() {
       <NewReferralDrawer
         open={referralOpen}
         onOpenChange={setReferralOpen}
-        existingPeople={seedPeople}
+        existingPeople={people}
         onCreate={handleCreate}
         onOpenExisting={() => toast.info("Opening the existing record is not built yet.")}
       />
 
       <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-        Showing demo seed data. The queue logic, stage rules and duplicate check are
-        implemented and tested; connecting them to the database is the next step.
+        Demo data, saved on this device. The queue logic, stage rules and duplicate check
+        are implemented and tested; connecting them to a database is the next step.
       </p>
     </>
   );
