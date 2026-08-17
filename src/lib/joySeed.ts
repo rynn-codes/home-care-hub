@@ -1,10 +1,13 @@
 /**
  * Deterministic demo seed for the Home screen.
  *
- * The people and situations here come from section 32 of the Codex Engineering
- * Kickoff, so the prototype demonstrates the same records the brief and the
- * Golden Sprint 1 Demo describe — Marcus Bell, Susan Miller, Evelyn Carter,
- * Robert Green, the three hiring candidates, and the two payroll exceptions.
+ * STAFF NAMES ARE REAL — Joy Health's own team, supplied by the owner, so the
+ * prototype reads like their agency.
+ *
+ * CLIENT NAMES ARE FICTIONAL, and must stay that way. The fact that a named
+ * person receives home care is itself health information, and this file is
+ * committed to git and written to localStorage. Section 32 specifies fictional
+ * seed data; the client situations here follow it.
  *
  * This is demo seed, not production data. Section 32 is explicit that seed data
  * must never be mixed into production migrations. Every panel that reads from
@@ -49,12 +52,12 @@ export interface AgendaEntry {
 }
 
 export const todaysAgenda: AgendaEntry[] = [
-  { id: "a1", time: "8:00 AM", client: "Lian Huang", service: "Personal Care", assignee: "Samantha Chen", note: "clocked in 7:56 AM", state: "in-progress" },
-  { id: "a2", time: "10:30 AM", client: "Marcus Bell", service: "Initial Assessment", assignee: "Joan Robinson, RN", state: "scheduled" },
+  { id: "a1", time: "8:00 AM", client: "Lian Huang", service: "Personal Care", assignee: "Chanel P.", note: "clocked in 7:56 AM", state: "in-progress" },
+  { id: "a2", time: "10:30 AM", client: "Marcus Bell", service: "Initial Assessment", assignee: "Kelsey Westley, RN", state: "scheduled" },
   { id: "a3", time: "12:00 PM", client: "Ruth Alvarez", service: "Companion Care", assignee: "Unassigned", note: "3 caregivers available", state: "unassigned" },
-  { id: "a4", time: "2:00 PM", client: "Field Orientation", service: "David Okoro", assignee: "Shadowing Samantha Chen", state: "scheduled" },
-  { id: "a5", time: "4:00 PM", client: "Edward Pham", service: "Live-In", assignee: "Grace Nwosu", state: "scheduled" },
-  { id: "a6", time: "6:30 PM", client: "Dolores Vance", service: "Evening Care", assignee: "Anita Rivera", state: "scheduled" },
+  { id: "a4", time: "2:00 PM", client: "Brandon", service: "Field Orientation", assignee: "Shadowing Chanel P.", state: "scheduled" },
+  { id: "a5", time: "4:00 PM", client: "Edward Pham", service: "Live-In", assignee: "Vanessa", state: "scheduled" },
+  { id: "a6", time: "6:30 PM", client: "Dolores Vance", service: "Evening Care", assignee: "Thylia", state: "scheduled" },
 ];
 
 export interface CountRow {
@@ -94,7 +97,7 @@ export const compliance: ComplianceRow[] = [
   { label: "CPR Certification", status: "1 expired · 2 due", state: "expired" },
   { label: "TB Screening", status: "2 due Aug 14", state: "due" },
   { label: "Auto Insurance", status: "All current", state: "current" },
-  { label: "Background Checks", status: "1 pending · D. Okoro", state: "pending" },
+  { label: "Background Checks", status: "1 pending · Brandon", state: "pending" },
 ];
 
 export interface ActivityEntry {
@@ -105,10 +108,10 @@ export interface ActivityEntry {
 }
 
 export const recentActivity: ActivityEntry[] = [
-  { id: "r1", actor: "Steve Cook", message: "Care plan signed for Lian Huang", at: "9:41 AM" },
-  { id: "r2", actor: "David Okoro", message: "Completed Gusto onboarding", at: "8:52 AM" },
+  { id: "r1", actor: "John Segura", message: "Care plan signed for Lian Huang", at: "9:41 AM" },
+  { id: "r2", actor: "Brandon", message: "Completed Gusto onboarding", at: "8:52 AM" },
   { id: "r3", actor: "Mercy Discharge Planning", message: "Referral received for R. Alvarez", at: "8:15 AM" },
-  { id: "r4", actor: "Grace Nwosu", message: "Released 12:00 PM shift to the open board", at: "7:38 AM" },
+  { id: "r4", actor: "Vanessa", message: "Released 12:00 PM shift to the open board", at: "7:38 AM" },
 ];
 
 export interface StatusLine {

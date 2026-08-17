@@ -17,7 +17,8 @@ interface Props {
   defaultAddress: string;
 }
 
-const ASSESSORS = ["Joan Robinson, RN", "Maya Patel, RN"];
+// Joy Health's registered nurses. Clients in the seed remain fictional.
+const ASSESSORS = ["Kelsey Westley, RN", "Karynn Verrett, RN"];
 
 /**
  * Schedule the RN assessment.

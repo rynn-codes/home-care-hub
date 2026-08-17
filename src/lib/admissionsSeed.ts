@@ -7,6 +7,9 @@ import type { AdmissionStage, AdmissionStatus } from "@/domain/admissions/stages
  * records the brief and the Golden Sprint 1 Demo describe — including Tammy
  * Wilson, whose New Referral is the demo's starting state.
  *
+ * Staff names are Joy Health's real team; every client here is fictional and
+ * must stay fictional. See the note in joySeed.ts.
+ *
  * Demo seed only. Section 32 forbids mixing this into production migrations,
  * and section 25 requires these views to query the real domain once the
  * migrations are applied.
@@ -81,7 +84,7 @@ export const seedAdmissions: SeedAdmission[] = [
     service: "Personal Care",
     location: "Houston · 77004",
     headline: "RN assessment booked for Aug 17, 10:30 AM",
-    meta: "Joan Robinson, RN · daughter Susan Bell is primary contact",
+    meta: "Kelsey Westley, RN · daughter Susan Bell is primary contact",
     action: "Open assessment",
     scheduledAt: "2026-08-17T10:30:00Z",
   },
