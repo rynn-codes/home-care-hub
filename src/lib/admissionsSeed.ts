@@ -132,6 +132,9 @@ export interface SeedPerson {
   dateOfBirth?: string | null;
   responsiblePartyName?: string | null;
   openAdmissionStage?: string | null;
+  /** Set when this person becomes a client. The person row is never duplicated. */
+  clientStatus?: "active" | null;
+  admissionDate?: string | null;
 }
 
 export const seedPeople: SeedPerson[] = [

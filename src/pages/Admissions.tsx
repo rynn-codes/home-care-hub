@@ -126,8 +126,12 @@ export default function Admissions() {
       );
       return;
     }
+    if (["pre_onboarding", "ready_for_admission", "admitted"].includes(item.stage)) {
+      navigate(`/admissions/${item.id}/review`);
+      return;
+    }
     toast.info(`${item.action} is not built yet.`, {
-      description: "The admissions flow through intake and assessment scheduling is.",
+      description: "The flow from referral through admission is.",
     });
   };
 

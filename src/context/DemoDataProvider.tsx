@@ -9,6 +9,7 @@ import {
   type DemoAssessment,
   type DemoConsentSession,
   type DemoIntake,
+  type DemoPreOnboarding,
   type DemoScheduleEvent,
   type DemoState,
 } from "@/lib/demoStore";
@@ -20,6 +21,9 @@ interface DemoContextValue extends DemoState {
   completeIntake: (admissionId: string) => void;
   saveAssessment: (admissionId: string, patch: Partial<DemoAssessment>) => void;
   saveConsents: (admissionId: string, patch: Partial<DemoConsentSession>) => void;
+  savePreOnboarding: (admissionId: string, patch: Partial<DemoPreOnboarding>) => void;
+  approveAdmission: (admissionId: string, approvedBy: string) => void;
+  activateClient: (admissionId: string, startDate: string) => void;
   scheduleAssessment: (input: {
     admissionId: string;
     clientName: string;
@@ -181,6 +185,116 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const savePreOnboarding = useCallback<DemoContextValue["savePreOnboarding"]>((admissionId, patch) => {
+    setState((s) => {
+      const existing = s.preOnboarding[admissionId] ?? {
+        admissionId,
+        paymentSetUp: false,
+        carePlanApproved: false,
+        approvedAt: null,
+        approvedBy: null,
+        startOfCareDate: null,
+        activatedAt: null,
+      };
+      return { ...s, preOnboarding: { ...s.preOnboarding, [admissionId]: { ...existing, ...patch } } };
+    });
+  }, []);
+
+  const approveAdmission = useCallback<DemoContextValue["approveAdmission"]>((admissionId, approvedBy) => {
+    setState((s) => {
+      const existing = s.preOnboarding[admissionId];
+      if (!existing) return s;
+      return {
+        ...s,
+        preOnboarding: {
+          ...s.preOnboarding,
+          [admissionId]: { ...existing, approvedAt: new Date().toISOString(), approvedBy },
+        },
+        admissions: s.admissions.map((a) =>
+          a.id === admissionId
+            ? {
+                ...a,
+                stage: "ready_for_admission" as const,
+                headline: "Approved — ready for admission",
+                meta: `Approved by ${approvedBy}`,
+                action: "Prepare start of care",
+              }
+            : a,
+        ),
+        domainEvents: [
+          {
+            id: newId("evt"),
+            eventType: "admission.approved",
+            aggregateType: "admission",
+            aggregateId: admissionId,
+            status: "processed" as const,
+            createdAt: new Date().toISOString(),
+          },
+          ...s.domainEvents,
+        ],
+      };
+    });
+  }, []);
+
+  const activateClient = useCallback<DemoContextValue["activateClient"]>((admissionId, startDate) => {
+    setState((s) => {
+      const admission = s.admissions.find((a) => a.id === admissionId);
+      if (!admission) return s;
+
+      // THE RULE, from section 10: admission does NOT create a second person.
+      // The existing people row gains a client profile. Nothing is copied.
+      const people = s.people.map((p) =>
+        `${p.firstName} ${p.lastName}` === admission.name
+          ? { ...p, openAdmissionStage: null, clientStatus: "active" as const, admissionDate: startDate }
+          : p,
+      );
+
+      return {
+        ...s,
+        people,
+        preOnboarding: {
+          ...s.preOnboarding,
+          [admissionId]: {
+            ...s.preOnboarding[admissionId],
+            startOfCareDate: startDate,
+            activatedAt: new Date().toISOString(),
+          },
+        },
+        admissions: s.admissions.map((a) =>
+          a.id === admissionId
+            ? {
+                ...a,
+                stage: "admitted" as const,
+                status: "closed" as const,
+                headline: `Active client — care starts ${new Date(startDate).toLocaleDateString([], { month: "short", day: "numeric" })}`,
+                meta: "Record now lives under People",
+                action: "Open client record",
+              }
+            : a,
+        ),
+        domainEvents: [
+          {
+            id: newId("evt"),
+            eventType: "client.activated",
+            aggregateType: "admission",
+            aggregateId: admissionId,
+            status: "processed" as const,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: newId("evt"),
+            eventType: "start_of_care.prepared",
+            aggregateType: "admission",
+            aggregateId: admissionId,
+            status: "processed" as const,
+            createdAt: new Date().toISOString(),
+          },
+          ...s.domainEvents,
+        ],
+      };
+    });
+  }, []);
+
   const scheduleAssessment = useCallback<DemoContextValue["scheduleAssessment"]>((input) => {
     setState((s) => {
       const eventId = newId("sch");
@@ -273,11 +387,14 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       completeIntake,
       saveAssessment,
       saveConsents,
+      savePreOnboarding,
+      approveAdmission,
+      activateClient,
       scheduleAssessment,
       retryCommunication,
       reset,
     }),
-    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, scheduleAssessment, retryCommunication, reset],
+    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

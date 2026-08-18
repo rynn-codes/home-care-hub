@@ -13,6 +13,7 @@ import Hiring from "./pages/Hiring";
 import Admissions from "./pages/Admissions";
 import PhoneIntake from "./pages/PhoneIntake";
 import Assessment from "./pages/Assessment";
+import AdmissionReview from "./pages/AdmissionReview";
 import People from "./pages/People";
 import Clients from "./pages/Clients";
 import Employees from "./pages/Employees";
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/admissions" element={<Admissions />} />
               <Route path="/admissions/:id/intake" element={<PhoneIntake />} />
               <Route path="/admissions/:id/assessment" element={<Assessment />} />
+              <Route path="/admissions/:id/review" element={<AdmissionReview />} />
 
               <Route path="/people" element={<People />} />
               <Route path="/people/clients" element={<Clients />} />

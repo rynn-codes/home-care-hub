@@ -1,0 +1,257 @@
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Check, TriangleAlert, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useDemo } from "@/context/DemoDataProvider";
+import { checkAdmission, startOfCareRestrictions } from "@/domain/admissions/readiness";
+import { canCompleteAssessment } from "@/domain/assessment/questions";
+import { cn } from "@/lib/utils";
+
+/**
+ * Pre-onboarding, the admission decision, and start of care.
+ *
+ * §37. Joy assembles the picture; a human admits. §26 keeps admissions at
+ * "prepare summary" authority — nothing here approves anyone automatically, and
+ * the approver's name is recorded because it is a consequential decision.
+ *
+ * The last step is the one that matters architecturally. Activating a client
+ * adds a client profile to the person who has existed since the referral. It
+ * does not create a second record — §10 forbids it, and the screen says so
+ * where someone might otherwise wonder.
+ */
+export default function AdmissionReview() {
+  const { id = "" } = useParams();
+  const navigate = useNavigate();
+  const {
+    admissions, people, intakes, assessments, consentSessions, preOnboarding,
+    savePreOnboarding, approveAdmission, activateClient,
+  } = useDemo();
+
+  const admission = admissions.find((a) => a.id === id);
+  const consent = consentSessions[id];
+  const pre = preOnboarding[id];
+  const [approver, setApprover] = useState("Karynn Verrett");
+  const [startDate, setStartDate] = useState(
+    new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
+  );
+
+  const check = useMemo(
+    () =>
+      checkAdmission({
+        intakeComplete: Boolean(intakes[id]?.completedAt),
+        assessmentComplete: canCompleteAssessment(assessments[id]?.answers ?? {}),
+        consentDecisions: consent?.decisions ?? {},
+        packetSigned: Boolean(consent?.signedAt),
+        paymentSetUp: Boolean(pre?.paymentSetUp),
+        carePlanApproved: Boolean(pre?.carePlanApproved),
+      }),
+    [id, intakes, assessments, consent, pre],
+  );
+
+  const restrictions = useMemo(
+    () => startOfCareRestrictions(consent?.decisions ?? {}),
+    [consent],
+  );
+
+  if (!admission) {
+    return (
+      <div className="mx-auto max-w-xl py-16 text-center">
+        <h1 className="text-lg font-semibold">That admission isn't here</h1>
+        <Button className="mt-5" onClick={() => navigate("/admissions")}>Back to Admissions</Button>
+      </div>
+    );
+  }
+
+  const person = people.find((p) => `${p.firstName} ${p.lastName}` === admission.name);
+  const activated = Boolean(pre?.activatedAt);
+  const approved = Boolean(pre?.approvedAt);
+
+  return (
+    <div className="mx-auto max-w-3xl pb-16">
+      <div className="mb-6 flex items-center gap-3 border-b border-border pb-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admissions")} aria-label="Back to Admissions">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">Admissions · Review for admission</p>
+          <h1 className="truncate text-lg font-semibold">{admission.name}</h1>
+        </div>
+      </div>
+
+      {activated ? (
+        <section className="rounded-2xl border border-border bg-surface p-8">
+          <p className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--success))]">
+            <Check className="h-4 w-4" aria-hidden="true" />
+            Active client
+          </p>
+          <h2 className="mt-3 text-xl font-semibold tracking-tight">
+            Care starts {new Date(pre!.startOfCareDate!).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}
+          </h2>
+          <p className="mt-2 max-w-prose text-sm text-muted-foreground">
+            {admission.name}'s record now lives under People. The same person row has carried
+            through from the referral — admission added a client profile to it rather than
+            creating a second record.
+          </p>
+
+          {restrictions.length > 0 && (
+            <div className="mt-5 rounded-xl border border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)] p-4">
+              <p className="text-sm font-semibold">Caregiver restrictions from the signed packet</p>
+              <ul className="mt-2 space-y-1.5">
+                {restrictions.map((r) => (
+                  <li key={r} className="text-sm text-muted-foreground">{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
+            <Button onClick={() => navigate("/people/clients")}>Open client record</Button>
+            <Button variant="outline" onClick={() => navigate("/admissions")}>Back to Admissions</Button>
+          </div>
+        </section>
+      ) : (
+        <>
+          <section className="rounded-2xl border border-border bg-surface p-7">
+            <h2 className="text-lg font-semibold tracking-tight">Readiness</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              What the office needs before {admission.name.split(" ")[0]} can be admitted.
+            </p>
+
+            <ul className="mt-4 divide-y divide-border">
+              {check.items.map((item) => (
+                <li key={item.key} className="flex items-start gap-3 py-3">
+                  <span aria-hidden="true" className="mt-0.5">
+                    {item.state === "ready" ? (
+                      <Check className="h-4 w-4 text-[hsl(var(--success))]" />
+                    ) : item.state === "blocked" ? (
+                      <X className="h-4 w-4 text-destructive" />
+                    ) : (
+                      <TriangleAlert className="h-4 w-4 text-[hsl(var(--warning))]" />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.detail}</p>
+                  </div>
+                  <span className={cn(
+                    "shrink-0 text-xs",
+                    item.state === "ready" ? "text-[hsl(var(--success))]"
+                      : item.state === "blocked" ? "text-destructive"
+                      : "text-[hsl(var(--warning))]",
+                  )}>
+                    {item.state === "ready" ? "Ready" : item.state === "blocked" ? "Stops admission" : "Outstanding"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {/* The two the office ticks itself. */}
+            <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+              <Button
+                size="sm"
+                variant={pre?.paymentSetUp ? "default" : "outline"}
+                onClick={() => savePreOnboarding(id, { paymentSetUp: !pre?.paymentSetUp })}
+              >
+                {pre?.paymentSetUp ? "Payment set up" : "Mark payment set up"}
+              </Button>
+              <Button
+                size="sm"
+                variant={pre?.carePlanApproved ? "default" : "outline"}
+                onClick={() => savePreOnboarding(id, { carePlanApproved: !pre?.carePlanApproved })}
+              >
+                {pre?.carePlanApproved ? "Plan of care approved" : "Approve plan of care"}
+              </Button>
+            </div>
+          </section>
+
+          <section className="mt-5 rounded-2xl border border-border bg-surface p-7">
+            <h2 className="text-lg font-semibold tracking-tight">
+              {approved ? "Prepare start of care" : "Admission decision"}
+            </h2>
+
+            {!approved ? (
+              <>
+                <p className="mt-1 max-w-prose text-sm text-muted-foreground">
+                  Joy has assembled the picture. The decision is yours, and your name goes on it.
+                </p>
+
+                {check.reason && (
+                  <p className={cn(
+                    "mt-4 rounded-xl border p-3.5 text-sm",
+                    check.blocked.length > 0
+                      ? "border-destructive/40 bg-destructive/5"
+                      : "border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)]",
+                  )}>
+                    {check.reason}
+                  </p>
+                )}
+
+                <div className="mt-4 max-w-sm">
+                  <Label htmlFor="approver" className="text-xs font-medium">Approving as</Label>
+                  <Input
+                    id="approver"
+                    className="mt-1.5"
+                    value={approver}
+                    onChange={(e) => setApprover(e.target.value)}
+                  />
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+                  <Button
+                    disabled={!check.canAdmit || !approver.trim()}
+                    onClick={() => approveAdmission(id, approver.trim())}
+                  >
+                    Approve admission
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/admissions")}>Not yet</Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Approved by {pre?.approvedBy}. Set the first day of care.
+                </p>
+
+                <div className="mt-4 max-w-sm">
+                  <Label htmlFor="startDate" className="text-xs font-medium">Start of care</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    className="mt-1.5"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+
+                {restrictions.length > 0 && (
+                  <div className="mt-4 rounded-xl border border-border bg-surface-muted p-4">
+                    <p className="text-sm font-semibold">Carried to the caregiver</p>
+                    <ul className="mt-2 space-y-1.5">
+                      {restrictions.map((r) => (
+                        <li key={r} className="text-sm text-muted-foreground">{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Activating uses the existing person record — {person ? `${person.firstName} ${person.lastName}` : admission.name} has
+                  been one record since the referral, and stays one.
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+                  <Button onClick={() => activateClient(id, startDate)}>
+                    Activate client
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/admissions")}>Later</Button>
+                </div>
+              </>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  );
+}

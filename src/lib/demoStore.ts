@@ -82,12 +82,24 @@ export interface DemoConsentSession {
   signedAt: string | null;
 }
 
+export interface DemoPreOnboarding {
+  admissionId: string;
+  paymentSetUp: boolean;
+  carePlanApproved: boolean;
+  /** Set when the office approves admission. A human decision, never Joy's. */
+  approvedAt: string | null;
+  approvedBy: string | null;
+  startOfCareDate: string | null;
+  activatedAt: string | null;
+}
+
 export interface DemoState {
   admissions: SeedAdmission[];
   people: SeedPerson[];
   intakes: Record<string, DemoIntake>;
   assessments: Record<string, DemoAssessment>;
   consentSessions: Record<string, DemoConsentSession>;
+  preOnboarding: Record<string, DemoPreOnboarding>;
   scheduleEvents: DemoScheduleEvent[];
   communications: DemoCommunication[];
   domainEvents: DemoDomainEvent[];
@@ -100,6 +112,7 @@ function initial(): DemoState {
     intakes: {},
     assessments: {},
     consentSessions: {},
+    preOnboarding: {},
     scheduleEvents: [],
     communications: [],
     domainEvents: [],
