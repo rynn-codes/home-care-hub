@@ -90,7 +90,7 @@ export default function AdmissionReview() {
             Care starts {new Date(pre!.startOfCareDate!).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}
           </h2>
           <p className="mt-2 max-w-prose text-sm text-muted-foreground">
-            {admission.name}'s record now lives under People. The same person row has carried
+            {admission.name}'s record now lives under Clients. The same person row has carried
             through from the referral — admission added a client profile to it rather than
             creating a second record.
           </p>
@@ -107,7 +107,9 @@ export default function AdmissionReview() {
           )}
 
           <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
-            <Button onClick={() => navigate("/people/clients")}>Open client record</Button>
+            <Button onClick={() => navigate(person ? `/clients/${person.personId}` : "/clients")}>
+              Open client record
+            </Button>
             <Button variant="outline" onClick={() => navigate("/admissions")}>Back to Admissions</Button>
           </div>
         </section>

@@ -58,9 +58,13 @@ const App = () => (
               <Route path="/admissions/:id/assessment" element={<Assessment />} />
               <Route path="/admissions/:id/review" element={<AdmissionReview />} />
 
+              {/* Clients, Employees and People are siblings — see the note in
+                  AppSidebar. The client record is a nested route so a link to
+                  one person survives a refresh and can be sent to somebody. */}
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/clients/:id" element={<Clients />} />
+              <Route path="/employees" element={<Employees />} />
               <Route path="/people" element={<People />} />
-              <Route path="/people/clients" element={<Clients />} />
-              <Route path="/people/employees" element={<Employees />} />
 
               <Route path="/scheduling" element={<Scheduling />} />
               <Route path="/billing" element={<Billing />} />
@@ -70,9 +74,10 @@ const App = () => (
               <Route path="/sops" element={<Sops />} />
               <Route path="/settings" element={<Settings />} />
 
-              {/* Clients and Employees moved under People. Keep old links working. */}
-              <Route path="/clients" element={<Navigate to="/people/clients" replace />} />
-              <Route path="/employees" element={<Navigate to="/people/employees" replace />} />
+              {/* Clients and Employees moved back out of People. Keep the
+                  intermediate links working rather than 404ing a bookmark. */}
+              <Route path="/people/clients" element={<Navigate to="/clients" replace />} />
+              <Route path="/people/employees" element={<Navigate to="/employees" replace />} />
             </Route>
             </Route>
             <Route path="*" element={<NotFound />} />

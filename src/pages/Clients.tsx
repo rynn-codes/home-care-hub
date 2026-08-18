@@ -1,129 +1,127 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search } from "lucide-react";
-import { useData } from "@/context/DataProvider";
-import { initials } from "@/lib/formatters";
-import { cn } from "@/lib/utils";
-import type { Client } from "@/lib/mockData";
+import { ClientDirectory } from "@/components/clients/ClientDirectory";
+import { ClientRecordView } from "@/components/clients/ClientRecordView";
+import { useDemo } from "@/context/DemoDataProvider";
+import { seedClients } from "@/lib/clientsSeed";
+import {
+  buildClientRecord,
+  searchRoster,
+  sortRoster,
+  type ClientInput,
+} from "@/domain/clients/roster";
 
-const statusColor: Record<string, string> = {
-  active: "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]",
-  "on-hold": "bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]",
-  discharged: "bg-muted text-muted-foreground",
-};
-
+/**
+ * Clients — the permanent record.
+ *
+ * Admissions is the process; this is where a person ends up. §10: admission does
+ * not create a second record, so a client admitted through the demo appears here
+ * by gaining a client profile on the people row that already existed — nothing
+ * is copied and nothing is duplicated.
+ *
+ * Structure follows the approved Clients mockup. Note that the mockup's own
+ * navigation puts Clients and Employees at the top level with People beside
+ * them, which is the opposite of §6 and §10 ("the permanent client record
+ * ultimately lives under People → Clients"). Karynn ruled for the mockup on 18
+ * Aug: People is the general contact list — business contacts, partners, anyone
+ * the agency needs to follow up with — and clients are not filed inside it. The
+ * data model is unaffected; this is where a record is *displayed*, not how it
+ * is stored.
+ */
 export default function Clients() {
-  const { clients, employees } = useData();
-  const [q, setQ] = useState("");
-  const [status, setStatus] = useState("all");
-  const [selected, setSelected] = useState<Client | null>(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { people, consentSessions } = useDemo();
+  const [query, setQuery] = useState("");
 
-  const filtered = clients.filter((c) =>
-    (status === "all" || c.status === status) &&
-    (c.name.toLowerCase().includes(q.toLowerCase()) || c.address.toLowerCase().includes(q.toLowerCase()))
-  );
+  // The date is read once per render rather than inside the domain module, so
+  // the compliance clock stays a pure function of (client, today).
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  const activeClients = clients.filter((c) => c.status === "active").length;
+  const records = useMemo(() => {
+    // Clients admitted during the demo. They carry only what admission knew, so
+    // the directory columns the assessment does not fill stay honestly empty.
+    const admitted: ClientInput[] = people
+      .filter((p) => p.clientStatus === "active")
+      .map((p) => {
+        const session = Object.values(consentSessions).find(
+          (s) => s.clientName === `${p.firstName} ${p.lastName}`,
+        );
+        return {
+          personId: p.personId,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          preferredName: p.preferredName,
+          dateOfBirth: p.dateOfBirth,
+          phone: p.phone,
+          email: p.email,
+          status: "active" as const,
+          responsiblePartyName: p.responsiblePartyName,
+          responsiblePartyLine: p.responsiblePartyName ? "Responsible party" : null,
+          admissionDate: p.admissionDate,
+          signedAt: session?.signedAt ?? null,
+          decisions: session?.decisions ?? {},
+          lastActivity: p.admissionDate ? `Admitted · ${p.admissionDate}` : "Admitted",
+        };
+      });
+
+    // Seeded clients are dropped when a live admission produced the same person,
+    // so admitting somebody never shows them twice.
+    const admittedIds = new Set(admitted.map((c) => c.personId));
+    const all = [...admitted, ...seedClients.filter((c) => !admittedIds.has(c.personId))];
+
+    return sortRoster(all.map((c) => buildClientRecord(c, today)));
+  }, [people, consentSessions, today]);
+
+  const selected = id ? records.find((c) => c.personId === id) : undefined;
+
+  if (id && !selected) {
+    return (
+      <>
+        <PageHeader title="Client not found" description="That record is not in the directory." />
+        <button
+          type="button"
+          className="text-sm text-primary underline-offset-4 hover:underline"
+          onClick={() => navigate("/clients")}
+        >
+          Back to the directory
+        </button>
+      </>
+    );
+  }
+
+  if (selected) {
+    return <ClientRecordView client={selected} onBack={() => navigate("/clients")} />;
+  }
+
+  const visible = searchRoster(records, query);
+  const active = records.filter((c) => c.status === "active").length;
 
   return (
     <>
       <PageHeader
         title="Clients"
-        description={`${clients.length} total · ${activeClients} active`}
-        actions={<Button><Plus className="h-4 w-4 mr-1.5" />Add Client</Button>}
+        description={`Every care recipient in one place — status, payer, and who is on the case. ${records.length} total · ${active} active.`}
       />
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients…" className="pl-9" />
-          </div>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="on-hold">On Hold</SelectItem>
-              <SelectItem value="discharged">Discharged</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Care Plan</TableHead>
-              <TableHead>Primary Caregiver</TableHead>
-              <TableHead className="text-right">Hours/wk</TableHead>
-              <TableHead className="hidden md:table-cell">Address</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((c) => {
-              const cg = employees.find((e) => e.id === c.primaryCaregiverId);
-              return (
-                <TableRow key={c.id} className="cursor-pointer" onClick={() => setSelected(c)}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary-soft text-primary text-xs font-semibold">{initials(c.name)}</AvatarFallback></Avatar>
-                      <span className="font-medium">{c.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell><Badge className={cn("capitalize", statusColor[c.status])} variant="secondary">{c.status.replace("-", " ")}</Badge></TableCell>
-                  <TableCell className="text-sm">{c.carePlan}</TableCell>
-                  <TableCell className="text-sm">{cg?.name ?? "—"}</TableCell>
-                  <TableCell className="text-right font-medium">{c.hoursPerWeek}</TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{c.address}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Card>
 
-      <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <SheetContent className="sm:max-w-xl overflow-y-auto">
-          {selected && (
-            <>
-              <SheetHeader>
-                <SheetTitle>{selected.name}</SheetTitle>
-              </SheetHeader>
-              <Tabs defaultValue="profile" className="mt-4">
-                <TabsList>
-                  <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="care">Care Plan</TabsTrigger>
-                  <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                  <TabsTrigger value="docs">Documents</TabsTrigger>
-                  <TabsTrigger value="billing">Billing</TabsTrigger>
-                </TabsList>
-                <TabsContent value="profile" className="space-y-3 mt-4 text-sm">
-                  <div><span className="text-muted-foreground">Email: </span>{selected.email}</div>
-                  <div><span className="text-muted-foreground">Phone: </span>{selected.phone}</div>
-                  <div><span className="text-muted-foreground">Address: </span>{selected.address}</div>
-                  <div><span className="text-muted-foreground">DOB: </span>{new Date(selected.dob).toLocaleDateString()}</div>
-                </TabsContent>
-                <TabsContent value="care" className="text-sm mt-4">
-                  <p className="text-muted-foreground mb-2">Plan</p>
-                  <p className="font-medium">{selected.carePlan} · {selected.hoursPerWeek}h/wk</p>
-                </TabsContent>
-                <TabsContent value="schedule" className="text-sm mt-4 text-muted-foreground">View on Scheduling page.</TabsContent>
-                <TabsContent value="docs" className="text-sm mt-4 text-muted-foreground">No client-specific documents yet.</TabsContent>
-                <TabsContent value="billing" className="text-sm mt-4 text-muted-foreground">View on Billing page.</TabsContent>
-              </Tabs>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+      <ClientDirectory
+        clients={visible}
+        query={query}
+        onQueryChange={setQuery}
+        onOpen={(personId) => navigate(`/clients/${personId}`)}
+        onAdd={() =>
+          toast.info("Clients are added through Admissions.", {
+            description: "A referral becomes a client when the admission is approved.",
+          })
+        }
+      />
+
+      <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
+        Demo data, saved on this device. Every client here is fictional. Renewal dates are
+        computed from the signing packet's own expiry clauses, not entered by hand.
+      </p>
     </>
   );
 }

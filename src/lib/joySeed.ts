@@ -84,7 +84,7 @@ export const employeeTasks: CountRow[] = [
   { label: "Field Orientation", value: "2", to: "/operations/hiring" },
   { label: "Week One Follow-Ups", value: "4", to: "/operations/hiring" },
   { label: "Supervisor Visits", value: "5", note: "2 overdue", to: "/scheduling" },
-  { label: "Annual Reviews", value: "2", to: "/people/employees" },
+  { label: "Annual Reviews", value: "2", to: "/employees" },
 ];
 
 export interface ComplianceRow {

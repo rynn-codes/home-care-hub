@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  Home, Compass, ClipboardList, Users, UserCog, UserPlus, CalendarDays,
+  Home, Compass, ClipboardList, Users, UserCog, UserPlus, Contact, CalendarDays,
   Receipt, Wallet, BarChart3, FolderOpen, BookOpen, Settings,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -28,9 +28,14 @@ interface NavItem {
  * The Joy navigation, fixed by section 6 of the Codex Engineering Kickoff.
  *
  * Two rules this encodes, both easy to lose:
- *   - Hiring lives under Operations, never at the top level.
- *   - Clients and Employees are views inside People, not siblings of it. People is
- *     the permanent record; Admissions is only the process that creates it.
+ *   - Hiring lives under Operations, never at the top level (§6).
+ *   - Clients, Employees and People are three siblings, not a parent and two
+ *     children. §6 and §10 file clients under People; the approved Clients
+ *     mockup does not, and Karynn ruled for the mockup on 18 Aug: People is the
+ *     general contact list — business contacts, partners, referral sources,
+ *     anyone the agency needs to follow up with — while clients and employees
+ *     are their own destinations. The people table underneath is unchanged;
+ *     this is only where a record is shown.
  *
  * "Talk to Joy" is persistent AI access and is deliberately not a nav item.
  */
@@ -47,15 +52,9 @@ const nav: NavItem[] = [
     ],
   },
   { title: "Admissions", url: "/admissions", icon: ClipboardList },
-  {
-    title: "People",
-    url: "/people",
-    icon: Users,
-    children: [
-      { title: "Clients", url: "/people/clients", icon: Users },
-      { title: "Employees", url: "/people/employees", icon: UserCog },
-    ],
-  },
+  { title: "Clients", url: "/clients", icon: Users },
+  { title: "Employees", url: "/employees", icon: UserCog },
+  { title: "People", url: "/people", icon: Contact },
   { title: "Scheduling", url: "/scheduling", icon: CalendarDays },
   { title: "Billing", url: "/billing", icon: Receipt },
   { title: "Payroll", url: "/payroll", icon: Wallet },
