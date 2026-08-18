@@ -118,8 +118,15 @@ export interface AssessmentQuestion {
   /**
    * Identifiers that need narrower access than the rest of the record — §28.
    * The demo store refuses to persist these, so a social security number never
-   * reaches localStorage. In the real build they belong behind a column-level
-   * policy, not in the same row everyone with a client role can read.
+   * reaches localStorage.
+   *
+   * THIS IS A PROTOTYPE MEASURE, NOT THE DESTINATION. Karynn confirmed on 18 Aug
+   * that the number does need to be stored, and that it waits on HIPAA-grade
+   * infrastructure to hold it: a column-level access policy, encryption at rest,
+   * and an audit trail on every read. Until that exists, not storing it is the
+   * only honest option — a browser's localStorage has no access control at all.
+   * When the real store lands, this flag stops meaning "drop" and starts meaning
+   * "route to the restricted column".
    */
   restricted?: boolean;
 }
@@ -512,6 +519,8 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     question: "Social security number.",
     helper:
       "Pages 12, 13 and 14 all ask for it. Ask once; it goes on all three. Skip it if they would rather write it on the paper copy themselves.",
+    // Karynn needs this stored for real. Until there is somewhere safe to put
+    // it, the prototype fills the packet and forgets it.
     kind: "text",
     fills: ["records_disclosure", "records_release", "disclosure_list"],
     // Not required. A client who declines to say it out loud still gets care,

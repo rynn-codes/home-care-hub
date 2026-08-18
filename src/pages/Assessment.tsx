@@ -189,8 +189,9 @@ export default function Assessment() {
                 <p className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-surface-muted px-3 py-2 text-xs text-muted-foreground">
                   <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   <span>
-                    Not saved to this device. It fills the packet for this visit and is gone when
-                    you close it — write it on the paper copy.
+                    Not saved yet. It fills the packet for this visit, then it's gone — write it on
+                    the paper copy. Storing it needs somewhere HIPAA-grade to put it, which is
+                    coming.
                   </span>
                 </p>
               )}

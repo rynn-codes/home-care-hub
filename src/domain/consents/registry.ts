@@ -145,7 +145,8 @@ export const CONSENTS: ConsentItem[] = [
     pages: "2",
     group: "agreement",
     say: "Invoiced weekly in advance, payment due within one calendar day. Say the three numbers: 2.9% on credit cards, $5 on ACH, $100 late fee after the third day.",
-    watchFor: "Service can be suspended within 24 hours of non-payment. This is the clause families are most surprised by later — do not rush it.",
+    watchFor:
+      "The deposit covers the first weeks, so the terms are rarely a surprise. Do say plainly that services are cancelled for non-payment — that part is real and it happens.",
     mark: "initials",
     mandatory: true,
     fullText:
@@ -204,7 +205,7 @@ export const CONSENTS: ConsentItem[] = [
     group: "consent_to_care",
     say: "The consent to treat itself. Also confirms they have the admission folder, the privacy notice and the bill of rights in their hands.",
     watchFor:
-      "Do not initial this until the folder is physically with them. It also says clinical staff are Monday–Friday 8–5 with a 24/7 on-call line for non-clinical questions — people hear \"24/7 nurse\" and are disappointed later.",
+      "States the cover hours: clinical staff Monday to Friday, 8 to 5, with an on-call line 24/7 for non-clinical questions.",
     mark: "initials",
     mandatory: true,
     fullText:
@@ -274,10 +275,13 @@ export const CONSENTS: ConsentItem[] = [
     pages: "12",
     group: "records",
     say: "Permission for their doctors, hospitals, labs and pharmacy to send us what they hold, so we are not working blind.",
-    watchFor:
-      "This one names HIV and AIDS, drug and alcohol use, and mental health history explicitly. Read that sentence rather than skating over it — a client who did not realise is entitled to be surprised. Valid one year; revocable in writing.",
+    watchFor: "Valid one year from signature, and revocable in writing at any time.",
     mark: "signature",
-    mandatory: true,
+    // Refusable. Ruled 18 Aug: the packet says only that Joy "may not be able to
+    // provide the services described", and turning that may into a hard stop
+    // would have turned away clients who can be served with a note on file.
+    mandatory: false,
+    allowNotApplicable: true,
     fullText:
       "AUTHORIZATION TO DISCLOSE MEDICAL RECORDS. I authorize any health care provider including, but not limited to, any health care professional, hospital, clinic, laboratory, pharmacy or other medically related facility or service that has information about my health to disclose any and all of this information to Joy Healthcare Services, LLC and its duly authorized representatives. Information about my health may relate to any disorder of the immune system including, but not limited to, HIV and AIDS; use of drugs and alcohol; and mental and physical history, condition, advice or treatment, but does not include psychotherapy notes. I understand any information Joy Healthcare obtains pursuant to this authorization will be used for home health and/or homecare services. I further understand that the information is subject to redisclosure and might not be protected by certain federal regulations governing the privacy of health information. This authorization is valid for one (1) year from the date below. A photographic or electronic copy of this authorization is as valid as the original. I understand I am entitled to receive a copy of this authorization. I may revoke this authorization in writing at any time except to the extent Joy Healthcare has relied on the authorization prior to notice of revocation. I understand if I revoke, alter, or do not sign this authorization, Joy Healthcare may not be able to provide the services described above. I understand this authorization will remain in effect until I revoke it in writing.",
   },
@@ -290,7 +294,9 @@ export const CONSENTS: ConsentItem[] = [
     watchFor:
       "Do not leave the record types or the date range blank. This one expires twelve months from signature, not at end of service.",
     mark: "signature",
-    mandatory: true,
+    // Refusable, same ruling. Care proceeds; we simply cannot send records on.
+    mandatory: false,
+    allowNotApplicable: true,
     fullText:
       "AUTHORIZATION TO OBTAIN & RELEASE MEDICAL RECORDS. I hereby authorize the named provider to disclose the health records of the named individual. I am requesting that the Provider copy the following records and send the records to the named requester. DATES OF DISCLOSURE: from the beginning date to the end date stated. Records will be used for the purpose to render care/services. INFORMATION TO BE DISCLOSED: All Medical Records; Medication List; Discharge Summary; Office/Progress Notes; Hospitalization Records; Labs/Radiology Reports; other pertinent information. I understand I have the right to inspect and/or request a copy of the information to be disclosed and I may withdraw this authorization in writing at any time, except to the extent that action has been taken based on this authorization. I understand this authorization shall expire, without my expressed revocation, twelve (12) months from the date of signature. I am aware that once this information has been disclosed per my instructions, the information is subject to re-disclosure and may no longer be protected by the Federal Privacy Law of 1996 (HIPAA). If the patient is unable to sign, please indicate such and the authority to act of the person who is signing for the patient. The agency/facility, its employees, officers, and physicians are hereby released from any legal responsibility or liability for disclosure of the above information to the extent indicated and authorized herein.",
   },
@@ -317,7 +323,7 @@ export const CONSENTS: ConsentItem[] = [
     group: "records",
     say: "How their health information may be used and disclosed, and how they can see it. They keep a copy.",
     watchFor:
-      "Give them the Privacy Officer by name and number: Karynn Verrett RN, BSN, CCM at 713 857 8353. They may ask us to restrict how their information is used — we weigh those requests and are not obliged to agree.",
+      "Give them the office number, 713 231 9662 — not a direct line. The printed page still lists a mobile number for the Privacy Officer; until it is reprinted, say the office number out loud. They may ask us to restrict how their information is used; we weigh those requests and are not obliged to agree.",
     mark: "initials",
     mandatory: true,
     fullText:
@@ -482,6 +488,16 @@ export function declineConsequences(decisions: ConsentDecisions): string[] {
   if (decisions.photograph === "decline" || decisions.photograph === "not_applicable") {
     out.push(
       "No photographs or video of this client, including wound photos and anything for insurance documentation. Tell the caregiver and note it on the plan of care.",
+    );
+  }
+  if (decisions.disclose_medical_records === "decline") {
+    out.push(
+      "We cannot request records from their doctors, hospitals or pharmacy. The RN works from what the family tells us, so the assessment carries more weight than usual.",
+    );
+  }
+  if (decisions.obtain_release_medical_records === "decline") {
+    out.push(
+      "We cannot send their records anywhere — not to a hospital at admission, not to a new provider at discharge. Warn the family this slows any handover.",
     );
   }
   if (decisions.disclosure_list === "decline" || decisions.disclosure_list === "not_applicable") {

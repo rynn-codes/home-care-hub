@@ -161,11 +161,67 @@ describe("consents", () => {
     }
   });
 
+  // Ruled by Karynn on 18 Aug, reviewing the refusability table. The packet only
+  // says Joy "may not be able to provide" services without them, and I had
+  // hardened that into a hard stop that would have turned clients away.
+  it("lets a client refuse the records authorizations and still be admitted", () => {
+    const decisions: Record<string, "agree" | "decline"> = {};
+    for (const c of CONSENTS) decisions[c.key] = "agree";
+    decisions.disclose_medical_records = "decline";
+    decisions.obtain_release_medical_records = "decline";
+
+    const readiness = consentReadiness(decisions);
+    expect(readiness.canSign).toBe(true);
+    expect(readiness.blockingDeclines).toEqual([]);
+
+    const consequences = declineConsequences(decisions).join(" ");
+    expect(consequences).toMatch(/cannot request records/i);
+    expect(consequences).toMatch(/cannot send their records/i);
+  });
+
+  // Exactly these six. Anything else becoming refusable is a decision, not a
+  // tidy-up, and should fail here first.
+  it("holds the refusable set to the six that were ruled on", () => {
+    expect(CONSENTS.filter((c) => !c.mandatory).map((c) => c.key).sort()).toEqual([
+      "advance_directive",
+      "disclose_medical_records",
+      "disclosure_list",
+      "obtain_release_medical_records",
+      "photograph",
+      "transportation",
+    ]);
+  });
+
   // The packet says outright that refusing photographs does not affect care.
   it("treats the photograph authorization as refusable", () => {
     const photo = CONSENTS.find((c) => c.key === "photograph");
     expect(photo?.mandatory).toBe(false);
     expect(photo?.fullText).toContain("refusal will not affect my ability to obtain treatment");
+  });
+
+  // Karynn, 18 Aug: the deposit means the payment terms are not a surprise, and
+  // she covers the sensitive-records page in depth without being prompted.
+  it("does not tell the RN things she has corrected", () => {
+    const invoicing = CONSENTS.find((c) => c.key === "invoicing");
+    expect(invoicing?.watchFor).not.toMatch(/most surprised by later/i);
+    expect(invoicing?.watchFor).toMatch(/deposit/i);
+
+    const records = CONSENTS.find((c) => c.key === "disclose_medical_records");
+    expect(records?.watchFor).not.toMatch(/HIV/);
+
+    const folder = CONSENTS.find((c) => c.key === "consent_for_care");
+    expect(folder?.watchFor).not.toMatch(/until the folder is physically/i);
+  });
+
+  // Clients get the office line. The printed page still carries a mobile
+  // number, so the spoken script has to override the paper until it is redone.
+  it("gives clients the office number, never a direct line", () => {
+    const privacy = CONSENTS.find((c) => c.key === "hipaa_privacy");
+    expect(privacy?.watchFor).toContain("713 231 9662");
+    expect(privacy?.watchFor).not.toContain("713 857 8353");
+    for (const c of CONSENTS) {
+      expect(c.say, `${c.key} say line`).not.toContain("713 857 8353");
+    }
   });
 
   it("carries the real transportation terms, not a placeholder", () => {
