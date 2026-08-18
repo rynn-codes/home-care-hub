@@ -28,7 +28,12 @@ Named as source of truth but not supplied. Any module depending on one of these
 is under-specified until it arrives:
 
 - `Joy_Health_Hiring_Screen_Roadmap.md` — blocks Hiring
-- Client Intake Form, two pages — the data basis for `phone_intakes`
+- Client Intake Form, two pages — reconciled 18 Aug 2026 against the paper form
+  and now reflected in `src/domain/admissions/intake.ts`. The form itself is
+  deliberately **not** vendored: the copy supplied is a completed one carrying a
+  real client's name, address, telephone number, email and two cancer diagnoses,
+  and committing it would put identifiable health information into git history
+  permanently. A blank copy can be vendored safely if one is wanted.
 - Joy nursing assessment — the RN's own clinical form. The consents packet defines
   what the assessment must *produce*; the nursing assessment would define how the
   RN captures it. The assessment is modelled from the packet's requirements in

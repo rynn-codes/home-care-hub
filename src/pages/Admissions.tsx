@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { WorkQueueSection } from "@/components/work-queue/WorkQueueSection";
 import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
 import { classifyAdmission } from "@/domain/admissions/classify";
+import { followUp } from "@/domain/admissions/intake";
 import { STAGE_LABELS, type AdmissionStage } from "@/domain/admissions/stages";
 import { NewReferralDrawer } from "@/components/admissions/NewReferralDrawer";
 import { type SeedAdmission } from "@/lib/admissionsSeed";
@@ -135,9 +136,24 @@ export default function Admissions() {
     });
   };
 
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
   const filtered = useMemo(
-    () => admissions.filter((a) => stage === "all" || a.stage === stage),
-    [admissions, stage],
+    () =>
+      admissions
+        .filter((a) => stage === "all" || a.stage === stage)
+        .map((a) => {
+          // The intake form's follow-up date is the whole reason it is asked.
+          // A caller who did not book an in-home visit is the one who quietly
+          // disappears, so an overdue follow-up escalates into "needs you"
+          // rather than sitting in a finished intake nobody reopens.
+          const answers = intakes[a.id]?.answers;
+          if (!answers) return a;
+          const state = followUp(answers, today);
+          if (state.state !== "overdue" && state.state !== "due") return a;
+          return { ...a, overdue: true, headline: state.note };
+        }),
+    [admissions, intakes, stage, today],
   );
 
   const sections = useMemo(

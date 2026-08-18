@@ -10,6 +10,8 @@ import { ScheduleAssessmentDrawer } from "@/components/admissions/ScheduleAssess
 import { useDemo } from "@/context/DemoDataProvider";
 import {
   INTAKE_QUESTIONS,
+  CARE_NEEDS,
+  activeQuestions,
   canCompleteIntake,
   displayAnswer,
   intakeProgress,
@@ -51,7 +53,7 @@ export default function PhoneIntake() {
   const stored = intakes[id];
 
   const [answers, setAnswers] = useState<IntakeAnswers>(() => stored?.answers ?? {});
-  const [index, setIndex] = useState(0);
+  const [currentId, setCurrentId] = useState(INTAKE_QUESTIONS[0].id);
   const [phase, setPhase] = useState<"intro" | "questions" | "review" | "done">(
     stored?.completedAt ? "done" : stored ? "questions" : "intro",
   );
@@ -72,7 +74,12 @@ export default function PhoneIntake() {
 
   const progress = useMemo(() => intakeProgress(answers), [answers]);
   const missing = useMemo(() => missingRequired(answers), [answers]);
-  const question = INTAKE_QUESTIONS[index];
+  const questions = useMemo(() => activeQuestions(answers), [answers]);
+  const index = Math.max(
+    0,
+    questions.findIndex((q) => q.id === currentId),
+  );
+  const question = questions[index] ?? questions[0];
 
   if (!admission) {
     return (
@@ -110,8 +117,13 @@ export default function PhoneIntake() {
     persist(next, question.id);
   };
 
+  const goTo = (i: number) => {
+    const target = questions[i];
+    if (target) setCurrentId(target.id);
+  };
+
   const goNext = () => {
-    if (index < INTAKE_QUESTIONS.length - 1) setIndex(index + 1);
+    if (index < questions.length - 1) goTo(index + 1);
     else setPhase("review");
   };
 
@@ -177,13 +189,13 @@ export default function PhoneIntake() {
             <div className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
               <span>{question.section}</span>
               <span className="tabular-nums">
-                {index + 1} of {INTAKE_QUESTIONS.length}
+                {index + 1} of {questions.length}
               </span>
             </div>
             <div className="h-1 overflow-hidden rounded-full bg-surface-muted">
               <div
                 className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${((index + 1) / INTAKE_QUESTIONS.length) * 100}%` }}
+                style={{ width: `${((index + 1) / questions.length) * 100}%` }}
               />
             </div>
           </div>
@@ -195,7 +207,12 @@ export default function PhoneIntake() {
             )}
 
             <div className="mt-6">
-              <QuestionInput question={question} value={answers[question.id]} onChange={answer} />
+              <QuestionInput
+                question={question}
+                value={answers[question.id]}
+                onChange={answer}
+                answers={answers}
+              />
             </div>
 
             <div className="mt-8 flex items-center gap-2 border-t border-border pt-5">
@@ -203,13 +220,13 @@ export default function PhoneIntake() {
                 variant="ghost"
                 size="sm"
                 disabled={index === 0}
-                onClick={() => setIndex(index - 1)}
+                onClick={() => goTo(index - 1)}
               >
                 <ChevronLeft className="mr-1 h-4 w-4" />
                 Back
               </Button>
               <Button size="sm" onClick={goNext}>
-                {index === INTAKE_QUESTIONS.length - 1 ? "Review" : "Next"}
+                {index === questions.length - 1 ? "Review" : "Next"}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
               {!question.required && (
@@ -249,7 +266,7 @@ export default function PhoneIntake() {
                       type="button"
                       className="text-left text-sm text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
                       onClick={() => {
-                        setIndex(INTAKE_QUESTIONS.findIndex((x) => x.id === q.id));
+                        setCurrentId(q.id);
                         setPhase("questions");
                       }}
                     >
@@ -267,7 +284,7 @@ export default function PhoneIntake() {
           )}
 
           <dl className="mt-6 divide-y divide-border">
-            {INTAKE_QUESTIONS.map((q) => (
+            {questions.map((q) => (
               <div key={q.id} className="flex items-baseline gap-4 py-2.5">
                 <dt className="w-1/3 shrink-0 text-xs text-muted-foreground">{q.question}</dt>
                 <dd className="flex-1 text-sm">{displayAnswer(q, answers[q.id])}</dd>
@@ -275,7 +292,7 @@ export default function PhoneIntake() {
                   type="button"
                   className="text-xs text-muted-foreground hover:text-primary"
                   onClick={() => {
-                    setIndex(INTAKE_QUESTIONS.findIndex((x) => x.id === q.id));
+                    setCurrentId(q.id);
                     setPhase("questions");
                   }}
                 >
@@ -351,10 +368,12 @@ function QuestionInput({
   question,
   value,
   onChange,
+  answers,
 }: {
   question: IntakeQuestion;
   value: unknown;
   onChange: (v: unknown) => void;
+  answers: IntakeAnswers;
 }) {
   switch (question.kind) {
     case "longtext":
@@ -396,6 +415,57 @@ function QuestionInput({
           autoFocus
         />
       );
+
+    case "time":
+      return (
+        <Input
+          id={`answer-${question.id}`}
+          aria-label={question.question}
+          type="time"
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="max-w-40"
+          autoFocus
+        />
+      );
+
+    // One short line per care need already selected, mirroring the line beside
+    // each need on the paper form. Nothing is shown until needs are picked, so
+    // this never appears as ten empty boxes.
+    case "need_details": {
+      const details = (value as Record<string, string>) ?? {};
+      const selected = (answers.care_needs as string[]) ?? [];
+      const chosen = CARE_NEEDS.filter((n) => selected.includes(n.value));
+
+      if (chosen.length === 0) {
+        return (
+          <p className="text-sm text-muted-foreground">
+            Pick the care needs first and they will be listed here.
+          </p>
+        );
+      }
+
+      return (
+        <div className="space-y-3">
+          {chosen.map((need) => (
+            <div key={need.value} className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+              <label
+                htmlFor={`answer-${question.id}-${need.value}`}
+                className="w-full text-sm text-muted-foreground sm:w-40 sm:shrink-0"
+              >
+                {need.label}
+              </label>
+              <Input
+                id={`answer-${question.id}-${need.value}`}
+                value={details[need.value] ?? ""}
+                onChange={(e) => onChange({ ...details, [need.value]: e.target.value })}
+                placeholder="Optional detail"
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
 
     case "choice":
       return (
