@@ -15,7 +15,7 @@ these the source of truth for their modules.
 | `Joy_Health_Dashboard_Claude_Revision_3.md` | The Home / Command Center screen |
 | `Joy_Dashboard_Revision_Request.md` | Earlier Home revision. Superseded by Revision 3 where they disagree |
 | `Joy_Health_V1_Design_Brief_Part_1.md` | Foundation and visual direction |
-| `Patient_Consents_Packet.pdf` | The signing packet the RN assessment must fill. 16 pages |
+| `Patient_Consents_Packet.pdf` | The signing packet the RN assessment must fill. 26 pages |
 | `Patient_Consents_Packet.txt` | Extracted text of the same, so the consent registry quotes it verbatim |
 
 Where a module spec and the kickoff brief conflict, the brief wins on structure

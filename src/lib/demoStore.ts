@@ -1,4 +1,5 @@
 import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from "@/lib/admissionsSeed";
+import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -140,9 +141,37 @@ export function loadDemoState(): DemoState {
   }
 }
 
+/**
+ * Question ids the packet marks as restricted — a social security number is the
+ * one that matters. §28 puts these behind narrower access than the rest of the
+ * record, and localStorage has no access control at all.
+ */
+const RESTRICTED_ANSWER_IDS = new Set(
+  ASSESSMENT_QUESTIONS.filter((q) => q.restricted).map((q) => q.id),
+);
+
+/**
+ * Drops restricted answers on the way to disk.
+ *
+ * The RN can still see what they typed for the rest of the visit — it stays in
+ * React state — but it is gone on refresh and it is never written anywhere a
+ * browser extension or a shared laptop can read it. Losing the value is the
+ * correct trade: the number is on the paper packet, which is where it belongs
+ * until there is a column policy to hold it.
+ */
+function withoutRestricted(state: DemoState): DemoState {
+  const assessments: DemoState["assessments"] = {};
+  for (const [id, assessment] of Object.entries(state.assessments)) {
+    const answers = { ...assessment.answers };
+    for (const key of RESTRICTED_ANSWER_IDS) delete answers[key];
+    assessments[id] = { ...assessment, answers };
+  }
+  return { ...state, assessments };
+}
+
 export function saveDemoState(state: DemoState): void {
   try {
-    storage()?.setItem(KEY, JSON.stringify(state));
+    storage()?.setItem(KEY, JSON.stringify(withoutRestricted(state)));
   } catch {
     // A full or unavailable storage must never break the workflow.
   }

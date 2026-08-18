@@ -29,21 +29,31 @@ export type AssessmentInputKind =
 
 /** Pages of the packet, used for the coverage meter. */
 export type PacketPage =
-  | "agreement_services"
-  | "agreement_payment"
-  | "agreement_cancellation"
-  | "payment_preference"
-  | "informed_consent"
-  | "equipment_authorization"
-  | "complaints"
-  | "advance_directive"
-  | "non_solicitation"
-  | "health_demographics"
-  | "plan_goals_setting"
-  | "plan_interventions"
-  | "plan_vitals_dme"
-  | "disaster_plan"
-  | "emergency_care_plan";
+  | "agreement_services"        // p1
+  | "agreement_payment"         // p2, p4
+  | "agreement_cancellation"    // p3
+  | "payment_preference"        // p4
+  | "informed_consent"          // p5-6
+  | "equipment_authorization"   // p6
+  | "client_consent"            // p7
+  | "customer_rights"           // p8
+  | "documents_reviewed"        // p9
+  | "photograph"                // p10
+  | "transportation"            // p11
+  | "records_disclosure"        // p12
+  | "records_release"           // p13
+  | "disclosure_list"           // p14
+  | "hipaa_privacy"             // p15
+  | "bill_of_rights"            // p16-17
+  | "complaints"                // p18
+  | "advance_directive"         // p19
+  | "non_solicitation"          // p19-20
+  | "health_demographics"       // p21
+  | "plan_goals_setting"        // p22
+  | "plan_interventions"        // p23
+  | "plan_vitals_dme"           // p24
+  | "disaster_plan"             // p25
+  | "emergency_care_plan";      // p26
 
 export const PACKET_PAGE_LABELS: Record<PacketPage, string> = {
   agreement_services: "Client Agreement — services & schedule",
@@ -52,6 +62,16 @@ export const PACKET_PAGE_LABELS: Record<PacketPage, string> = {
   payment_preference: "Electronic payment preference",
   informed_consent: "Informed consent for services",
   equipment_authorization: "Equipment, supplies & authorization",
+  client_consent: "Consent for care & client folder",
+  customer_rights: "Customer rights, safety & who we bill",
+  documents_reviewed: "Documents reviewed before start of care",
+  photograph: "Consent to photograph",
+  transportation: "Non-medical transportation agreement",
+  records_disclosure: "Authorization to disclose medical records",
+  records_release: "Authorization to obtain & release records",
+  disclosure_list: "Health information authorized disclosure list",
+  hipaa_privacy: "HIPAA privacy practices receipt",
+  bill_of_rights: "Patient's bill of rights",
   complaints: "Complaints policy",
   advance_directive: "Advance directive",
   non_solicitation: "Non-solicitation",
@@ -69,6 +89,12 @@ export const CONSENT_ONLY_PAGES: PacketPage[] = [
   "agreement_cancellation",
   "informed_consent",
   "equipment_authorization",
+  "client_consent",
+  "documents_reviewed",
+  "photograph",
+  "transportation",
+  "hipaa_privacy",
+  "bill_of_rights",
   "complaints",
   "non_solicitation",
 ];
@@ -89,6 +115,13 @@ export interface AssessmentQuestion {
   showIf?: (answers: AssessmentAnswers) => boolean;
   /** Prefilled from phone intake; the RN confirms rather than retypes. */
   fromIntake?: string;
+  /**
+   * Identifiers that need narrower access than the rest of the record — §28.
+   * The demo store refuses to persist these, so a social security number never
+   * reaches localStorage. In the real build they belong behind a column-level
+   * policy, not in the same row everyone with a client role can read.
+   */
+  restricted?: boolean;
 }
 
 export type AssessmentAnswers = Record<string, unknown>;
@@ -104,7 +137,14 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     question: "Let's confirm who I'm here to see.",
     helper: "Name, date of birth and address as we have them. Correct anything that's wrong.",
     kind: "confirm",
-    fills: ["agreement_services", "health_demographics", "disaster_plan"],
+    fills: [
+      "agreement_services",
+      "health_demographics",
+      "disaster_plan",
+      "records_disclosure",
+      "records_release",
+      "disclosure_list",
+    ],
     required: true,
     fromIntake: "client",
   },
@@ -464,6 +504,92 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     kind: "yes_no_copy",
     fills: ["advance_directive", "health_demographics"],
     required: true,
+  },
+  // ------------------------------------------------------- records & privacy
+  {
+    id: "ssn",
+    section: "Paperwork",
+    question: "Social security number.",
+    helper:
+      "Pages 12, 13 and 14 all ask for it. Ask once; it goes on all three. Skip it if they would rather write it on the paper copy themselves.",
+    kind: "text",
+    fills: ["records_disclosure", "records_release", "disclosure_list"],
+    // Not required. A client who declines to say it out loud still gets care,
+    // and the packet can be completed on paper.
+    restricted: true,
+  },
+  {
+    id: "records_sources",
+    section: "Paperwork",
+    question: "Whose records should we ask for?",
+    helper:
+      "Hospitals, clinics, the pharmacy, any specialist. Naming them now saves a week of chasing later.",
+    kind: "longtext",
+    fills: ["records_release"],
+    required: true,
+  },
+  {
+    id: "records_scope",
+    section: "Paperwork",
+    question: "Which records do we need?",
+    kind: "multichoice",
+    options: [
+      { value: "all_medical_records", label: "All medical records" },
+      { value: "medication_list", label: "Medication list" },
+      { value: "discharge_summary", label: "Discharge summary" },
+      { value: "office_progress_notes", label: "Office/progress notes" },
+      { value: "hospitalization_records", label: "Hospitalization records" },
+      { value: "labs_radiology", label: "Labs/radiology reports" },
+    ],
+    fills: ["records_release"],
+    required: true,
+  },
+  {
+    id: "records_date_range",
+    section: "Paperwork",
+    question: "Covering what dates?",
+    helper: "A start and an end date. The authorization expires twelve months after they sign either way.",
+    kind: "text",
+    fills: ["records_release"],
+    required: true,
+  },
+  {
+    id: "disclosure_people",
+    section: "Paperwork",
+    question: "Who may we talk to about their care?",
+    helper:
+      "Up to four people. Name, relationship, phone and address for each. Anyone not on this list gets nothing from us — say that plainly, because it includes family who call.",
+    kind: "longtext",
+    fills: ["disclosure_list"],
+    required: true,
+  },
+  {
+    id: "payer_source",
+    section: "Paperwork",
+    question: "Who is paying for this?",
+    kind: "multichoice",
+    options: [
+      { value: "self_pay", label: "Self-pay" },
+      { value: "insurance", label: "Insurance" },
+      { value: "medicare", label: "Medicare" },
+      { value: "medicaid", label: "Medicaid" },
+      { value: "third_party", label: "3rd party payor" },
+      { value: "grant", label: "Grant program" },
+    ],
+    fills: ["customer_rights"],
+    required: true,
+  },
+  {
+    id: "insurance_name",
+    section: "Paperwork",
+    question: "Which insurer, and what is the policy number?",
+    kind: "text",
+    fills: ["customer_rights"],
+    required: true,
+    showIf: (a) => {
+      const payers = a.payer_source;
+      return Array.isArray(payers) && payers.some((v) => v === "insurance" || v === "third_party");
+    },
   },
   {
     id: "invoice_recipient",

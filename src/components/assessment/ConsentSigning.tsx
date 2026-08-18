@@ -7,6 +7,7 @@ import { useDemo } from "@/context/DemoDataProvider";
 import {
   CONSENTS,
   consentReadiness,
+  consentsByGroup,
   declineConsequences,
   type ConsentDecision,
   type ConsentDecisions,
@@ -24,7 +25,7 @@ interface Props {
 /**
  * Client mode — reviewing the packet, then signing once.
  *
- * The design problem: sixteen consents over sixteen pages, an elderly client, and a
+ * The design problem: twenty-five consents over a 26-page packet, an elderly client, and a
  * nurse who needs to get through it without either rushing them or losing an
  * hour. What this does about it:
  *
@@ -56,6 +57,7 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
 
   const readiness = useMemo(() => consentReadiness(decisions), [decisions]);
   const consequences = useMemo(() => declineConsequences(decisions), [decisions]);
+  const groups = useMemo(() => consentsByGroup(), []);
 
   const decide = (key: string, decision: ConsentDecision) => {
     const next = { ...decisions, [key]: decision };
@@ -218,18 +220,37 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
         </span>
       </div>
 
-      <ul className="mt-5 divide-y divide-border border-y border-border">
-        {CONSENTS.map((item) => (
-          <ConsentRow
-            key={item.key}
-            item={item}
-            decision={decisions[item.key]}
-            expanded={expanded === item.key}
-            onToggle={() => setExpanded(expanded === item.key ? null : item.key)}
-            onDecide={(d) => decide(item.key, d)}
-          />
-        ))}
-      </ul>
+      {groups.map((g) => {
+        const done = g.items.filter((i) => decisions[i.key]).length;
+        return (
+          <section key={g.group} className="mt-7 first:mt-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 className="text-sm font-semibold">{g.title}</h3>
+              <span
+                className={cn(
+                  "text-xs tabular-nums",
+                  done === g.items.length ? "text-[hsl(var(--success))]" : "text-muted-foreground",
+                )}
+              >
+                {done} of {g.items.length}
+              </span>
+            </div>
+            <p className="mt-0.5 max-w-prose text-xs text-muted-foreground">{g.blurb}</p>
+            <ul className="mt-3 divide-y divide-border border-y border-border">
+              {g.items.map((item) => (
+                <ConsentRow
+                  key={item.key}
+                  item={item}
+                  decision={decisions[item.key]}
+                  expanded={expanded === item.key}
+                  onToggle={() => setExpanded(expanded === item.key ? null : item.key)}
+                  onDecide={(d) => decide(item.key, d)}
+                />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
 
       {readiness.blockingDeclines.length > 0 && (
         <div className="mt-5 rounded-xl border border-destructive/40 bg-destructive/5 p-4">

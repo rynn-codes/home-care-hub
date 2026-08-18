@@ -117,8 +117,71 @@ describe("consents", () => {
   // The UI once said "Fifteen things" over a list of sixteen. Counts belong to
   // the data, not to prose.
   it("has a stable count the UI can derive rather than restate", () => {
-    expect(CONSENTS.length).toBe(16);
+    expect(CONSENTS.length).toBe(25);
     expect(new Set(CONSENTS.map((c) => c.key)).size).toBe(CONSENTS.length);
+  });
+
+  // The registry was first written from a partial reading of the packet and
+  // stopped at page 9, which silently dropped nine consents — the photograph
+  // authorization and every records/privacy page among them. This test exists so
+  // that cannot happen again quietly.
+  it("covers the pages a partial reading missed", () => {
+    const keys = CONSENTS.map((c) => c.key);
+    for (const k of [
+      "consent_for_care",
+      "customer_rights",
+      "documents_reviewed",
+      "photograph",
+      "disclose_medical_records",
+      "obtain_release_medical_records",
+      "disclosure_list",
+      "hipaa_privacy",
+      "bill_of_rights",
+    ]) {
+      expect(keys, `packet includes ${k}`).toContain(k);
+    }
+  });
+
+  it("is stored in packet order, so the review walks front to back", () => {
+    // First page number each entry cites. The RN turns pages; the list must not
+    // make them jump backwards.
+    const firstPage = (c: (typeof CONSENTS)[number]) => Number(c.pages.split(/[^0-9]/)[0]);
+    const pages = CONSENTS.map(firstPage);
+    expect(pages).toEqual([...pages].sort((a, b) => a - b));
+    expect(pages[pages.length - 1]).toBe(26);
+  });
+
+  // Every consent claims a page. A page beyond the packet means the entry was
+  // written from memory rather than from the document.
+  it("cites page numbers that exist in a 26-page packet", () => {
+    for (const c of CONSENTS) {
+      for (const n of c.pages.match(/\d+/g) ?? []) {
+        expect(Number(n), `${c.key} cites page ${n}`).toBeLessThanOrEqual(26);
+      }
+    }
+  });
+
+  // The packet says outright that refusing photographs does not affect care.
+  it("treats the photograph authorization as refusable", () => {
+    const photo = CONSENTS.find((c) => c.key === "photograph");
+    expect(photo?.mandatory).toBe(false);
+    expect(photo?.fullText).toContain("refusal will not affect my ability to obtain treatment");
+  });
+
+  it("carries the real transportation terms, not a placeholder", () => {
+    const transport = CONSENTS.find((c) => c.key === "transportation");
+    expect(transport?.fullText).toContain("$0.70 per mile");
+    expect(transport?.fullText).toContain("does not provide commercial auto insurance");
+  });
+
+  // Declining these changes what the office and the caregiver may do. Recording
+  // the refusal without telling anyone is the failure mode.
+  it("carries a refused photograph consent and an empty disclosure list forward", () => {
+    const photo = declineConsequences({ photograph: "decline" }).join(" ");
+    expect(photo).toMatch(/no photographs/i);
+
+    const list = declineConsequences({ disclosure_list: "not_applicable" }).join(" ");
+    expect(list).toMatch(/must not discuss/i);
   });
 
   it("carries the real document text, not a paraphrase", () => {

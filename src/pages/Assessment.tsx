@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, FileText, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, FileText, ShieldAlert, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -181,6 +181,18 @@ export default function Assessment() {
               <h2 className="text-xl font-semibold tracking-tight text-balance">{question.question}</h2>
               {question.helper && (
                 <p className="mt-2 text-sm text-muted-foreground">{question.helper}</p>
+              )}
+              {question.restricted && (
+                // Says out loud what the store does silently. The RN is holding
+                // an iPad in someone's living room; they should know this one
+                // is not being kept on the device.
+                <p className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-surface-muted px-3 py-2 text-xs text-muted-foreground">
+                  <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    Not saved to this device. It fills the packet for this visit and is gone when
+                    you close it — write it on the paper copy.
+                  </span>
+                </p>
               )}
 
               <div className="mt-6">
