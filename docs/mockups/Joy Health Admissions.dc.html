@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+button{font-family:inherit}
+input{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@keyframes drawerIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes sheetIn{from{transform:translateY(10px) scale(.99);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1320px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;overflow-y:auto">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Dashboard</a>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">8</span></a>
+
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6;margin-top:2px">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions
+      </div>
+
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.6 13.4h10.8"></path><path d="M4.4 11V7.4M7.4 11V4.4M10.4 11V8.8M13.4 11V5.6"></path></svg>Reports</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><circle cx="8" cy="8" r="5.4"></circle><path d="M8 2.6v1.2M8 12.2v1.2M2.6 8h1.2M12.2 8h1.2"></path></svg>Settings</a>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">JR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Joan Robinson</span>
+        <span style="font-size:11px;color:#9B9BA3">Administrator</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:13px 40px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:12.5px;color:#9B9BA3">Admissions</span>
+      <span style="font-size:12.5px;color:#C9C9D0">/</span>
+      <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ crumb }}</span>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
+    </header>
+
+    <div style="padding:28px 40px 90px;display:flex;flex-direction:column;gap:18px;max-width:1400px">
+
+      <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:300px">
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Admissions</h1>
+          <p style="margin:0;font-size:13.5px;color:#5B6274;max-width:560px;text-wrap:pretty">Move new clients from lead to ready-for-care without losing a step.</p>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:9px">
+          <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:196px">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
+            <input type="text" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search admissions" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
+          </div>
+          <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round"><path d="M2.4 4h11.2M4.4 8h7.2M6.4 12h3.2"></path></svg>Filter
+          </button>
+          <div style="display:flex;background:#F1F2F6;border-radius:9px;padding:3px;gap:2px">
+            <sc-for list="{{ viewTabs }}" as="v" hint-placeholder-count="2">
+              <button onClick="{{ v.click }}" style="{{ v.style }}">{{ v.label }}</button>
+            </sc-for>
+          </div>
+          <div style="position:relative">
+            <button onClick="{{ toggleQuickAdd }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Quick add
+            </button>
+            <sc-if value="{{ quickAddOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:40px;right:0;z-index:30;width:206px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                <sc-for list="{{ quickAddItems }}" as="i" hint-placeholder-count="5">
+                  <button onClick="{{ i.click }}" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:transparent;border:none;padding:8px 10px;border-radius:8px;font-size:12.5px;color:#191A2E;cursor:pointer" style-hover="background:#FAFAFB">
+                    <span style="color:#9B9BA3;font-size:13px">+</span>{{ i.label }}
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:20px;border-bottom:1px solid #ECECF1;flex-wrap:wrap">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="7">
+          <button onClick="{{ f.click }}" style="{{ f.style }}">
+            <span>{{ f.label }}</span>
+            <span style="{{ f.countStyle }}">{{ f.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ stalledShown }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;padding:12px 15px">
+          <span style="width:7px;height:7px;border-radius:50%;background:#F79009;flex:none"></span>
+          <span style="font-size:13px;color:#191A2E;text-wrap:pretty">{{ stalled.label }}</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex:none">
+            <button onClick="{{ stalled.remind }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:8px;font-size:12.5px;color:#1407A2;cursor:pointer" style-hover="background:#EEF0FE">Send reminder</button>
+            <button onClick="{{ stalled.open }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:8px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Open record</button>
+          </span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="{{ g.dotStyle }}"></span>
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ g.title }}</span>
+                  <span style="font-size:11px;color:#B9B9C1">{{ g.count }}</span>
+                  <span style="font-size:12px;color:#B9B9C1;margin-left:4px">{{ g.hint }}</span>
+                </div>
+                <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+                  <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                    <div onClick="{{ r.open }}" style="display:flex;align-items:center;gap:16px;padding:16px 18px;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                      <span style="width:34px;height:34px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                      <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                        <span style="display:flex;align-items:center;gap:9px">
+                          <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.name }}</span>
+                          <span style="{{ r.stageStyle }}">{{ r.stage }}</span>
+                        </span>
+                        <span style="font-size:12.5px;color:#5B6274">{{ r.headline }}</span>
+                        <span style="font-size:11.5px;color:#9B9BA3">{{ r.meta }}</span>
+                      </span>
+                      <span style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
+                        <sc-if value="{{ r.hasAction }}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{ r.act }}" style="{{ r.actStyle }}">{{ r.action }}</button>
+                        </sc-if>
+                        <sc-if value="{{ r.noAction }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size:12px;color:#9B9BA3;white-space:nowrap">{{ r.waitNote }}</span>
+                        </sc-if>
+                      </span>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ g.empty }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:26px;text-align:center;font-size:12.5px;color:#9B9BA3">{{ g.emptyNote }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Today</span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ todayItems }}" as="t" hint-placeholder-count="3">
+                  <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="opacity:.75">
+                    <span style="font-size:12px;color:#9B9BA3;width:62px;flex:none">{{ t.time }}</span>
+                    <span style="display:flex;flex-direction:column;line-height:1.3">
+                      <span style="font-size:12.5px;color:#191A2E">{{ t.name }}</span>
+                      <span style="font-size:11px;color:#9B9BA3">{{ t.sub }}</span>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="display:flex;align-items:center;gap:8px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Ask Joy</span>
+              </span>
+              <div style="display:flex;flex-direction:column;gap:1px">
+                <sc-for list="{{ prompts }}" as="p" hint-placeholder-count="3">
+                  <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:7px 8px;border-radius:8px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;align-items:flex-start">
+          <sc-for list="{{ board }}" as="col" hint-placeholder-count="5">
+            <div onDragOver="{{ col.dragOver }}" onDrop="{{ col.drop }}" onDragLeave="{{ col.dragLeave }}" style="{{ col.style }}">
+              <div style="display:flex;align-items:center;gap:8px;padding:2px 4px 9px;border-bottom:1px solid #ECECF1">
+                <span style="font-size:12px;font-weight:600;color:#191A2E">{{ col.title }}</span>
+                <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">{{ col.count }}</span>
+              </div>
+              <sc-for list="{{ col.cards }}" as="c" hint-placeholder-count="2">
+                <div draggable="true" onDragStart="{{ c.dragStart }}" onDragEnd="{{ c.dragEnd }}" onClick="{{ c.open }}" style="{{ c.style }}">
+                  <span style="font-size:13px;font-weight:500;color:#191A2E;line-height:1.3">{{ c.name }}</span>
+                  <span style="font-size:11.5px;color:#9B9BA3">{{ c.service }}</span>
+                  <span style="{{ c.statusStyle }}">{{ c.status }}</span>
+                  <span style="{{ c.blockerStyle }}">{{ c.blocker }}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ col.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:14px 8px;font-size:12px;color:#C9C9D0;text-align:center">Empty</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+
+  <sc-if value="{{ moveOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ cancelMove }}" style="position:absolute;inset:0;background:rgba(25,26,46,.24)"></div>
+      <div style="position:relative;width:100%;max-width:440px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 24px 60px rgba(25,26,46,.18);animation:sheetIn .16s ease-out;display:flex;flex-direction:column">
+        <div style="padding:20px 22px 0;display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">{{ mv.title }}</span>
+          <span style="font-size:13px;color:#5B6274">{{ mv.sub }}</span>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9B9BA3">From</span>
+              <span style="font-size:13.5px;color:#5B6274">{{ mv.from }}</span>
+            </span>
+            <span style="color:#C9C9D0;font-size:14px">→</span>
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9B9BA3">To</span>
+              <span style="font-size:13.5px;font-weight:600;color:#191A2E">{{ mv.to }}</span>
+            </span>
+          </div>
+          <sc-if value="{{ mv.blocked }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px;padding:13px 14px;border:1px solid #FCE8B6;border-radius:12px;background:#FFFAEB">
+              <span style="font-size:13px;font-weight:600;color:#B54708">{{ mv.blockedTitle }}</span>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <sc-for list="{{ mv.missing }}" as="m" hint-placeholder-count="2">
+                  <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#912018">
+                    <span style="width:5px;height:5px;border-radius:50%;background:#B54708;flex:none"></span>{{ m.label }}
+                  </span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ mv.clear }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:12.5px;color:#12B76A">All required items for this stage are complete.</span>
+          </sc-if>
+        </div>
+        <div style="padding:14px 22px;border-top:1px solid #ECECF1;display:flex;gap:9px;background:#FCFCFD;border-radius:0 0 16px 16px">
+          <button onClick="{{ cancelMove }}" style="flex:1;height:38px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Cancel</button>
+          <button onClick="{{ mv.confirm }}" style="{{ mv.confirmStyle }}">{{ mv.confirmLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ aiOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ closeAi }}" style="position:absolute;inset:0;background:rgba(25,26,46,.24)"></div>
+      <div style="position:relative;width:100%;max-width:500px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 24px 60px rgba(25,26,46,.18);animation:sheetIn .16s ease-out;display:flex;flex-direction:column">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:11px">
+          <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+            <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12.5px;color:#8A8A92">You asked Joy</span>
+            <span style="font-size:14.5px;font-weight:500;color:#191A2E;line-height:1.4">{{ ai.request }}</span>
+          </div>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;max-height:56vh;overflow-y:auto">
+          <span style="font-size:13.5px;color:#191A2E;line-height:1.55;text-wrap:pretty">{{ ai.summary }}</span>
+          <sc-if value="{{ ai.hasList }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px solid #ECECF1;border-radius:12px;overflow:hidden">
+              <sc-for list="{{ ai.items }}" as="i" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #F3F3F6">
+                  <span style="{{ i.dotStyle }}"></span>
+                  <span style="display:flex;flex-direction:column;line-height:1.35">
+                    <span style="font-size:12.5px;color:#191A2E">{{ i.label }}</span>
+                    <span style="font-size:11.5px;color:#9B9BA3">{{ i.sub }}</span>
+                  </span>
+                  <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3;white-space:nowrap">{{ i.right }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ ai.hasDraft }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Draft message · Spruce</span>
+              <span style="font-size:13px;color:#191A2E;line-height:1.55;text-wrap:pretty">{{ ai.draft }}</span>
+              <span style="font-size:11.5px;color:#9B9BA3">To {{ ai.draftTo }}</span>
+            </div>
+          </sc-if>
+          <span style="font-size:11.5px;color:#8A8A92;line-height:1.5">{{ ai.note }}</span>
+        </div>
+        <div style="padding:14px 22px;border-top:1px solid #ECECF1;display:flex;gap:9px;background:#FCFCFD;border-radius:0 0 16px 16px">
+          <button onClick="{{ closeAi }}" style="flex:1;height:38px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Cancel</button>
+          <button onClick="{{ confirmAi }}" style="flex:1.3;height:38px;background:#1407A2;border:none;border-radius:10px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">{{ ai.confirmLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:70;display:flex;justify-content:flex-end">
+      <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(25,26,46,.18)"></div>
+      <aside style="position:relative;width:468px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
+          <span style="width:40px;height:40px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ d.initials }}</span>
+          <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+            <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">{{ d.name }}</span>
+            <span style="font-size:12.5px;color:#5B6274">{{ d.service }} · {{ d.location }}</span>
+            <span style="{{ d.stageStyle }}">{{ d.stage }}</span>
+          </div>
+          <button onClick="{{ closeDrawer }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="padding:16px 22px;border-bottom:1px solid #ECECF1;background:{{ d.nextBg }};display:flex;flex-direction:column;gap:9px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ d.nextLabel }}</span>
+          <span style="font-size:14.5px;font-weight:500;color:#191A2E;line-height:1.45;text-wrap:pretty">{{ d.nextText }}</span>
+          <div style="display:flex;gap:8px;padding-top:2px">
+            <button onClick="{{ d.primaryClick }}" style="{{ d.primaryStyle }}">{{ d.primary }}</button>
+            <sc-if value="{{ d.hasSecondary }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ d.secondaryClick }}" style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">{{ d.secondary }}</button>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:18px">
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Journey</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ d.journey }}" as="j" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="{{ j.markStyle }}">{{ j.mark }}</span>
+                  <span style="{{ j.labelStyle }}">{{ j.label }}</span>
+                  <span style="margin-left:auto;font-size:11.5px;color:#8A8A92;white-space:nowrap">{{ j.note }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ d.hasReadiness }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Readiness</span>
+                <span style="margin-left:auto;font-size:11.5px;color:#8A8A92">{{ d.readyCount }}</span>
+              </span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ d.readiness }}" as="r" hint-placeholder-count="10">
+                  <div style="display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="{{ r.markStyle }}">{{ r.mark }}</span>
+                    <span style="font-size:12.5px;color:#191A2E">{{ r.label }}</span>
+                    <span style="margin-left:auto;font-size:11.5px;color:{{ r.statusColor }};white-space:nowrap">{{ r.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Overview</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ d.overview }}" as="o" hint-placeholder-count="7">
+                <div style="display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:12.5px;color:#9B9BA3;width:132px;flex:none">{{ o.label }}</span>
+                  <span style="font-size:12.5px;color:#191A2E;text-wrap:pretty">{{ o.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Communications</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ d.comms }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="{{ c.dotStyle }}"></span>
+                  <span style="font-size:12.5px;color:#191A2E">{{ c.label }}</span>
+                  <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3;white-space:nowrap">{{ c.when }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <button style="align-self:flex-start;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:2px 0">Open in Spruce →</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Quick actions</span>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+              <sc-for list="{{ d.actions }}" as="a" hint-placeholder-count="5">
+                <button style="{{ a.style }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:80;background:rgba(25,26,46,.34);display:flex;align-items:flex-start;justify-content:center;padding:56px 24px;overflow-y:auto">
+      <div style="width:100%;max-width:660px;background:#FFFFFF;border-radius:18px;box-shadow:0 24px 64px rgba(25,26,46,.24);display:flex;flex-direction:column;overflow:hidden">
+
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:22px 24px 18px;border-bottom:1px solid #F3F3F6">
+          <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+            <span style="font-size:19px;font-weight:600;letter-spacing:-.02em;color:#191A2E">{{ newTitle }}</span>
+            <span style="font-size:13px;color:#5B6274;line-height:1.5;text-wrap:pretty">{{ newSub }}</span>
+          </span>
+          <button onClick="{{ closeNew }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px;max-height:60vh;overflow-y:auto">
+
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Client</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Full name</span>
+                <input type="text" value="{{ nf.name }}" onChange="{{ setNfName }}" placeholder="Lian Huang" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Date of birth <span style="color:#C9C9D0">optional</span></span>
+                <input type="text" value="{{ nf.dob }}" onChange="{{ setNfDob }}" placeholder="03/14/1941" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">City / area</span>
+                <input type="text" value="{{ nf.location }}" onChange="{{ setNfLocation }}" placeholder="Houston · Memorial" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Service</span>
+                <select value="{{ nf.service }}" onChange="{{ setNfService }}" style="height:42px;padding:0 11px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none;cursor:pointer">
+                  <sc-for list="{{ serviceOpts }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.v }}</option></sc-for>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Primary contact</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Name</span>
+                <input type="text" value="{{ nf.contactName }}" onChange="{{ setNfContactName }}" placeholder="Johnathan Huang" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Relationship</span>
+                <select value="{{ nf.relationship }}" onChange="{{ setNfRelationship }}" style="height:42px;padding:0 11px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none;cursor:pointer">
+                  <sc-for list="{{ relationshipOpts }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.v }}</option></sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Phone</span>
+                <input type="text" value="{{ nf.phone }}" onChange="{{ setNfPhone }}" placeholder="(412) 555-0198" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Email <span style="color:#C9C9D0">optional</span></span>
+                <input type="text" value="{{ nf.email }}" onChange="{{ setNfEmail }}" placeholder="name@example.com" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Where they came from</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Lead source</span>
+                <select value="{{ nf.source }}" onChange="{{ setNfSource }}" style="height:42px;padding:0 11px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none;cursor:pointer">
+                  <sc-for list="{{ sourceOpts }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.v }}</option></sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Expected payer</span>
+                <select value="{{ nf.payer }}" onChange="{{ setNfPayer }}" style="height:42px;padding:0 11px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none;cursor:pointer">
+                  <sc-for list="{{ payerOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.v }}</option></sc-for>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <sc-if value="{{ newIsClient }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px;padding:15px 16px;border:1px solid #E0E3FB;border-radius:13px;background:#F7F8FE">
+              <span style="display:flex;align-items:center;gap:9px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;flex:none"></span>
+                <span style="font-size:12.5px;font-weight:500;color:#191A2E">{{ folderCount }}</span>
+              </span>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 16px">
+                <sc-for list="{{ folderItems }}" as="fi" hint-placeholder-count="12">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <span style="width:13px;height:13px;flex:none;border-radius:4px;border:1px solid #C7CCF4;background:#FFFFFF"></span>
+                    <span style="font-size:12px;color:#5B6274;line-height:1.4">{{ fi.label }}</span>
+                  </span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;color:#8A8A92">Notes <span style="color:#C9C9D0">optional</span></span>
+            <textarea value="{{ nf.notes }}" onChange="{{ setNfNotes }}" placeholder="Anything the team should know before the first call" style="box-sizing:border-box;width:100%;min-height:76px;resize:vertical;padding:12px 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;line-height:1.55;color:#191A2E;outline:none"></textarea>
+          </label>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 24px;border-top:1px solid #F3F3F6;background:#FCFCFD">
+          <button onClick="{{ saveNew }}" style="{{ newSaveStyle }}">{{ newSaveLabel }}</button>
+          <button onClick="{{ startIntakeNow }}" style="height:40px;padding:0 15px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Save and start intake call</button>
+          <button onClick="{{ closeNew }}" style="margin-left:auto;background:transparent;border:none;font-size:13px;color:#9B9BA3;cursor:pointer;padding:4px" style-hover="color:#5B6274">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:26px;z-index:90;transform:translateX(-50%);animation:toastIn .18s ease-out">
+      <div style="display:flex;align-items:center;gap:14px;background:#191A2E;border-radius:12px;padding:13px 16px;box-shadow:0 12px 32px rgba(25,26,46,.24);min-width:340px">
+        <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+        <span style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;font-weight:500;color:#FFFFFF">{{ toast.title }}</span>
+          <span style="font-size:11.5px;color:rgba(255,255,255,.62)">{{ toast.sub }}</span>
+        </span>
+        <button onClick="{{ closeToast }}" style="margin-left:auto;flex:none;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;padding:0 2px">✕</button>
+      </div>
+    </div>
+  </sc-if>
+
+    <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:28px;bottom:80px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <span style="{{ joyStatusStyle }}">{{ joyStatus }}</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
+        </button>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+<button onClick="{{ toggleJoy }}" style="position:fixed;right:28px;bottom:26px;z-index:40;display:flex;align-items:center;gap:9px;height:42px;padding:0 18px 0 14px;background:#191A2E;border:none;border-radius:999px;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px rgba(25,26,46,.22)" style-hover="background:#1407A2">
+    <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Ask Joy
+  </button>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const pillS = (fg, bg) => 'display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:500;white-space:nowrap;color:' + fg + ';background:' + bg;
+
+const STAGES = ['New Lead', 'Phone Intake', 'Assessment', 'Pre-Onboarding', 'Ready'];
+const STAGE_TONE = {
+  'New Lead': ['#5B6274', '#F3F3F6'],
+  'Phone Intake': ['#0E9384', '#ECFDF7'],
+  Assessment: ['#1407A2', '#EEF0FE'],
+  'Pre-Onboarding': ['#B54708', '#FFFAEB'],
+  Ready: ['#12B76A', '#ECFDF3'],
+  Admitted: ['#5B6274', '#F3F3F6']
+};
+
+const READINESS = [
+  'Phone intake form', 'RN assessment (signed)', 'Service agreement', 'Plan of care',
+  'Emergency contacts', 'Client rights & responsibilities', 'Medication log',
+  'Advance directive', 'Physician list', 'Payment setup'
+];
+
+const PEOPLE = [
+  {
+    id: 'a1', name: 'Marcus Bell', stage: 'Assessment', service: 'Personal Care', location: 'Houston · Northwest',
+    group: 'needs', headline: 'Assessment today at 10:30 AM', meta: 'Joan Robinson, RN · 3704 Harmon Ave',
+    action: 'Open assessment', primary: true,
+    nextLabel: 'Joy needs you', nextText: 'Medication list is missing before today\u2019s 10:30 assessment. Joy drafted a request to his daughter.',
+    primaryAction: 'Review request', secondary: 'Open assessment',
+    source: 'Hospital discharge · Memorial Hermann', received: 'Aug 6 · 2:12 PM', contact: 'Denise Bell · daughter · (713) 555-0182',
+    hours: '20–25 hrs/week · mornings', start: 'Requested Aug 17', payer: 'Self Pay',
+    assessment: 'Today · 10:30 AM · Joan Robinson, RN',
+    journeyAt: 2, readiness: null,
+    comms: [
+      { label: 'Assessment reminder sent', when: 'Today · 9:14 AM', tone: 'done' },
+      { label: 'Medication list requested', when: 'Yesterday · 3:42 PM', tone: 'prog' },
+      { label: 'Assessment scheduled', when: 'Aug 8 · 11:05 AM', tone: 'done' }
+    ]
+  },
+  {
+    id: 'a2', name: 'Susan Miller', stage: 'Pre-Onboarding', service: 'Companion Care', location: 'Katy',
+    group: 'needs', headline: 'Service agreement needs review', meta: 'Drafted by Joy · unsigned 4 days',
+    action: 'Review agreement', primary: true, stalledDays: 4,
+    nextLabel: 'Joy needs you', nextText: 'The service agreement is drafted and ready for your review before it goes out for signature.',
+    primaryAction: 'Review agreement', secondary: 'Send reminder',
+    source: 'Website form', received: 'Jul 28 · 8:40 AM', contact: 'Susan Miller · self · (281) 555-0143',
+    hours: '12 hrs/week · Tue, Thu', start: 'Requested Aug 18', payer: 'Self Pay + LTCI',
+    assessment: 'Completed Aug 4 · Priya Shah, LVN',
+    journeyAt: 3, readiness: {
+      'Phone intake form': 'done', 'RN assessment (signed)': 'done', 'Service agreement': 'review',
+      'Plan of care': 'done', 'Emergency contacts': 'done', 'Client rights & responsibilities': 'done',
+      'Medication log': 'waiting', 'Advance directive': 'done', 'Physician list': 'done', 'Payment setup': 'waiting'
+    },
+    comms: [
+      { label: 'Agreement reminder sent', when: 'Aug 8 · 4:20 PM', tone: 'warn' },
+      { label: 'Assessment summary sent', when: 'Aug 5 · 10:02 AM', tone: 'done' },
+      { label: 'Assessment completed', when: 'Aug 4 · 2:40 PM', tone: 'done' }
+    ]
+  },
+  {
+    id: 'a3', name: 'John Williams', stage: 'Phone Intake', service: 'Personal Care', location: 'Pearland',
+    group: 'needs', headline: 'Intake incomplete · 4 of 7 sections', meta: 'Started yesterday by Dana Whitfield',
+    action: 'Continue intake', primary: true,
+    nextLabel: 'Joy needs you', nextText: 'Phone intake stopped at section 5 — home and safety basics. Autosaved yesterday at 4:52 PM.',
+    primaryAction: 'Continue intake', secondary: 'Call John',
+    source: 'Phone inquiry', received: 'Aug 9 · 4:31 PM', contact: 'Robert Williams · son · (346) 555-0119',
+    hours: 'Not yet captured', start: 'Unknown', payer: 'Self Pay',
+    assessment: 'Not scheduled',
+    journeyAt: 1, readiness: null,
+    comms: [{ label: 'Intake started', when: 'Aug 9 · 4:31 PM', tone: 'prog' }]
+  },
+  {
+    id: 'a4', name: 'Tammy Wilson', stage: 'New Lead', service: 'Personal Care', location: 'Houston · Memorial',
+    group: 'needs', headline: 'New lead · no contact yet', meta: 'Received today · 9:14 AM',
+    action: 'Start intake', primary: true,
+    nextLabel: 'Joy needs you', nextText: 'This lead came in this morning and has not been called yet. Daughter is the primary contact.',
+    primaryAction: 'Start intake', secondary: 'Mark not a fit',
+    source: 'Family / word of mouth', received: 'Today · 9:14 AM', contact: 'Karen Wilson · daughter · (713) 555-0166',
+    hours: 'Not yet captured', start: 'Unknown', payer: 'Unknown',
+    assessment: 'Not scheduled',
+    journeyAt: 0, readiness: null,
+    comms: [{ label: 'Lead received', when: 'Today · 9:14 AM', tone: 'prog' }]
+  },
+  {
+    id: 'a5', name: 'Margaret Davis', stage: 'Assessment', service: 'Personal Care', location: 'Sugar Land',
+    group: 'waiting', headline: 'Waiting on medication list', meta: 'Requested Aug 7 · family',
+    waitNote: 'Waiting on family',
+    nextLabel: 'Waiting on family', nextText: 'Medication list requested Aug 7. Assessment is scheduled Thursday and can proceed without it.',
+    primaryAction: 'Send reminder', secondary: 'Add note',
+    source: 'Physician referral', received: 'Aug 2 · 1:05 PM', contact: 'Alan Davis · son · (832) 555-0175',
+    hours: '30 hrs/week', start: 'Requested Aug 20', payer: 'Self Pay + LTCI',
+    assessment: 'Thu, Aug 13 · 1:00 PM · Priya Shah, LVN',
+    journeyAt: 2, readiness: null,
+    comms: [
+      { label: 'Medication list requested', when: 'Aug 7 · 9:30 AM', tone: 'prog' },
+      { label: 'Assessment confirmed', when: 'Aug 6 · 3:15 PM', tone: 'done' }
+    ]
+  },
+  {
+    id: 'a6', name: 'Evelyn Carter', stage: 'Pre-Onboarding', service: 'Personal Care', location: 'Houston · Heights',
+    group: 'waiting', headline: 'Waiting on family signature', meta: 'Agreement sent Aug 8 · viewed',
+    waitNote: 'Waiting on client',
+    nextLabel: 'Waiting on client', nextText: 'Service agreement was viewed Aug 9 but not signed. Everything else for admission is complete.',
+    primaryAction: 'Send reminder', secondary: 'Call family',
+    source: 'Hospital discharge · Houston Methodist', received: 'Jul 25 · 10:20 AM', contact: 'Rachel Carter · daughter · (713) 555-0198',
+    hours: '40 hrs/week · Mon–Fri', start: 'Requested Aug 17', payer: 'Self Pay',
+    assessment: 'Completed Aug 1 · Priya Shah, LVN',
+    journeyAt: 3, readiness: {
+      'Phone intake form': 'done', 'RN assessment (signed)': 'done', 'Service agreement': 'waiting',
+      'Plan of care': 'done', 'Emergency contacts': 'done', 'Client rights & responsibilities': 'done',
+      'Medication log': 'done', 'Advance directive': 'done', 'Physician list': 'done', 'Payment setup': 'done'
+    },
+    comms: [
+      { label: 'Agreement viewed by family', when: 'Aug 9 · 7:48 PM', tone: 'prog' },
+      { label: 'Service agreement sent', when: 'Aug 8 · 11:30 AM', tone: 'done' },
+      { label: 'Care plan approved', when: 'Aug 6 · 2:00 PM', tone: 'done' }
+    ]
+  },
+  {
+    id: 'a7', name: 'Lian Huang', stage: 'Assessment', service: 'Personal Care', location: 'Houston · Memorial',
+    group: 'forward', headline: 'Assessment scheduled Friday · 2:00 PM', meta: 'Joan Robinson, RN',
+    waitNote: 'On track',
+    nextLabel: 'Moving forward', nextText: 'Assessment is scheduled for Friday at 2:00 PM. Intake is complete and nothing is outstanding.',
+    primaryAction: 'View assessment', secondary: 'Reschedule',
+    source: 'Existing client family', received: 'Aug 5 · 9:00 AM', contact: 'Johnathan Huang · son · (713) 555-0188',
+    hours: '35 hrs/week', start: 'Requested Aug 24', payer: 'Self Pay',
+    assessment: 'Fri, Aug 14 · 2:00 PM · Joan Robinson, RN',
+    journeyAt: 2, readiness: null,
+    comms: [{ label: 'Assessment confirmed', when: 'Aug 7 · 10:10 AM', tone: 'done' }]
+  },
+  {
+    id: 'a8', name: 'Robert Green', stage: 'Ready', service: 'Companion Care', location: 'Katy',
+    group: 'forward', headline: 'Ready for admission · start of care Monday', meta: 'All 10 items complete',
+    waitNote: 'Awaiting scheduling',
+    nextLabel: 'Ready for admission', nextText: 'All admission items are complete. Start of care is targeted for Monday, Aug 17 — scheduling still needs to assign a caregiver.',
+    primaryAction: 'Prepare start of care', secondary: 'Open scheduling',
+    source: 'Website form', received: 'Jul 20 · 2:45 PM', contact: 'Robert Green · self · (281) 555-0126',
+    hours: '16 hrs/week · Mon, Wed, Fri', start: 'Mon, Aug 17', payer: 'Self Pay',
+    assessment: 'Completed Jul 30 · Priya Shah, LVN',
+    journeyAt: 4, readiness: {
+      'Phone intake form': 'done', 'RN assessment (signed)': 'done', 'Service agreement': 'done',
+      'Plan of care': 'done', 'Emergency contacts': 'done', 'Client rights & responsibilities': 'done',
+      'Medication log': 'done', 'Advance directive': 'done', 'Physician list': 'done', 'Payment setup': 'done'
+    },
+    comms: [
+      { label: 'Care plan approved', when: 'Aug 4 · 1:20 PM', tone: 'done' },
+      { label: 'Agreement signed', when: 'Aug 2 · 5:02 PM', tone: 'done' }
+    ]
+  },
+  {
+    id: 'a9', name: 'Angela Thomas', stage: 'Pre-Onboarding', service: 'Respite', location: 'Houston · Bellaire',
+    group: 'forward', headline: 'Assessment complete · pre-onboarding prepared', meta: 'Joy drafted the care plan',
+    waitNote: 'On track',
+    nextLabel: 'Moving forward', nextText: 'Joy prepared the care plan and agreement from the assessment. Nothing is blocked — review when you are ready.',
+    primaryAction: 'Review care plan', secondary: 'Send agreement',
+    source: 'Physician referral', received: 'Jul 30 · 11:15 AM', contact: 'Michael Thomas · husband · (713) 555-0157',
+    hours: '10 hrs/week · weekends', start: 'Requested Aug 22', payer: 'Self Pay + LTCI',
+    assessment: 'Completed Aug 7 · Priya Shah, LVN',
+    journeyAt: 3, readiness: {
+      'Phone intake form': 'done', 'RN assessment (signed)': 'done', 'Service agreement': 'review',
+      'Plan of care': 'review', 'Emergency contacts': 'done', 'Client rights & responsibilities': 'done',
+      'Medication log': 'done', 'Advance directive': 'none', 'Physician list': 'done', 'Payment setup': 'none'
+    },
+    comms: [{ label: 'Assessment completed', when: 'Aug 7 · 4:30 PM', tone: 'done' }]
+  },
+  {
+    id: 'a10', name: 'Harold Reese', stage: 'New Lead', service: 'Companion Care', location: 'Pearland',
+    group: 'waiting', headline: 'Waiting on callback · left 2 messages', meta: 'Received Aug 4 · self-submitted',
+    waitNote: 'Unable to reach',
+    nextLabel: 'Waiting on prospect', nextText: 'Two voicemails left, no response since Aug 4. Close the lead if there is no answer by Aug 12.',
+    primaryAction: 'Try again', secondary: 'Close lead',
+    source: 'Self / client', received: 'Aug 4 · 3:30 PM', contact: 'Harold Reese · self · (346) 555-0188',
+    hours: 'Not yet captured', start: 'Unknown', payer: 'Unknown',
+    assessment: 'Not scheduled',
+    journeyAt: 0, readiness: null,
+    comms: [
+      { label: 'Second voicemail left', when: 'Aug 7 · 10:15 AM', tone: 'warn' },
+      { label: 'First call attempted', when: 'Aug 5 · 9:05 AM', tone: 'prog' }
+    ]
+  },
+  {
+    id: 'a11', name: 'Dorothy Aiken', stage: 'Admitted', service: 'Personal Care', location: 'Houston · Heights',
+    group: 'admitted', headline: 'Admitted Jul 12 · active client', meta: 'Record lives in Clients',
+    waitNote: 'Admitted',
+    nextLabel: 'Admitted', nextText: 'Dorothy was admitted Jul 12. Her permanent record is in Clients — this entry is kept for admission history.',
+    primaryAction: 'Open client record', secondary: '',
+    source: 'Family referral', received: 'Jun 18 · 1:00 PM', contact: 'Margaret Rowe · niece · (713) 555-0156',
+    hours: '30 hrs/week', start: 'Jul 12, 2026', payer: 'Self Pay + LTCI',
+    assessment: 'Completed Jun 28 · Priya Shah, LVN',
+    journeyAt: 5, readiness: {
+      'Phone intake form': 'done', 'RN assessment (signed)': 'done', 'Service agreement': 'done',
+      'Plan of care': 'done', 'Emergency contacts': 'done', 'Client rights & responsibilities': 'done',
+      'Medication log': 'done', 'Advance directive': 'done', 'Physician list': 'done', 'Payment setup': 'done'
+    },
+    comms: [{ label: 'Start of care confirmed', when: 'Jul 11 · 3:00 PM', tone: 'done' }]
+  }
+];
+
+const GROUPS = [
+  { id: 'needs', title: 'Needs you', hint: 'Joy Health has an action', tone: '#F79009', empty: 'Nothing needs you right now.' },
+  { id: 'waiting', title: 'Waiting', hint: 'Waiting on someone outside the office', tone: '#1407A2', empty: 'Nothing is waiting.' },
+  { id: 'forward', title: 'Moving forward', hint: 'Next milestone already scheduled', tone: '#12B76A', empty: 'Nothing in motion.' }
+];
+
+const QUICK_ADD = [
+  { id: 'lead', label: 'New lead' },
+  { id: 'intake', label: 'Phone intake' },
+  { id: 'assessment', label: 'Schedule assessment' },
+  { id: 'client', label: 'New client' },
+  { id: 'upload', label: 'Upload document' }
+];
+
+const SERVICES = ['Personal Care', 'Companion Care', 'Respite Care', 'Post-Acute / Recovery', 'Dementia Care'];
+const RELATIONSHIPS = ['Self', 'Daughter / son', 'Spouse', 'Sibling', 'Power of attorney', 'Case manager', 'Other'];
+const PAYERS = ['Self Pay', 'Self Pay + LTC Insurance', 'Not sure yet'];
+const SOURCES = ['Family / word of mouth', 'Hospital / discharge planner', 'Physician referral', 'Web form', 'Repeat client', 'Other'];
+const FOLDER_ITEMS = [
+  'Initial phone intake form', 'Comprehensive Assessment — RN signed', 'Service Agreement / Contract',
+  'Service Plan / Plan of Care', 'Emergency Contact Form', 'Client Rights & Responsibilities',
+  'Medication Log', 'Advance Directive identifier', 'Physician List',
+  'Supervisory Visit schedule', 'Responsible Party information', 'Other client-specific documents'
+];
+
+const blankNew = () => ({
+  name: '', dob: '', location: '', service: 'Personal Care', source: 'Family / word of mouth',
+  contactName: '', relationship: 'Daughter / son', phone: '', email: '',
+  payer: 'Self Pay', startNow: true, notes: ''
+});
+
+const PROMPTS = [
+  { id: 'p1', label: 'Who needs me today?' },
+  { id: 'p2', label: 'What is holding up Marcus Bell?' },
+  { id: 'p3', label: 'Which admissions have stalled 3+ days?' }
+];
+
+class Component extends DCLogic {
+  state = { joyOpen: false, joyQ: '', joyMic: false, view: 'list', filter: 'All', q: '', sel: null, ai: null, quickAdd: false, toast: null, dragId: null, over: null, move: null, newOpen: null, nf: blankNew(), added: [] };
+
+  all() { return (this.state.added || []).concat(PEOPLE); }
+
+  person(id) { return this.all().find(p => p.id === id); }
+
+  buildRecord(nf, isClient) {
+    const name = nf.name.trim();
+    const isSelf = !nf.contactName.trim();
+    const contact = [isSelf ? name : nf.contactName.trim(), isSelf ? 'self' : (nf.relationship || '').toLowerCase(), nf.phone.trim()].filter(Boolean).join(' · ');
+    const base = {
+      id: 'n' + Date.now(), name: name, service: nf.service,
+      location: nf.location.trim() || 'Location not set',
+      source: nf.source, received: 'Today · just now', contact: contact,
+      hours: 'Not set yet', start: 'Not set yet', payer: nf.payer,
+      comms: [{ label: isClient ? 'Client record created' : 'Lead created', when: 'Today · just now', tone: 'done' }]
+    };
+    if (isClient) return Object.assign(base, {
+      stage: 'Pre-Onboarding', group: 'needs',
+      headline: 'New client · folder just opened', meta: '0 of 12 folder items complete',
+      action: 'Open folder', primary: true,
+      nextLabel: 'Joy needs you', nextText: 'You created this client directly. Nothing in the folder is complete yet — start with the service agreement and plan of care.',
+      primaryAction: 'Open folder', secondary: 'Assign RN',
+      assessment: 'Not scheduled', journeyAt: 3, skipped: [0, 1, 2],
+      readiness: FOLDER_ITEMS.reduce((acc, l) => { acc[l] = 'todo'; return acc; }, {})
+    });
+    return Object.assign(base, {
+      stage: 'New Lead', group: 'needs',
+      headline: 'New lead · no contact yet', meta: 'Added today · just now',
+      action: 'Start intake', primary: true,
+      nextLabel: 'Joy needs you', nextText: 'You just added this lead. Call the primary contact and complete the phone intake.',
+      primaryAction: 'Start intake', secondary: 'Assign to someone',
+      assessment: 'Not scheduled', journeyAt: 0, readiness: null
+    });
+  }
+
+  createFromForm() {
+    const nf = this.state.nf;
+    if (!(nf.name || '').trim() || !(nf.phone || '').trim()) return null;
+    const isClient = this.state.newOpen === 'client';
+    const rec = this.buildRecord(nf, isClient);
+    this.setState(st => ({
+      added: [rec].concat(st.added || []),
+      newOpen: null,
+      filter: isClient ? 'Pre-Onboarding' : 'New Leads',
+      toast: {
+        title: rec.name + (isClient ? ' added as a client' : ' added as a new lead'),
+        sub: isClient ? 'Folder opened at Pre-Onboarding · 12 readiness items created' : 'Intake call queued · assigned to you'
+      }
+    }));
+    return rec;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const q = s.q.trim().toLowerCase();
+
+    const passFilter = (p) => {
+      if (s.filter === 'All') return p.stage !== 'Admitted';
+      if (s.filter === 'Admitted') return p.stage === 'Admitted';
+      if (s.filter === 'New Leads') return p.stage === 'New Lead';
+      if (s.filter === 'Ready') return p.stage === 'Ready';
+      return p.stage === s.filter;
+    };
+    const passQ = (p) => !q || (p.name + ' ' + p.service + ' ' + p.location + ' ' + p.source + ' ' + p.contact).toLowerCase().includes(q);
+    const ALL = this.all();
+    const pool = ALL.filter(p => passFilter(p) && passQ(p));
+
+    const stageCount = (st) => ALL.filter(p => p.stage === st).length;
+    const filters = [
+      { id: 'All', label: 'All', n: ALL.filter(p => p.stage !== 'Admitted').length },
+      { id: 'New Leads', label: 'New leads', n: stageCount('New Lead') },
+      { id: 'Phone Intake', label: 'Phone intake', n: stageCount('Phone Intake') },
+      { id: 'Assessment', label: 'Assessment', n: stageCount('Assessment') },
+      { id: 'Pre-Onboarding', label: 'Pre-onboarding', n: stageCount('Pre-Onboarding') },
+      { id: 'Ready', label: 'Ready', n: stageCount('Ready') },
+      { id: 'Admitted', label: 'Admitted', n: stageCount('Admitted') }
+    ].map(f => ({
+      key: f.id, label: f.label, count: f.n,
+      click: () => this.setState({ filter: f.id }),
+      style: 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;white-space:nowrap;' +
+        (s.filter === f.id ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
+      countStyle: 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.filter === f.id ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.filter === f.id ? '#1407A2' : '#9B9BA3')
+    }));
+
+    const row = (p) => ({
+      key: p.id, name: p.name, initials: initials(p.name),
+      stage: p.stage, stageStyle: pillS(STAGE_TONE[p.stage][0], STAGE_TONE[p.stage][1]),
+      headline: p.headline, meta: p.meta,
+      hasAction: !!p.action, noAction: !p.action,
+      action: p.action || '', waitNote: p.waitNote || '',
+      actStyle: 'height:32px;padding:0 13px;border-radius:9px;font-size:12.5px;cursor:pointer;white-space:nowrap;border:1px solid ' +
+        (p.group === 'needs' ? '#1407A2;background:#1407A2;color:#FFFFFF' : '#ECECF1;background:#FFFFFF;color:#191A2E'),
+      act: () => {
+        if (p.stage === 'Phone Intake' || p.stage === 'New Lead') {
+          window.location.href = './Joy%20Health%20Phone%20Intake.dc.html';
+          return;
+        }
+        if ((p.action || '').toLowerCase().indexOf('assessment') >= 0) {
+          window.location.href = './Joy%20Health%20Assessment.dc.html';
+          return;
+        }
+        this.setState({ sel: p.id });
+      },
+      open: () => this.setState({ sel: p.id })
+    });
+
+    const showAdmitted = s.filter === 'Admitted';
+    const groups = (showAdmitted
+      ? [{ id: 'admitted', title: 'Admitted', hint: 'Record lives in Clients', tone: '#5B6274', empty: 'No admitted records.' }]
+      : GROUPS
+    ).map(g => {
+      const rows = pool.filter(p => p.group === g.id);
+      return {
+        key: g.id, title: g.title, hint: g.hint, count: rows.length,
+        dotStyle: 'width:7px;height:7px;border-radius:50%;flex:none;background:' + g.tone,
+        rows: rows.map(row), empty: rows.length === 0, emptyNote: g.empty
+      };
+    });
+
+    const boardCols = STAGES.map(st => {
+      const cards = ALL.filter(p => p.stage === st && passQ(p));
+      return {
+        key: st, title: st, count: cards.length, empty: cards.length === 0,
+        style: 'flex:none;width:258px;background:' + (s.over === st ? '#F7F8FE' : '#FAFAFB') + ';border:1px solid #ECECF1;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:9px',
+        dragOver: (e) => { e.preventDefault(); if (s.over !== st) this.setState({ over: st }); },
+        dragLeave: () => { if (s.over === st) this.setState({ over: null }); },
+        drop: (e) => {
+          e.preventDefault();
+          const p = this.person(s.dragId);
+          if (!p || p.stage === st) { this.setState({ dragId: null, over: null }); return; }
+          this.setState({ over: null, dragId: null, move: { id: p.id, to: st } });
+        },
+        cards: cards.map(p => ({
+          key: p.id, name: p.name, service: p.service,
+          status: p.group === 'needs' ? 'Needs you' : p.group === 'waiting' ? 'Waiting' : 'On track',
+          statusStyle: 'align-self:flex-start;' + pillS(
+            p.group === 'needs' ? '#B54708' : p.group === 'waiting' ? '#5B6274' : '#12B76A',
+            p.group === 'needs' ? '#FFFAEB' : p.group === 'waiting' ? '#F3F3F6' : '#ECFDF3'
+          ),
+          blocker: p.headline,
+          blockerStyle: 'font-size:11.5px;color:#5B6274;line-height:1.45',
+          style: 'background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:grab;opacity:' + (s.dragId === p.id ? '.4' : '1'),
+          dragStart: () => this.setState({ dragId: p.id }),
+          dragEnd: () => this.setState({ dragId: null, over: null }),
+          open: () => this.setState({ sel: p.id })
+        }))
+      };
+    });
+
+    const mvSrc = s.move ? this.person(s.move.id) : null;
+    let mv = {};
+    if (mvSrc) {
+      const toReady = s.move.to === 'Ready';
+      const r = mvSrc.readiness;
+      const missing = toReady
+        ? (r ? READINESS.filter(l => (r[l] || 'none') !== 'done') : READINESS.slice(0, 4))
+        : [];
+      const blocked = toReady && missing.length > 0;
+      mv = {
+        title: blocked ? 'Required items are incomplete' : 'Move to ' + s.move.to + '?',
+        sub: mvSrc.name + ' · ' + mvSrc.service,
+        from: mvSrc.stage, to: s.move.to,
+        blocked: blocked, clear: !blocked,
+        blockedTitle: missing.length + ' item' + (missing.length === 1 ? '' : 's') + ' still outstanding for Ready for Admission',
+        missing: missing.map((m, i) => ({ key: 'm' + i, label: m })),
+        confirmLabel: blocked ? 'Move anyway' : 'Confirm move',
+        confirmStyle: 'flex:1.3;height:38px;border:none;border-radius:10px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer;background:' + (blocked ? '#191A2E' : '#1407A2'),
+        confirm: () => this.setState({
+          move: null,
+          toast: { title: mvSrc.name + ' moved to ' + s.move.to, sub: blocked ? 'Moved with outstanding items — logged in activity' : 'Tasks and notifications prepared' }
+        })
+      };
+    }
+
+    const sel = s.sel ? this.person(s.sel) : null;
+    let d = {};
+    if (sel) {
+      const at = sel.journeyAt;
+      const journeyStages = ['New lead', 'Phone intake', 'Assessment', 'Pre-onboarding', 'Ready for admission', 'Admitted'];
+      const r = sel.readiness;
+      const readyKeys = r ? Object.keys(r) : [];
+      const readyItems = r ? readyKeys.map(label => {
+        const st = r[label] || 'none';
+        return {
+          key: label, label: label,
+          mark: st === 'done' ? '✓' : st === 'review' ? '!' : st === 'waiting' ? '·' : '○',
+          markStyle: 'width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:' +
+            (st === 'done' || st === 'review' ? '#FFFFFF' : '#B9B9C1') + ';background:' +
+            (st === 'done' ? '#12B76A' : st === 'review' ? '#F79009' : '#F1F2F6'),
+          status: st === 'done' ? 'Complete' : st === 'review' ? 'Needs review' : st === 'waiting' ? 'Waiting' : 'Not started',
+          statusColor: st === 'done' ? '#12B76A' : st === 'review' ? '#B54708' : '#9B9BA3'
+        };
+      }) : [];
+      const doneN = readyItems.filter(x => x.status === 'Complete').length;
+
+      d = {
+        name: sel.name, initials: initials(sel.name), service: sel.service, location: sel.location,
+        stage: sel.stage, stageStyle: 'align-self:flex-start;margin-top:2px;' + pillS(STAGE_TONE[sel.stage][0], STAGE_TONE[sel.stage][1]),
+        nextLabel: sel.nextLabel, nextText: sel.nextText,
+        nextBg: sel.group === 'needs' ? '#FFFCF5' : '#FCFCFD',
+        primary: sel.primaryAction,
+        primaryStyle: 'height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:12.5px;font-weight:500;color:#FFFFFF;cursor:pointer',
+        primaryClick: () => {
+          if ((sel.primaryAction || '').toLowerCase().indexOf('assessment') >= 0) { window.location.href = './Joy%20Health%20Assessment.dc.html'; return; }
+          this.setState({ sel: null, toast: { title: sel.primaryAction + ' · ' + sel.name, sub: 'Task created and assigned to you' } });
+        },
+        secondaryClick: () => {
+          if ((sel.secondary || '').toLowerCase().indexOf('assessment') >= 0) { window.location.href = './Joy%20Health%20Assessment.dc.html'; return; }
+          this.setState({ sel: null, toast: { title: sel.secondary + ' · ' + sel.name, sub: 'Task created and assigned to you' } });
+        },
+        hasSecondary: !!sel.secondary, secondary: sel.secondary || '',
+        journey: journeyStages.map((label, i) => {
+          const skipped = (sel.skipped || []).indexOf(i) >= 0;
+          const done = i < at && !skipped;
+          return {
+            key: label, label: label,
+            mark: skipped ? '–' : done ? '✓' : i === at ? '•' : '○',
+            markStyle: 'width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:' +
+              (done || i === at ? '#FFFFFF' : '#B9B9C1') + ';background:' + (done ? '#12B76A' : i === at ? '#1407A2' : '#F1F2F6'),
+            labelStyle: 'font-size:13px;color:' + (skipped ? '#9B9BA3' : i <= at ? '#191A2E' : '#9B9BA3'),
+            note: skipped ? 'Skipped — created directly' : done ? 'Complete' : i === at ? 'Current' : ''
+          };
+        }),
+        hasReadiness: !!r,
+        readyCount: r ? doneN + ' of ' + readyKeys.length + ' complete' : '',
+        readiness: readyItems,
+        overview: [
+          { key: 'o1', label: 'Service requested', value: sel.service },
+          { key: 'o2', label: 'Lead source', value: sel.source },
+          { key: 'o3', label: 'Received', value: sel.received },
+          { key: 'o4', label: 'Primary contact', value: sel.contact },
+          { key: 'o5', label: 'Requested schedule', value: sel.hours },
+          { key: 'o6', label: 'Start of care', value: sel.start },
+          { key: 'o7', label: 'Payer', value: sel.payer },
+          { key: 'o8', label: 'Assessment', value: sel.assessment }
+        ],
+        comms: sel.comms.map((c, i) => ({
+          key: 'c' + i, label: c.label, when: c.when,
+          dotStyle: 'width:6px;height:6px;flex:none;border-radius:50%;background:' +
+            (c.tone === 'done' ? '#12B76A' : c.tone === 'warn' ? '#F79009' : '#1407A2')
+        })),
+        actions: ['Request document', 'Schedule assessment', 'Add note', 'Assign staff', 'Not a fit'].map(l => ({
+          key: l, label: l,
+          style: 'height:32px;padding:0 12px;border-radius:9px;font-size:12.5px;cursor:pointer;border:1px solid ' +
+            (l === 'Not a fit' ? '#FBD9D3;background:#FFFFFF;color:#B42318' : '#ECECF1;background:#FFFFFF;color:#5B6274')
+        }))
+      };
+    }
+
+    const stalledPerson = ALL.find(p => p.stalledDays);
+    const aiKey = s.ai;
+
+    return {
+      joyOpen: s.joyOpen,
+      toggleJoy: () => this.setState({ joyOpen: !s.joyOpen, joyMic: false }),
+      joyQ: s.joyQ,
+      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyStatus: s.joyMic ? 'Listening…' : '',
+      joyStatusStyle: 'font-size:11px;color:#1407A2;' + (s.joyMic ? '' : 'display:none'),
+      toggleMic: () => this.setState({ joyMic: !s.joyMic }),
+      micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
+        (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+      joySend: () => this.setState({ joyQ: '', joyMic: false }),
+      joyPrompts: ["Who needs me today?","What is holding up Marcus Bell?","Which admissions have stalled?"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      crumb: s.view === 'board' ? 'Board' : s.filter === 'All' ? 'Work queue' : s.filter,
+      q: s.q, onSearch: (e) => this.setState({ q: e.target.value }),
+      viewTabs: [['list', 'List'], ['board', 'Board']].map(v => ({
+        key: v[0], label: v[1], click: () => this.setState({ view: v[0] }),
+        style: 'border:none;border-radius:7px;padding:0 14px;height:28px;font-size:12.5px;cursor:pointer;' +
+          (s.view === v[0] ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92')
+      })),
+      isList: s.view === 'list', isBoard: s.view === 'board',
+      quickAddOpen: s.quickAdd,
+      toggleQuickAdd: () => this.setState({ quickAdd: !s.quickAdd }),
+      quickAddItems: QUICK_ADD.map(it => ({
+        key: it.id, label: it.label,
+        click: () => {
+          this.setState({ quickAdd: false });
+          if (it.id === 'intake') { window.location.href = './Joy%20Health%20Phone%20Intake.dc.html'; return; }
+          if (it.id === 'assessment') { this.setState({ filter: 'Phone Intake', toast: { title: 'Pick who to schedule', sub: 'Choose a record below, then Schedule assessment on their card' } }); return; }
+          if (it.id === 'upload') { this.setState({ toast: { title: 'Choose a client first', sub: 'Open a record, then add the document to their folder' } }); return; }
+          this.setState({ newOpen: it.id, nf: blankNew(), created: null });
+        }
+      })),
+      newOpen: !!s.newOpen,
+      newIsClient: s.newOpen === 'client',
+      newTitle: s.newOpen === 'client' ? 'New client' : 'New lead',
+      newSub: s.newOpen === 'client'
+        ? 'Someone already committed to service — this skips the lead stages and opens their folder at Pre-Onboarding.'
+        : 'Someone who has reached out but has not been called yet. Joy will queue the intake call.',
+      closeNew: () => this.setState({ newOpen: null, created: null }),
+      nf: s.nf,
+      setNfName: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { name: v }) })); },
+      setNfDob: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { dob: v }) })); },
+      setNfLocation: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { location: v }) })); },
+      setNfService: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { service: v }) })); },
+      setNfContactName: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { contactName: v }) })); },
+      setNfRelationship: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { relationship: v }) })); },
+      setNfPhone: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { phone: v }) })); },
+      setNfEmail: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { email: v }) })); },
+      setNfSource: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { source: v }) })); },
+      setNfPayer: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { payer: v }) })); },
+      setNfNotes: (e) => { const v = e.target.value; this.setState(st => ({ nf: Object.assign({}, st.nf, { notes: v }) })); },
+      serviceOpts: SERVICES.map(o => ({ key: o, v: o })),
+      relationshipOpts: RELATIONSHIPS.map(o => ({ key: o, v: o })),
+      payerOpts: PAYERS.map(o => ({ key: o, v: o })),
+      sourceOpts: SOURCES.map(o => ({ key: o, v: o })),
+      folderItems: FOLDER_ITEMS.map((l, i) => ({ key: 'fi' + i, label: l })),
+      folderCount: FOLDER_ITEMS.length + ' folder items will be created',
+      newValid: !!(s.nf.name || '').trim() && !!(s.nf.phone || '').trim(),
+      newSaveStyle: 'height:40px;padding:0 18px;border:none;border-radius:10px;font-size:13.5px;font-weight:500;cursor:' +
+        ((s.nf.name || '').trim() && (s.nf.phone || '').trim() ? 'pointer;background:#1407A2;color:#FFFFFF' : 'not-allowed;background:#F1F2F6;color:#B9B9C1'),
+      newSaveLabel: s.newOpen === 'client' ? 'Create client' : 'Create lead',
+      saveNew: () => { this.createFromForm(); },
+      startIntakeNow: () => {
+        if (!this.createFromForm()) return;
+        setTimeout(() => { window.location.href = './Joy%20Health%20Phone%20Intake.dc.html'; }, 260);
+      },
+      filters: filters,
+      groups: groups,
+      board: boardCols,
+
+      stalledShown: !!stalledPerson && s.view === 'list',
+      stalled: stalledPerson ? {
+        label: stalledPerson.name + ' has been waiting on a signed service agreement for ' + stalledPerson.stalledDays + ' days.',
+        remind: () => this.setState({ toast: { title: 'Reminder sent to ' + stalledPerson.name, sub: 'Sent through Spruce' } }),
+        open: () => this.setState({ sel: stalledPerson.id })
+      } : {},
+
+      todayItems: [
+        { key: 't1', time: '10:30 AM', name: 'Marcus Bell', sub: 'Initial assessment · Joan Robinson, RN', open: () => this.setState({ sel: 'a1' }) },
+        { key: 't2', time: '1:00 PM', name: 'John Williams', sub: 'Intake callback', open: () => this.setState({ sel: 'a3' }) },
+        { key: 't3', time: '3:30 PM', name: 'Tammy Wilson', sub: 'First contact call', open: () => this.setState({ sel: 'a4' }) }
+      ],
+      prompts: PROMPTS.map(p => ({ key: p.id, label: p.label, click: () => this.setState({ ai: p.id }) })),
+      askJoy: () => this.setState({ ai: 'p2' }),
+
+      moveOpen: !!s.move, cancelMove: () => this.setState({ move: null }), mv: mv,
+
+      aiOpen: !!aiKey, closeAi: () => this.setState({ ai: null }),
+      ai: aiKey === 'p1' ? {
+        request: 'Who needs me today?',
+        summary: 'Four admissions need an action from the office today.',
+        hasList: true, hasDraft: false,
+        items: [
+          { key: 'i1', label: 'Marcus Bell — assessment at 10:30 AM', sub: 'Medication list still missing', right: 'Assessment', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#F79009;flex:none' },
+          { key: 'i2', label: 'Susan Miller — service agreement to review', sub: 'Unsigned 4 days', right: 'Pre-onboarding', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#F79009;flex:none' },
+          { key: 'i3', label: 'John Williams — intake incomplete', sub: '4 of 7 sections', right: 'Phone intake', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#1407A2;flex:none' },
+          { key: 'i4', label: 'Tammy Wilson — new lead, no contact', sub: 'Received 9:14 AM', right: 'New lead', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#1407A2;flex:none' }
+        ],
+        note: 'Joy can create the four follow-up tasks and assign them to you.',
+        confirmLabel: 'Create 4 tasks'
+      } : aiKey === 'p3' ? {
+        request: 'Which admissions have stalled 3+ days?',
+        summary: 'One record has stopped moving. Two others are waiting but within normal range.',
+        hasList: true, hasDraft: false,
+        items: [
+          { key: 'i1', label: 'Susan Miller — service agreement unsigned', sub: 'No movement since Aug 6', right: '4 days', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#F79009;flex:none' },
+          { key: 'i2', label: 'Harold Reese — no callback', sub: 'Two voicemails left', right: '3 days', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#F79009;flex:none' },
+          { key: 'i3', label: 'Margaret Davis — medication list', sub: 'Assessment can proceed without it', right: '3 days', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#D0D5DD;flex:none' }
+        ],
+        note: 'Joy can send a reminder to Susan and Harold through Spruce.',
+        confirmLabel: 'Send 2 reminders'
+      } : {
+        request: 'What is holding up Marcus Bell?',
+        summary: 'One item is outstanding before his 10:30 assessment: the medication list. Everything else — intake, contacts, RN assignment, address access notes — is complete.',
+        hasList: true, hasDraft: true,
+        items: [
+          { key: 'i1', label: 'Medication list', sub: 'Requested Aug 9 · no response', right: 'Missing', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#F79009;flex:none' },
+          { key: 'i2', label: 'Phone intake', sub: '7 of 7 sections', right: 'Complete', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#12B76A;flex:none' },
+          { key: 'i3', label: 'RN assigned', sub: 'Joan Robinson, RN', right: 'Complete', dotStyle: 'width:6px;height:6px;border-radius:50%;background:#12B76A;flex:none' }
+        ],
+        draft: 'Hi Denise — Marcus\u2019s assessment is today at 10:30 AM. If you can send a photo of his current medication list before the visit, our nurse can review it with you in person. Thank you!',
+        draftTo: 'Denise Bell · daughter · Spruce',
+        note: 'Joy prepared this message but has not sent it. Review before sending.',
+        confirmLabel: 'Send message'
+      },
+      confirmAi: () => this.setState({
+        ai: null,
+        toast: aiKey === 'p1'
+          ? { title: '4 tasks created', sub: 'Assigned to Joan Robinson · visible in My Tasks' }
+          : aiKey === 'p3'
+            ? { title: '2 reminders sent', sub: 'Susan Miller and Harold Reese · through Spruce' }
+            : { title: 'Message sent to Denise Bell', sub: 'Prepared by Joy AI · sent through Spruce' }
+      }),
+
+      drawerOpen: !!sel, closeDrawer: () => this.setState({ sel: null }), d: d,
+      toastOpen: !!s.toast, toast: s.toast || {}, closeToast: () => this.setState({ toast: null })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

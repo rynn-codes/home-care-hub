@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FDFDFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+button,input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@keyframes secIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes listenRing{0%{transform:scale(1);opacity:.45}100%{transform:scale(1.9);opacity:0}}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#FDFDFC;display:flex;flex-direction:column;min-width:1180px">
+
+  <header style="position:sticky;top:0;z-index:30;background:rgba(253,253,252,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:12px 30px;display:flex;align-items:center;gap:12px">
+    <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#8A8A92" style-hover="color:#191A2E">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5L5 8l4.5 4.5"></path></svg>Admissions
+    </a>
+    <span style="font-size:12.5px;color:#C9C9D0">/</span>
+    <span style="font-size:13px;font-weight:500;color:#191A2E">Marcus Bell</span>
+    <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;background:#EEF0FE;font-size:11px;font-weight:500;color:#1407A2">Initial Assessment</span>
+    <span style="display:flex;align-items:center;gap:6px;margin-left:6px">
+      <span style="{{ saveDotStyle }}"></span>
+      <span style="font-size:11.5px;color:#9B9BA3">{{ saveState }}</span>
+    </span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <button onClick="{{ toggleReviewPanel }}" style="{{ reviewBtnStyle }}">{{ reviewBtnLabel }}</button>
+      <button onClick="{{ saveExit }}" style="height:34px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Save &amp; exit</button>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;align-items:flex-start;min-height:0">
+
+    <aside style="width:252px;flex:none;border-right:1px solid rgba(0,0,0,.06);padding:22px 16px 40px;position:sticky;top:53px;height:calc(100vh - 53px);box-sizing:border-box;display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+      <div style="display:flex;flex-direction:column;gap:8px;padding:0 8px">
+        <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Assessment</span>
+        <span style="display:flex;align-items:baseline;gap:7px">
+          <span style="font-size:19px;font-weight:600;letter-spacing:-.02em">{{ doneCount }}</span>
+          <span style="font-size:12px;color:#8A8A92">of {{ totalCount }} sections done</span>
+        </span>
+        <span style="display:block;width:100%;height:3px;border-radius:999px;background:#F1F2F6;overflow:hidden">
+          <span style="{{ progressBarStyle }}"></span>
+        </span>
+      </div>
+      <nav style="display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="13">
+          <button onClick="{{ n.go }}" style="{{ n.style }}">
+            <span style="{{ n.markStyle }}">{{ n.mark }}</span>
+            <span style="{{ n.labelStyle }}">{{ n.label }}</span>
+            <span style="{{ n.flagStyle }}">{{ n.flag }}</span>
+          </button>
+        </sc-for>
+      </nav>
+    </aside>
+
+    <main style="flex:1;min-width:0;display:flex;justify-content:center;padding:0 34px 120px">
+      <div style="width:100%;max-width:720px;padding-top:34px;display:flex;flex-direction:column;gap:24px;animation:secIn .18s ease-out">
+
+        <sc-if value="{{ notReview }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="display:flex;align-items:center;gap:11px">
+              <span style="font-size:12px;font-weight:600;color:#1407A2">{{ sec.number }}</span>
+              <span style="font-size:12.5px;color:#9B9BA3">{{ sec.kicker }}</span>
+            </span>
+            <h1 style="margin:0;font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1.2">{{ sec.title }}</h1>
+            <p style="margin:0;font-size:14px;color:#5B6274;line-height:1.6;text-wrap:pretty">{{ sec.blurb }}</p>
+          </div>
+
+          <sc-if value="{{ sec.hasJoy }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:14px 16px;border:1px solid #E0E3FB;border-radius:13px;background:#F7F8FE">
+              <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;flex:none;margin-top:6px"></span>
+              <span style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:13px;color:#191A2E;line-height:1.5;text-wrap:pretty">{{ sec.joyNote }}</span>
+                <span style="display:flex;gap:8px">
+                  <button onClick="{{ acceptJoy }}" style="height:30px;padding:0 12px;background:#1407A2;border:none;border-radius:8px;font-size:12.5px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Accept into this section</button>
+                  <button onClick="{{ dismissJoy }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #DDE0F8;border-radius:8px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="color:#191A2E">Not accurate</button>
+                </span>
+              </span>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <sc-for list="{{ fields }}" as="f" hint-placeholder-count="4">
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <span style="display:flex;align-items:baseline;gap:9px">
+                  <span style="font-size:14.5px;font-weight:500;color:#191A2E">{{ f.label }}</span>
+                  <span style="{{ f.hintStyle }}">{{ f.hint }}</span>
+                </span>
+
+                <sc-if value="{{ f.isKnown }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:13px;padding:4px 16px">
+                    <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:baseline;gap:14px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                        <span style="font-size:12.5px;color:#9B9BA3;width:150px;flex:none">{{ r.label }}</span>
+                        <span style="font-size:13.5px;color:#191A2E">{{ r.value }}</span>
+                        <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.isLevels }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:13px;overflow:hidden">
+                    <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="7">
+                      <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid #F3F3F6">
+                        <span style="font-size:13.5px;color:#191A2E;width:118px;flex:none">{{ r.label }}</span>
+                        <span style="display:flex;gap:6px;flex-wrap:wrap">
+                          <sc-for list="{{ r.opts }}" as="o" hint-placeholder-count="4">
+                            <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                          </sc-for>
+                        </span>
+                        <span style="{{ r.noteStyle }}">{{ r.note }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.isChips }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{ f.opts }}" as="o" hint-placeholder-count="8">
+                      <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.isSingle }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{ f.opts }}" as="o" hint-placeholder-count="4">
+                      <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.isCards }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:9px">
+                    <sc-for list="{{ f.opts }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.pick }}" style="{{ o.style }}">
+                        <span style="{{ o.markStyle }}">{{ o.mark }}</span>
+                        <span style="display:flex;flex-direction:column;gap:3px;text-align:left">
+                          <span style="font-size:14px;font-weight:500;color:#191A2E">{{ o.label }}</span>
+                          <span style="font-size:12.5px;color:#8A8A92;line-height:1.45">{{ o.sub }}</span>
+                        </span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ false }}">
+                  <textarea value="{{ f.value }}" onChange="{{ f.onText }}" placeholder="{{ f.placeholder }}" style="width:100%;box-sizing:border-box;min-height:92px;resize:vertical;padding:14px 16px;border:1px solid #ECECF1;border-radius:13px;background:#FFFFFF;font-size:14px;line-height:1.6;color:#191A2E;outline:none"></textarea>
+                </sc-if>
+
+                <sc-if value="{{ f.isRows }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:9px">
+                    <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:13px;overflow:hidden">
+                      <div style="{{ f.headStyle }}">
+                        <sc-for list="{{ f.cols }}" as="c" hint-placeholder-count="3">
+                          <span style="{{ c.style }}">{{ c.label }}</span>
+                        </sc-for>
+                      </div>
+                      <sc-for list="{{ f.entries }}" as="e" hint-placeholder-count="2">
+                        <div style="{{ e.rowStyle }}">
+                          <sc-for list="{{ e.cells }}" as="c" hint-placeholder-count="3">
+                            <input type="text" value="{{ c.value }}" onChange="{{ c.onChange }}" placeholder="{{ c.placeholder }}" style="{{ c.style }}"/>
+                          </sc-for>
+                          <button onClick="{{ e.remove }}" style="width:26px;height:26px;flex:none;border:none;background:transparent;border-radius:7px;color:#C9C9D0;font-size:12px;cursor:pointer" style-hover="background:#F1F2F6;color:#5B6274">✕</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <button onClick="{{ f.add }}" style="height:32px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#1407A2;cursor:pointer" style-hover="background:#F7F8FE">{{ f.addLabel }}</button>
+                      <button onClick="{{ f.upload }}" style="height:32px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">{{ f.uploadLabel }}</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:11px;padding-top:4px">
+            <button onClick="{{ nextSection }}" style="height:44px;padding:0 20px;background:#1407A2;border:none;border-radius:11px;font-size:14px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">{{ nextLabel }}</button>
+            <button onClick="{{ prevSection }}" style="height:44px;padding:0 16px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:13.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Back</button>
+            <button onClick="{{ markNA }}" style="margin-left:auto;background:transparent;border:none;font-size:13px;color:#9B9BA3;cursor:pointer;padding:4px" style-hover="color:#5B6274">Not applicable for this client</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="font-size:12.5px;color:#9B9BA3">Section 13 of 13</span>
+              <h1 style="margin:0;font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1.2">Assessment summary</h1>
+              <p style="margin:0;font-size:14px;color:#5B6274;line-height:1.6;text-wrap:pretty">Joy drafted this from what you documented. Read it, fix anything that is wrong, then sign.</p>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:15px;padding:22px;display:flex;flex-direction:column;gap:18px">
+              <sc-for list="{{ summary }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ s.label }}</span>
+                  <span style="font-size:15px;color:#191A2E;line-height:1.5;text-wrap:pretty">{{ s.value }}</span>
+                  <span style="{{ s.subStyle }}">{{ s.sub }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ hasOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:11px;padding:17px 18px;border:1px solid #FCE8B6;border-radius:14px;background:#FFFCF5">
+                <span style="font-size:13px;font-weight:600;color:#B54708">Needs review before you sign</span>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ openItems }}" as="o" hint-placeholder-count="3">
+                    <span style="display:flex;align-items:flex-start;gap:10px">
+                      <span style="width:5px;height:5px;border-radius:50%;background:#B54708;flex:none;margin-top:7px"></span>
+                      <span style="display:flex;flex-direction:column;gap:1px">
+                        <span style="font-size:13.5px;color:#191A2E;line-height:1.45">{{ o.label }}</span>
+                        <span style="font-size:12px;color:#8A8A92">{{ o.why }}</span>
+                      </span>
+                      <button onClick="{{ o.go }}" style="margin-left:auto;flex:none;height:28px;padding:0 11px;background:#FFFFFF;border:1px solid #FCE8B6;border-radius:8px;font-size:12px;color:#B54708;cursor:pointer" style-hover="background:#FFF8E8">Open section</button>
+                    </span>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ noOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:11px;padding:15px 17px;border:1px solid #D3F0DF;border-radius:14px;background:#F6FEF9">
+                <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+                <span style="font-size:13.5px;color:#191A2E">No unresolved sections. Ready for your signature.</span>
+              </div>
+            </sc-if>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:15px;padding:20px;display:flex;flex-direction:column;gap:15px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">RN completion</span>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:12px;color:#8A8A92">Assessor</span>
+                  <input type="text" value="{{ rnName }}" onChange="{{ onRnName }}" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:12px;color:#8A8A92">Credentials</span>
+                  <input type="text" value="{{ rnCred }}" onChange="{{ onRnCred }}" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+                </label>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12px;color:#8A8A92">Type your full name to sign</span>
+                <input type="text" value="{{ signature }}" onChange="{{ onSignature }}" placeholder="Joan Robinson" style="box-sizing:border-box;height:48px;padding:0 14px;border:1px solid #ECECF1;border-radius:11px;background:#FFFFFF;font-size:17px;color:#191A2E;outline:none"/>
+              </label>
+              <span style="font-size:12px;color:#9B9BA3">{{ signStamp }}</span>
+            </div>
+
+            <sc-if value="{{ notSignedState }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:11px">
+                <button onClick="{{ completeAssessment }}" style="{{ completeStyle }}">{{ completeLabel }}</button>
+                <button onClick="{{ backToSections }}" style="height:46px;padding:0 17px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:13.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Return to a section</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ signedState }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:16px;padding:22px;border:1px solid #D3F0DF;border-radius:15px;background:#F6FEF9">
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <span style="display:flex;align-items:center;gap:10px">
+                    <span style="width:20px;height:20px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+                    <span style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:#191A2E">Assessment complete</span>
+                  </span>
+                  <span style="font-size:13.5px;color:#5B6274;line-height:1.55;text-wrap:pretty">Joy prepared the admission summary. No unresolved sections. Marcus Bell moved to Pre-Onboarding — the office decides on admission from here.</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <button onClick="{{ openPacket }}" style="height:46px;padding:0 20px;background:#1407A2;border:none;border-radius:11px;font-size:14px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Prepare agreement packet</button>
+                  <button onClick="{{ reviewAdmission }}" style="height:46px;padding:0 17px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:13.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Review for admission</button>
+                  <button onClick="{{ backToSections }}" style="margin-left:auto;background:transparent;border:none;font-size:13px;color:#9B9BA3;cursor:pointer;padding:4px" style-hover="color:#5B6274">Reopen a section</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPacket }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="font-size:12.5px;color:#9B9BA3">After the assessment</span>
+              <h1 style="margin:0;font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1.2">Client agreement packet</h1>
+              <p style="margin:0;font-size:14px;color:#5B6274;line-height:1.6;text-wrap:pretty">All 26 pages are filled from the phone intake and the assessment you just signed. The office adds rates and identifiers, then it goes out for signature. Nothing here is retyped.</p>
+            </div>
+
+            <div style="display:flex;gap:10px">
+              <sc-for list="{{ packetStats }}" as="p" hint-placeholder-count="4">
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px;padding:14px 16px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:13px">
+                  <span style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:#191A2E">{{ p.value }}</span>
+                  <span style="font-size:12px;color:#8A8A92">{{ p.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid #FCE8B6;border-radius:15px;background:#FFFCF5">
+              <span style="display:flex;align-items:center;gap:9px">
+                <span style="font-size:13px;font-weight:600;color:#B54708">What the assessment cannot know</span>
+                <span style="margin-left:auto;font-size:12px;color:#8A8A92">{{ officeMissingLabel }}</span>
+              </span>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+                <sc-for list="{{ officeFields }}" as="o" hint-placeholder-count="8">
+                  <label style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:12px;color:#8A8A92">{{ o.label }}</span>
+                    <input type="text" value="{{ o.value }}" onChange="{{ o.onChange }}" placeholder="{{ o.placeholder }}" style="{{ o.style }}"/>
+                  </label>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ packetDocs }}" as="doc" hint-placeholder-count="18">
+                <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:13px;overflow:hidden">
+                  <div onClick="{{ doc.toggle }}" style="display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer">
+                    <span style="font-size:11.5px;color:#B9B9C1;width:52px;flex:none">{{ doc.pages }}</span>
+                    <span style="font-size:13.5px;color:#191A2E;line-height:1.4">{{ doc.name }}</span>
+                    <span style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
+                      <span style="{{ doc.statusStyle }}">{{ doc.statusLabel }}</span>
+                      <span style="{{ doc.caretStyle }}">⌄</span>
+                    </span>
+                  </div>
+                  <sc-if value="{{ doc.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-top:1px solid #F3F3F6;background:#FCFCFD;padding:6px 16px 12px">
+                      <sc-for list="{{ doc.rows }}" as="r" hint-placeholder-count="4">
+                        <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                          <span style="{{ r.dotStyle }}"></span>
+                          <span style="font-size:12.5px;color:#5B6274;line-height:1.45">{{ r.label }}</span>
+                          <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:11px">
+              <button onClick="{{ openSigning }}" style="{{ sendPacketStyle }}">{{ sendPacketLabel }}</button>
+              <button onClick="{{ reviewAdmission }}" style="height:46px;padding:0 17px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:13.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Back to Admissions</button>
+              <button onClick="{{ leavePacket }}" style="margin-left:auto;background:transparent;border:none;font-size:13px;color:#9B9BA3;cursor:pointer;padding:4px" style-hover="color:#5B6274">Back to the assessment</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSigning }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="font-size:12.5px;color:#9B9BA3">Sitting with the family</span>
+              <h1 style="margin:0;font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1.2">Review before signing</h1>
+              <p style="margin:0;font-size:14px;color:#5B6274;line-height:1.6;text-wrap:pretty">Twelve things they are agreeing to, in plain language. Say each one, mark it reviewed, and open the actual document text if they ask what it says. You cannot sign until all twelve are marked.</p>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:15px 17px;border:1px solid #ECECF1;border-radius:14px;background:#FFFFFF">
+              <span style="font-size:13.5px;color:#191A2E">{{ walkHeadline }}</span>
+              <span style="{{ walkQStyle }}">{{ walkQLabel }}</span>
+              <span style="margin-left:auto;display:block;width:180px;height:4px;border-radius:999px;background:#F1F2F6;overflow:hidden">
+                <span style="{{ walkBarStyle }}"></span>
+              </span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ walkItems }}" as="w" hint-placeholder-count="12">
+                <div style="{{ w.cardStyle }}">
+                  <div style="display:flex;align-items:center;gap:11px">
+                    <span style="{{ w.numStyle }}">{{ w.num }}</span>
+                    <span style="font-size:15px;font-weight:600;letter-spacing:-.01em;color:#191A2E">{{ w.title }}</span>
+                    <span style="margin-left:auto;display:flex;align-items:center;gap:9px;flex:none">
+                      <span style="font-size:11.5px;color:#B9B9C1">{{ w.pages }}</span>
+                      <span style="{{ w.markStyle }}">{{ w.markLabel }}</span>
+                    </span>
+                  </div>
+                  <p style="margin:0;font-size:13.5px;color:#5B6274;line-height:1.6;text-wrap:pretty">{{ w.say }}</p>
+                  <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:11px;background:#FFFCF5;border:1px solid #FCE8B6">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#B54708;flex:none;margin-top:2px">Say this</span>
+                    <span style="font-size:13px;color:#8A6220;line-height:1.55;text-wrap:pretty">{{ w.watch }}</span>
+                  </div>
+                  <sc-if value="{{ w.textOpen }}" hint-placeholder-val="{{ false }}">
+                    <p style="margin:0;padding:15px 17px;border-radius:11px;background:#FCFCFD;border:1px solid #F1F2F6;font-size:12.5px;color:#5B6274;line-height:1.7;text-wrap:pretty">{{ w.text }}</p>
+                  </sc-if>
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <button onClick="{{ w.toggleDone }}" style="{{ w.doneStyle }}">{{ w.doneLabel }}</button>
+                    <button onClick="{{ w.toggleFlag }}" style="{{ w.flagStyle }}">{{ w.flagLabel }}</button>
+                    <button onClick="{{ w.toggleText }}" style="margin-left:auto;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:4px" style-hover="color:#2A1BD1">{{ w.textLabel }}</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:17px;padding:22px;border:1px solid #ECECF1;border-radius:15px;background:#FFFFFF">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:16px;font-weight:600;letter-spacing:-.015em">Sign once</span>
+                <span style="font-size:13px;color:#8A8A92;line-height:1.55;text-wrap:pretty">One signature and one set of initials. Joy places them on every page that asks — the family never signs the same sentence twice.</span>
+              </div>
+              <div style="{{ signLockStyle }}">{{ signLockLabel }}</div>
+              <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:13px">
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:12px;color:#8A8A92">Signer’s full legal name</span>
+                  <input type="text" value="{{ clientName }}" onChange="{{ onClientName }}" placeholder="Susan Bell" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:12px;color:#8A8A92">Relationship to client</span>
+                  <input type="text" value="{{ clientRel }}" onChange="{{ onClientRel }}" placeholder="Daughter" style="box-sizing:border-box;height:42px;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:14px;color:#191A2E;outline:none"/>
+                </label>
+              </div>
+              <div style="display:flex;gap:13px">
+                <div style="flex:1;display:flex;flex-direction:column;gap:7px;padding:15px 17px;border:1px dashed #DDDDE5;border-radius:12px;background:#FCFCFD">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#B9B9C1">Signature</span>
+                  <span style="{{ scriptStyle }}">{{ scriptName }}</span>
+                </div>
+                <div style="width:132px;flex:none;display:flex;flex-direction:column;gap:7px;padding:15px 17px;border:1px dashed #DDDDE5;border-radius:12px;background:#FCFCFD">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#B9B9C1">Initials</span>
+                  <span style="font-family:Georgia,serif;font-style:italic;font-size:27px;color:#191A2E;letter-spacing:.04em">{{ initialsBox }}</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:1px;border:1px solid #F1F2F6;border-radius:12px;overflow:hidden">
+                <sc-for list="{{ applyRows }}" as="a" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 15px;background:#FCFCFD;border-bottom:1px solid #F1F2F6">
+                    <span style="width:150px;flex:none;font-size:12.5px;color:#8A8A92">{{ a.label }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px">
+                      <span style="font-size:13px;color:#191A2E">{{ a.value }}</span>
+                      <span style="font-size:11.5px;color:#B9B9C1;line-height:1.5">{{ a.sub }}</span>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:11px">
+                <button onClick="{{ signAll }}" style="{{ signAllStyle }}">{{ signAllLabel }}</button>
+                <button onClick="{{ leaveSigning }}" style="height:48px;padding:0 17px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:13.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Back to the packet</button>
+              </div>
+              <sc-if value="{{ packetSigned }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:9px;padding:17px 19px;border:1px solid #D3F0DF;border-radius:13px;background:#F6FEF9">
+                  <span style="font-size:13.5px;font-weight:600;color:#191A2E">{{ signedSummary }}</span>
+                  <span style="font-size:12.5px;color:#5B6274;line-height:1.55">{{ questionsFollowUp }}</span>
+                  <button onClick="{{ reviewAdmission }}" style="align-self:flex-start;margin-top:4px;height:40px;padding:0 16px;background:#FFFFFF;border:1px solid #D3F0DF;border-radius:10px;font-size:13px;color:#12B76A;cursor:pointer">Back to Admissions</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </main>
+
+    <sc-if value="{{ reviewPanelOpen }}" hint-placeholder-val="{{ false }}">
+      <aside style="width:296px;flex:none;border-left:1px solid rgba(0,0,0,.06);padding:24px 18px 40px;position:sticky;top:53px;height:calc(100vh - 53px);box-sizing:border-box;display:flex;flex-direction:column;gap:14px;overflow-y:auto;background:#FCFCFD">
+        <span style="display:flex;align-items:center;gap:9px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Needs review</span>
+          <span style="margin-left:auto;font-size:11px;padding:1px 8px;border-radius:999px;background:#FFFAEB;color:#B54708;font-weight:500">{{ openCount }}</span>
+        </span>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ openItems }}" as="o" hint-placeholder-count="3">
+            <button onClick="{{ o.go }}" style="text-align:left;display:flex;flex-direction:column;gap:3px;padding:12px 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;cursor:pointer" style-hover="border-color:#DDE0F8">
+              <span style="font-size:13px;color:#191A2E;line-height:1.4">{{ o.label }}</span>
+              <span style="font-size:11.5px;color:#8A8A92">{{ o.why }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="font-size:11.5px;color:#B9B9C1;line-height:1.5;text-wrap:pretty">Joy flags gaps and conflicts. It does not decide anything clinical — you do.</span>
+      </aside>
+    </sc-if>
+  </div>
+
+  <div style="position:sticky;bottom:0;z-index:25;background:rgba(253,253,252,.95);backdrop-filter:blur(10px);border-top:1px solid rgba(0,0,0,.06);padding:11px 30px;display:flex;align-items:center;gap:10px">
+    <button onClick="{{ toggleJoy }}" style="display:flex;align-items:center;gap:9px;height:36px;padding:0 15px 0 12px;background:#191A2E;border:none;border-radius:999px;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#1407A2">
+      <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Ask Joy
+    </button>
+    <button onClick="{{ toggleVoice }}" style="{{ voiceStyle }}">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>{{ voiceLabel }}
+    </button>
+    <button onClick="{{ addPhoto }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:999px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"></rect><circle cx="8" cy="8.5" r="2.2"></circle><path d="M5.6 4l.9-1.4h3l.9 1.4"></path></svg>Add photo
+    </button>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;color:#9B9BA3">{{ sec.progressLabel }}</span>
+      <span style="display:block;width:150px;height:3px;border-radius:999px;background:#F1F2F6;overflow:hidden">
+        <span style="{{ progressBarStyle }}"></span>
+      </span>
+    </span>
+  </div>
+
+  <sc-if value="{{ voiceOn }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:86px;z-index:60;transform:translateX(-50%);display:flex;align-items:center;gap:14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:14px 18px;box-shadow:0 16px 40px rgba(25,26,46,.14);min-width:400px">
+      <span style="position:relative;width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center">
+        <span style="position:absolute;inset:0;border-radius:50%;background:#8FA0FF;animation:listenRing 2.2s ease-out infinite"></span>
+        <span style="position:relative;width:30px;height:30px;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.2s ease-in-out infinite"></span>
+        </span>
+      </span>
+      <span style="display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:13.5px;color:#191A2E">Listening — dictate your findings for {{ sec.title }}</span>
+        <span style="font-size:11.5px;color:#9B9BA3">Joy drafts into the fields. Nothing is saved until you accept it.</span>
+      </span>
+      <button onClick="{{ toggleVoice }}" style="margin-left:auto;flex:none;height:32px;padding:0 13px;background:#191A2E;border:none;border-radius:9px;font-size:12.5px;color:#FFFFFF;cursor:pointer">Stop</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:26px;bottom:86px;z-index:60;width:340px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about this assessment" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:86px;z-index:90;transform:translateX(-50%);animation:toastIn .18s ease-out">
+      <div style="display:flex;align-items:center;gap:14px;background:#191A2E;border-radius:12px;padding:13px 16px;box-shadow:0 12px 32px rgba(25,26,46,.24);min-width:340px">
+        <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+        <span style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;font-weight:500;color:#FFFFFF">{{ toast.title }}</span>
+          <span style="font-size:11.5px;color:rgba(255,255,255,.62)">{{ toast.sub }}</span>
+        </span>
+        <button onClick="{{ closeToast }}" style="margin-left:auto;flex:none;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;padding:0 2px">✕</button>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const LEVELS = ['Independent', 'Standby', 'Hands-on', 'Total'];
+const LEVEL_HELP = 'Independent — no aide involvement · Standby — aide cues and stays within reach, no touching · Hands-on — aide physically helps · Total — aide does it entirely';
+const ADLS = ['Bathing', 'Dressing', 'Toileting', 'Feeding', 'Meal prep', 'Mobility', 'Transfers', 'Continence'];
+
+const SECTIONS = [
+  {
+    id: 'client', title: 'Client and contacts', kicker: 'Carried from phone intake',
+    blurb: 'Everything the office already captured. Correct anything that changed — do not retype what is right.',
+    fields: [
+      { id: 'demographics', kind: 'known', label: 'From the phone intake', rows: [
+        ['Client', 'Marcus Bell · 84', 'intake'],
+        ['Date of birth', '03/14/1941', 'intake'],
+        ['Address', '3704 Harmon Ave · Houston, TX 77007', 'intake'],
+        ['Phone', '(713) 555-0142', 'intake'],
+        ['Primary language', 'English', 'intake'],
+        ['Responsible party', 'Susan Bell · daughter · (412) 555-0198', 'intake'],
+        ['Payer', 'Self Pay', 'intake'],
+        ['Assessment', 'Today · 10:30 AM · Joan Robinson, RN', '']
+      ] },
+      { id: 'emergency', kind: 'rows', label: 'Emergency contacts', hint: 'At least one required',
+        cols: ['Name', 'Relationship', 'Phone'], addLabel: 'Add contact', uploadLabel: 'Copy from responsible party',
+        seed: [['Susan Bell', 'Daughter', '(412) 555-0198'], ['', '', '']] },
+      { id: 'clientNotes', kind: 'text', label: 'Anything the office should correct', placeholder: 'Address is a duplex — use the side entrance…' }
+    ]
+  },
+  {
+    id: 'admin', title: 'Identifiers and payer', kicker: 'The packet cannot print without these',
+    blurb: 'Record numbers and payer details the consent packet asks for. Collect them here once so nobody chases them at signing.',
+    fields: [
+      { id: 'ssn', kind: 'text', label: 'Social security number', hint: 'Records authorizations, pages 12–14', seedText: '', placeholder: 'A client may decline — write “declined” and we print it blank' },
+      { id: 'payer', kind: 'single', label: 'Who pays for care', hint: 'Checkbox on page 8', opts: ['Private pay', 'Long-term care insurance', 'Insurance', 'Medicaid', 'Medicare', '3rd party payor', 'Grant program'] },
+      { id: 'carrier', kind: 'text', label: 'Carrier and policy number', seedText: '', placeholder: 'Genworth · policy 4482-118 · elimination period met 09/2025' },
+      { id: 'advDirective', kind: 'single', label: 'Advance directive', hint: 'Plan of care, page 21', opts: ['Yes — copy provided', 'Yes — copy requested', 'No'] },
+      { id: 'dnr', kind: 'single', label: 'DNR order', opts: ['Yes — copy provided', 'Yes — copy requested', 'No'] }
+    ]
+  },
+  {
+    id: 'disclosure', title: 'Who we may talk to', kicker: 'HIPAA disclosure list',
+    blurb: 'Only the people listed here may call and ask about care. Everyone else gets nothing — read that sentence out loud at signing.',
+    fields: [
+      { id: 'disclosureList', kind: 'rows', label: 'Authorized to receive information', cols: ['Name', 'Relationship', 'Phone'],
+        addLabel: 'Add person', uploadLabel: 'Copy emergency contacts',
+        seed: [['Susan Bell', 'Daughter', '(412) 555-0198'], ['Ray Bell', 'Son', '(713) 555-0142'], ['', '', '']] },
+      { id: 'disclosureNotes', kind: 'text', label: 'Anyone specifically excluded', placeholder: 'Do not discuss finances with anyone other than Susan…' }
+    ]
+  },
+  {
+    id: 'reason', title: 'Reason for care', kicker: 'Why we are here',
+    blurb: 'What changed, and what the family is asking for.',
+    joyNote: 'Susan told intake about two falls this month and difficulty bathing. I drafted “Recent falls” and “Decline in function” below — confirm or change them.',
+    fields: [
+      { id: 'primaryReason', kind: 'text', label: 'Primary reason care is needed',
+        seedText: 'Two falls in the last month with increasing difficulty bathing and moving safely around the home.',
+        placeholder: 'In your own words…' },
+      { id: 'recentChange', kind: 'chips', label: 'Recent change', opts: ['Fall', 'Hospitalization', 'Surgery', 'Decline in function', 'New diagnosis', 'Caregiver loss', 'None'] },
+      { id: 'diagnosis', kind: 'text', label: 'Primary diagnosis or condition when known', seedText: 'Parkinson\u2019s disease (family-reported).', placeholder: 'As reported — do not diagnose here' }
+    ]
+  },
+  {
+    id: 'home', title: 'Living situation and home safety', kicker: 'What you see in the home',
+    blurb: 'Document the environment the caregiver will be working in.',
+    fields: [
+      { id: 'living', kind: 'single', label: 'Living situation', opts: ['Lives alone', 'With spouse', 'With family', 'Assisted living', 'Other'] },
+      { id: 'hazards', kind: 'chips', label: 'Hazards and access', opts: ['Stairs', 'Clutter', 'Limited support', 'Fall hazards', 'Bathroom safety', 'Poor lighting', 'Access concerns', 'No hazards noted'] },
+      { id: 'animals', kind: 'chips', label: 'Animals in the home', hint: 'Caregivers are told before the first shift', opts: ['No animals', 'Dog', 'Cat', 'Bird', 'Other animal', 'Animal is contained during visits', 'Caregiver must handle or feed the animal'] },
+      { id: 'smoking', kind: 'single', label: 'Smoking in the home', hint: 'Affects caregiver matching', opts: ['No one smokes', 'Client smokes indoors', 'Client smokes outdoors only', 'Household member smokes indoors', 'Oxygen in use — smoking hazard'] },
+      { id: 'equipment', kind: 'chips', label: 'Equipment in the home', opts: ['Walker', 'Wheelchair', 'Bedside commode', 'Shower chair', 'Grab bars', 'Hospital bed', 'Oxygen', 'None'] },
+      { id: 'homeNotes', kind: 'text', label: 'Home notes', placeholder: 'Bathroom has a step-in tub, no grab bars on the left wall…' }
+    ]
+  },
+  {
+    id: 'function', title: 'Functional status', kicker: 'Activities of daily living',
+    blurb: 'Level of help needed for each activity. This drives the care plan and caregiver level.',
+    joyNote: 'You mentioned a walker and two falls. I set Mobility and Transfers to Hands-on — please review.',
+    fields: [
+      { id: 'adls', kind: 'levels', label: 'Level of assistance', hint: LEVEL_HELP, rows: ADLS },
+      { id: 'functionNotes', kind: 'text', label: 'Functional notes', placeholder: 'Can shower independently if seated and set up beforehand…' }
+    ]
+  },
+  {
+    id: 'cognition', title: 'Cognitive, behavioral and risk', kicker: 'Observed, not diagnosed',
+    blurb: 'Record what you observed and what the family reports. Joy will not infer a diagnosis from this.',
+    fields: [
+      { id: 'cognitive', kind: 'chips', label: 'Cognitive and behavioral', opts: ['Alert and oriented', 'Forgetful', 'Confused', 'Dementia / Alzheimer\u2019s', 'Sundowning', 'Wandering risk', 'Anxiety / agitation'] },
+      { id: 'risk', kind: 'chips', label: 'Risk', opts: ['High fall risk', 'Skin breakdown risk', 'Elopement risk', 'Choking / aspiration risk', 'No elevated risk noted'] },
+      { id: 'cogNotes', kind: 'text', label: 'Risk notes', placeholder: 'Oriented to person and place, occasionally to time…' }
+    ]
+  },
+  {
+    id: 'meds', title: 'Medications', kicker: 'Reminders only — we do not administer',
+    blurb: 'Type them, photograph the bottles, or upload a list. You review anything Joy drafts.',
+    fields: [
+      { id: 'medList', kind: 'rows', label: 'Medication list', cols: ['Medication', 'Dose', 'Frequency'],
+        addLabel: 'Add medication', uploadLabel: 'Upload or photograph list',
+        seed: [['Carbidopa-levodopa', '25-100 mg', '3× daily'], ['Amlodipine', '', 'Daily'], ['Vitamin D', '2000 IU', 'Daily']] },
+      { id: 'medNeeds', kind: 'chips', label: 'Medication support needed', opts: ['Reminders', 'Set up in a pill organizer', 'Family manages', 'Client manages independently'] },
+      { id: 'allergies', kind: 'text', label: 'Allergies', seedText: 'Penicillin — rash.', placeholder: 'None known' }
+    ]
+  },
+  {
+    id: 'providers', title: 'Physicians and providers', kicker: 'Goes to the permanent record',
+    blurb: 'Who to call, and who signs orders if we ever need them.',
+    fields: [
+      { id: 'providerList', kind: 'rows', label: 'Providers', cols: ['Name', 'Specialty / practice', 'Phone'],
+        addLabel: 'Add provider', uploadLabel: 'Photograph card',
+        seed: [['Dr. Alan Reyes', 'Primary care · Memorial Family', '(713) 555-0110'], ['Dr. Nina Patel', 'Neurology', '']] },
+      { id: 'suppliers', kind: 'rows', label: 'Pharmacy and equipment supplier', hint: 'At-risk plan, page 25', cols: ['Name', 'Type', 'Phone'],
+        addLabel: 'Add supplier', uploadLabel: 'Photograph label',
+        seed: [['Walgreens · Kirby at Bissonnet', 'Pharmacy', '(713) 555-0164'], ['', 'DME supplier', '']] }
+    ]
+  },
+  {
+    id: 'services', title: 'Services needed', kicker: 'Building block for the plan of care',
+    blurb: 'What the caregiver will actually do. This becomes the plan of care — do not enter it twice later.',
+    fields: [
+      { id: 'services', kind: 'chips', label: 'Services', opts: ['Bathing', 'Dressing', 'Toileting', 'Meals', 'Medication reminders', 'Light housekeeping', 'Laundry', 'Companionship', 'Transportation', 'Shopping / errands', 'Mobility / transfers', 'Respite'] },
+      { id: 'serviceNotes', kind: 'text', label: 'Service notes', placeholder: 'Shower Mon/Wed/Fri, bed bath other days…' }
+    ]
+  },
+  {
+    id: 'poc', title: 'Plan of care detail', kicker: 'Prints on pages 21–24',
+    blurb: 'The clinical boxes on the plan of care. Everything you check here prints as checked — the office does not re-enter any of it.',
+    fields: [
+      { id: 'limitations', kind: 'chips', label: 'Functional limitations', opts: ['Dyspnea', 'Endurance', 'Bowel / bladder incontinence', 'Hard of hearing', 'Speech', 'Vision issues', 'Legally blind', 'Contracture', 'Paralysis', 'Amputation', 'None noted'] },
+      { id: 'orientation', kind: 'single', label: 'Orientation', opts: ['Oriented', 'Alert', 'Forgets', 'Confused'] },
+      { id: 'ambulation', kind: 'chips', label: 'Activities permitted', opts: ['Independent at home', 'Cane', 'Walker', 'Crutches', 'Wheelchair', 'Partial weight-bearing', 'Bedbound', 'Transfer bed–chair', 'Up as tolerated'] },
+      { id: 'dme', kind: 'chips', label: 'Equipment in place or needed', opts: ['Bedside commode', 'Elevated toilet seat', 'Tub / shower bench', 'Grab bars', 'Wheelchair', 'Walker', 'Cane', 'Hospital bed', 'Oxygen', 'Nebulizer', 'Not applicable'] },
+      { id: 'goals', kind: 'chips', label: 'Goals for care', opts: ['Effective and safe care', 'Client clean and comfortable', 'Education and understanding of care', 'Maintain current function', 'Slow decline', 'Other'] },
+      { id: 'vitals', kind: 'text', label: 'When the caregiver calls the nurse',
+        seedText: 'Standard thresholds: pulse under 40 or over 130 · BP under 70 or over 150 · O2 sat under 89 · temp over 101.3 · weight gain over 5 lbs in a week · no bowel movement in 3 days.',
+        placeholder: 'Change only if the physician set different parameters' },
+      { id: 'transport', kind: 'single', label: 'Non-medical transportation', hint: 'Page 11 only prints in the packet if this is yes', opts: ['Yes — include transportation consent', 'No transportation'] }
+    ]
+  },
+  {
+    id: 'schedule', title: 'Schedule recommendation', kicker: 'What you would staff',
+    blurb: 'The office schedules from this. Be specific where you can.',
+    joyNote: 'Intake captured Mon–Fri, about 4 hours a day, mornings, with exact times to be set here. I carried that forward.',
+    fields: [
+      { id: 'recDays', kind: 'chips', label: 'Recommended days', opts: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+      { id: 'recWindow', kind: 'text', label: 'Recommended times', seedText: '8:00 AM – 12:00 PM', placeholder: '8:00 AM – 1:00 PM' },
+      { id: 'recHours', kind: 'text', label: 'Hours per week and visit length', seedText: '20 hrs/week · 4-hour visits', placeholder: '20 hrs/week · 4-hour visits' },
+      { id: 'caregiverLevel', kind: 'cards', label: 'Caregiver level', opts: [
+        ['Companion', 'Companionship, errands, light housekeeping. No hands-on personal care.'],
+        ['Personal Care', 'Hands-on bathing, dressing, transfers with standard training.'],
+        ['CNA preferred', 'Certified aide preferred for transfers and higher personal-care needs.'],
+        ['Higher acuity', 'Complex needs — assign an experienced caregiver and review with the office.']
+      ] },
+      { id: 'matching', kind: 'text', label: 'Matching considerations', placeholder: 'Prefers a calm, quiet caregiver. Dog in the home.' }
+    ]
+  },
+  {
+    id: 'precautions', title: 'Special precautions', kicker: 'Flows to the caregiver',
+    blurb: 'These appear on the caregiver\u2019s shift instructions. Keep them short and actionable.',
+    fields: [
+      { id: 'precautions', kind: 'chips', label: 'Precautions', opts: ['Fall precautions', 'Skin precautions', 'Diet restrictions', 'Infection control', 'Transfer precautions', 'Mobility limits', 'Supervision required', 'Other'] },
+      { id: 'precautionNotes', kind: 'text', label: 'Instructions for the caregiver', seedText: 'Gait belt for all transfers. Never leave alone in the bathroom.', placeholder: 'Written so a caregiver can follow it on their first shift' }
+    ]
+  },
+  {
+    id: 'priority', title: 'Emergency priority', kicker: 'Used in storms and outages',
+    blurb: 'Determines who we contact first and who gets covered first when we cannot staff everyone.',
+    fields: [
+      { id: 'priority', kind: 'cards', label: 'Priority level', opts: [
+        ['Level 1 — High priority', 'Cannot be left alone safely. Contact first, cover first, notify family immediately.'],
+        ['Level 2 — Moderate priority', 'Some independence but needs daily support. Contact after Level 1.'],
+        ['Level 3 — Low priority', 'Largely independent with family nearby. Can tolerate a missed or shifted visit.']
+      ] },
+      { id: 'priorityNotes', kind: 'text', label: 'Why this level', placeholder: 'Daughter lives 10 minutes away and can cover a missed morning…' }
+    ]
+  },
+  {
+    id: 'education', title: 'Education provided', kicker: 'What you taught today',
+    blurb: 'What you reviewed with the client and family during this visit.',
+    fields: [
+      { id: 'education', kind: 'chips', label: 'Education provided', opts: ['Fall prevention', 'Emergency procedures', 'Infection control', 'Medication reminder limits', 'Home safety', 'Care plan review', 'Other'] },
+      { id: 'eduNotes', kind: 'text', label: 'Education notes', placeholder: 'Reviewed what our caregivers can and cannot do with medications…' }
+    ]
+  }
+];
+
+const REVIEW_INDEX = SECTIONS.length;
+
+const PACKET = [
+  { id: 'p1', name: 'Client Agreement for Care — services and schedule', pages: '1', fields: [
+    ['Patient name, DOB, address, phone', 'assessment'],
+    ['Services: personal care, companionship, respite', 'assessment'],
+    ['Days, start and end time, total weekly hours', 'assessment'],
+    ['Start date / duration of services', 'assessment'],
+    ['SOC date and MR #', 'office']
+  ] },
+  { id: 'p2', name: 'Fees, invoicing and cancellation terms', pages: '2–4', fields: [
+    ['Hourly rate, 24/7 rate, RN assessment rate', 'office'],
+    ['Deposit — 1× agreed hours per week', 'office'],
+    ['Overtime and holiday billing at 1.5×', 'fixed'],
+    ['Weekly invoicing, late fee, cancellation terms', 'fixed'],
+    ['Invoice email for the responsible party', 'intake'],
+    ['Payment preference — card or ACH', 'intake'],
+    ['Client and Joy representative signatures', 'signature']
+  ] },
+  { id: 'p3', name: 'Informed consent for home health / home care', pages: '5–7', fields: [
+    ['Philosophy, criteria, equipment, payment authorization', 'fixed'],
+    ['Consent for care signature', 'signature']
+  ] },
+  { id: 'p4', name: 'Customer rights and responsibilities', pages: '8', fields: [['Acknowledgement of receipt', 'signature']] },
+  { id: 'p5', name: 'Documents reviewed acknowledgement', pages: '9', fields: [['Reviewed-before-start-of-care checklist', 'assessment'], ['Signature', 'signature']] },
+  { id: 'p6', name: 'Photograph authorization', pages: '10', fields: [['Purpose and expiration', 'fixed'], ['Signature', 'signature']] },
+  { id: 'p7', name: 'Transportation authorization', pages: '11', fields: [['Transportation selected as a service', 'assessment'], ['Signature', 'signature']] },
+  { id: 'p8', name: 'Authorization to obtain and release medical records', pages: '12–13', fields: [
+    ['Patient name, DOB, street address', 'assessment'],
+    ['Social security number', 'assessment'],
+    ['Providers to request records from', 'assessment'],
+    ['Signature', 'signature']
+  ] },
+  { id: 'p9', name: 'Health information authorized disclosure list', pages: '14', fields: [
+    ['People allowed to receive information', 'assessment'],
+    ['Emergency contacts', 'assessment'],
+    ['Signature', 'signature']
+  ] },
+  { id: 'p10', name: 'HIPAA privacy practices receipt', pages: '15', fields: [['Notice of privacy practices', 'fixed'], ['Signature', 'signature']] },
+  { id: 'p11', name: 'Patient bill of rights', pages: '16–17', fields: [['Clinical and financial rights', 'fixed'], ['Signature', 'signature']] },
+  { id: 'p12', name: 'Complaints policy', pages: '18', fields: [['Agency contact and process', 'fixed'], ['Signature', 'signature']] },
+  { id: 'p13', name: 'Patient self-determination act', pages: '19', fields: [['Advance directive on file', 'assessment'], ['Signature', 'signature']] },
+  { id: 'p14', name: 'Non-solicitation agreement', pages: '20', fields: [['Terms', 'fixed'], ['Signature', 'signature']] },
+  { id: 'p15', name: 'Services and frequency', pages: '21', fields: [['Service type and frequency', 'assessment'], ['Weekly hours', 'assessment']] },
+  { id: 'p16', name: 'Plan of care', pages: '22–24', fields: [
+    ['Diagnosis, goals for care, home setting', 'assessment'],
+    ['Functional status for all eight activities', 'assessment'],
+    ['Interventions and caregiver tasks', 'assessment'],
+    ['DME: commode, shower bench, grab bars, wheelchair', 'assessment'],
+    ['Precautions and supervision needs', 'assessment'],
+    ['Animals and smoking in the home', 'assessment'],
+    ['RN signature', 'signature']
+  ] },
+  { id: 'p17', name: 'At-risk evaluation and disaster plan', pages: '25', fields: [
+    ['Emergency priority level', 'assessment'],
+    ['Evacuation and access considerations', 'assessment'],
+    ['Signature', 'signature']
+  ] },
+  { id: 'p18', name: 'Emergency care plan', pages: '26', fields: [
+    ['Signs and symptoms to report', 'assessment'],
+    ['Physician and after-hours contacts', 'assessment'],
+    ['Emergency contacts', 'assessment']
+  ] }
+];
+
+const WALK = [
+  { id: 'w1', pages: '1', mark: 'sign', title: 'What we will do, and how often',
+    say: 'Read the service lines and the schedule back to them. If the days or hours are wrong, fix them here — do not let them sign a schedule they did not agree to.',
+    watch: 'People assume the hours are a maximum. They are a commitment — say the weekly total out loud.',
+    text: 'I, the undersigned, hereby make the following acknowledgement and agreements regarding services to be provided by Joy Healthcare Services, LLC. I agree to enter into an agreement for the following services… Joy Healthcare Services, LLC. agrees to provide the following services: [services, frequency, days, start and end time, total weekly hours].' },
+  { id: 'w2', pages: '2–4', mark: 'sign', title: 'What it costs and when payment is due',
+    say: 'Rates, the deposit, and the fact that we invoice a week in advance. The office has already e-mailed the rates — confirm they saw that e-mail.',
+    watch: 'Payment is due within one calendar day of the invoice. A $100 late fee starts on day three and service can be suspended in 24 hours. Say all three numbers.',
+    text: 'I understand Joy Healthcare Services, LLC. will invoice every week in advance… the undersigned agrees to submit payment within 1 calendar day… Joy Healthcare Services, LLC applies a 2.9% convenience fee to all credit card payments and a $5 convenience fee to ACH debit payments… Services may be suspended within 24 hours of non-payment. A late fee will incur after the third day of an outstanding invoice of $100. Deposit: 1x the agreed upon hours/days per week. Overtime is considered anything over 40 hours and is billed at 1 1/2 times the hourly rate, as are New Year\u2019s Day, Memorial Day, Easter Sunday, Independence Day, Labor Day, Thanksgiving Day and Christmas Day.' },
+  { id: 'w3', pages: '3', mark: 'initial', title: 'Changing or cancelling a shift',
+    say: 'They can cancel the agreement any time and only pay for care already given. Day-to-day changes need notice.',
+    watch: 'If the caregiver is already at the door, the full day is charged. Two days\u2019 notice to cancel the agreement, 24 hours to move a shift.',
+    text: 'A client has the right to cancel this service agreement at any time and shall only be charged for services rendered prior to the time that the agency is notified of the cancellation. We ask that you provide us with a 2 days\u2019 notice prior to cancellation of services. The agency will charge the full amount for the scheduled service day if the provider\u2019s staff member has arrived at the client\u2019s home, services are declined, and no prior notification of cancellation has been given. We require a 24 hour notice if a scheduled day of service needs to be rescheduled or cancelled.' },
+  { id: 'w4', pages: '5–7', mark: 'initial', title: 'Consent for care, and what our caregivers cannot do',
+    say: 'We are here to support the family, not replace them. Clinical staff are here 8–5 weekdays; on-call is 24/7 for non-clinical questions.',
+    watch: 'Caregivers remind about medications — they do not administer them. Say that plainly; it is the single most common misunderstanding.',
+    text: 'I hereby consent to the care provided by Joy Healthcare and authorize its agents and associates to provide care and treatment to me in my residence or facility according to program policy… I understand that clinical staff and nurses are available Monday through Friday, 8 AM to 5 PM, and that an on-call representative is available 24/7 to answer non-clinical questions… I understand that the Joy Healthcare team is not intended to take the place of a family, but rather support the primary caregiver and family in caring for the patient.' },
+  { id: 'w5', pages: '7, 14', mark: 'initial', title: 'Privacy, and exactly who we may talk to',
+    say: 'Show them the disclosure list you built in the assessment and read the names back. Anyone not on it gets nothing, including family.',
+    watch: 'Ask directly: is there anyone who should not be told about care or money? Add or exclude them now, not after a phone call goes wrong.',
+    text: 'I have completed the Permission to Disclose Protected Health Information Form and understand that only those names whom I have listed may communicate with Joy Healthcare staff regarding my healthcare. The patient or the authorized patient representative has given Joy Healthcare permission to disclose the patient\u2019s protected health information to the following individuals: [name, relationship, phone, address].' },
+  { id: 'w6', pages: '8, 16–18', mark: 'initial', title: 'Your rights, and how to complain about us',
+    say: 'Point at the complaint number and the state hotline. Tell them a complaint never affects their care.',
+    watch: 'Read our line — 713 231 9662, staffed 24/7 — and the state line: 1-800-458-9858. Leave the folder page open on the table.',
+    text: 'To voice grievances and complaints related to home health/care services or care that is (or fails to be) furnished… without fear of reprisal or discrimination for doing so… Our commitment to quality of care and a positive experience for your family remains our team\u2019s primary goal. Please feel free to call Joy Healthcare with any complaints/concerns: 713 231 9662. A staff member is available 24 hours/day, 7 days/week. HHSC Complaint and Incident Intake — Toll Free: 1-800-458-9858.' },
+  { id: 'w7', pages: '8, 19', mark: 'initial', title: 'Advance directives',
+    say: 'They are never required to have one. If they do, we need a copy for the chart.',
+    watch: 'Do not let this become a conversation you are not ready for. Explain, offer the written information, move on.',
+    text: 'Under these laws, it is unlawful for any person or organization to require an individual to execute advance directives as a condition for receiving services or care. An individual is not required to have an advance directive in order to receive Home Health services.' },
+  { id: 'w8', pages: '10', mark: 'sign', title: 'Photographs and recordings',
+    say: 'We photograph wounds and conditions for the record and for payers. Internal use only.',
+    watch: 'They can refuse and it changes nothing about their care. Say that before they sign, not after.',
+    text: 'I hereby consent to be photographed while receiving care from Joy Healthcare… I may request cessation of filming or recording at any time… I may refuse to sign this Authorization. My refusal will not affect my ability to obtain treatment or payment or eligibility.' },
+  { id: 'w9', pages: '11', mark: 'sign', title: 'Driving them places',
+    say: 'Only relevant because you marked transportation as a service. Caregiver\u2019s own car, caregiver\u2019s own insurance.',
+    watch: 'Mileage is billed at $0.70 a mile, plus parking and tolls. Families are surprised by this on the first invoice.',
+    text: 'Transportation is provided by a caregiver using a personal vehicle. Caregivers are not licensed medical transport providers… Joy Health does not provide commercial auto insurance coverage for caregiver vehicles and is not responsible for incidents, delays, or accidents that may occur during transport, except in cases of gross negligence. Mileage may be billed separately at a rate determined by Joy Health ($0.70 per mile).' },
+  { id: 'w10', pages: '12–13', mark: 'sign', title: 'Getting records from their doctors',
+    say: 'This lets us request records from the physicians you listed. Valid one year, revocable in writing.',
+    watch: 'It explicitly covers HIV/AIDS, drug and alcohol, and mental health history. Say so — do not let them find that sentence later.',
+    text: 'Information about my health may relate to any disorder of the immune system including, but not limited to, HIV and AIDS; use of drugs and alcohol; and mental and physical history, condition, advice or treatment, but does not include psychotherapy notes… This authorization is valid for one (1) year from the date below.' },
+  { id: 'w11', pages: '6, 20', mark: 'sign', title: 'Please do not hire our caregivers directly',
+    say: 'If they love the caregiver, come to us. Six months after services end before any direct arrangement.',
+    watch: 'The penalty is real: 26 weeks × 40 hours at the hourly rate. Say the clause exists rather than hoping they never read it.',
+    text: 'Once the agreement has been fulfilled between Joy Health and client, staff are not allowed to work with a previous client or family member directly through other channels for 6 months, unless through our agency. If the undersigned is found altering the terms of this clause the undersigned agrees to pay a liquidation fee equal to (26) weeks of service at (40) hours a week, at costs of the hourly price.' },
+  { id: 'w12', pages: '25–26', mark: 'sign', title: 'Emergencies, storms, and when to call',
+    say: 'Walk the emergency card: what to call the nurse about, and what is a 911 call. Tell them where to keep it.',
+    watch: 'Confirm the at-risk answers — does he live alone, can he evacuate himself. That is what determines who we reach first in a storm.',
+    text: 'This plan outlines signs/symptoms that should be called in to the nurse and what to do in case of an emergency. Please keep this information where you can find it… Call 9-1-1 if you have: a fall with a broken bone or bleeding; chest pain that medications do not help; difficulty in breathing; unable to wake patient; severe or prolonged bleeding; severe or prolonged pain.' }
+];
+
+const SRC_TONE = {
+  assessment: ['From this assessment', '#12B76A', '#ECFDF3'],
+  intake: ['From phone intake', '#0E9384', '#ECFDF7'],
+  fixed: ['Standard language', '#5B6274', '#F3F3F6'],
+  office: ['Office must fill', '#B54708', '#FFFAEB'],
+  signature: ['Signature', '#1407A2', '#EEF0FE']
+};
+
+const OFFICE_FIELDS = [
+  { id: 'rateHourly', label: 'Hourly rate', placeholder: '37.50', doc: 'p2' },
+  { id: 'rateRn', label: 'RN assessment / visit rate', placeholder: '150.00', doc: 'p2' },
+  { id: 'deposit', label: 'Deposit — 1× weekly hours', placeholder: '750.00', doc: 'p2' },
+  { id: 'invoiceEmail', label: 'Invoice email', placeholder: 'susan.bell@example.com', doc: 'p2' },
+  { id: 'payMethod', label: 'Payment preference — card or ACH', placeholder: 'ACH', doc: 'p2' },
+  { id: 'socDate', label: 'Start of care date', placeholder: 'Mon, Aug 17', doc: 'p1' },
+  { id: 'mrNumber', label: 'MR #', placeholder: 'JH-2026-0148', doc: 'p1' },
+];
+
+
+class Component extends DCLogic {
+  state = {
+    idx: 0, data: {}, touched: {}, joyDismissed: {},
+    joyOpen: false, joyQ: '', voice: false, reviewPanel: true,
+    rnName: 'Joan Robinson', rnCred: 'RN, BSN', signature: '',
+    saving: false, savedAt: '10:42 AM', toast: null, signed: false,
+    stage: 'assess', office: {}, packetOpen: null, packetSent: false,
+    walkDone: {}, walkQ: {}, walkOpen: null, walkText: {},
+    clientName: '', clientRel: 'Daughter, power of attorney', packetSigned: false
+  };
+
+  componentDidMount() {
+    const data = {};
+    SECTIONS.forEach(s => s.fields.forEach(f => {
+      if (f.kind === 'text') data[f.id] = f.seedText || '';
+      if (f.kind === 'chips') data[f.id] = [];
+      if (f.kind === 'single' || f.kind === 'cards') data[f.id] = '';
+      if (f.kind === 'levels') data[f.id] = {};
+      if (f.kind === 'rows') data[f.id] = (f.seed || []).map(r => r.slice());
+    }));
+    data.living = 'Lives alone';
+    data.recentChange = ['Fall', 'Decline in function'];
+    data.recDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    data.adls = { Bathing: 'Hands-on', Dressing: 'Standby', Toileting: 'Standby', Feeding: 'Independent', 'Meal prep': 'Total', Mobility: 'Hands-on', Transfers: 'Hands-on', Continence: 'Independent' };
+    data.services = ['Bathing', 'Meals', 'Medication reminders', 'Mobility / transfers', 'Light housekeeping'];
+    data.medNeeds = ['Reminders'];
+    data.precautions = ['Fall precautions', 'Transfer precautions'];
+    data.animals = ['Dog'];
+    data.smoking = 'No one smokes';
+    data.payer = 'Private pay';
+    data.advDirective = 'Yes — copy requested';
+    data.dnr = 'No';
+    data.orientation = 'Alert';
+    data.limitations = ['Endurance'];
+    data.ambulation = ['Walker', 'Up as tolerated'];
+    data.dme = ['Walker', 'Tub / shower bench', 'Grab bars'];
+    data.goals = ['Effective and safe care', 'Client clean and comfortable'];
+    data.transport = 'Yes — include transportation consent';
+    this.setState({ data: data });
+  }
+
+  save() {
+    this.setState({ saving: true });
+    setTimeout(() => this.setState({ saving: false, savedAt: 'just now' }), 600);
+  }
+
+  set(id, v) {
+    this.setState(s => ({ data: Object.assign({}, s.data, { [id]: v }), touched: Object.assign({}, s.touched, { [id]: true }) }));
+    this.save();
+  }
+
+  toggleIn(id, v) {
+    const cur = this.state.data[id] || [];
+    this.set(id, cur.indexOf(v) < 0 ? cur.concat([v]) : cur.filter(x => x !== v));
+  }
+
+  sectionDone(sec) {
+    const d = this.state.data;
+    return sec.fields.every(f => {
+      if (f.kind === 'known') return true;
+      if (f.kind === 'text') return true;
+      const v = d[f.id];
+      if (f.kind === 'chips') return (v || []).length > 0;
+      if (f.kind === 'single' || f.kind === 'cards') return !!v;
+      if (f.kind === 'levels') return (f.rows || []).every(r => (v || {})[r]);
+      if (f.kind === 'rows') return (v || []).some(row => (row[0] || '').trim());
+      return true;
+    });
+  }
+
+  openItems() {
+    const d = this.state.data;
+    const out = [];
+    const meds = d.medList || [];
+    const missingDose = meds.filter(m => (m[0] || '').trim() && !(m[1] || '').trim());
+    if (missingDose.length) out.push({ id: 'meds', label: 'Medication dose missing', why: missingDose[0][0] + ' has no dose recorded' });
+    const ec = d.emergency || [];
+    if (ec.filter(r => (r[0] || '').trim()).length < 2) out.push({ id: 'client', label: 'Only one emergency contact', why: 'Policy asks for a second contact when one is available' });
+    if (!d.priority) out.push({ id: 'priority', label: 'Emergency priority not set', why: 'Needed before the client goes on the schedule' });
+    if (!d.caregiverLevel) out.push({ id: 'schedule', label: 'Caregiver level not selected', why: 'Scheduling cannot match without it' });
+    if ((d.adls || {}).Mobility === 'Independent') out.push({ id: 'function', label: 'Mobility conflicts with intake', why: 'Intake reported a walker and two recent falls' });
+    if (!d.smoking) out.push({ id: 'home', label: 'Smoking not documented', why: 'Required for caregiver matching and oxygen safety' });
+    if (!(d.animals || []).length) out.push({ id: 'home', label: 'Animals not documented', why: 'Caregivers are told about animals before the first shift' });
+    if (!(d.hazards || []).length) out.push({ id: 'home', label: 'Home safety not documented', why: 'Select the hazards you saw, or “No hazards noted”' });
+    return out;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const d = s.data;
+    const idx = s.idx;
+    const isReview = idx >= REVIEW_INDEX;
+    const sec = SECTIONS[Math.min(idx, SECTIONS.length - 1)];
+    const open = this.openItems();
+    const officeMissing = OFFICE_FIELDS.filter(o => !((s.office || {})[o.id] || '').trim());
+    const flat = PACKET.reduce((a, doc) => a.concat(doc.fields), []);
+    const autoN = flat.filter(x => x[1] === 'assessment' || x[1] === 'intake' || x[1] === 'fixed').length;
+    const officeN = OFFICE_FIELDS.length;
+    const signN = flat.filter(x => x[1] === 'signature').length;
+    const walkDone = WALK.filter(w => s.walkDone[w.id]).length;
+    const walkAll = walkDone === WALK.length;
+    const walkQs = WALK.filter(w => s.walkQ[w.id]);
+    const initialItems = WALK.filter(w => w.mark === 'initial');
+    const initialN = initialItems.length;
+    const initialPages = initialItems.map(w => 'p. ' + w.pages);
+    const sigDocs = PACKET.filter(doc => doc.fields.some(f => f[1] === 'signature'));
+    const signLines = sigDocs.length;
+    const signPages = sigDocs.map(doc => doc.pages);
+    const initials = (s.clientName || '').trim().split(/\s+/).filter(Boolean).map(x => x[0].toUpperCase()).join('').slice(0, 3);
+    const canSign = walkAll && !!(s.clientName || '').trim() && !s.packetSigned;
+    const doneCount = SECTIONS.filter(x => this.sectionDone(x)).length;
+    const pct = Math.round((doneCount / (SECTIONS.length + 1)) * 100);
+
+    const chipStyle = (sel) => 'height:36px;padding:0 15px;border-radius:999px;font-size:13.5px;cursor:pointer;background:' +
+      (sel ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (sel ? '#1407A2' : '#ECECF1') + ';color:' + (sel ? '#FFFFFF' : '#191A2E');
+
+    const fields = isReview ? [] : sec.fields.map(f => {
+      const v = d[f.id];
+      const base = {
+        key: f.id, label: f.label,
+        hint: f.hint || '', hintStyle: 'font-size:11.5px;color:#B9B9C1;' + (f.hint ? '' : 'display:none'),
+        isKnown: f.kind === 'known', isLevels: f.kind === 'levels', isChips: f.kind === 'chips',
+        isSingle: f.kind === 'single', isCards: f.kind === 'cards', isText: f.kind === 'text', isRows: f.kind === 'rows',
+        rows: [], opts: [], entries: [], cols: [], value: '', placeholder: f.placeholder || '',
+        onText: (e) => this.set(f.id, e.target.value),
+        headStyle: 'display:none', addLabel: f.addLabel || 'Add', uploadLabel: f.uploadLabel || 'Upload',
+        add: () => {}, upload: () => {}
+      };
+
+      if (f.kind === 'known') base.rows = (f.rows || []).map((r, i) => ({
+        key: 'k' + i, label: r[0], value: r[1],
+        tag: r[2] ? 'from intake' : '',
+        tagStyle: 'margin-left:auto;font-size:10.5px;padding:1px 7px;border-radius:999px;background:#F1F2F6;color:#9B9BA3;' + (r[2] ? '' : 'display:none')
+      }));
+
+      if (f.kind === 'levels') base.rows = (f.rows || []).map(r => {
+        const cur = (v || {})[r] || '';
+        return {
+          key: r, label: r,
+          note: cur === 'Total' || cur === 'Hands-on' ? 'Caregiver task' : '',
+          noteStyle: 'margin-left:auto;flex:none;font-size:11.5px;color:#8A8A92;' + (cur === 'Total' || cur === 'Hands-on' ? '' : 'display:none'),
+          opts: LEVELS.map(l => ({
+            key: l, label: l,
+            pick: () => this.set(f.id, Object.assign({}, v || {}, { [r]: l })),
+            style: 'height:30px;padding:0 11px;border-radius:8px;font-size:12.5px;cursor:pointer;background:' +
+              (cur === l ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (cur === l ? '#1407A2' : '#ECECF1') + ';color:' + (cur === l ? '#FFFFFF' : '#5B6274')
+          }))
+        };
+      });
+
+      if (f.kind === 'chips') base.opts = (f.opts || []).map(o => ({
+        key: o, label: o, pick: () => this.toggleIn(f.id, o), style: chipStyle((v || []).indexOf(o) >= 0)
+      }));
+
+      if (f.kind === 'single') base.opts = (f.opts || []).map(o => ({
+        key: o, label: o, pick: () => this.set(f.id, o), style: chipStyle(v === o)
+      }));
+
+      if (f.kind === 'cards') base.opts = (f.opts || []).map(o => {
+        const sel = v === o[0];
+        return {
+          key: o[0], label: o[0], sub: o[1], pick: () => this.set(f.id, o[0]),
+          mark: sel ? '●' : '',
+          markStyle: 'width:19px;height:19px;flex:none;margin-top:2px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:' +
+            (sel ? '#FFFFFF' : 'transparent') + ';background:' + (sel ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (sel ? '#1407A2' : '#E4E4EA'),
+          style: 'display:flex;align-items:flex-start;gap:12px;width:100%;padding:14px 16px;border-radius:12px;cursor:pointer;background:' +
+            (sel ? '#F7F8FE' : '#FFFFFF') + ';border:1px solid ' + (sel ? '#1407A2' : '#ECECF1')
+        };
+      });
+
+      if (f.kind === 'text') base.value = v || '';
+
+      if (f.kind === 'rows') {
+        const widths = f.cols.length === 3 ? ['1.4fr', '1fr', '1fr'] : ['1fr', '1fr', '1fr'];
+        const grid = 'display:grid;grid-template-columns:' + widths.join(' ') + ' 26px;gap:10px;align-items:center;';
+        base.headStyle = grid + 'padding:9px 14px;background:#FCFCFD;border-bottom:1px solid #F3F3F6';
+        base.cols = f.cols.map((c, i) => ({ key: 'c' + i, label: c, style: 'font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9B9BA3' }));
+        base.entries = (v || []).map((row, ri) => ({
+          key: 'r' + ri,
+          rowStyle: grid + 'padding:7px 14px;border-bottom:1px solid #F3F3F6',
+          cells: row.map((cell, ci) => ({
+            key: 'c' + ci, value: cell, placeholder: f.cols[ci],
+            style: 'width:100%;box-sizing:border-box;height:34px;padding:0 10px;border:1px solid ' + (ci === 1 && !cell && row[0] ? '#FCE8B6' : '#F1F2F6') +
+              ';border-radius:8px;background:#FFFFFF;font-size:13px;color:#191A2E;outline:none',
+            onChange: (e) => {
+              const val = e.target.value;
+              const next = (this.state.data[f.id] || []).map(r => r.slice());
+              next[ri][ci] = val;
+              this.set(f.id, next);
+            }
+          })),
+          remove: () => this.set(f.id, (this.state.data[f.id] || []).filter((_, i) => i !== ri))
+        }));
+        base.add = () => this.set(f.id, (this.state.data[f.id] || []).concat([f.cols.map(() => '')]));
+        base.upload = () => this.setState({ toast: { title: f.uploadLabel, sub: 'Joy drafts entries from the image — you review every line' } });
+      }
+
+      return base;
+    });
+
+    const joyKey = sec.id;
+    const adls = d.adls || {};
+    const needsList = ADLS.filter(a => adls[a] === 'Hands-on' || adls[a] === 'Total');
+
+    return {
+      saveState: s.saving ? 'Saving…' : 'Saved ' + s.savedAt,
+      saveDotStyle: 'width:6px;height:6px;border-radius:50%;background:' + (s.saving ? '#F79009' : '#12B76A'),
+      saveExit: () => { window.location.href = './Joy%20Health%20Admissions.dc.html'; },
+
+      doneCount: doneCount, totalCount: SECTIONS.length + 1,
+      progressBarStyle: 'display:block;height:100%;width:' + pct + '%;border-radius:999px;background:#1407A2',
+
+      nav: SECTIONS.concat([{ id: 'review', title: 'Review and sign' }]).map((x, i) => {
+        const done = i < SECTIONS.length ? this.sectionDone(SECTIONS[i]) : false;
+        const cur = i === idx;
+        const flagged = open.filter(o => o.id === x.id).length;
+        return {
+          key: x.id, label: x.title,
+          mark: done ? '✓' : cur ? '•' : '○',
+          markStyle: 'width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:' +
+            (done || cur ? '#FFFFFF' : '#C9C9D0') + ';background:' + (done ? '#12B76A' : cur ? '#1407A2' : '#F1F2F6'),
+          labelStyle: 'font-size:13px;text-align:left;color:' + (cur ? '#191A2E' : done ? '#5B6274' : '#9B9BA3'),
+          flag: flagged ? String(flagged) : '',
+          flagStyle: 'margin-left:auto;flex:none;font-size:10.5px;padding:1px 7px;border-radius:999px;background:#FFFAEB;color:#B54708;' + (flagged ? '' : 'display:none'),
+          style: 'display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;border-radius:9px;cursor:pointer;background:' + (cur ? '#F1F2F6' : 'transparent'),
+          go: () => this.setState({ idx: i, stage: 'assess' })
+        };
+      }),
+
+      isReview: isReview && s.stage === 'assess', notReview: !isReview && s.stage === 'assess',
+      sec: {
+        number: 'Section ' + (idx + 1) + ' of ' + (SECTIONS.length + 1),
+        kicker: sec.kicker, title: sec.title, blurb: sec.blurb,
+        hasJoy: !!sec.joyNote && !s.joyDismissed[joyKey],
+        joyNote: sec.joyNote || '',
+        progressLabel: (idx + 1) + ' of ' + (SECTIONS.length + 1)
+      },
+      acceptJoy: () => this.setState(st => ({ joyDismissed: Object.assign({}, st.joyDismissed, { [joyKey]: true }), toast: { title: 'Added to ' + sec.title, sub: 'Marked as RN-reviewed' } })),
+      dismissJoy: () => this.setState(st => ({ joyDismissed: Object.assign({}, st.joyDismissed, { [joyKey]: true }) })),
+
+      fields: fields,
+      nextLabel: idx === SECTIONS.length - 1 ? 'Review assessment' : 'Save and continue',
+      nextSection: () => this.setState({ idx: Math.min(idx + 1, REVIEW_INDEX) }),
+      prevSection: () => this.setState({ idx: Math.max(0, idx - 1) }),
+      markNA: () => this.setState({ idx: Math.min(idx + 1, REVIEW_INDEX), toast: { title: sec.title + ' marked not applicable', sub: 'Recorded on the assessment — you can reopen it any time' } }),
+
+      summary: [
+        { key: 'm1', label: 'Care recommendation', value: d.caregiverLevel || 'Not selected', sub: (d.services || []).join(' · ') || 'No services selected', subStyle: 'font-size:12.5px;color:#8A8A92;line-height:1.5' },
+        { key: 'm2', label: 'Recommended schedule', value: ((d.recDays || []).join(', ') || 'No days') + ' · ' + (d.recWindow || 'times not set'), sub: d.recHours || '', subStyle: 'font-size:12.5px;color:#8A8A92;' + (d.recHours ? '' : 'display:none') },
+        { key: 'm3', label: 'Hands-on needs', value: needsList.length ? needsList.join(', ') : 'No hands-on assistance documented', sub: d.functionNotes || '', subStyle: 'font-size:12.5px;color:#8A8A92;line-height:1.5;' + (d.functionNotes ? '' : 'display:none') },
+        { key: 'm4', label: 'Precautions', value: (d.precautions || []).join(' · ') || 'None documented', sub: d.precautionNotes || '', subStyle: 'font-size:12.5px;color:#8A8A92;line-height:1.5;' + (d.precautionNotes ? '' : 'display:none') },
+        { key: 'm5', label: 'Emergency priority', value: d.priority || 'Not set', sub: d.priorityNotes || '', subStyle: 'font-size:12.5px;color:#8A8A92;' + (d.priorityNotes ? '' : 'display:none') },
+        { key: 'm6', label: 'Medications', value: (d.medList || []).filter(m => (m[0] || '').trim()).length + ' recorded · reminders only', sub: 'Allergies: ' + (d.allergies || 'none recorded'), subStyle: 'font-size:12.5px;color:#8A8A92' }
+      ],
+
+      openItems: open.map(o => ({
+        key: o.id + o.label, label: o.label, why: o.why,
+        go: () => this.setState({ idx: Math.max(0, SECTIONS.findIndex(x => x.id === o.id)), stage: 'assess' })
+      })),
+      hasOpen: open.length > 0, noOpen: open.length === 0, openCount: open.length,
+
+      reviewPanelOpen: s.reviewPanel && open.length > 0 && !isReview,
+      toggleReviewPanel: () => this.setState({ reviewPanel: !s.reviewPanel }),
+      reviewBtnLabel: open.length ? 'Needs review · ' + open.length : 'Nothing to review',
+      reviewBtnStyle: 'height:34px;padding:0 14px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid ' +
+        (open.length ? '#FCE8B6;background:#FFFCF5;color:#B54708' : '#ECECF1;background:#FFFFFF;color:#9B9BA3'),
+
+      rnName: s.rnName, onRnName: (e) => this.setState({ rnName: e.target.value }),
+      rnCred: s.rnCred, onRnCred: (e) => this.setState({ rnCred: e.target.value }),
+      signature: s.signature, onSignature: (e) => this.setState({ signature: e.target.value }),
+      signStamp: s.signed ? 'Signed today at 12:18 PM · Marcus Bell · Initial Assessment'
+        : 'Signing records your name, credentials and the date and time. Joy cannot complete an assessment for you.',
+      completeLabel: s.signed ? 'Assessment complete ✓' : open.length ? 'Resolve ' + open.length + ' item' + (open.length === 1 ? '' : 's') + ' to sign' : 'Complete assessment',
+      completeStyle: 'height:46px;padding:0 20px;border:none;border-radius:11px;font-size:14px;font-weight:500;cursor:' +
+        (!s.signed && !open.length && s.signature.trim() ? 'pointer' : 'not-allowed') + ';background:' +
+        (s.signed ? '#ECFDF3;color:#12B76A' : !open.length && s.signature.trim() ? '#1407A2;color:#FFFFFF' : '#F1F2F6;color:#B9B9C1'),
+      completeAssessment: () => {
+        if (s.signed || open.length || !s.signature.trim()) return;
+        this.setState({ signed: true, toast: { title: 'Assessment complete', sub: 'Admission summary prepared · Marcus Bell moved to Pre-Onboarding' } });
+      },
+      backToSections: () => this.setState({ idx: 0, stage: 'assess' }),
+      signedState: s.signed,
+      notSignedState: !s.signed,
+      reviewAdmission: () => { window.location.href = './Joy%20Health%20Admissions.dc.html'; },
+
+      isAssess: s.stage === 'assess',
+      isPacket: s.stage === 'packet',
+      openPacket: () => this.setState({ stage: 'packet' }),
+      leavePacket: () => this.setState({ stage: 'assess' }),
+      officeMissing: officeMissing.length,
+      officeMissingLabel: officeMissing.length ? officeMissing.length + ' field' + (officeMissing.length === 1 ? '' : 's') + ' the office still owes' : 'Nothing outstanding',
+      packetStats: [
+        { key: 'ps1', label: 'Pages', value: '26' },
+        { key: 'ps2', label: 'Auto-filled', value: String(autoN) },
+        { key: 'ps3', label: 'Office fields', value: String(officeN) },
+        { key: 'ps4', label: 'Signatures', value: String(signN) }
+      ],
+      officeFields: OFFICE_FIELDS.map(o => ({
+        key: o.id, label: o.label, placeholder: o.placeholder,
+        value: (s.office || {})[o.id] || '',
+        onChange: (e) => { const v = e.target.value; this.setState(st => ({ office: Object.assign({}, st.office, { [o.id]: v }) })); },
+        style: 'box-sizing:border-box;height:40px;padding:0 12px;border:1px solid ' + ((s.office || {})[o.id] ? '#ECECF1' : '#FCE8B6') +
+          ';border-radius:10px;background:#FFFFFF;font-size:13.5px;color:#191A2E;outline:none'
+      })),
+      packetDocs: PACKET.map(doc => {
+        const isOpen = s.packetOpen === doc.id;
+        const docOffice = OFFICE_FIELDS.filter(o => o.doc === doc.id);
+        const needsOffice = docOffice.some(o => !((s.office || {})[o.id] || '').trim());
+        return {
+          key: doc.id, name: doc.name, pages: 'p. ' + doc.pages,
+          statusLabel: needsOffice ? docOffice.filter(o => !((s.office || {})[o.id] || '').trim()).length + ' office field' + (docOffice.filter(o => !((s.office || {})[o.id] || '').trim()).length === 1 ? '' : 's') : 'Ready',
+          statusStyle: 'flex:none;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:500;' +
+            (needsOffice ? 'background:#FFFAEB;color:#B54708' : 'background:#ECFDF3;color:#12B76A'),
+          caretStyle: 'flex:none;display:inline-block;color:#B9B9C1;font-size:13px;transition:transform .16s ease;transform:rotate(' + (isOpen ? '180deg' : '0deg') + ')',
+          toggle: () => this.setState({ packetOpen: isOpen ? null : doc.id }),
+          open: isOpen,
+          rows: doc.fields.map((x, i) => ({
+            key: doc.id + i, label: x[0],
+            tag: SRC_TONE[x[1]][0],
+            tagStyle: 'margin-left:auto;flex:none;font-size:10.5px;padding:2px 8px;border-radius:999px;white-space:nowrap;color:' + SRC_TONE[x[1]][1] + ';background:' + SRC_TONE[x[1]][2],
+            dotStyle: 'width:5px;height:5px;flex:none;border-radius:50%;background:' + SRC_TONE[x[1]][1]
+          }))
+        };
+      }),
+      packetSent: s.packetSent,
+      sendPacketStyle: 'height:46px;padding:0 20px;border:none;border-radius:11px;font-size:14px;font-weight:500;cursor:' +
+        (!s.packetSent && !officeMissing.length ? 'pointer' : 'not-allowed') + ';background:' +
+        (s.packetSigned ? '#ECFDF3;color:#12B76A' : officeMissing.length ? '#F1F2F6;color:#B9B9C1' : '#1407A2;color:#FFFFFF'),
+      sendPacketLabel: s.packetSigned ? 'Signed with the family ✓' : officeMissing.length ? 'Fill ' + officeMissing.length + ' office field' + (officeMissing.length === 1 ? '' : 's') + ' first' : 'Review and sign with the family →',
+      sendPacket: () => {
+        if (s.packetSent || officeMissing.length) return;
+        this.setState({ packetSent: true, toast: { title: 'Packet sent to Susan Bell', sub: '26 pages · ' + signN + ' signature fields · tracked in Pre-Onboarding' } });
+      },
+
+      isSigning: s.stage === 'signing',
+      openSigning: () => { if (!officeMissing.length) this.setState({ stage: 'signing' }); },
+      leaveSigning: () => this.setState({ stage: 'packet' }),
+      walkTotal: WALK.length,
+      walkDoneCount: walkDone,
+      walkHeadline: walkDone + ' of ' + WALK.length + ' reviewed with the family',
+      walkBarStyle: 'display:block;height:100%;width:' + Math.round((walkDone / WALK.length) * 100) + '%;border-radius:999px;background:' + (walkAll ? '#12B76A' : '#1407A2'),
+      walkQCount: walkQs.length,
+      walkQStyle: 'font-size:12px;padding:2px 9px;border-radius:999px;background:#FFFAEB;color:#B54708;' + (walkQs.length ? '' : 'display:none'),
+      walkQLabel: walkQs.length + ' flagged for the office',
+      walkItems: WALK.map((w, i) => {
+        const done = !!s.walkDone[w.id];
+        const flagged = !!s.walkQ[w.id];
+        const textOpen = !!s.walkText[w.id];
+        const tone = w.mark === 'sign' ? ['Signature', '#1407A2', '#EEF0FE'] : ['Initials', '#0E9384', '#ECFDF7'];
+        return {
+          key: w.id, n: String(i + 1), title: w.title, say: w.say, watch: w.watch, text: w.text,
+          pages: 'p. ' + w.pages, markLabel: tone[0],
+          markStyle: 'flex:none;font-size:10.5px;padding:2px 9px;border-radius:999px;font-weight:500;color:' + tone[1] + ';background:' + tone[2],
+          numStyle: 'width:22px;height:22px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:' +
+            (done ? '#FFFFFF' : '#9B9BA3') + ';background:' + (done ? '#12B76A' : '#F1F2F6'),
+          num: done ? '✓' : String(i + 1),
+          cardStyle: 'display:flex;flex-direction:column;gap:13px;padding:17px 18px;border-radius:14px;background:#FFFFFF;border:1px solid ' +
+            (flagged ? '#FCE8B6' : done ? '#D3F0DF' : '#ECECF1'),
+          doneLabel: done ? 'Reviewed ✓' : 'Mark reviewed',
+          doneStyle: 'height:34px;padding:0 14px;border-radius:9px;font-size:12.5px;cursor:pointer;border:1px solid ' +
+            (done ? '#D3F0DF;background:#F6FEF9;color:#12B76A' : '#1407A2;background:#1407A2;color:#FFFFFF'),
+          toggleDone: () => this.setState(st => ({ walkDone: Object.assign({}, st.walkDone, { [w.id]: !st.walkDone[w.id] }) })),
+          flagLabel: flagged ? 'Question logged' : 'They had a question',
+          flagStyle: 'height:34px;padding:0 13px;border-radius:9px;font-size:12.5px;cursor:pointer;border:1px solid ' +
+            (flagged ? '#FCE8B6;background:#FFFCF5;color:#B54708' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+          toggleFlag: () => this.setState(st => ({ walkQ: Object.assign({}, st.walkQ, { [w.id]: !st.walkQ[w.id] }) })),
+          textLabel: textOpen ? 'Hide the document text' : 'Show the actual text they are signing',
+          toggleText: () => this.setState(st => ({ walkText: Object.assign({}, st.walkText, { [w.id]: !st.walkText[w.id] }) })),
+          textOpen: textOpen
+        };
+      }),
+      clientName: s.clientName,
+      onClientName: (e) => this.setState({ clientName: e.target.value }),
+      clientRel: s.clientRel,
+      onClientRel: (e) => this.setState({ clientRel: e.target.value }),
+      scriptStyle: 'font-family:Georgia,serif;font-style:italic;font-size:27px;color:#191A2E;min-height:34px;letter-spacing:.01em',
+      scriptName: s.clientName || ' ',
+      initialsBox: initials || '—',
+      signLockLabel: walkAll ? 'All 12 reviewed — you can sign' : 'Review the remaining ' + (WALK.length - walkDone) + ' with the family before signing',
+      signLockStyle: 'display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:13px;font-size:13px;border:1px solid ' +
+        (walkAll ? '#D3F0DF;background:#F6FEF9;color:#12B76A' : '#FCE8B6;background:#FFFCF5;color:#B54708'),
+      applyRows: [
+        { key: 'a1', label: 'Full signature applied to', value: signLines + ' signature lines', sub: 'Pages ' + signPages.join(', ') },
+        { key: 'a2', label: 'Initials placed on', value: initialN + ' acknowledgement blocks', sub: initialPages.join(' · ') + ' — stamped in one action' },
+        { key: 'a3', label: 'Countersigned by', value: s.rnName + ', ' + s.rnCred, sub: 'Joy Healthcare representative line on every page that asks for it' },
+        { key: 'a4', label: 'Dated', value: 'Today · time of signature', sub: 'Same timestamp written to all 26 pages and the audit log' }
+      ],
+      signAllLabel: s.packetSigned ? 'Signed — 26 pages complete ✓'
+        : !walkAll ? 'Review all 12 sections first'
+        : !s.clientName.trim() ? 'Type the signer’s name to sign'
+        : 'Sign once — apply to all 26 pages',
+      signAllStyle: 'height:48px;padding:0 22px;border:none;border-radius:11px;font-size:14px;font-weight:500;cursor:' +
+        (canSign ? 'pointer' : 'not-allowed') + ';background:' +
+        (s.packetSigned ? '#ECFDF3;color:#12B76A' : canSign ? '#1407A2;color:#FFFFFF' : '#F1F2F6;color:#B9B9C1'),
+      signAll: () => {
+        if (!canSign) return;
+        this.setState({ packetSigned: true, packetSent: true, toast: { title: 'Packet signed and filed', sub: '26 pages · ' + signLines + ' signatures · ' + initialN + ' initials · copy e-mailed to the family' } });
+      },
+      packetSigned: s.packetSigned,
+      packetNotSigned: !s.packetSigned,
+      signedSummary: 'Signed by ' + (s.clientName || '—') + ' · ' + s.clientRel + ' · today at 12:41 PM',
+      questionsFollowUp: walkQs.length ? walkQs.length + ' question' + (walkQs.length === 1 ? '' : 's') + ' went to the office as a follow-up task' : 'No open questions from the family',
+
+      voiceOn: s.voice,
+      toggleVoice: () => this.setState({ voice: !s.voice }),
+      voiceLabel: s.voice ? 'Listening…' : 'Voice note',
+      voiceStyle: 'display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;font-size:13px;cursor:pointer;border:1px solid ' +
+        (s.voice ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#5B6274'),
+      addPhoto: () => this.setState({ toast: { title: 'Photo attached to ' + sec.title, sub: 'Joy can read it into fields — a photo never becomes a finding on its own' } }),
+
+      joyOpen: s.joyOpen, toggleJoy: () => this.setState({ joyOpen: !s.joyOpen }),
+      joyQ: s.joyQ, onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joySend: () => this.setState({ joyQ: '' }),
+      joyPrompts: ['What did the family say at intake about mornings?', 'Which sections are still incomplete?', 'Draft the care recommendation from what I documented']
+        .map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+
+      toastOpen: !!s.toast, toast: s.toast || {}, closeToast: () => this.setState({ toast: null })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

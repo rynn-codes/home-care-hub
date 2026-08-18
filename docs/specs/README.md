@@ -34,3 +34,6 @@ is under-specified until it arrives:
   RN captures it. The assessment is modelled from the packet's requirements in
   the meantime.
 - Joy Product Bible v1.0 Builder Edition
+
+The visual designs these specs describe are vendored alongside them in
+`docs/mockups/`, with a note on where the two disagree.

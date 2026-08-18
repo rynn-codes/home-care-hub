@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#1B1B1F}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1320px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Dashboard</span>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">8</span></a>
+      <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>People</a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#B4B4BC;font-size:13px;font-weight:400"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.6 13.4h10.8"></path><path d="M4.4 11V7.4M7.4 11V4.4M10.4 11V8.8M13.4 11V5.6"></path></svg>Reports</span>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#B4B4BC;font-size:13px;font-weight:400"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><circle cx="8" cy="8" r="5.4"></circle><path d="M8 2.6v1.2M8 12.2v1.2M2.6 8h1.2M12.2 8h1.2"></path></svg>Settings</span>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">JR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Joan Robinson</span>
+        <span style="font-size:11px;color:#9B9BA3">Administrator</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:14px 44px;display:flex;align-items:center;gap:20px">
+      <div style="display:flex;align-items:center;gap:16px">
+        <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Thu, August 6</span>
+        <span style="font-size:13px;color:#8A8A92">10:03 AM</span>
+        <span style="display:flex;align-items:center;gap:7px;font-size:13px;color:#8A8A92">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#D97706" stroke-width="1.3" stroke-linecap="round"><circle cx="8" cy="8" r="2.8"></circle><path d="M8 1.6v1.4M8 13v1.4M1.6 8h1.4M13 8h1.4M3.6 3.6l1 1M11.4 11.4l1 1M12.4 3.6l-1 1M4.6 11.4l-1 1"></path></svg>
+          92°F
+        </span>
+        <span style="font-size:13px;color:#8A8A92">Houston, TX</span>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+        <button title="Notifications" style="position:relative;width:34px;height:34px;border-radius:10px;border:1px solid rgba(0,0,0,.06);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#F7F7F9">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#6E6E76" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.6a4 4 0 018 0c0 3 .9 4 .9 4H3.1s.9-1 .9-4z"></path><path d="M6.6 13a1.6 1.6 0 002.8 0"></path></svg>
+          <span style="position:absolute;top:7px;right:8px;width:5px;height:5px;border-radius:50%;background:#C2410C"></span>
+        </button>
+        <button onClick="{{ toggleQuickAdd }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:10px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#1B1B1F" stroke-width="1.5" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>New</button>
+        <div style="width:34px;height:34px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#6E6E76">JR</div>
+      </div>
+    </header>
+
+    <sc-if value="{{ quickAddOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeQuickAdd }}" style="position:fixed;inset:0;z-index:35"></div>
+    </sc-if>
+    <sc-if value="{{ quickAddOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeQuickAdd }}" style="position:fixed;top:60px;right:96px;z-index:40;width:222px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.09);padding:6px">
+        <a href="./Joy%20Health%20Clients.dc.html" style="display:block;padding:10px 12px;border-radius:9px;font-size:13px;color:#1B1B1F;font-weight:400" style-hover="background:#FAFAFB">New Client</a>
+        <a href="./Joy%20Health%20Hiring.dc.html" style="display:block;padding:10px 12px;border-radius:9px;font-size:13px;color:#1B1B1F;font-weight:400" style-hover="background:#FAFAFB">New Employee</a>
+        <a href="./Joy%20Health%20Scheduling.dc.html" style="display:block;padding:10px 12px;border-radius:9px;font-size:13px;color:#1B1B1F;font-weight:400" style-hover="background:#FAFAFB">Schedule Shift</a>
+        <a href="./Joy%20Health%20Admissions.dc.html" style="display:block;padding:10px 12px;border-radius:9px;font-size:13px;color:#1B1B1F;font-weight:400" style-hover="background:#FAFAFB">New Assessment</a>
+        <a href="#" style="display:block;padding:10px 12px;border-radius:9px;font-size:13px;color:#1B1B1F;font-weight:400" style-hover="background:#FAFAFB">Incident Report</a>
+      </div>
+    </sc-if>
+
+    <div style="padding:34px 44px 96px;display:flex;flex-direction:column;gap:22px;max-width:1440px">
+
+      <section style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+        <h1 style="margin:0;font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1;background:linear-gradient(96deg,#1B1B1F 0%,#3B2FB8 52%,#1407A2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">Good morning, Joan. <span style="-webkit-text-fill-color:initial;color:initial">👋</span></h1>
+        <p style="margin:0;font-size:14px;color:#8A8A92;font-weight:400">Here's what's happening at Joy Health today.</p>
+
+        <div style="width:100%;max-width:720px;margin-top:12px;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:15px 16px;box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 26px rgba(0,0,0,.04)">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7" cy="7" r="4.4"></circle><path d="M10.4 10.4L14 14"></path></svg>
+          <span style="flex:1;text-align:left;font-size:14px;color:#A8A8B2">Ask Joy AI anything or search clients, caregivers, invoices…</span>
+          <span style="display:flex;align-items:center;gap:8px;flex:none">
+            <span style="font-size:12.5px;color:#1407A2;font-weight:500">Ask AI</span>
+            <span style="font-size:11px;color:#9B9BA3;background:#F3F3F6;border-radius:6px;padding:3px 7px">Tab</span>
+          </span>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:4px">
+          <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:22px;padding:8px 15px;font-size:12.5px;font-weight:400;color:#1B1B1F" style-hover="border-color:rgba(20,7,162,.24);background:#FCFCFC">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Show open shifts</a>
+          <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:22px;padding:8px 15px;font-size:12.5px;font-weight:400;color:#1B1B1F" style-hover="border-color:rgba(20,7,162,.24);background:#FCFCFC">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0F766E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="2.4" width="9.2" height="11.2" rx="2"></rect><path d="M6 2v1.6h4V2M5.8 7.4h4.4M5.8 10h2.8"></path></svg>Assessments this week</a>
+          <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:22px;padding:8px 15px;font-size:12.5px;font-weight:400;color:#1B1B1F" style-hover="border-color:rgba(20,7,162,.24);background:#FCFCFC">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#C2410C" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 2.4h6l3.2 3.2v8H3.4z"></path><path d="M9.4 2.4v3.2h3.2M6 9h4M6 11.2h2.4"></path></svg>Billing exceptions</a>
+          <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:22px;padding:8px 15px;font-size:12.5px;font-weight:400;color:#1B1B1F" style-hover="border-color:rgba(20,7,162,.24);background:#FCFCFC">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#15803D" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Payroll overview</a>
+          <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:22px;padding:8px 15px;font-size:12.5px;font-weight:400;color:#1B1B1F" style-hover="border-color:rgba(20,7,162,.24);background:#FCFCFC">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Latest leads</a>
+        </div>
+      </section>
+
+      <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px">
+        <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:18px;color:#1B1B1F;box-shadow:0 1px 2px rgba(0,0,0,.02)" style-hover="border-color:rgba(20,7,162,.18)">
+          <span style="width:42px;height:42px;border-radius:50%;background:#EFEDFB;display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12.5px;color:#8A8A92">Active Clients</span>
+            <span style="font-size:25px;font-weight:500;letter-spacing:-.03em;line-height:1">42</span>
+            <span style="font-size:11.5px;color:#15803D">↑ 3 this month</span>
+          </div>
+        </a>
+        <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:18px;color:#1B1B1F;box-shadow:0 1px 2px rgba(0,0,0,.02)" style-hover="border-color:rgba(20,7,162,.18)">
+          <span style="width:42px;height:42px;border-radius:50%;background:#E7F5F2;display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="#0F766E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.4" r="2.6"></circle><path d="M3.2 13.2c0-2.4 2.1-4 4.8-4s4.8 1.6 4.8 4"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12.5px;color:#8A8A92">Caregivers</span>
+            <span style="font-size:25px;font-weight:500;letter-spacing:-.03em;line-height:1">36</span>
+            <span style="font-size:11.5px;color:#15803D">↑ 2 this month</span>
+          </div>
+        </a>
+        <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:18px;color:#1B1B1F;box-shadow:0 1px 2px rgba(0,0,0,.02)" style-hover="border-color:rgba(20,7,162,.18)">
+          <span style="width:42px;height:42px;border-radius:50%;background:#FDF0E7;display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="#C2410C" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12.5px;color:#8A8A92">Open Shifts</span>
+            <span style="font-size:25px;font-weight:500;letter-spacing:-.03em;line-height:1;color:#C2410C">2</span>
+            <span style="font-size:11.5px;color:#C2410C">Needs coverage</span>
+          </div>
+        </a>
+        <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:18px;color:#1B1B1F;box-shadow:0 1px 2px rgba(0,0,0,.02)" style-hover="border-color:rgba(20,7,162,.18)">
+          <span style="width:42px;height:42px;border-radius:50%;background:#EAF0FB;display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="#1D4ED8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="2.4" width="9.2" height="11.2" rx="2"></rect><path d="M6 2v1.6h4V2M5.8 7.4h4.4M5.8 10h2.8"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12.5px;color:#8A8A92">Assessments</span>
+            <span style="font-size:25px;font-weight:500;letter-spacing:-.03em;line-height:1">3</span>
+            <span style="font-size:11.5px;color:#9B9BA3">This week</span>
+          </div>
+        </a>
+      </section>
+
+      <div style="display:grid;grid-template-columns:1.45fr 1fr;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 22px 8px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+            <div style="display:flex;gap:2px;padding:3px;background:#F4F4F6;border-radius:10px">
+              <button onClick="{{ showTasks }}" style="{{ tasksTabStyle }}">My Tasks</button>
+              <button onClick="{{ showSchedule }}" style="{{ scheduleTabStyle }}">Today's Schedule</button>
+              <button onClick="{{ showWaiting }}" style="{{ waitingTabStyle }}">Waiting on Others</button>
+            </div>
+            <a href="./Joy%20Health%20Scheduling.dc.html" style="margin-left:auto;font-size:12.5px;font-weight:400;color:#8A8A92" style-hover="color:#1407A2">View all →</a>
+          </div>
+
+          <sc-if value="{{ tasksActive }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <sc-for list="{{ tasks }}" as="task" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:16px;padding:15px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <button onClick="{{ task.toggle }}" style="{{ task.boxStyle }}" aria-label="Toggle task">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ task.checkStyle }}"><path d="M2.4 6.2l2.4 2.4 4.8-5.2"></path></svg>
+                  </button>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="{{ task.titleStyle }}">{{ task.title }}</span>
+                    <span style="{{ task.metaStyle }}">{{ task.category }}</span>
+                  </div>
+                  <span style="{{ task.tagStyle }}">{{ task.tag }}</span>
+                  <span style="{{ task.timeStyle }}">{{ task.time }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;gap:16px;padding:15px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <span style="font-size:12.5px;color:#9B9BA3">9 tasks</span>
+                <div style="flex:1;height:4px;border-radius:4px;background:#F0F0F2;overflow:hidden;max-width:300px"><div style="{{ progressStyle }}"></div></div>
+                <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">{{ progressLabel }}</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ scheduleActive }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;gap:22px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <div style="width:76px;flex:none;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;color:#C8C8D0;font-weight:500">8:00 AM</span><span style="font-size:11.5px;color:#D4D4DC">4 hrs</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em;color:#B4B4BC">Lian Huang · Personal Care</span>
+                  <span style="font-size:12.5px;color:#C8C8D0">Samantha Chen · clocked out 11:58 AM</span>
+                </div>
+                <span style="flex:none;align-self:center;font-size:11.5px;color:#9B9BA3;background:#F4F4F6;border-radius:20px;padding:4px 11px">Completed</span>
+              </div>
+              <div style="display:flex;gap:22px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <div style="width:76px;flex:none;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;color:#C8C8D0;font-weight:500">10:30 AM</span><span style="font-size:11.5px;color:#D4D4DC">1.5 hrs</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em;color:#B4B4BC">Marcus Bell · Initial Assessment</span>
+                  <span style="font-size:12.5px;color:#C8C8D0">Joan Robinson, RN · 3704 Harmon Ave</span>
+                </div>
+                <span style="flex:none;align-self:center;font-size:11.5px;color:#9B9BA3;background:#F4F4F6;border-radius:20px;padding:4px 11px">Completed</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:4px 0 8px">
+                <span style="width:76px;flex:none;font-size:11.5px;color:#1407A2;font-weight:500">Now</span>
+                <span style="width:6px;height:6px;border-radius:50%;background:#1407A2;flex:none"></span>
+                <span style="flex:1;height:1px;background:rgba(20,7,162,.22)"></span>
+              </div>
+              <div style="display:flex;gap:22px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <div style="width:76px;flex:none;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;color:#8A8A92;font-weight:500">12:00 PM</span><span style="font-size:11.5px;color:#B4B4BC">6 hrs</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Ruth Alvarez · Companion Care</span>
+                  <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#9B9BA3"><span style="width:5px;height:5px;border-radius:50%;background:#B91C1C"></span>Unassigned · 3 caregivers available</span>
+                </div>
+                <a href="./Joy%20Health%20Scheduling.dc.html" style="flex:none;align-self:center;font-size:11.5px;font-weight:500;color:#C2410C;background:#FDF0E7;border-radius:20px;padding:4px 11px">Fill shift</a>
+              </div>
+              <div style="display:flex;gap:22px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <div style="width:76px;flex:none;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;color:#8A8A92;font-weight:500">2:00 PM</span><span style="font-size:11.5px;color:#B4B4BC">45 min</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Field Orientation · David Okoro</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Shadowing Samantha Chen</span>
+                </div>
+                <span style="flex:none;align-self:center;font-size:11.5px;color:#1407A2;background:#EFEDFB;border-radius:20px;padding:4px 11px">Orientation</span>
+              </div>
+              <div style="display:flex;gap:22px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <div style="width:76px;flex:none;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;color:#8A8A92;font-weight:500">4:00 PM</span><span style="font-size:11.5px;color:#B4B4BC">8 hrs</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Edward Pham · Live-In</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Grace Nwosu · confirmed yesterday</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:22px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <div style="width:76px;flex:none;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;color:#8A8A92;font-weight:500">6:30 PM</span><span style="font-size:11.5px;color:#B4B4BC">4 hrs</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Dolores Vance · Evening Care</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Anita Rivera</span>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ waitingActive }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <span style="width:34px;height:34px;border-radius:50%;background:#FDF0E7;display:flex;align-items:center;justify-content:center;flex:none">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#C2410C" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="2.4" width="9.2" height="11.2" rx="2"></rect><path d="M5.8 6.4h4.4M5.8 9.2h2.8"></path></svg>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Background check pending</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Sarah Johnson · requested 3 days ago</span>
+                </div>
+                <a href="./Joy%20Health%20Admissions.dc.html" style="font-size:12.5px;font-weight:500;flex:none">Follow up</a>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <span style="width:34px;height:34px;border-radius:50%;background:#EFEDFB;display:flex;align-items:center;justify-content:center;flex:none">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 11.4c1.4-3.4 4.6-6 8.8-6.4"></path><path d="M9.2 2.8l2.4 2-2 2.4M3 13.4h10"></path></svg>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Family signature needed</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Mrs. Davis — Care Plan · sent Tuesday</span>
+                </div>
+                <a href="./Joy%20Health%20Billing.dc.html" style="font-size:12.5px;font-weight:500;flex:none">Resend</a>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <span style="width:34px;height:34px;border-radius:50%;background:#E7F5F2;display:flex;align-items:center;justify-content:center;flex:none">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#0F766E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11.4V4.2M5.2 6.8L8 4l2.8 2.8M3.4 12.8h9.2"></path></svg>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">CPR renewal upload</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Mike Chen · expires Aug 20</span>
+                </div>
+                <a href="./Joy%20Health%20Admissions.dc.html" style="font-size:12.5px;font-weight:500;flex:none">Remind</a>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+                <span style="width:34px;height:34px;border-radius:50%;background:#EAF0FB;display:flex;align-items:center;justify-content:center;flex:none">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1D4ED8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.4" r="2.4"></circle><path d="M3.4 13.2c0-2.3 2-3.8 4.6-3.8s4.6 1.5 4.6 3.8"></path></svg>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">Gusto onboarding incomplete</span>
+                  <span style="font-size:12.5px;color:#9B9BA3">Jane Smith · step 2 of 4</span>
+                </div>
+                <a href="./Joy%20Health%20Employees.dc.html" style="font-size:12.5px;font-weight:500;flex:none">Nudge</a>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+
+          <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 22px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#6E6E76" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.2 1.4"></path></svg>
+              <h2 style="margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em">Upcoming Deadlines</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+              <span style="width:50px;flex:none;font-size:12.5px;color:#8A8A92">Aug 10</span>
+              <span style="flex:1;font-size:13.5px">Payroll and invoicing</span>
+              <span style="font-size:11.5px;color:#C2410C;background:#FDF0E7;border-radius:20px;padding:3px 10px">in 3 days</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+              <span style="width:50px;flex:none;font-size:12.5px;color:#8A8A92">Aug 13</span>
+              <span style="flex:1;font-size:13.5px">Latest Gusto submission</span>
+              <span style="font-size:11.5px;color:#9B9BA3">in 6 days</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+              <span style="width:50px;flex:none;font-size:12.5px;color:#8A8A92">Aug 14</span>
+              <span style="flex:1;font-size:13.5px">Payday</span>
+              <span style="font-size:11.5px;color:#9B9BA3">in 7 days</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+              <span style="width:50px;flex:none;font-size:12.5px;color:#8A8A92">Aug 18</span>
+              <span style="flex:1;font-size:13.5px">Office orientation</span>
+              <span style="font-size:11.5px;color:#9B9BA3">in 11 days</span>
+            </div>
+          </section>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 22px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 2l1.2 3.4L12.6 6.6 9.2 7.8 8 11.2 6.8 7.8 3.4 6.6 6.8 5.4z"></path><path d="M12.4 10.6l.5 1.4 1.4.5-1.4.5-.5 1.4-.5-1.4-1.4-.5 1.4-.5z"></path></svg>
+              <h2 style="margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em">Morning Brief</h2>
+            </div>
+            <p style="margin:0;font-size:13.5px;line-height:1.65;color:#3A3A42;text-wrap:pretty">Two assessments and one field orientation today. Payroll is due Monday. One open shift needs coverage — three caregivers are available nearby.</p>
+          </section>
+
+          <section style="background:#fff;border:1px solid rgba(20,7,162,.14);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 22px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:3px">
+              <span style="width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 1px 3px rgba(20,7,162,.12)">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="6.2" y="2.2" width="3.6" height="6.4" rx="1.8"></rect><path d="M4 7.6a4 4 0 008 0M8 11.6v2.2M6.2 13.8h3.6"></path></svg>
+              </span>
+              <h2 style="margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em;color:#1407A2">Talk to Joy AI</h2>
+            </div>
+            <p style="margin:0 0 14px;font-size:12.5px;color:#6E6E8A">Your assistant for smarter, faster decisions.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+              <a href="./Joy%20Health%20Scheduling.dc.html" style="font-size:12px;font-weight:400;color:#1407A2;background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:20px;padding:6px 12px" style-hover="background:#FAFAFB">Open shifts today</a>
+              <a href="./Joy%20Health%20Scheduling.dc.html" style="font-size:12px;font-weight:400;color:#1407A2;background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:20px;padding:6px 12px" style-hover="background:#FAFAFB">Caregivers not clocked in</a>
+              <a href="./Joy%20Health%20Scheduling.dc.html" style="font-size:12px;font-weight:400;color:#1407A2;background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:20px;padding:6px 12px" style-hover="background:#FAFAFB">Assessments this week</a>
+              <a href="./Joy%20Health%20Payroll.dc.html" style="font-size:12px;font-weight:400;color:#1407A2;background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:20px;padding:6px 12px" style-hover="background:#FAFAFB">Payroll summary</a>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid rgba(20,7,162,.12);border-radius:12px;padding:9px 9px 9px 14px">
+                <span style="flex:1;font-size:12.5px;color:#A8A8B2">Ask Joy anything…</span>
+
+                <span style="width:28px;height:28px;border-radius:50%;background:#1407A2;display:flex;align-items:center;justify-content:center;flex:none">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M8.6 4.4L12.2 8l-3.6 3.6"></path></svg>
+                </span>
+              </div>
+              <button title="Voice input" style="width:40px;height:40px;border-radius:12px;border:1px solid rgba(20,7,162,.12);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none" style-hover="background:#FAFAFB">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="6.2" y="2.2" width="3.6" height="6.4" rx="1.8"></rect><path d="M4 7.6a4 4 0 008 0M8 11.6v2.2M6.2 13.8h3.6"></path></svg>
+              </button>
+            </div>
+          </section>
+
+          <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 22px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:3px">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 2l1.2 3.4L12.6 6.6 9.2 7.8 8 11.2 6.8 7.8 3.4 6.6 6.8 5.4z"></path><path d="M12.4 10.6l.5 1.4 1.4.5-1.4.5-.5 1.4-.5-1.4-1.4-.5 1.4-.5z"></path></svg>
+              <h2 style="margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em">Joy Assistant</h2>
+              <span style="margin-left:auto;font-size:11.5px;color:#1407A2;background:#EFEDFB;border-radius:20px;padding:3px 10px">3 updates</span>
+            </div>
+            <p style="margin:0 0 8px;font-size:12.5px;color:#9B9BA3">Joy prepares, a human approves.</p>
+            <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05);color:#1B1B1F" style-hover="color:#1407A2">
+              <span style="flex:1;font-size:13.5px">3 caregivers match Ruth Alvarez's open shift</span><span style="color:#B4B4BC">→</span>
+            </a>
+            <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05);color:#1B1B1F" style-hover="color:#1407A2">
+              <span style="flex:1;font-size:13.5px">4 billing exceptions — corrections drafted</span><span style="color:#B4B4BC">→</span>
+            </a>
+            <a href="./Joy%20Health%20Phone%20Intake.dc.html" style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05);color:#1B1B1F" style-hover="color:#1407A2">
+              <span style="flex:1;font-size:13.5px">Marcus Bell's intake is missing a medication list</span><span style="color:#B4B4BC">→</span>
+            </a>
+          </section>
+        </div>
+      </div>
+    </div>
+
+      <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:36px;bottom:88px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <span style="{{ joyStatusStyle }}">{{ joyStatus }}</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
+        </button>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+
+    <button onClick="{{ toggleJoy }}" style="position:fixed;bottom:30px;right:36px;z-index:50;display:flex;align-items:center;gap:11px;height:46px;padding:0 8px 0 16px;border-radius:23px;border:none;background:linear-gradient(135deg,#2A1BD1 0%,#1407A2 100%);color:#fff;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;box-shadow:0 2px 6px rgba(20,7,162,.2),0 12px 32px rgba(20,7,162,.28);transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 3px 8px rgba(20,7,162,.24),0 18px 44px rgba(20,7,162,.34)">
+      <span style="position:relative;width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center">
+        <span style="position:absolute;inset:-2px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.4),transparent 70%);animation:joyGlow 3.4s ease-in-out infinite"></span>
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="position:relative"><path d="M8 2l1.2 3.4L12.6 6.6 9.2 7.8 8 11.2 6.8 7.8 3.4 6.6 6.8 5.4z"></path><path d="M12.4 10.6l.5 1.4 1.4.5-1.4.5-.5 1.4-.5-1.4-1.4-.5 1.4-.5z"></path></svg>
+      </span>
+      Ask Joy
+      <span style="display:flex;align-items:center;justify-content:center;height:24px;padding:0 8px;border-radius:14px;background:rgba(255,255,255,.18);color:rgba(255,255,255,.82);font-size:11px;font-weight:500;flex:none">⌘J</span>
+    </button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1180}}">
+const TASKS = [
+  { title: 'Call Susan Miller about increased hours', category: 'Client follow-up', tag: 'Client', time: '9:00 AM' },
+  { title: 'Approve payroll for week ending 8/8', category: 'Payroll', tag: 'Payroll', time: '10:30 AM' },
+  { title: 'Review assessment — Lian Huang', category: 'Assessment', tag: 'Assessment', time: '11:00 AM' },
+  { title: 'Interview: CNA candidate — T. Johnson', category: 'Human Resources', tag: 'HR', time: '2:00 PM' },
+  { title: 'Review billing exceptions', category: 'Billing', tag: 'Billing', time: '3:00 PM' }
+];
+
+class Component extends DCLogic {
+  state = { joyOpen: false, joyQ: '', joyMic: false, quickAddOpen: false, tab: 'tasks', done: {} };
+  tabStyle(active) {
+    return 'font-family:inherit;font-size:12.5px;font-weight:' + (active ? '500' : '400') +
+      ';padding:7px 14px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;background:' +
+      (active ? '#FFFFFF' : 'transparent') + ';color:' + (active ? '#1B1B1F' : '#8A8A92') +
+      ';box-shadow:' + (active ? '0 1px 2px rgba(0,0,0,.06)' : 'none');
+  }
+  renderVals() {
+    const tab = this.state.tab;
+    const done = this.state.done;
+    const rows = TASKS.map((t, i) => {
+      const isDone = !!done[i];
+      return {
+        title: t.title, category: t.category, tag: t.tag, time: t.time,
+        toggle: () => this.setState(s => ({ done: Object.assign({}, s.done, { [i]: !s.done[i] }) })),
+        boxStyle: 'width:17px;height:17px;flex:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:5px;transition:background .15s ease,border-color .15s ease;border:1.4px solid ' +
+          (isDone ? '#1407A2' : '#C8C8D0') + ';background:' + (isDone ? '#1407A2' : 'transparent'),
+        checkStyle: 'opacity:' + (isDone ? '1' : '0') + ';transition:opacity .15s ease',
+        titleStyle: 'font-size:14px;font-weight:500;letter-spacing:-.01em;transition:color .15s ease;color:' +
+          (isDone ? '#B4B4BC' : '#1B1B1F') + (isDone ? ';text-decoration:line-through;text-decoration-color:#C8C8D0' : ''),
+        metaStyle: 'font-size:12px;color:' + (isDone ? '#C8C8D0' : '#9B9BA3'),
+        tagStyle: 'font-size:11.5px;flex:none;border-radius:20px;padding:3px 10px;background:' +
+          (isDone ? '#FAFAFB' : '#F4F4F6') + ';color:' + (isDone ? '#C8C8D0' : '#6E6E76'),
+        timeStyle: 'font-size:12.5px;width:60px;text-align:right;flex:none;color:' + (isDone ? '#C8C8D0' : '#1407A2')
+      };
+    });
+    const doneCount = TASKS.filter((t, i) => done[i]).length + 4;
+    const pct = Math.round((doneCount / 9) * 100);
+    return {
+      joyOpen: this.state.joyOpen,
+      toggleJoy: () => this.setState(st => ({ joyOpen: !st.joyOpen, joyMic: false })),
+      joyQ: this.state.joyQ,
+      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyStatus: this.state.joyMic ? 'Listening…' : '',
+      joyStatusStyle: 'font-size:11px;color:#1407A2;' + (this.state.joyMic ? '' : 'display:none'),
+      toggleMic: () => this.setState(st => ({ joyMic: !st.joyMic })),
+      micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
+        (this.state.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+      joySend: () => this.setState({ joyQ: '', joyMic: false }),
+      joyPrompts: ["What needs me today?","Show today’s open shifts","Prepare tomorrow’s schedule"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      quickAddOpen: this.state.quickAddOpen,
+      toggleQuickAdd: () => this.setState(s => ({ quickAddOpen: !s.quickAddOpen })),
+      closeQuickAdd: () => this.setState({ quickAddOpen: false }),
+      tasks: rows,
+      progressStyle: 'width:' + pct + '%;height:100%;background:#1407A2;transition:width .25s ease',
+      progressLabel: pct + '% complete',
+      tasksActive: tab === 'tasks',
+      scheduleActive: tab === 'schedule',
+      waitingActive: tab === 'waiting',
+      tasksTabStyle: this.tabStyle(tab === 'tasks'),
+      scheduleTabStyle: this.tabStyle(tab === 'schedule'),
+      waitingTabStyle: this.tabStyle(tab === 'waiting'),
+      showTasks: () => this.setState({ tab: 'tasks' }),
+      showSchedule: () => this.setState({ tab: 'schedule' }),
+      showWaiting: () => this.setState({ tab: 'waiting' })
+    };
+  }
+}
+</script>
+</body>
+</html>

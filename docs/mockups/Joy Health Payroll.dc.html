@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+button{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@keyframes drawerIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1320px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;overflow-y:auto">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Dashboard</a>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">8</span></a>
+      <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6;margin-top:2px">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll
+      </div>
+
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.6 13.4h10.8"></path><path d="M4.4 11V7.4M7.4 11V4.4M10.4 11V8.8M13.4 11V5.6"></path></svg>Reports</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><circle cx="8" cy="8" r="5.4"></circle><path d="M8 2.6v1.2M8 12.2v1.2M2.6 8h1.2M12.2 8h1.2"></path></svg>Settings</a>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">JR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Joan Robinson</span>
+        <span style="font-size:11px;color:#9B9BA3">Administrator</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:13px 44px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:12.5px;color:#9B9BA3">Payroll</span>
+      <span style="font-size:12.5px;color:#C9C9D0">/</span>
+      <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ crumb }}</span>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
+    </header>
+
+    <div style="padding:30px 44px 90px;display:flex;flex-direction:column;gap:22px;max-width:1400px">
+
+      <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:340px">
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Payroll</h1>
+          <p style="margin:0;font-size:13.5px;color:#5B6274;max-width:600px;text-wrap:pretty">Review payroll readiness, resolve exceptions, and prepare the cycle for Gusto.</p>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <button onClick="{{ openExport }}" style="height:34px;padding:0 13px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid #ECECF1;background:#FFFFFF;color:#5B6274" style-hover="background:#FAFAFB;color:#191A2E">Preview export file</button>
+          <button onClick="{{ toggleHistory }}" style="{{ historyBtn }}">Payroll history</button>
+          <button onClick="{{ prepare }}" style="{{ gustoBtn }}">{{ gustoLabel }}</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ showHistory }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #ECECF1">
+            <span style="font-size:13.5px;font-weight:600">Payroll history</span>
+            <button onClick="{{ toggleHistory }}" style="margin-left:auto;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Close</button>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <sc-for list="{{ historyCols }}" as="c">
+                  <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">{{ c.label }}</th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ history }}" as="r">
+                <tr style="border-top:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                  <td style="padding:13px 18px;font-size:13px;color:#191A2E;font-weight:500">{{ r.period }}</td>
+                  <td style="padding:13px 18px">
+                    <span style="display:flex;align-items:center;gap:7px">
+                      <span style="{{ r.dotStyle }}"></span>
+                      <span style="font-size:12.5px;color:#5B6274">{{ r.status }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:13px 18px;font-size:12.5px;color:#5B6274">{{ r.employees }}</td>
+                  <td style="padding:13px 18px;font-size:12.5px;color:#5B6274">{{ r.exceptions }}</td>
+                  <td style="padding:13px 18px;font-size:12.5px;color:#5B6274">{{ r.gusto }}</td>
+                  <td style="padding:13px 18px;font-size:12.5px;color:#9B9BA3">{{ r.completed }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <div style="display:flex;align-items:baseline;gap:28px;flex-wrap:wrap;padding-bottom:2px">
+        <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">This Monday · Aug 10</span>
+        <span style="display:flex;align-items:baseline;gap:9px">
+          <span style="font-size:13px;color:#8A8A92">Payroll week</span>
+          <span style="font-size:14px;font-weight:600;color:#191A2E">Aug 1 – 7</span>
+        </span>
+        <span style="display:flex;align-items:baseline;gap:9px">
+          <span style="font-size:13px;color:#8A8A92">Billing week</span>
+          <span style="font-size:14px;font-weight:600;color:#191A2E">Aug 15 – 21</span>
+        </span>
+        <span style="margin-left:auto;display:flex;background:#F1F2F6;border-radius:9px;padding:3px;gap:2px">
+          <sc-for list="{{ views }}" as="v" hint-placeholder-count="2">
+            <button onClick="{{ v.click }}" style="{{ v.style }}">{{ v.label }}</button>
+          </sc-for>
+        </span>
+      </div>
+
+      <div style="{{ heroStyle }}">
+        <div style="display:flex;align-items:center;gap:32px">
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+            <span style="font-size:29px;font-weight:600;letter-spacing:-.025em;line-height:1.1">{{ heroTitle }}</span>
+            <p style="margin:0;font-size:14px;color:#5B6274;max-width:520px;text-wrap:pretty">{{ heroSub }}</p>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:22px;flex:none">
+            <span style="display:flex;flex-direction:column;gap:7px;align-items:flex-end">
+              <span style="font-size:13px;color:#8A8A92">{{ heroCount }}</span>
+              <span style="display:block;width:170px;height:5px;border-radius:999px;background:#F1F2F6;overflow:hidden">
+                <span style="{{ heroBarStyle }}"></span>
+              </span>
+            </span>
+            <button onClick="{{ heroAction }}" style="{{ heroBtnStyle }}">{{ heroBtn }}</button>
+          </div>
+        </div>
+        <sc-if value="{{ prepared }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:14px;padding-top:16px;margin-top:16px;border-top:1px solid #ECECF1">
+            <span style="font-size:12.5px;color:#5B6274">Prepared Monday, Aug 10 · 10:42 AM by Joan Robinson</span>
+            <button onClick="{{ openExport }}" style="background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">View export summary</button>
+            <span style="margin-left:auto;font-size:11.5px;color:#8A8A92">Joy prepared the file — submit it inside Gusto.</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:flex-end;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">Week grid · Aug 1 – 7</span>
+              <span style="font-size:12.5px;color:#8A8A92">Hours logged per day, with what each person is earning so far.</span>
+            </div>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:16px;font-size:12px;color:#8A8A92">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:2px;background:#F79009"></span>Needs review</span>
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:2px;background:#EEF0FE;border:1px solid #D6D8EA"></span>Overtime</span>
+            </span>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:1060px">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap;position:sticky;left:0;z-index:2;border-right:1px solid #ECECF1">Employee</th>
+                    <sc-for list="{{ gridDays }}" as="d">
+                      <th style="{{ d.style }}">
+                        <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3">{{ d.dow }}</span>
+                        <span style="display:block;font-size:11px;font-weight:400;color:#C9C9D0;letter-spacing:0">{{ d.date }}</span>
+                      </th>
+                    </sc-for>
+                    <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Hrs</th>
+                    <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">OT</th>
+                    <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Rate</th>
+                    <th style="text-align:right;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Gross</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ gridRows }}" as="r">
+                    <tr style="border-top:1px solid #F3F3F6" style-hover="background:#FCFCFD">
+                      <td style="padding:11px 18px;position:sticky;left:0;z-index:1;background:#FFFFFF;border-right:1px solid #F3F3F6">
+                        <span style="display:flex;align-items:center;gap:9px">
+                          <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                          <span style="display:flex;flex-direction:column;line-height:1.3">
+                            <span style="font-size:12.5px;color:#191A2E;white-space:nowrap">{{ r.name }}</span>
+                            <span style="font-size:11px;color:#9B9BA3">{{ r.role }}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <sc-for list="{{ r.cells }}" as="c">
+                        <td style="{{ c.style }}">{{ c.value }}</td>
+                      </sc-for>
+                      <td style="padding:11px 14px;font-size:12.5px;color:#191A2E;text-align:right;font-weight:500">{{ r.total }}</td>
+                      <td style="padding:11px 14px;text-align:right"><span style="{{ r.otStyle }}">{{ r.ot }}</span></td>
+                      <td style="padding:11px 14px;font-size:12px;color:#8A8A92;text-align:right;white-space:nowrap">{{ r.rate }}</td>
+                      <td style="padding:11px 18px;font-size:12.5px;color:#191A2E;text-align:right;font-weight:500;white-space:nowrap">{{ r.gross }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+                <tfoot>
+                  <tr style="border-top:1px solid #ECECF1;background:#FCFCFD">
+                    <td style="padding:12px 18px;font-size:12.5px;font-weight:600;color:#191A2E;position:sticky;left:0;background:#FCFCFD;border-right:1px solid #ECECF1;white-space:nowrap">Total · 12 shown</td>
+                    <sc-for list="{{ gridFooter }}" as="f">
+                      <td style="padding:12px 10px;font-size:12px;font-weight:600;color:#191A2E;text-align:center">{{ f.value }}</td>
+                    </sc-for>
+                    <td style="padding:12px 14px;font-size:12.5px;font-weight:600;color:#191A2E;text-align:right">{{ gridTotalHrs }}</td>
+                    <td style="padding:12px 14px;font-size:12.5px;font-weight:600;color:#B54708;text-align:right">{{ gridTotalOt }}</td>
+                    <td style="padding:12px 14px"></td>
+                    <td style="padding:12px 18px;font-size:12.5px;font-weight:600;color:#191A2E;text-align:right;white-space:nowrap">{{ gridTotalGross }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #ECECF1;background:#FCFCFD">
+              <span style="font-size:11.5px;color:#8A8A92">Showing 12 of 36 employees · totals below cover the 12 shown</span>
+              <span style="margin-left:auto;font-size:11.5px;color:#8A8A92">{{ gridNote }}</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReview }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">Needs review</span>
+            <span style="font-size:12.5px;color:#8A8A92">Only payroll items requiring action appear here.</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:22px;border-bottom:1px solid #ECECF1">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+              <button onClick="{{ t.click }}" style="{{ t.style }}">
+                <span>{{ t.label }}</span>
+                <span style="{{ t.countStyle }}">{{ t.count }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+            <sc-for list="{{ queue }}" as="r" hint-placeholder-count="3">
+              <div onClick="{{ r.open }}" style="display:flex;align-items:center;gap:16px;padding:18px;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                <span style="width:34px;height:34px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                  <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.name }}</span>
+                  <span style="font-size:12.5px;color:#8A8A92">{{ r.summary }}</span>
+                </span>
+                <span style="margin-left:auto;display:flex;align-items:center;gap:14px;flex:none">
+                  <span style="{{ r.statusStyle }}">{{ r.status }}</span>
+                  <span style="font-size:13px;color:#B9B9C1">→</span>
+                </span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:44px;text-align:center;display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:14px;font-weight:500;color:#191A2E">Nothing needs review</span>
+                <span style="font-size:12.5px;color:#8A8A92">{{ emptyNote }}</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;padding:13px 16px">
+            <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
+            <span style="font-size:13px;color:#191A2E;text-wrap:pretty">{{ joyNote }}</span>
+            <button style="margin-left:auto;flex:none;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Review with Joy →</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Payroll cycle</span>
+            <button onClick="{{ toggleDone }}" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;border:none;padding:0 0 4px;cursor:pointer">
+              <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">✓</span>
+              <span style="font-size:13px;color:#8A8A92">{{ doneLabel }}</span>
+              <span style="{{ doneChevron }}">⌄</span>
+            </button>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ cycle }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="{{ s.markStyle }}">{{ s.mark }}</span>
+                  <span style="{{ s.labelStyle }}">{{ s.label }}</span>
+                  <span style="margin-left:auto;font-size:11.5px;color:#8A8A92;white-space:nowrap">{{ s.note }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Also on Monday</span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:13px;color:#191A2E">LTI / paid invoice</span>
+                <span style="{{ ltiPillStyle }}">{{ ltiStatus }}</span>
+              </span>
+              <button style="align-self:flex-start;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Review LTI package</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid #F3F3F6">
+              <span style="font-size:13px;color:#191A2E">Bill Aug 15 – 21</span>
+              <span style="font-size:12.5px;color:#8A8A92">12 client invoices ready for review</span>
+              <a href="./Joy%20Health%20Billing.dc.html" style="font-size:12.5px;padding-top:2px">Open Billing →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:70;display:flex;align-items:flex-start;justify-content:center;padding:56px 24px;overflow-y:auto">
+      <div onClick="{{ closeExport }}" style="position:absolute;inset:0;background:rgba(25,26,46,.22)"></div>
+      <div style="position:relative;width:100%;max-width:1000px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 24px 60px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+
+        <div style="padding:20px 24px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">Payroll export · Aug 1 – 7</span>
+            <span style="font-size:12.5px;color:#8A8A92">{{ exportMeta }}</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:9px">
+            <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.8v7.4M5.2 7.6L8 10.4l2.8-2.8"></path><path d="M3 12.8h10"></path></svg>Download .xlsx
+            </button>
+            <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">Download .csv</button>
+            <button onClick="{{ closeExport }}" style="width:34px;height:34px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:9px;color:#8A8A92;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+          </div>
+        </div>
+
+        <div style="padding:16px 24px;display:flex;align-items:center;gap:32px;flex-wrap:wrap;background:#FCFCFD;border-bottom:1px solid #ECECF1">
+          <sc-for list="{{ exportTotals }}" as="t" hint-placeholder-count="5">
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ t.label }}</span>
+              <span style="font-size:17px;font-weight:600;letter-spacing:-.01em;color:#191A2E">{{ t.value }}</span>
+            </span>
+          </sc-for>
+        </div>
+
+        <div style="max-height:52vh;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <sc-for list="{{ exportCols }}" as="c">
+                  <th style="{{ c.style }}">{{ c.label }}</th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ exportRows }}" as="r">
+                <tr style="border-top:1px solid #F3F3F6">
+                  <td style="padding:12px 24px;font-size:13px;color:#191A2E">{{ r.name }}</td>
+                  <td style="padding:12px 16px;font-size:12.5px;color:#8A8A92">{{ r.id }}</td>
+                  <td style="padding:12px 16px;font-size:13px;color:#191A2E;text-align:right">{{ r.regular }}</td>
+                  <td style="padding:12px 16px;text-align:right"><span style="{{ r.otStyle }}">{{ r.ot }}</span></td>
+                  <td style="padding:12px 16px;font-size:12.5px;color:#5B6274;text-align:right">{{ r.mileage }}</td>
+                  <td style="padding:12px 16px;font-size:12.5px;color:#5B6274;text-align:right">{{ r.reimb }}</td>
+                  <td style="padding:12px 24px;font-size:12.5px;color:#5B6274;text-align:right">{{ r.visits }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+            <tfoot>
+              <tr style="border-top:1px solid #ECECF1;background:#FCFCFD">
+                <td colspan="2" style="padding:13px 24px;font-size:12.5px;font-weight:600;color:#191A2E">Total · 36 employees</td>
+                <td style="padding:13px 16px;font-size:13px;font-weight:600;color:#191A2E;text-align:right">1,284.5</td>
+                <td style="padding:13px 16px;font-size:13px;font-weight:600;color:#191A2E;text-align:right">18.0</td>
+                <td style="padding:13px 16px;font-size:12.5px;font-weight:600;color:#191A2E;text-align:right">612.4 mi</td>
+                <td style="padding:13px 16px;font-size:12.5px;font-weight:600;color:#191A2E;text-align:right">$472.06</td>
+                <td style="padding:13px 24px;font-size:12.5px;font-weight:600;color:#191A2E;text-align:right">284</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="padding:14px 24px;border-top:1px solid #ECECF1;display:flex;align-items:center;gap:12px;background:#FCFCFD">
+          <span style="font-size:11.5px;color:#8A8A92;text-wrap:pretty">{{ exportFootnote }}</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex:none">
+            <span style="{{ exportDotStyle }}"></span>
+            <span style="font-size:12px;color:#5B6274">{{ exportState }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end">
+      <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(25,26,46,.18)"></div>
+      <aside style="position:relative;width:468px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
+          <span style="width:40px;height:40px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ d.initials }}</span>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+            <span style="font-size:16.5px;font-weight:600;letter-spacing:-.01em">{{ d.name }}</span>
+            <span style="font-size:12.5px;color:#5B6274">{{ d.subtitle }}</span>
+          </div>
+          <button onClick="{{ closeDrawer }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:20px">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <sc-for list="{{ d.compare }}" as="c" hint-placeholder-count="3">
+              <div style="{{ c.style }}">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ c.label }}</span>
+                <span style="{{ c.valueStyle }}">{{ c.value }}</span>
+                <span style="font-size:11.5px;color:#8A8A92">{{ c.sub }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Supporting information</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ d.facts }}" as="f" hint-placeholder-count="6">
+                <div style="display:flex;align-items:baseline;gap:14px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:12.5px;color:#9B9BA3;width:150px;flex:none">{{ f.label }}</span>
+                  <span style="{{ f.valueStyle }}">{{ f.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Notes</span>
+            <sc-for list="{{ d.notes }}" as="n" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:3px;padding:11px 12px;border:1px solid #ECECF1;border-radius:11px;background:#FCFCFD">
+                <span style="font-size:12.5px;color:#191A2E;line-height:1.5">{{ n.text }}</span>
+                <span style="font-size:11px;color:#9B9BA3">{{ n.meta }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Audit trail</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ d.audit }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="width:6px;height:6px;flex:none;border-radius:50%;background:#D0D5DD"></span>
+                  <span style="font-size:12.5px;color:#191A2E">{{ a.label }}</span>
+                  <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3;white-space:nowrap">{{ a.when }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="border-top:1px solid #ECECF1;padding:14px 22px;display:flex;flex-direction:column;gap:9px;background:#FCFCFD">
+          <button onClick="{{ d.resolve }}" style="display:flex;align-items:center;justify-content:center;height:38px;background:#1407A2;border:none;border-radius:10px;font-size:13.5px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">{{ d.primary }}</button>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ d.secondary }}" as="b" hint-placeholder-count="2">
+              <button style="flex:1;height:34px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">{{ b.label }}</button>
+            </sc-for>
+          </div>
+          <span style="font-size:11px;color:#9B9BA3;text-align:center;text-wrap:pretty">{{ d.disclaimer }}</span>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+    <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:28px;bottom:80px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <span style="{{ joyStatusStyle }}">{{ joyStatus }}</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
+        </button>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+<button onClick="{{ toggleJoy }}" style="position:fixed;right:28px;bottom:26px;z-index:40;display:flex;align-items:center;gap:9px;height:42px;padding:0 18px 0 14px;background:#191A2E;border:none;border-radius:999px;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px rgba(25,26,46,.22)" style-hover="background:#1407A2">
+    <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Ask Joy
+  </button>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const pillS = (fg, bg) => 'display:inline-flex;align-items:center;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:500;white-space:nowrap;color:' + fg + ';background:' + bg;
+
+const ITEMS = [
+  {
+    id: 'x1', name: 'Maria Johnson', client: 'Evelyn Carter', cat: 'Time & EVV',
+    kind: 'Time / EVV mismatch', detail: 'Scheduled 8.0 hrs · verified 7.5 hrs · Aug 5',
+    status: 'Needs review', tone: 'warn',
+    subtitle: 'Payroll exception · Aug 5 · Evelyn Carter',
+    compare: [
+      { label: 'Scheduled', value: '8:00 AM – 4:00 PM', sub: '8.0 hrs' },
+      { label: 'Recorded', value: '8:02 AM – 3:32 PM', sub: '7.5 hrs' },
+      { label: 'Difference', value: '30 min', sub: 'Short of schedule', warn: true }
+    ],
+    facts: [
+      { label: 'Client', value: 'Evelyn Carter' },
+      { label: 'Service date', value: 'Wednesday, Aug 5, 2026' },
+      { label: 'Scheduled shift', value: '8:00 AM – 4:00 PM · personal care' },
+      { label: 'EVV verification', value: 'Clock-in and clock-out captured · GPS matched', ok: true },
+      { label: 'Documentation', value: 'Visit note filed', ok: true },
+      { label: 'Pay impact', value: '0.5 hrs × $19.50 = $9.75' }
+    ],
+    notes: [
+      { text: 'Client\u2019s daughter arrived early and released the caregiver at 3:32 PM.', meta: 'Kelly Kuhn · Aug 5, 3:40 PM' }
+    ],
+    audit: [
+      { label: 'Exception raised by Joy', when: 'Aug 5 · 4:05 PM' },
+      { label: 'Visit note filed', when: 'Aug 5 · 3:41 PM' },
+      { label: 'Clock-out recorded', when: 'Aug 5 · 3:32 PM' }
+    ],
+    primary: 'Approve recorded time (7.5 hrs)',
+    secondary: [{ label: 'Correct time' }, { label: 'Request clarification' }],
+    disclaimer: 'Approving records the reviewed hours in Joy. Pay is issued in Gusto after handoff.'
+  },
+  {
+    id: 'x2', name: 'David Okoro', client: '3 clients', cat: 'Overtime',
+    kind: 'Overtime review', detail: 'Regular 40.0 hrs · OT 4.5 hrs · Aug 1 – 7',
+    status: 'Confirm OT', tone: 'warn',
+    subtitle: 'Overtime review · Aug 1 – 7 · 3 clients',
+    compare: [
+      { label: 'Regular', value: '40.0 hrs', sub: 'Aug 1 – 7' },
+      { label: 'Overtime', value: '4.5 hrs', sub: '$131.63 at 1.5×' },
+      { label: 'Clients', value: '3', sub: 'Across 7 shifts', warn: true }
+    ],
+    facts: [
+      { label: 'Review period', value: 'Aug 1 – 7, 2026' },
+      { label: 'OT driver', value: 'Two call-out coverage shifts on Aug 6 and Aug 7' },
+      { label: 'Approved in advance', value: 'Yes · Dana Whitfield', ok: true },
+      { label: 'OT billing', value: 'Pending — bill to clients separately this Monday', warn: true },
+      { label: 'Pay impact', value: '4.5 hrs × $29.25 = $131.63' },
+      { label: 'Clients served', value: 'Huang, Aiken, Whitaker' }
+    ],
+    notes: [
+      { text: 'Covered Amani McClure\u2019s shifts while she is on medical leave.', meta: 'Dana Whitfield · Aug 6, 7:12 AM' }
+    ],
+    audit: [
+      { label: 'Overtime flagged by Joy', when: 'Aug 8 · 6:00 AM' },
+      { label: 'Coverage approved in advance', when: 'Aug 5 · 2:20 PM' }
+    ],
+    primary: 'Approve overtime (4.5 hrs)',
+    secondary: [{ label: 'Review shifts' }, { label: 'Add note' }],
+    disclaimer: 'Employee overtime and client OT billing are tracked separately. Billing stays in the Billing workspace.'
+  },
+  {
+    id: 'x3', name: 'Samantha Chen', client: 'Margaret Davis', cat: 'Mileage',
+    kind: 'Mileage documentation', detail: '18.4 mi · trip documentation incomplete · Aug 4',
+    status: 'Missing information', tone: 'bad',
+    subtitle: 'Mileage review · Aug 4 · Margaret Davis',
+    compare: [
+      { label: 'Mileage', value: '18.4 mi', sub: '$11.96 at $0.65' },
+      { label: 'Documentation', value: 'Partial', sub: 'Destination missing', warn: true },
+      { label: 'Receipt', value: 'N/A', sub: 'No purchase logged' }
+    ],
+    facts: [
+      { label: 'Client', value: 'Margaret Davis' },
+      { label: 'Service date', value: 'Tuesday, Aug 4, 2026' },
+      { label: 'Trip type', value: 'Out with client during shift' },
+      { label: 'Start / end', value: 'Client home → not recorded', warn: true },
+      { label: 'Documentation', value: 'Trip purpose entered; destination and return time missing', warn: true },
+      { label: 'Pay impact', value: '18.4 mi × $0.65 = $11.96' }
+    ],
+    notes: [
+      { text: 'Pharmacy and grocery run with client. Caregiver has been asked to complete the trip log.', meta: 'Joy · Aug 8, 6:00 AM' }
+    ],
+    audit: [
+      { label: 'Mileage entry submitted', when: 'Aug 4 · 5:02 PM' },
+      { label: 'Flagged incomplete by Joy', when: 'Aug 8 · 6:00 AM' }
+    ],
+    primary: 'Request clarification from Samantha',
+    secondary: [{ label: 'Approve as entered' }, { label: 'Add note' }],
+    disclaimer: 'Travel reimbursement follows the Joy Health travel expense policy for time out with clients.'
+  }
+];
+
+const TABS = ['All', 'Time & EVV', 'Overtime', 'Mileage', 'Adjustments'];
+
+const CYCLE = [
+  { key: 'c1', label: 'Visit hours collected', state: 'done', note: '36 employees' },
+  { key: 'c2', label: 'Schedule compared', state: 'done', note: '284 shifts' },
+  { key: 'c3', label: 'Exceptions reviewed', state: 'open', note: null, count: 'ex' },
+  { key: 'c4', label: 'Overtime reviewed', state: 'open', note: null, count: 'ot' },
+  { key: 'c5', label: 'Mileage reviewed', state: 'open', note: null, count: 'mi' },
+  { key: 'c6', label: 'Payroll approved', state: 'todo', note: '' },
+  { key: 'c7', label: 'Prepared for Gusto', state: 'todo', note: '' },
+  { key: 'c8', label: 'LTI / paid invoice sent', state: 'todo', note: '' },
+  { key: 'c9', label: 'Cycle complete', state: 'todo', note: '' }
+];
+
+const HISTORY = [
+  { key: 'h1', period: 'Jul 25 – 31', status: 'Complete', employees: '35', exceptions: '0', gusto: 'Prepared', completed: 'Aug 3' },
+  { key: 'h2', period: 'Jul 18 – 24', status: 'Complete', employees: '35', exceptions: '0', gusto: 'Prepared', completed: 'Jul 27' },
+  { key: 'h3', period: 'Jul 11 – 17', status: 'Complete', employees: '34', exceptions: '1', gusto: 'Prepared', completed: 'Jul 20' },
+  { key: 'h4', period: 'Jul 4 – 10', status: 'Complete', employees: '34', exceptions: '0', gusto: 'Prepared', completed: 'Jul 13' }
+];
+
+const TOTAL = 36;
+
+const EXPORT = [
+  { key: 'r1', name: 'Kelly Kuhn', id: 'EMP-0104', regular: '38.0', ot: '0.0', mileage: '84.2 mi', reimb: '$54.73', visits: '10' },
+  { key: 'r2', name: 'Emmet Bauch', id: 'EMP-0139', regular: '40.0', ot: '0.0', mileage: '46.0 mi', reimb: '$29.90', visits: '9' },
+  { key: 'r3', name: 'Allison Archibald', id: 'EMP-0127', regular: '36.0', ot: '0.0', mileage: '0.0 mi', reimb: '$0.00', visits: '8' },
+  { key: 'r4', name: 'Hassie Kohler', id: 'EMP-0131', regular: '24.0', ot: '0.0', mileage: '31.6 mi', reimb: '$20.54', visits: '6' },
+  { key: 'r5', name: 'David Okoro', id: 'EMP-0118', regular: '40.0', ot: '4.5', mileage: '58.8 mi', reimb: '$38.22', visits: '7' },
+  { key: 'r6', name: 'Maria Johnson', id: 'EMP-0122', regular: '35.5', ot: '0.0', mileage: '24.8 mi', reimb: '$16.12', visits: '6' },
+  { key: 'r7', name: 'Samantha Chen', id: 'EMP-0144', regular: '32.0', ot: '0.0', mileage: '18.4 mi', reimb: '$11.96', visits: '7' },
+  { key: 'r8', name: 'Priya Shah', id: 'EMP-0112', regular: '40.0', ot: '0.0', mileage: '62.4 mi', reimb: '$40.56', visits: '4' },
+  { key: 'r9', name: 'Dana Whitfield', id: 'EMP-0101', regular: '40.0', ot: '2.0', mileage: '0.0 mi', reimb: '$0.00', visits: '—' },
+  { key: 'r10', name: 'Marcus Webb', id: 'EMP-0151', regular: '30.0', ot: '0.0', mileage: '38.5 mi', reimb: '$25.03', visits: '7' },
+  { key: 'r11', name: 'Nia Coleman', id: 'EMP-0148', regular: '28.0', ot: '0.0', mileage: '22.0 mi', reimb: '$14.30', visits: '6' },
+  { key: 'r12', name: 'Jamal Carter', id: 'EMP-0155', regular: '24.0', ot: '0.0', mileage: '16.2 mi', reimb: '$10.53', visits: '5' }
+];
+
+const DAYS = [
+  { dow: 'Sat', date: 'Aug 1' }, { dow: 'Sun', date: 'Aug 2' }, { dow: 'Mon', date: 'Aug 3' },
+  { dow: 'Tue', date: 'Aug 4' }, { dow: 'Wed', date: 'Aug 5' }, { dow: 'Thu', date: 'Aug 6' }, { dow: 'Fri', date: 'Aug 7' }
+];
+
+const GRID = [
+  { key: 'g1', name: 'Kelly Kuhn', role: 'CNA', rate: 19.50, d: [0, 0, 8, 8, 8, 8, 6], ot: 0 },
+  { key: 'g2', name: 'Emmet Bauch', role: 'HHA', rate: 18.25, d: [0, 0, 8, 8, 8, 8, 8], ot: 0 },
+  { key: 'g3', name: 'Allison Archibald', role: 'CNA', rate: 19.00, d: [0, 0, 8, 8, 8, 6, 6], ot: 0 },
+  { key: 'g4', name: 'Hassie Kohler', role: 'HHA', rate: 17.75, d: [6, 6, 4, 0, 4, 4, 0], ot: 0 },
+  { key: 'g5', name: 'David Okoro', role: 'CNA', rate: 19.50, d: [8, 4.5, 8, 8, 8, 8, 0], ot: 4.5, flagDay: 1 },
+  { key: 'g6', name: 'Maria Johnson', role: 'CNA', rate: 19.50, d: [0, 0, 8, 8, 7.5, 6, 6], ot: 0, flagDay: 4 },
+  { key: 'g7', name: 'Samantha Chen', role: 'HHA', rate: 18.00, d: [0, 4, 6, 8, 6, 4, 4], ot: 0, flagDay: 3 },
+  { key: 'g8', name: 'Priya Shah', role: 'LVN', rate: 37.50, d: [0, 0, 8, 8, 8, 8, 8], ot: 0 },
+  { key: 'g9', name: 'Dana Whitfield', role: 'Office', rate: 24.00, d: [0, 0, 8, 8, 8, 8, 10], ot: 2 },
+  { key: 'g10', name: 'Marcus Webb', role: 'CNA', rate: 19.00, d: [0, 0, 6, 6, 6, 6, 6], ot: 0 },
+  { key: 'g11', name: 'Nia Coleman', role: 'HHA', rate: 17.50, d: [4, 4, 4, 4, 4, 4, 4], ot: 0 },
+  { key: 'g12', name: 'Jamal Carter', role: 'HHA', rate: 17.75, d: [8, 8, 0, 0, 4, 4, 0], ot: 0 }
+];
+
+class Component extends DCLogic {
+  state = { joyOpen: false, joyQ: '', joyMic: false, tab: 'All', sel: null, resolved: [], prepared: false, showHistory: false, showDone: false, showExport: false, view: 'review' };
+
+  isOpen(it) { return this.state.resolved.indexOf(it.id) < 0; }
+  openItems() { return ITEMS.filter(it => this.isOpen(it)); }
+
+  resolve(id) {
+    this.setState(s => ({ resolved: s.resolved.concat([id]), sel: null }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const open = this.openItems();
+    const byCat = (c) => open.filter(it => it.cat === c).length;
+    const cleared = TOTAL - open.length;
+    const pct = Math.round((cleared / TOTAL) * 100);
+    const ready = open.length === 0;
+    const sel = ITEMS.find(x => x.id === s.sel);
+
+    const gridSum = GRID.reduce((acc, r) => {
+      const total = r.d.reduce((a, b) => a + b, 0);
+      const reg = total - r.ot;
+      acc.hrs += total; acc.ot += r.ot; acc.gross += reg * r.rate + r.ot * r.rate * 1.5;
+      return acc;
+    }, { hrs: 0, ot: 0, gross: 0 });
+    const gridByName = {};
+    GRID.forEach(r => {
+      const total = r.d.reduce((a, b) => a + b, 0);
+      gridByName[r.name] = { regular: (total - r.ot).toFixed(1), ot: r.ot.toFixed(1) };
+    });
+
+    const queue = open.filter(it => s.tab === 'All' || it.cat === s.tab).map(it => ({
+      key: it.id, initials: initials(it.name), name: it.name, client: it.client,
+      summary: it.kind + ' · ' + it.detail, status: it.status,
+      statusStyle: pillS(it.tone === 'bad' ? '#B42318' : '#B54708', it.tone === 'bad' ? '#FEF3F2' : '#FFFAEB'),
+      open: () => this.setState({ sel: it.id })
+    }));
+
+    const counts = { ex: byCat('Time & EVV'), ot: byCat('Overtime'), mi: byCat('Mileage') };
+    const cycleAll = CYCLE.map(c => {
+      let state = c.state, note = c.note;
+      if (c.count) {
+        const n = counts[c.count];
+        state = n === 0 ? 'done' : 'open';
+        note = n === 0 ? 'Cleared' : n + ' remaining';
+      }
+      if (ready && (c.key === 'c6')) { state = 'done'; note = 'Aug 10 · Joan Robinson'; }
+      if (s.prepared && (c.key === 'c7')) { state = 'done'; note = '10:42 AM'; }
+      const color = state === 'done' ? '#12B76A' : state === 'open' ? '#F79009' : '#D0D5DD';
+      return {
+        key: c.key, label: c.label, note: note || '',
+        mark: state === 'done' ? '✓' : state === 'open' ? '!' : '○',
+        markStyle: 'width:18px;height:18px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;color:' +
+          (state === 'todo' ? '#B9B9C1' : '#FFFFFF') + ';background:' + (state === 'todo' ? '#F1F2F6' : color),
+        labelStyle: 'font-size:13px;color:' + (state === 'todo' ? '#9B9BA3' : '#191A2E'),
+        isDone: state === 'done'
+      };
+    });
+    const doneCount = cycleAll.filter(c => c.isDone).length;
+    const cycle = s.showDone ? cycleAll : cycleAll.filter(c => !c.isDone);
+
+    const blockers = [
+      { key: 'b1', cat: 'Time & EVV', label: counts.ex + ' time / EVV exception' + (counts.ex === 1 ? '' : 's'), n: counts.ex, tone: '#F79009' },
+      { key: 'b2', cat: 'Overtime', label: counts.ot + ' overtime item' + (counts.ot === 1 ? '' : 's') + ' to confirm', n: counts.ot, tone: '#F79009' },
+      { key: 'b3', cat: 'Mileage', label: counts.mi + ' mileage entr' + (counts.mi === 1 ? 'y' : 'ies') + ' missing info', n: counts.mi, tone: '#D92D20' }
+    ].filter(b => b.n > 0).map(b => ({
+      key: b.key, label: b.label,
+      click: () => this.setState({ tab: b.cat }),
+      style: 'display:flex;align-items:center;gap:8px;height:32px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:999px;font-size:12.5px;color:#191A2E;cursor:pointer',
+      dotStyle: 'width:7px;height:7px;border-radius:50%;background:' + b.tone
+    }));
+
+    const heroTitle = s.prepared ? 'Prepared for Gusto' : ready ? 'Ready for Gusto' : open.length === TOTAL ? 'Payroll needs review' : 'Payroll is almost ready';
+    const heroSub = s.prepared
+      ? 'Joy generated the payroll file for Aug 1 – 7. Nothing further is required in Joy.'
+      : ready
+        ? 'Payroll review is complete for Aug 1 – 7.'
+        : open.length + ' item' + (open.length === 1 ? '' : 's') + ' need' + (open.length === 1 ? 's' : '') + ' review before this cycle is ready for Gusto.';
+
+    return {
+      joyOpen: s.joyOpen,
+      toggleJoy: () => this.setState({ joyOpen: !s.joyOpen, joyMic: false }),
+      joyQ: s.joyQ,
+      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyStatus: s.joyMic ? 'Listening…' : '',
+      joyStatusStyle: 'font-size:11px;color:#1407A2;' + (s.joyMic ? '' : 'display:none'),
+      toggleMic: () => this.setState({ joyMic: !s.joyMic }),
+      micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
+        (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+      joySend: () => this.setState({ joyQ: '', joyMic: false }),
+      joyPrompts: ["What is holding up payroll?","Who has unreviewed overtime?","Summarize payroll before Gusto"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      crumb: s.showHistory ? 'History' : 'Aug 1 – 7 cycle',
+      toggleHistory: () => this.setState({ showHistory: !s.showHistory }),
+      historyBtn: 'height:34px;padding:0 13px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid #ECECF1;background:' + (s.showHistory ? '#F1F2F6' : '#FFFFFF') + ';color:' + (s.showHistory ? '#191A2E' : '#5B6274'),
+      showHistory: s.showHistory,
+      historyCols: ['Period', 'Status', 'Employees', 'Exceptions', 'Gusto prep', 'Completed'].map((l, i) => ({ key: 'hc' + i, label: l })),
+      history: HISTORY.map(h => Object.assign({ dotStyle: 'width:7px;height:7px;border-radius:50%;background:#12B76A' }, h)),
+
+      gustoLabel: s.prepared ? 'Prepared · view summary' : 'Prepare for Gusto',
+      gustoBtn: 'display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:none;border-radius:9px;font-size:13px;font-weight:500;' +
+        (ready ? 'background:#1407A2;color:#FFFFFF;cursor:pointer' : 'background:#F1F2F6;color:#B9B9C1;cursor:not-allowed'),
+      prepare: () => { if (ready) this.setState({ prepared: true }); },
+
+      heroStyle: 'background:#FFFFFF;border:1px solid ' + (ready ? '#D3F0DF' : '#ECECF1') + ';border-radius:16px;padding:24px 26px;display:flex;flex-direction:column',
+      heroTitle: heroTitle, heroCount: cleared + ' of ' + TOTAL + ' employees cleared', heroSub: heroSub,
+      heroPct: pct + '%',
+      heroPctStyle: 'font-size:15px;font-weight:600;color:' + (ready ? '#12B76A' : '#5B6274'),
+      heroBarStyle: 'display:block;height:100%;width:' + pct + '%;border-radius:999px;background:' + (ready ? '#12B76A' : '#1407A2'),
+      heroBtn: ready ? 'View payroll summary' : 'Review items →',
+      heroBtnStyle: 'height:36px;padding:0 16px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:' +
+        (ready ? '1px solid #ECECF1;background:#FFFFFF;color:#191A2E' : 'none;background:#1407A2;color:#FFFFFF'),
+      heroAction: () => { if (!ready && open.length) this.setState({ tab: 'All', sel: open[0].id }); },
+      hasBlockers: blockers.length > 0, blockers: blockers,
+      prepared: s.prepared,
+
+      tabs: TABS.map(l => {
+        const n = l === 'All' ? open.length : l === 'Adjustments' ? 0 : byCat(l);
+        return {
+          key: l, label: l, count: n, click: () => this.setState({ tab: l }),
+          style: 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;' +
+            (s.tab === l ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
+          countStyle: 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.tab === l ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.tab === l ? '#1407A2' : '#9B9BA3')
+        };
+      }),
+      queue: queue, queueEmpty: queue.length === 0,
+      emptyNote: open.length === 0 ? 'All 36 employees are cleared for Aug 1 – 7.' : 'Nothing in this category — check the other tabs.',
+      joyNote: ready
+        ? 'Joy: Payroll for Aug 1 – 7 is clear. The Gusto file is ready to prepare, and the LTI package can go out today.'
+        : 'Joy: ' + open.length + ' employee' + (open.length === 1 ? '' : 's') + ' ' + (open.length === 1 ? 'is' : 'are') + ' holding payroll — ' + open.map(x => x.kind.toLowerCase()).join(', ') + '.',
+
+      cycle: cycle,
+      doneLabel: doneCount + ' step' + (doneCount === 1 ? '' : 's') + ' complete',
+      toggleDone: () => this.setState({ showDone: !s.showDone }),
+      doneChevron: 'margin-left:auto;color:#B9B9C1;font-size:13px;transition:transform .16s ease;transform:rotate(' + (s.showDone ? '180deg' : '0deg') + ')',
+      ltiStatus: ready ? 'Ready to send' : 'Waiting on payroll review',
+      ltiPillStyle: pillS(ready ? '#12B76A' : '#5B6274', ready ? '#ECFDF3' : '#F3F3F6'),
+
+      views: [['review', 'Review queue'], ['grid', 'Week grid']].map(v => ({
+        key: v[0], label: v[1], click: () => this.setState({ view: v[0] }),
+        style: 'border:none;border-radius:7px;padding:0 14px;height:28px;font-size:12.5px;cursor:pointer;' +
+          (s.view === v[0] ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92')
+      })),
+      isReview: s.view !== 'grid', isGrid: s.view === 'grid',
+      gridDays: DAYS.map((d, i) => ({
+        key: 'gd' + i, dow: d.dow, date: d.date,
+        style: 'text-align:center;padding:9px 10px;background:#FCFCFD;white-space:nowrap;line-height:1.35' + (i < 2 ? ';background:#FAFAFB' : '')
+      })),
+      gridTotalHrs: gridSum.hrs.toFixed(1),
+      gridTotalOt: gridSum.ot.toFixed(1),
+      gridTotalGross: '$' + gridSum.gross.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      gridRows: GRID.map(r => {
+        const total = r.d.reduce((a, b) => a + b, 0);
+        const reg = total - r.ot;
+        const gross = reg * r.rate + r.ot * r.rate * 1.5;
+        return {
+          key: r.key, name: r.name, role: r.role, initials: initials(r.name),
+          cells: r.d.map((h, i) => ({
+            key: r.key + 'c' + i,
+            value: h ? h.toFixed(1).replace('.0', '') : '·',
+            style: 'padding:11px 10px;text-align:center;font-size:12.5px;white-space:nowrap;' +
+              (r.flagDay === i ? 'color:#B54708;font-weight:500;background:#FFFAEB'
+                : !h ? 'color:#D8D8DE'
+                  : r.ot && i === r.d.length - 1 ? 'color:#191A2E;background:#F7F8FE' : 'color:#191A2E')
+          })),
+          total: total.toFixed(1),
+          ot: r.ot ? r.ot.toFixed(1) : '—',
+          otStyle: 'font-size:12.5px;' + (r.ot ? 'color:#B54708;font-weight:500' : 'color:#C9C9D0'),
+          rate: '$' + r.rate.toFixed(2),
+          gross: '$' + gross.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        };
+      }),
+      gridFooter: DAYS.map((d, i) => ({
+        key: 'gf' + i,
+        value: GRID.reduce((a, r) => a + r.d[i], 0).toFixed(1).replace('.0', '')
+      })),
+      gridNote: ready ? 'All hours reconciled' : open.length + ' cell' + (open.length === 1 ? '' : 's') + ' flagged for review',
+
+      exportOpen: s.showExport,
+      openExport: () => this.setState({ showExport: true }),
+      closeExport: () => this.setState({ showExport: false }),
+      exportMeta: s.prepared
+        ? 'Generated Monday, Aug 10 · 10:42 AM by Joan Robinson · Gusto time-import format'
+        : 'Draft — regenerates as items are reviewed · Gusto time-import format',
+      exportFootnote: ready
+        ? 'Joy assembled these totals from verified visit data. Upload the file in Gusto to run payroll — Joy does not submit it for you.'
+        : '* Draft figures — items marked with an asterisk can still change as the ' + open.length + ' open exception' + (open.length === 1 ? '' : 's') + ' ' + (open.length === 1 ? 'is' : 'are') + ' resolved.',
+      exportState: ready ? 'Reconciled · 0 exceptions' : 'Draft · ' + open.length + ' exception' + (open.length === 1 ? '' : 's') + ' unresolved',
+      exportDotStyle: 'width:7px;height:7px;border-radius:50%;background:' + (ready ? '#12B76A' : '#F79009'),
+      exportTotals: [
+        { key: 'e1', label: 'Employees cleared', value: cleared + ' of ' + TOTAL },
+        { key: 'e2', label: 'Regular hrs', value: ready ? '1,284.5' : '1,284.5 *' },
+        { key: 'e3', label: 'Overtime hrs', value: ready ? '18.0' : '18.0 *' },
+        { key: 'e4', label: 'Reimbursements', value: ready ? '$472.06' : '$472.06 *' },
+        { key: 'e5', label: 'Gross wages', value: ready ? '$27,418.90' : '$27,418.90 *' }
+      ],
+      exportCols: [
+        ['Employee', 'text-align:left;padding:11px 24px'], ['Employee ID', 'text-align:left;padding:11px 16px'],
+        ['Regular hrs', 'text-align:right;padding:11px 16px'], ['OT hrs', 'text-align:right;padding:11px 16px'],
+        ['Mileage', 'text-align:right;padding:11px 16px'], ['Reimbursement', 'text-align:right;padding:11px 16px'],
+        ['Visits', 'text-align:right;padding:11px 24px']
+      ].map((c, i) => ({ key: 'ec' + i, label: c[0], style: c[1] + ';font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap;position:sticky;top:0' })),
+      exportRows: EXPORT.map(r => {
+        const g = gridByName[r.name] || { regular: r.regular, ot: r.ot };
+        return Object.assign({}, r, {
+          regular: g.regular, ot: g.ot,
+          otStyle: 'font-size:13px;color:' + (g.ot === '0.0' ? '#9B9BA3' : '#B54708') + (g.ot === '0.0' ? '' : ';font-weight:500')
+        });
+      }),
+
+      drawerOpen: !!sel,
+      closeDrawer: () => this.setState({ sel: null }),
+      d: sel ? {
+        initials: initials(sel.name), name: sel.name, subtitle: sel.subtitle,
+        compare: sel.compare.map((c, i) => ({
+          key: 'cp' + i, label: c.label, value: c.value, sub: c.sub,
+          style: 'display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:11px;border:1px solid ' + (c.warn ? '#FCE8B6;background:#FFFAEB' : '#ECECF1;background:#FCFCFD'),
+          valueStyle: 'font-size:13.5px;font-weight:600;color:' + (c.warn ? '#B54708' : '#191A2E') + ';line-height:1.3'
+        })),
+        facts: sel.facts.map((f, i) => ({
+          key: 'f' + i, label: f.label, value: f.value,
+          valueStyle: 'font-size:13px;text-wrap:pretty;color:' + (f.warn ? '#B54708' : f.ok ? '#12B76A' : '#191A2E')
+        })),
+        notes: sel.notes.map((n, i) => ({ key: 'n' + i, text: n.text, meta: n.meta })),
+        audit: sel.audit.map((a, i) => ({ key: 'a' + i, label: a.label, when: a.when })),
+        primary: sel.primary,
+        secondary: sel.secondary.map((b, i) => ({ key: 'sb' + i, label: b.label })),
+        disclaimer: sel.disclaimer,
+        resolve: () => this.resolve(sel.id)
+      } : {}
+    };
+  }
+}
+
+</script>
+</body>
+</html>

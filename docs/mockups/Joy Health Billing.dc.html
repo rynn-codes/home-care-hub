@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+button{font-family:inherit}
+input{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1320px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;overflow-y:auto">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Dashboard</a>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">8</span></a>
+      <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+
+      <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6;margin-top:2px">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing
+      </div>
+
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#B4B4BC;font-size:13px;font-weight:400"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.6 13.4h10.8"></path><path d="M4.4 11V7.4M7.4 11V4.4M10.4 11V8.8M13.4 11V5.6"></path></svg>Reports</span>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#B4B4BC;font-size:13px;font-weight:400"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><circle cx="8" cy="8" r="5.4"></circle><path d="M8 2.6v1.2M8 12.2v1.2M2.6 8h1.2M12.2 8h1.2"></path></svg>Settings</span>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">JR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Joan Robinson</span>
+        <span style="font-size:11px;color:#9B9BA3">Administrator</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:13px 40px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:12.5px;color:#9B9BA3">Billing</span>
+      <span style="font-size:12.5px;color:#C9C9D0">/</span>
+      <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ tabLabel }}</span>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
+    </header>
+
+    <div style="padding:28px 40px 90px;display:flex;flex-direction:column;gap:20px;max-width:1360px">
+
+      <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:300px">
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Billing</h1>
+          <p style="margin:0;font-size:13.5px;color:#5B6274">Review this week's invoices, then send. Due Wednesday.</p>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:9px">
+          <button onClick="{{ togglePrivate }}" style="{{ privateBtnStyle }}" title="Hide amounts">
+            <sc-if value="{{ isPrivate }}" hint-placeholder-val="{{ false }}">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8s2.4-3.6 6-3.6S14 8 14 8s-2.4 3.6-6 3.6S2 8 2 8z"></path><path d="M2.6 2.6l10.8 10.8"></path></svg>
+            </sc-if>
+            <sc-if value="{{ notPrivate }}" hint-placeholder-val="{{ true }}">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8s2.4-3.6 6-3.6S14 8 14 8s-2.4 3.6-6 3.6S2 8 2 8z"></path><circle cx="8" cy="8" r="1.6"></circle></svg>
+            </sc-if>{{ privateLabel }}
+          </button>
+          <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Create invoice
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:22px;border-bottom:1px solid #ECECF1">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.click }}" style="{{ t.style }}">
+            <span>{{ t.label }}</span>
+            <span style="{{ t.countStyle }}">{{ t.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ isReview }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 296px;gap:18px;align-items:start">
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="{{ batchStyle }}">
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">This week's batch</span>
+                  <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ batchTitle }}</span>
+                  <span style="font-size:13px;color:#5B6274">{{ batchSub }}</span>
+                </div>
+                <div style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
+                  <span style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+                    <span style="{{ batchTotalStyle }}">{{ batchTotal }}</span>
+                    <span style="font-size:11.5px;color:#8A8A92">{{ batchHours }}</span>
+                  </span>
+                  <button onClick="{{ sendAll }}" style="{{ sendAllStyle }}">{{ sendAllLabel }}</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ queue }}" as="r" hint-placeholder-count="3">
+                <div style="{{ r.cardStyle }}">
+                  <div onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer">
+                    <span style="width:34px;height:34px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                    <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                      <span style="display:flex;align-items:center;gap:9px">
+                        <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.client }}</span>
+                        <span style="{{ r.statusStyle }}">{{ r.status }}</span>
+                      </span>
+                      <span style="font-size:12.5px;color:#8A8A92">{{ r.line }}</span>
+                    </span>
+                    <span style="margin-left:auto;display:flex;align-items:center;gap:16px;flex:none">
+                      <span style="{{ r.amountStyle }}">{{ r.amount }}</span>
+                      <span style="{{ r.caretStyle }}">⌄</span>
+                    </span>
+                  </div>
+
+                  <sc-if value="{{ r.hasFlags }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:1px;padding:0 18px 14px">
+                      <sc-for list="{{ r.flags }}" as="fl" hint-placeholder-count="2">
+                        <div style="{{ fl.style }}">
+                          <span style="{{ fl.dotStyle }}"></span>
+                          <span style="display:flex;flex-direction:column;gap:1px;line-height:1.4">
+                            <span style="font-size:12.5px;color:#191A2E">{{ fl.label }}</span>
+                            <span style="font-size:11.5px;color:#8A8A92">{{ fl.detail }}</span>
+                          </span>
+                          <span style="{{ fl.amountStyle }}">{{ fl.amount }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-top:1px solid #F3F3F6;background:#FCFCFD;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+                      <div style="display:flex;flex-direction:column;gap:7px">
+                        <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Lines on this invoice</span>
+                        <div style="display:flex;flex-direction:column">
+                          <sc-for list="{{ r.lines }}" as="l" hint-placeholder-count="4">
+                            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                              <span style="font-size:12.5px;color:#5B6274">{{ l.label }}</span>
+                              <span style="font-size:11.5px;color:#B9B9C1">{{ l.note }}</span>
+                              <span style="{{ l.amountStyle }}">{{ l.amount }}</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:9px">
+                        <button onClick="{{ r.approve }}" style="{{ r.approveStyle }}">{{ r.approveLabel }}</button>
+                        <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Edit invoice</button>
+                        <a href="./Joy%20Health%20Scheduling.dc.html" style="font-size:12.5px;color:#1407A2;padding:0 6px">Open schedule →</a>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">The week</span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ cycle }}" as="c" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="{{ c.dotStyle }}"></span>
+                    <span style="display:flex;flex-direction:column;line-height:1.3">
+                      <span style="{{ c.dayStyle }}">{{ c.day }}</span>
+                      <span style="font-size:11.5px;color:#9B9BA3">{{ c.what }}</span>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <span style="display:flex;align-items:center;gap:8px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#F79009;flex:none"></span>
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Behind on payment</span>
+              </span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ behind }}" as="b" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:3px;padding:10px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="display:flex;align-items:center;gap:9px">
+                      <span style="font-size:13px;color:#191A2E">{{ b.client }}</span>
+                      <span style="{{ b.amountStyle }}">{{ b.amount }}</span>
+                    </span>
+                    <span style="{{ b.stateStyle }}">{{ b.state }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <button style="align-self:flex-start;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:2px 0">Send notices →</button>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Stripe</span>
+                <span style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;background:#ECFDF3;color:#12B76A;font-weight:500">Connected</span>
+              </span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ stripe }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ r.label }}</span>
+                    <span style="{{ r.valueStyle }}">{{ r.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isInvoices }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:1060px">
+              <thead>
+                <tr>
+                  <sc-for list="{{ invCols }}" as="c">
+                    <th style="{{ c.style }}">{{ c.label }}</th>
+                  </sc-for>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ invoices }}" as="r" hint-placeholder-count="0">
+                  <tr style="border-top:1px solid #F3F3F6" style-hover="background:#FAFAFB">
+                    <td style="padding:13px 18px">
+                      <span style="display:flex;align-items:center;gap:10px">
+                        <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                        <span style="display:flex;flex-direction:column;line-height:1.35">
+                          <span style="font-size:13px;color:#191A2E">{{ r.client }}</span>
+                          <span style="font-size:11px;color:#9B9BA3">{{ r.payer }}</span>
+                        </span>
+                      </span>
+                    </td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274">{{ r.period }}</td>
+                    <td style="padding:13px 16px"><span style="{{ r.statusStyle }}">{{ r.status }}</span></td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274">{{ r.method }}</td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ r.amountStyle }}">{{ r.amount }}</span></td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.due }}</td>
+                    <td style="padding:13px 18px;font-size:12.5px;color:#9B9BA3;white-space:nowrap">{{ r.paid }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #ECECF1;background:#FCFCFD">
+            <span style="font-size:12px;color:#9B9BA3">{{ invoiceCount }}</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:#5B6274">Unpaid<span style="{{ unpaidStyle }}">{{ unpaidTotal }}</span></span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProfit }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px 18px">
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="display:flex;align-items:center;gap:9px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Net profit · {{ weekLabel }}</span>
+                <span style="display:flex;align-items:center;gap:4px">
+                  <button onClick="{{ prevWeek }}" style="{{ prevWeekStyle }}">‹</button>
+                  <button onClick="{{ nextWeek }}" style="{{ nextWeekStyle }}">›</button>
+                </span>
+                <span style="font-size:11.5px;color:#B9B9C1">{{ weekSub }}</span>
+              </span>
+              <span style="display:flex;align-items:baseline;gap:10px">
+                <span style="{{ netStyle }}">{{ netValue }}</span>
+                <span style="font-size:14px;font-weight:500;color:#B54708">{{ netPct }}</span>
+              </span>
+            </span>
+            <span style="margin-left:auto;display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none">
+              <span style="font-size:12px;color:#8A8A92">Against a 12% target</span>
+              <span style="display:block;width:190px;height:5px;border-radius:999px;background:#F1F2F6;overflow:hidden">
+                <span style="{{ netBarStyle }}"></span>
+              </span>
+            </span>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:980px">
+                <thead>
+                  <tr>
+                    <sc-for list="{{ profitCols }}" as="c">
+                      <th style="{{ c.style }}">{{ c.label }}</th>
+                    </sc-for>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ profitRows }}" as="r" hint-placeholder-count="0">
+                    <tr style="border-top:1px solid #F3F3F6" style-hover="background:#FAFAFB">
+                      <td style="padding:13px 18px">
+                        <span style="display:flex;align-items:center;gap:10px">
+                          <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                          <span style="font-size:13px;color:#191A2E">{{ r.name }}</span>
+                        </span>
+                      </td>
+                      <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;text-align:right">{{ r.billableHrs }}</td>
+                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.billableStyle }}">{{ r.billable }}</span></td>
+                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.costStyle }}">{{ r.cost }}</span></td>
+                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.netStyle }}">{{ r.net }}</span></td>
+                      <td style="padding:13px 18px;text-align:right"><span style="{{ r.pctStyle }}">{{ r.pct }}</span></td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+                <tfoot>
+                  <tr style="border-top:1px solid #ECECF1;background:#FCFCFD">
+                    <td style="padding:13px 18px;font-size:12.5px;font-weight:600;color:#191A2E">Total · {{ totalHrs }}</td>
+                    <td style="padding:13px 16px"></td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ totalMoneyStyle }}">{{ totalBilled }}</span></td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ totalMoneyStyle }}">{{ totalCost }}</span></td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ totalMoneyStyle }}">{{ totalNet }}</span></td>
+                    <td style="padding:13px 18px;text-align:right"><span style="{{ totalPctStyle }}">{{ totalPct }}</span></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+
+  <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:28px;bottom:80px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <span style="{{ joyStatusStyle }}">{{ joyStatus }}</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
+        </button>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:26px;z-index:90;transform:translateX(-50%);animation:toastIn .18s ease-out">
+      <div style="display:flex;align-items:center;gap:14px;background:#191A2E;border-radius:12px;padding:13px 16px;box-shadow:0 12px 32px rgba(25,26,46,.24);min-width:320px">
+        <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+        <span style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;font-weight:500;color:#FFFFFF">{{ toast.title }}</span>
+          <span style="font-size:11.5px;color:rgba(255,255,255,.62)">{{ toast.sub }}</span>
+        </span>
+        <button onClick="{{ closeToast }}" style="margin-left:auto;flex:none;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;padding:0 2px">✕</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <button onClick="{{ toggleJoy }}" style="position:fixed;right:28px;bottom:26px;z-index:40;display:flex;align-items:center;gap:9px;height:42px;padding:0 18px 0 14px;background:#191A2E;border:none;border-radius:999px;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px rgba(25,26,46,.22)" style-hover="background:#1407A2">
+    <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Ask Joy
+  </button>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const initials = (n) => n.split(/[ ,]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const pillS = (fg, bg) => 'display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:500;white-space:nowrap;color:' + fg + ';background:' + bg;
+const TH = 'text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap';
+const THR = TH + ';text-align:right';
+
+// This week's batch — invoiced Monday for the Sat–Fri week just ended, due Wednesday.
+const BATCH = [
+  {
+    id: 'b1', client: 'Huang, Lian', payer: 'Huang, Johnathan', hours: '122h 30m',
+    lines: [
+      { key: 'reg', label: 'Regular care', qty: '113 hrs', rate: 37.50, amount: 4237.50 },
+      { key: 'ot', label: 'Overtime', qty: '4.5 hrs', rate: 56.25, amount: 253.13 },
+      { key: 'added', label: 'Shifts added Aug 8–9', qty: '2 visits', rate: null, amount: 480.00 },
+      { key: 'mi', label: 'Mileage', qty: '84.2 mi', rate: 0.65, amount: 54.73 },
+      { key: 'cr', label: 'Prior credit applied', qty: 'Aug 5 partial payment', rate: null, amount: -260.06 }
+    ],
+    flags: [
+      { kind: 'ot', from: 'ot', label: 'Overtime captured', detail: '4.5 hrs on Aug 6–7 · billed at 1.5×' },
+      { kind: 'added', from: 'added', label: '2 shifts added after the schedule was set', detail: 'Aug 8 and Aug 9 · not in the advance estimate' }
+    ]
+  },
+  {
+    id: 'b2', client: 'Whitaker, Harold', payer: 'Whitaker, Denise', hours: '98h 0m',
+    lines: [
+      { key: 'reg', label: 'Regular care', qty: '98 hrs', rate: 37.00, amount: 3626.00 },
+      { key: 'mi', label: 'Mileage', qty: '46.0 mi', rate: 0.65, amount: 29.90 },
+      { key: 'sup', label: 'Supply reimbursement', qty: 'Aug 5', rate: null, amount: 30.10 }
+    ],
+    flags: [
+      { kind: 'ot', from: null, label: 'No overtime this week', detail: 'All shifts under 40 hrs' }
+    ]
+  },
+  {
+    id: 'b3', client: 'Aiken, Dorothy', payer: 'Rowe, Margaret', hours: '114h 45m',
+    lines: [
+      { key: 'reg', label: 'Regular care', qty: '108.75 hrs', rate: 34.00, amount: 3697.50 },
+      { key: 'ot', label: 'Overtime (pending approval)', qty: '6 hrs', rate: 51.00, amount: 306.00 },
+      { key: 'added', label: 'Weekend visit Aug 9', qty: '1 visit', rate: null, amount: 240.00 }
+    ],
+    flags: [
+      { kind: 'ot', from: 'ot', label: 'Overtime needs review', detail: '6 hrs logged Aug 7 — approve in payroll before billing' },
+      { kind: 'added', from: 'added', label: '1 weekend visit added Aug 9', detail: 'Respite cover · weekend rate applies' }
+    ]
+  }
+];
+
+BATCH.forEach(b => { b.amount = b.lines.reduce((a, l) => a + l.amount, 0); });
+
+const SENT = [
+  { client: 'Santos, Maribel', payer: 'Santos, Carlos', period: 'Jul 27 – Aug 2', status: 'Late fee applied', method: 'Card · Stripe', amount: 2180.00, due: 'Wed, Aug 5', paid: '—' },
+  { client: 'Ortiz, Ruben', payer: 'Ortiz, Elena', period: 'Jul 27 – Aug 2', status: 'Notice sent', method: 'ACH · Stripe', amount: 588.00, due: 'Wed, Aug 5', paid: '—' },
+  { client: 'Delgado, Frank', payer: 'Delgado, Rita', period: 'Jul 13 – Jul 19', status: 'Service hold', method: 'ACH · Stripe', amount: 2482.00, due: 'Wed, Jul 22', paid: '—' },
+  { client: 'Huang, Lian', payer: 'Huang, Johnathan', period: 'Jul 27 – Aug 2', status: 'Partially paid', method: 'ACH · Stripe', amount: 3700.00, due: 'Wed, Aug 5', paid: 'Aug 5' },
+  { client: 'Whitaker, Harold', payer: 'Whitaker, Denise', period: 'Jul 20 – Jul 26', status: 'Paid', method: 'ACH · Stripe', amount: 1501.00, due: 'Wed, Jul 29', paid: 'Jul 28' },
+  { client: 'Santos, Maribel', payer: 'Santos, Carlos', period: 'Jul 20 – Jul 26', status: 'Paid', method: 'Card · Stripe', amount: 3585.00, due: 'Wed, Jul 29', paid: 'Jul 29' },
+  { client: 'Aiken, Dorothy', payer: 'Rowe, Margaret', period: 'Jul 20 – Jul 26', status: 'Paid', method: 'Card · Stripe', amount: 3686.00, due: 'Wed, Jul 29', paid: 'Jul 29' }
+];
+
+const STATUS = {
+  'Needs review': ['#B54708', '#FFFAEB'],
+  Approved: ['#12B76A', '#ECFDF3'],
+  Sent: ['#1407A2', '#EEF0FE'],
+  'Notice sent': ['#B54708', '#FFFAEB'],
+  'Late fee applied': ['#B42318', '#FEF3F2'],
+  'Service hold': ['#B42318', '#FEF3F2'],
+  'Partially paid': ['#B54708', '#FFFAEB'],
+  Paid: ['#12B76A', '#ECFDF3']
+};
+
+const PROFIT_WEEKS = [
+  { label: 'Aug 3 – 9', rows: [
+    { name: 'Huang, Lian', hrs: '122h 30m', billable: 4765.30, cost: 4419.88 },
+    { name: 'Whitaker, Harold', hrs: '98h 0m', billable: 3686.00, cost: 3482.78 },
+    { name: 'Aiken, Dorothy', hrs: '114h 45m', billable: 4243.50, cost: 4050.90 }
+  ] },
+  { label: 'Jul 27 – Aug 2', rows: [
+    { name: 'Huang, Lian', hrs: '96h 0m', billable: 3700.00, cost: 3432.12 },
+    { name: 'Santos, Maribel', hrs: '54h 30m', billable: 2180.00, cost: 2112.02 },
+    { name: 'Ortiz, Ruben', hrs: '14h 0m', billable: 588.00, cost: 565.66 },
+    { name: 'Aiken, Dorothy', hrs: '108h 0m', billable: 3686.00, cost: 3566.77 }
+  ] },
+  { label: 'Jul 20 – 26', rows: [
+    { name: 'Whitaker, Harold', hrs: '39h 30m', billable: 1501.00, cost: 1457.47 },
+    { name: 'Santos, Maribel', hrs: '92h 30m', billable: 3585.00, cost: 3317.12 },
+    { name: 'Aiken, Dorothy', hrs: '98h 0m', billable: 3686.00, cost: 3482.78 }
+  ] }
+];
+
+const UNRESOLVED = ['Needs review'];
+
+class Component extends DCLogic {
+  state = {
+    tab: 'review', priv: false, open: null, week: 0,
+    approved: {}, sent: false, toast: null,
+    joyOpen: false, joyQ: '', joyMic: false
+  };
+
+  money(n) {
+    if (this.state.priv) return '••••••';
+    const neg = n < 0;
+    const v = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (neg ? '($' : '$') + v + (neg ? ')' : '');
+  }
+
+  statusOf(b) {
+    if (this.state.sent) return 'Sent';
+    if (this.state.approved[b.id]) return 'Approved';
+    return 'Needs review';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const m = (n) => this.money(n);
+    const moneyStyle = (size, color) => 'font-size:' + size + ';color:' + (s.priv ? '#B9B9C1' : color) + ';letter-spacing:' + (s.priv ? '.1em' : '-.01em') + ';white-space:nowrap';
+
+    const pending = BATCH.filter(b => UNRESOLVED.indexOf(this.statusOf(b)) >= 0).length;
+    const batchTotal = BATCH.reduce((a, b) => a + b.amount, 0);
+    const allClear = pending === 0;
+
+    const queue = BATCH.map(b => {
+      const status = this.statusOf(b);
+      const isOpen = s.open === b.id;
+      const needsOt = b.flags.some(f => f.kind === 'ot' && f.label.indexOf('needs review') > 0);
+      return {
+        key: b.id, client: b.client, initials: initials(b.client),
+        line: b.hours + ' · ' + b.payer,
+        status: status, statusStyle: pillS(STATUS[status][0], STATUS[status][1]),
+        amount: m(b.amount), amountStyle: moneyStyle('15px', '#191A2E') + ';font-weight:600',
+        cardStyle: 'background:#FFFFFF;border:1px solid ' + (status === 'Needs review' ? '#FCE8B6' : '#ECECF1') + ';border-radius:14px;overflow:hidden',
+        caretStyle: 'display:inline-block;color:#B9B9C1;font-size:13px;transition:transform .16s ease;transform:rotate(' + (isOpen ? '180deg' : '0deg') + ')',
+        toggle: () => this.setState({ open: isOpen ? null : b.id }),
+        open: isOpen,
+        hasFlags: b.flags.length > 0,
+        flags: b.flags.map((f, i) => {
+          const warn = f.kind === 'added' || f.label.indexOf('needs review') > 0;
+          const src = f.from ? b.lines.filter(l => l.key === f.from) : [];
+          const amt = src.length ? src[0].amount : 0;
+          return {
+            key: b.id + 'f' + i, label: f.label, detail: f.detail,
+            amount: amt ? '+' + m(amt) : '',
+            amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', warn ? '#B54708' : '#5B6274'),
+            dotStyle: 'width:6px;height:6px;flex:none;border-radius:50%;background:' + (warn ? '#F79009' : '#12B76A'),
+            style: 'display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;background:' + (warn ? '#FFFAEB' : '#FAFAFB')
+          };
+        }),
+        lines: b.lines.map((l, i) => ({
+          key: b.id + 'l' + i, label: l.label,
+          note: l.rate ? l.qty + ' × ' + m(l.rate) : l.qty,
+          amount: m(l.amount),
+          amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', l.amount < 0 ? '#B42318' : '#191A2E')
+        })),
+        approveLabel: status === 'Needs review' ? (needsOt ? 'Approve with overtime' : 'Approve invoice') : status === 'Approved' ? 'Approved' : 'Sent',
+        approveStyle: 'height:34px;padding:0 14px;border:none;border-radius:9px;font-size:12.5px;font-weight:500;cursor:' + (status === 'Needs review' ? 'pointer' : 'default') +
+          ';background:' + (status === 'Needs review' ? '#1407A2' : '#ECFDF3') + ';color:' + (status === 'Needs review' ? '#FFFFFF' : '#12B76A'),
+        approve: () => {
+          if (this.statusOf(b) !== 'Needs review') return;
+          this.setState(st => ({
+            approved: Object.assign({}, st.approved, { [b.id]: true }),
+            open: null,
+            toast: { title: b.client + ' approved', sub: 'Overtime and added shifts confirmed' }
+          }));
+        }
+      };
+    });
+
+    const behind = [
+      { client: 'Delgado, Frank', amount: 2482.00, state: 'Unpaid since Jul 22 · service hold decision due Friday', tone: '#B42318' },
+      { client: 'Santos, Maribel', amount: 2180.00, state: 'Late fee applied Aug 7 · second notice Thursday', tone: '#B54708' },
+      { client: 'Ortiz, Ruben', amount: 588.00, state: 'Notice sent Aug 6 · awaiting payment', tone: '#B54708' }
+    ].map((b, i) => ({
+      key: 'bh' + i, client: b.client,
+      amount: m(b.amount), amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E') + ';font-weight:500',
+      state: b.state, stateStyle: 'font-size:11.5px;line-height:1.4;color:' + b.tone
+    }));
+
+    const cycle = [
+      { day: 'Monday', what: 'Review and send — today', at: true },
+      { day: 'Wednesday', what: 'Payment due', at: false },
+      { day: 'Thursday', what: 'Notice if unpaid', at: false },
+      { day: 'Friday', what: 'Late fee · service hold decision', at: false }
+    ].map((c, i) => ({
+      key: 'c' + i, day: c.day, what: c.what,
+      dayStyle: 'font-size:12.5px;font-weight:' + (c.at ? '600' : '400') + ';color:' + (c.at ? '#1407A2' : '#191A2E'),
+      dotStyle: 'width:7px;height:7px;flex:none;border-radius:50%;background:' + (c.at ? '#1407A2' : '#E4E4EA')
+    }));
+
+    const unpaid = SENT.filter(r => r.status !== 'Paid').reduce((a, r) => a + r.amount, 0);
+    const week = PROFIT_WEEKS[Math.min(s.week, PROFIT_WEEKS.length - 1)];
+    const PROFIT = week.rows;
+    const profitBilled = PROFIT.reduce((a, r) => a + r.billable, 0);
+    const profitCost = PROFIT.reduce((a, r) => a + r.cost, 0);
+    const profitNet = profitBilled - profitCost;
+    const profitPct = profitBilled ? (profitNet / profitBilled) * 100 : 0;
+
+    return {
+      joyOpen: s.joyOpen,
+      toggleJoy: () => this.setState({ joyOpen: !s.joyOpen, joyMic: false }),
+      joyQ: s.joyQ,
+      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyStatus: s.joyMic ? 'Listening…' : '',
+      joyStatusStyle: 'font-size:11px;color:#1407A2;' + (s.joyMic ? '' : 'display:none'),
+      toggleMic: () => this.setState({ joyMic: !s.joyMic }),
+      micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
+        (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+      joySend: () => this.setState({ joyQ: '', joyMic: false }),
+      joyPrompts: ['What changed since I set the schedule?', 'Which invoices have unapproved overtime?', 'Who is at risk of a service hold?']
+        .map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+
+      isPrivate: s.priv, notPrivate: !s.priv,
+      privateLabel: s.priv ? 'Amounts hidden' : 'Hide amounts',
+      privateBtnStyle: 'display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid ' +
+        (s.priv ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#5B6274'),
+      togglePrivate: () => this.setState({ priv: !s.priv }),
+
+      tabs: [['review', 'To send', pending || BATCH.length], ['invoices', 'Sent', SENT.length], ['profit', 'Profitability', '']].map(t => ({
+        key: t[0], label: t[1], count: t[2],
+        click: () => this.setState({ tab: t[0], open: null }),
+        style: 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;' +
+          (s.tab === t[0] ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
+        countStyle: t[2] === '' ? 'display:none' : 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.tab === t[0] ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.tab === t[0] ? '#1407A2' : '#9B9BA3')
+      })),
+      tabLabel: s.tab === 'review' ? 'To send' : s.tab === 'invoices' ? 'Sent' : 'Profitability',
+      isReview: s.tab === 'review', isInvoices: s.tab === 'invoices', isProfit: s.tab === 'profit',
+
+      batchStyle: 'background:#FFFFFF;border:1px solid ' + (allClear ? '#D3F0DF' : '#ECECF1') + ';border-radius:16px;padding:20px 22px',
+      batchTitle: s.sent ? '3 invoices sent' : allClear ? 'Ready to send' : pending + ' of ' + BATCH.length + ' need review',
+      batchSub: s.sent ? 'Sent this morning · due Wednesday, Aug 12'
+        : 'Care week Aug 3 – 9 · due Wednesday, Aug 12 · check overtime and any shifts added after the schedule was set',
+      batchTotal: m(batchTotal), batchTotalStyle: moneyStyle('21px', '#191A2E') + ';font-weight:600',
+      batchHours: '335h 15m billed',
+      sendAllLabel: s.sent ? 'Sent ✓' : allClear ? 'Send 3 invoices' : 'Review first',
+      sendAllStyle: 'height:38px;padding:0 18px;border:none;border-radius:10px;font-size:13.5px;font-weight:500;cursor:' + (allClear && !s.sent ? 'pointer' : 'not-allowed') +
+        ';background:' + (s.sent ? '#ECFDF3' : allClear ? '#1407A2' : '#F1F2F6') + ';color:' + (s.sent ? '#12B76A' : allClear ? '#FFFFFF' : '#B9B9C1'),
+      sendAll: () => {
+        if (!allClear || s.sent) return;
+        this.setState({ sent: true, toast: { title: '3 invoices sent', sub: 'Due Wednesday · payment links through Stripe' } });
+      },
+
+      queue: queue, cycle: cycle, behind: behind,
+      stripe: [
+        { key: 'st1', label: 'Next payout', value: m(8412.60) + ' · Aug 11' },
+        { key: 'st2', label: 'In transit', value: m(3585.00) },
+        { key: 'st3', label: 'Failed payments', value: '1 · Delgado ACH' }
+      ].map(r => ({ key: r.key, label: r.label, value: r.value, valueStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E') })),
+
+      invCols: [['Client', TH], ['Period', TH], ['Status', TH], ['Pay method', TH], ['Amount', THR], ['Due', TH], ['Paid', TH]]
+        .map((c, i) => ({ key: 'ic' + i, label: c[0], style: c[1] })),
+      invoices: SENT.map((r, i) => ({
+        key: 'sv' + i, client: r.client, initials: initials(r.client), payer: r.payer,
+        period: r.period, status: r.status, statusStyle: pillS(STATUS[r.status][0], STATUS[r.status][1]),
+        method: r.method, amount: m(r.amount), amountStyle: moneyStyle('13px', '#191A2E'),
+        due: r.due, paid: r.paid
+      })),
+      invoiceCount: SENT.length + ' invoices',
+      unpaidTotal: m(unpaid), unpaidStyle: moneyStyle('12.5px', '#191A2E') + ';font-weight:600',
+
+      netValue: m(profitNet), netStyle: moneyStyle('24px', '#191A2E') + ';font-weight:600',
+      netPct: s.priv ? '••••' : profitPct.toFixed(1) + '%',
+      netBarStyle: 'display:block;height:100%;width:' + Math.min(100, Math.round((profitPct / 12) * 100)) + '%;border-radius:999px;background:#F79009',
+      weekLabel: week.label,
+      weekSub: s.week === 0 ? 'Invoiced this Monday' : s.week === 1 ? 'Invoiced Aug 3' : 'Invoiced Jul 27',
+      canPrevWeek: s.week < PROFIT_WEEKS.length - 1,
+      canNextWeek: s.week > 0,
+      prevWeek: () => { if (s.week < PROFIT_WEEKS.length - 1) this.setState({ week: s.week + 1 }); },
+      nextWeek: () => { if (s.week > 0) this.setState({ week: s.week - 1 }); },
+      prevWeekStyle: 'width:28px;height:28px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;cursor:' + (s.week < PROFIT_WEEKS.length - 1 ? 'pointer' : 'not-allowed') + ';color:' + (s.week < PROFIT_WEEKS.length - 1 ? '#5B6274' : '#D8D8DE'),
+      nextWeekStyle: 'width:28px;height:28px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;cursor:' + (s.week > 0 ? 'pointer' : 'not-allowed') + ';color:' + (s.week > 0 ? '#5B6274' : '#D8D8DE'),
+      totalHrs: PROFIT.length + (PROFIT.length === 1 ? ' client' : ' clients'),
+      totalBilled: m(profitBilled), totalCost: m(profitCost), totalNet: m(profitNet),
+      totalPct: s.priv ? '••••' : profitPct.toFixed(2) + '%',
+      totalPctStyle: 'font-size:12.5px;font-weight:600;color:' + (s.priv ? '#B9B9C1' : profitPct >= 6 ? '#12B76A' : profitPct >= 4 ? '#B54708' : '#D92D20'),
+      totalMoneyStyle: moneyStyle('13px', '#191A2E') + ';font-weight:600',
+      profitCols: [['Client', TH], ['Billable hrs', THR], ['Billed', THR], ['Caregiver cost', THR], ['Net', THR], ['Net %', THR]]
+        .map((c, i) => ({ key: 'pc' + i, label: c[0], style: c[1] })),
+      profitRows: PROFIT.map((r, i) => {
+        const pct = r.billable ? ((r.billable - r.cost) / r.billable) * 100 : 0;
+        const tone = pct >= 6 ? '#12B76A' : pct >= 4 ? '#B54708' : '#D92D20';
+        return {
+          key: 'pr' + i, name: r.name, initials: initials(r.name), billableHrs: r.hrs,
+          billable: m(r.billable), billableStyle: moneyStyle('13px', '#191A2E'),
+          cost: m(r.cost), costStyle: moneyStyle('12.5px', '#5B6274'),
+          net: m(r.billable - r.cost), netStyle: moneyStyle('13px', '#191A2E'),
+          pct: s.priv ? '••••' : pct.toFixed(2) + '%',
+          pctStyle: 'font-size:12.5px;font-weight:500;color:' + (s.priv ? '#B9B9C1' : tone)
+        };
+      }),
+
+      toastOpen: !!s.toast, toast: s.toast || {}, closeToast: () => this.setState({ toast: null })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

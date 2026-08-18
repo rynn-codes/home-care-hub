@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+button{font-family:inherit}
+input{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@keyframes drawerIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1320px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;overflow-y:auto">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Dashboard</a>
+
+      <button onClick="{{ toggleHiring }}" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;cursor:pointer;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6;margin-top:2px">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="{{ chevronStyle }}"><path d="M4.5 6.5L8 10l3.5-3.5"></path></svg>
+      </button>
+      <sc-if value="{{ hiringOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:1px;margin:2px 0 2px 10px;padding-left:12px;border-left:1px solid #ECECF1">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+          <button onClick="{{ n.click }}" style="{{ n.style }}">
+            <span>{{ n.label }}</span>
+            <span style="{{ n.countStyle }}">{{ n.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">8</span></a>
+      <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>People</a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.6 13.4h10.8"></path><path d="M4.4 11V7.4M7.4 11V4.4M10.4 11V8.8M13.4 11V5.6"></path></svg>Reports</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><circle cx="8" cy="8" r="5.4"></circle><path d="M8 2.6v1.2M8 12.2v1.2M2.6 8h1.2M12.2 8h1.2"></path></svg>Settings</a>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">JR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Joan Robinson</span>
+        <span style="font-size:11px;color:#9B9BA3">Administrator</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:13px 44px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:12.5px;color:#9B9BA3">Hiring</span>
+      <span style="font-size:12.5px;color:#C9C9D0">/</span>
+      <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ meta.title }}</span>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Thu, August 6 · 10:03 AM</span>
+    </header>
+
+    <div style="padding:30px 44px 90px;display:flex;flex-direction:column;gap:22px">
+
+      <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:340px">
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">{{ meta.title }}</h1>
+          <p style="margin:0;font-size:13.5px;color:#5B6274;max-width:560px;text-wrap:pretty">{{ meta.sub }}</p>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:212px">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
+            <input type="text" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
+          </div>
+          <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round"><path d="M2.4 4h11.2M4.4 8h7.2M6.4 12h3.2"></path></svg>Filter
+          </button>
+          <sc-if value="{{ hasViews }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;background:#F1F2F6;border-radius:9px;padding:3px;gap:2px">
+              <button onClick="{{ setTable }}" style="{{ tableBtn }}">Table</button>
+              <button onClick="{{ setKanban }}" style="{{ kanbanBtn }}">Kanban</button>
+            </div>
+          </sc-if>
+          <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>{{ meta.add }}
+          </button>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasTabs }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:26px;border-bottom:1px solid #ECECF1">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.click }}" style="{{ t.style }}">
+              <span>{{ t.label }}</span>
+              <span style="{{ t.countStyle }}">{{ t.count }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNeeds }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;padding:11px 14px">
+          <span style="display:flex;align-items:center;gap:8px;flex:none">
+            <span style="width:7px;height:7px;border-radius:50%;background:#F79009"></span>
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Needs you today</span>
+          </span>
+          <sc-if value="{{ needsOpen }}" hint-placeholder-val="{{ true }}">
+            <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ needs }}" as="n" hint-placeholder-count="3">
+                <button onClick="{{ n.click }}" style="display:flex;align-items:center;gap:7px;background:#FFFAEB;border:1px solid #FCE8B6;border-radius:999px;padding:5px 12px;font-size:12.5px;color:#B54708;cursor:pointer" style-hover="background:#FEF3D6">
+                  <span style="font-weight:500;color:#191A2E">{{ n.name }}</span>{{ n.what }}
+                </button>
+              </sc-for>
+            </span>
+          </sc-if>
+          <button onClick="{{ toggleNeeds }}" style="margin-left:auto;flex:none;background:transparent;border:none;font-size:12.5px;color:#8A8A92;cursor:pointer;padding:0" style-hover="color:#191A2E">{{ needsToggle }}</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showContext }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;background:#EEF0FE;border:1px solid #E0E3FB;border-radius:12px;padding:12px 16px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#1407A2">Position</span>
+          <span style="font-size:13.5px;font-weight:500;color:#191A2E">{{ ctxLabel }}</span>
+          <span style="font-size:12.5px;color:#5B6274">{{ ctxCount }}</span>
+          <button onClick="{{ clearCtx }}" style="margin-left:auto;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">View all positions</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:{{ minW }}">
+              <thead>
+                <tr>
+                  <sc-for list="{{ cols }}" as="c" hint-placeholder-count="6">
+                    <th style="{{ c.style }}">{{ c.label }}</th>
+                  </sc-for>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+                  <tr onClick="{{ r.open }}" style="border-top:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                    <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+                      <td style="{{ c.td }}">
+                        <sc-if value="{{ c.isPerson }}" hint-placeholder-val="{{ true }}">
+                          <span style="display:flex;align-items:center;gap:10px">
+                            <span style="width:28px;height:28px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ c.initials }}</span>
+                            <span style="display:flex;flex-direction:column;line-height:1.35">
+                              <span style="font-size:13px;font-weight:500;color:#191A2E">{{ c.label }}</span>
+                              <span style="font-size:11.5px;color:#9B9BA3">{{ c.sub }}</span>
+                            </span>
+                          </span>
+                        </sc-if>
+                        <sc-if value="{{ c.isPill }}" hint-placeholder-val="{{ false }}">
+                          <span style="{{ c.pillStyle }}">{{ c.label }}</span>
+                        </sc-if>
+                        <sc-if value="{{ c.isDot }}" hint-placeholder-val="{{ false }}">
+                          <span style="display:flex;align-items:center;gap:7px">
+                            <span style="{{ c.dotStyle }}"></span>
+                            <span style="font-size:12.5px;color:#5B6274;white-space:nowrap">{{ c.label }}</span>
+                          </span>
+                        </sc-if>
+                        <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ false }}">
+                          <span style="display:flex;flex-direction:column;line-height:1.35">
+                            <span style="font-size:12.5px;color:#5B6274">{{ c.label }}</span>
+                            <span style="font-size:11.5px;color:#9B9BA3">{{ c.sub }}</span>
+                          </span>
+                        </sc-if>
+                        <sc-if value="{{ c.isMenu }}" hint-placeholder-val="{{ false }}">
+                          <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;color:#9B9BA3;font-size:15px;letter-spacing:1px" style-hover="background:#F1F2F6;color:#191A2E">···</span>
+                        </sc-if>
+                      </td>
+                    </sc-for>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:44px;text-align:center;font-size:13px;color:#9B9BA3">Nothing here right now.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;align-items:flex-start">
+          <sc-for list="{{ board }}" as="col" hint-placeholder-count="4">
+            <div style="flex:none;width:264px;background:#FAFAFB;border:1px solid #ECECF1;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:8px;padding:2px 4px 8px;border-bottom:1px solid #ECECF1">
+                <span style="{{ col.dotStyle }}"></span>
+                <span style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#191A2E">{{ col.title }}</span>
+                <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">{{ col.count }}</span>
+              </div>
+              <sc-for list="{{ col.cards }}" as="card" hint-placeholder-count="2">
+                <div onClick="{{ card.open }}" style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;padding:12px;display:flex;flex-direction:column;gap:8px;cursor:pointer" style-hover="border-color:#D6D8EA;box-shadow:0 1px 3px rgba(20,7,162,.06)">
+                  <span style="font-size:13px;font-weight:500;color:#191A2E;line-height:1.35">{{ card.title }}</span>
+                  <span style="font-size:11.5px;color:#9B9BA3;line-height:1.4">{{ card.sub }}</span>
+                  <span style="display:flex;flex-wrap:wrap;gap:5px">
+                    <sc-for list="{{ card.pills }}" as="p" hint-placeholder-count="2">
+                      <span style="{{ p.style }}">{{ p.label }}</span>
+                    </sc-for>
+                  </span>
+                  <span style="{{ card.noteStyle }}">{{ card.note }}</span>
+                  <span style="display:flex;align-items:center;gap:10px;padding-top:8px;border-top:1px solid #F3F3F6">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#B9B9C1" stroke-width="1.4" stroke-linecap="round"><path d="M2.6 4.2h10.8v8H2.6z"></path><path d="M2.6 4.6L8 8.8l5.4-4.2"></path></svg>
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#B9B9C1" stroke-width="1.4" stroke-linecap="round"><path d="M3.4 2.6h6L12.6 6v7.4H3.4z"></path><path d="M9.4 2.6V6h3.2"></path></svg>
+                    <span style="margin-left:auto;font-size:11px;color:#9B9BA3">{{ card.days }}</span>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ col.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:16px 8px;font-size:12px;color:#B9B9C1;text-align:center">Empty</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end">
+      <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(25,26,46,.18)"></div>
+      <aside style="position:relative;width:452px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+
+        <div style="padding:20px 22px 0;display:flex;align-items:flex-start;gap:12px">
+          <span style="width:40px;height:40px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ p.initials }}</span>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+            <span style="font-size:16.5px;font-weight:600;letter-spacing:-.01em">{{ p.name }}</span>
+            <span style="font-size:12.5px;color:#5B6274">{{ p.roleLine }}</span>
+          </div>
+          <button onClick="{{ closeDrawer }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="display:flex;gap:22px;padding:16px 22px 0;border-bottom:1px solid #ECECF1;margin-top:4px">
+          <sc-for list="{{ dtabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.click }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:20px">
+
+          <sc-if value="{{ dOverview }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:20px">
+              <p style="margin:0;font-size:13.5px;line-height:1.6;color:#5B6274;text-wrap:pretty">{{ p.description }}</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <sc-for list="{{ p.cards }}" as="hc" hint-placeholder-count="4">
+                  <div style="{{ hc.style }}">
+                    <span style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ hc.label }}</span>
+                    <span style="{{ hc.valueStyle }}">{{ hc.value }}</span>
+                    <span style="font-size:11.5px;color:#8A8A92;line-height:1.45">{{ hc.sub }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Progress</span>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ p.progress }}" as="s" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                      <span style="{{ s.dotStyle }}"></span>
+                      <span style="font-size:13px;color:#191A2E">{{ s.label }}</span>
+                      <span style="margin-left:auto;font-size:12px;color:#8A8A92">{{ s.status }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Details</span>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ p.details }}" as="d" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                      <span style="font-size:12.5px;color:#9B9BA3;width:118px;flex:none">{{ d.label }}</span>
+                      <span style="font-size:13px;color:#191A2E">{{ d.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ dDocs }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:20px">
+              <sc-for list="{{ p.docGroups }}" as="g" hint-placeholder-count="4">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ g.title }}</span>
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                        <span style="{{ it.dotStyle }}"></span>
+                        <span style="font-size:13px;color:#191A2E">{{ it.label }}</span>
+                        <span style="margin-left:auto;font-size:12px;color:#8A8A92">{{ it.status }}</span>
+                        <sc-if value="{{ it.upload }}" hint-placeholder-val="{{ false }}">
+                          <button style="border:1px solid #ECECF1;background:#FFFFFF;border-radius:7px;font-size:11.5px;color:#1407A2;padding:3px 9px;cursor:pointer" style-hover="background:#EEF0FE">Upload</button>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ dActivity }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ p.activity }}" as="a" hint-placeholder-count="5">
+                <div style="display:flex;gap:12px;padding-bottom:18px">
+                  <span style="display:flex;flex-direction:column;align-items:center;flex:none;padding-top:4px">
+                    <span style="{{ a.dotStyle }}"></span>
+                    <span style="width:1px;flex:1;background:#ECECF1;margin-top:4px"></span>
+                  </span>
+                  <span style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:13px;color:#191A2E;line-height:1.45">{{ a.label }}</span>
+                    <span style="font-size:11.5px;color:#9B9BA3">{{ a.when }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <div style="border-top:1px solid #ECECF1;padding:14px 22px;display:flex;flex-direction:column;gap:10px;background:#FCFCFD">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Next action</span>
+          <button style="display:flex;align-items:center;justify-content:center;gap:8px;height:38px;background:#1407A2;border:none;border-radius:10px;font-size:13.5px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">{{ p.nextAction }}</button>
+          <div style="display:flex;gap:8px">
+            <button style="flex:1;height:34px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Advance stage</button>
+            <button style="flex:1;height:34px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#8A8A92;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318;border-color:#FBD9D3">Mark not a fit</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+    <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:28px;bottom:80px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <span style="{{ joyStatusStyle }}">{{ joyStatus }}</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
+        </button>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+<button onClick="{{ toggleJoy }}" style="position:fixed;right:28px;bottom:26px;z-index:40;display:flex;align-items:center;gap:9px;height:42px;padding:0 18px 0 14px;background:#191A2E;border:none;border-radius:999px;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px rgba(25,26,46,.22)" style-hover="background:#1407A2">
+    <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Ask Joy
+  </button>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const TONE = {
+  done: '#12B76A', prog: '#1407A2', warn: '#F79009', teal: '#0E9384',
+  none: '#D0D5DD', bad: '#D92D20'
+};
+const RSTAGES = ['Applied', 'Phone Screen', 'Interview', 'Documents', 'Background & References', 'Offer'];
+const OSTAGES = ['Online Orientation', 'Office Orientation', 'Field Orientation', 'First Shift', 'Week 1 Follow-Up', 'Week 2 Follow-Up'];
+
+const POSITIONS = [
+  { id: 'p1', job: 'Caregiver — CNA', loc: 'Houston · Northwest', dept: 'Field Care', urg: 'Urgent', desc: 'Two clients, morning shifts, transfers required', sched: 'Weekdays · 30–35 hrs', apps: 4, status: 0, days: '9d open' },
+  { id: 'p2', job: 'Caregiver — HHA', loc: 'Katy', dept: 'Field Care', urg: 'Medium', desc: 'Weekend overnight coverage, no lifting', sched: 'Weekends · 24 hrs', apps: 1, status: 0, days: '4d open' },
+  { id: 'p3', job: 'LVN Case Manager', loc: 'Houston · Central', dept: 'Clinical', urg: 'High', desc: 'Supervisory visits and care plan updates', sched: 'Mon–Fri · 40 hrs', apps: 2, status: 1, days: '21d open' },
+  { id: 'p4', job: 'Scheduling Coordinator', loc: 'Houston HQ', dept: 'Office', urg: 'Medium', desc: 'Fills call-outs, manages caregiver availability', sched: 'Mon–Fri · 40 hrs', apps: 1, status: 1, days: '15d open' },
+  { id: 'p5', job: 'Billing Specialist', loc: 'Houston HQ', dept: 'Office', urg: 'Low', desc: 'Medicaid claims and remittance posting', sched: 'Mon–Fri · 40 hrs', apps: 0, status: 2, days: 'Filled Jul 18' }
+];
+
+const d = (label, tone) => ({ label: label, tone: tone });
+
+const PEOPLE = [
+  { id: 'a1', name: 'Marisol Ortega', role: 'Caregiver — CNA', dept: 'Field Care', recruiter: 'Dana Whitfield', applied: 'Aug 3', source: 'Indeed', email: 'm.ortega@gmail.com', phone: '(713) 555-0142', avail: 'Weekdays, mornings', track: 'new', stage: 'Interview', days: '2d in stage', driving: true, cna: true,
+    next: 'Complete in-person interview — Thu 2:00 PM', warn: false, last: 'Interview confirmed · Aug 5',
+    cp: [d('Passed', 'done'), d('Scheduled', 'prog'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'a2', name: 'Terrance Hill', role: 'Caregiver — CNA', dept: 'Field Care', recruiter: 'Dana Whitfield', applied: 'Jul 30', source: 'Referral', email: 't.hill@outlook.com', phone: '(281) 555-0117', avail: 'Weekdays, open', track: 'new', stage: 'Documents', days: '4d in stage', driving: true, cna: true,
+    next: 'Request missing documents — TB test, auto insurance', warn: true, blocker: 'missing TB test', last: 'CPR card uploaded · Aug 4',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Review', 'warn'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'a3', name: 'Aisha Bello', role: 'LVN Case Manager', dept: 'Clinical', recruiter: 'Priya Shah', applied: 'Jul 28', source: 'Indeed', email: 'aisha.bello@gmail.com', phone: '(832) 555-0198', avail: 'Mon–Fri, days', track: 'new', stage: 'Background & References', days: '3d in stage', driving: true, cna: false,
+    next: 'Review background result — returned Aug 5', warn: true, blocker: 'background returned', last: 'Background report returned · Aug 5',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('In review', 'prog'), d('2 · 3', 'teal'), d('—', 'none')] },
+  { id: 'a4', name: 'Kevin Nguyen', role: 'Scheduling Coordinator', dept: 'Office', recruiter: 'Dana Whitfield', applied: 'Aug 4', source: 'Website', email: 'kev.nguyen@gmail.com', phone: '(713) 555-0176', avail: 'Mon–Fri, days', track: 'new', stage: 'Phone Screen', days: '1d in stage', driving: false, cna: false,
+    next: 'Hold phone screen — Wed 11:00 AM', warn: false, last: 'Phone screen booked via GHL · Aug 5',
+    cp: [d('Scheduled', 'prog'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'a5', name: 'Brianna Lopez', role: 'Caregiver — HHA', dept: 'Field Care', recruiter: 'Unassigned', applied: 'Aug 5', source: 'Facebook', email: 'b.lopez22@gmail.com', phone: '(346) 555-0133', avail: 'Weekend nights', track: 'new', stage: 'Applied', days: '1d in stage', driving: false, cna: false,
+    next: 'Assign a recruiter and schedule the phone screen', warn: true, blocker: 'no recruiter assigned', last: 'Application received · Aug 5',
+    cp: [d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'a6', name: 'Danielle Frost', role: 'LVN Case Manager', dept: 'Clinical', recruiter: 'Priya Shah', applied: 'Jul 22', source: 'Referral', email: 'd.frost@gmail.com', phone: '(281) 555-0154', avail: 'Mon–Fri, days', track: 'new', stage: 'Offer', days: '2d in stage', driving: true, cna: false,
+    next: 'Follow up on offer letter — sent Aug 4', warn: true, blocker: 'offer awaiting reply', last: 'Offer letter sent · Aug 4',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Clear', 'done'), d('3 · 3', 'done'), d('Sent', 'prog')] },
+
+  { id: 'h1', name: 'Rosa Medina', role: 'Caregiver — CNA', dept: 'Field Care', recruiter: 'Dana Whitfield', applied: 'Jul 8', source: 'Referral', email: 'rosa.medina@gmail.com', phone: '(713) 555-0121', avail: 'Weekdays, mornings', track: 'onb', stage: 'Offer', offer: 'Accepted Jul 25', onbStage: 'Field Orientation', days: '2d in stage', driving: true, cna: true,
+    next: 'Confirm field orientation ride-along — Fri 8:00 AM', warn: false, last: 'Office orientation complete · Aug 4',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Clear', 'done'), d('3 · 3', 'done'), d('Accepted', 'done')],
+    ocp: [d('Complete', 'done'), d('Complete', 'done'), d('Scheduled', 'prog'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'h2', name: 'Jamal Carter', role: 'Caregiver — HHA', dept: 'Field Care', recruiter: 'Dana Whitfield', applied: 'Jul 15', source: 'Indeed', email: 'jcarter@gmail.com', phone: '(832) 555-0188', avail: 'Weekends', track: 'onb', stage: 'Offer', offer: 'Accepted Aug 1', onbStage: 'Online Orientation', days: '4d in stage', driving: false, cna: false,
+    next: 'Gusto I-9 outstanding — remind before first shift', warn: true, blocker: 'I-9 outstanding', last: 'Gusto W-4 completed · Aug 3',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Clear', 'done'), d('3 · 3', 'done'), d('Accepted', 'done')],
+    ocp: [d('In progress', 'prog'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'h3', name: 'Marcus Webb', role: 'Caregiver — CNA', dept: 'Field Care', recruiter: 'Priya Shah', applied: 'Jun 30', source: 'Website', email: 'm.webb@gmail.com', phone: '(713) 555-0163', avail: 'Weekdays, evenings', track: 'onb', stage: 'Offer', offer: 'Accepted Jul 18', onbStage: 'First Shift', days: '1d in stage', driving: true, cna: true,
+    next: 'First shift today — check in after the visit', warn: false, last: 'Field orientation complete · Aug 5',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Clear', 'done'), d('3 · 3', 'done'), d('Accepted', 'done')],
+    ocp: [d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done'), d('Today', 'prog'), d('—', 'none'), d('—', 'none')] },
+  { id: 'h4', name: 'Nia Coleman', role: 'Caregiver — HHA', dept: 'Field Care', recruiter: 'Dana Whitfield', applied: 'Jun 20', source: 'Referral', email: 'nia.coleman@gmail.com', phone: '(281) 555-0109', avail: 'Weekdays, open', track: 'onb', stage: 'Offer', offer: 'Accepted Jul 5', onbStage: 'Week 1 Follow-Up', days: '2d in stage', driving: false, cna: false,
+    next: 'Week 1 follow-up call — due today', warn: true, blocker: 'Week 1 call due', last: 'First shift completed · Aug 1',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Clear', 'done'), d('3 · 3', 'done'), d('Accepted', 'done')],
+    ocp: [d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done'), d('Due today', 'warn'), d('—', 'none')] },
+  { id: 'h5', name: 'Elena Ruiz', role: 'Caregiver — CNA', dept: 'Field Care', recruiter: 'Priya Shah', applied: 'Jun 2', source: 'Indeed', email: 'e.ruiz@gmail.com', phone: '(713) 555-0190', avail: 'Weekdays, days', track: 'onbDone', stage: 'Offer', offer: 'Accepted Jun 18', onbStage: 'Week 2 Follow-Up', days: 'Completed Jul 24', driving: true, cna: true,
+    next: 'Onboarding complete — now an active employee', warn: false, last: 'Week 2 follow-up complete · Jul 24',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Clear', 'done'), d('3 · 3', 'done'), d('Accepted', 'done')],
+    ocp: [d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done'), d('Complete', 'done')] },
+
+  { id: 'n1', name: 'Chris Vega', role: 'Caregiver — CNA', dept: 'Field Care', recruiter: 'Dana Whitfield', applied: 'Jul 21', source: 'Indeed', email: 'c.vega@gmail.com', phone: '(832) 555-0144', avail: '—', track: 'nofit', stage: 'Interview', reason: 'Interview no-show', date: 'Jul 29', days: '—', driving: false, cna: true,
+    next: 'Retained on record — no further action', warn: false, last: 'Marked no-show · Jul 29',
+    cp: [d('Passed', 'done'), d('No-show', 'bad'), d('—', 'none'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'n2', name: 'Paula Ann Reyes', role: 'Scheduling Coordinator', dept: 'Office', recruiter: 'Dana Whitfield', applied: 'Jul 12', source: 'Website', email: 'pa.reyes@gmail.com', phone: '(713) 555-0175', avail: '—', track: 'nofit', stage: 'Documents', reason: 'Withdrew — accepted another offer', date: 'Aug 1', days: '—', driving: false, cna: false,
+    next: 'Retained on record — no further action', warn: false, last: 'Withdrew · Aug 1',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Withdrew', 'bad'), d('—', 'none'), d('—', 'none'), d('—', 'none')] },
+  { id: 'n3', name: 'Devon Price', role: 'Caregiver — HHA', dept: 'Field Care', recruiter: 'Priya Shah', applied: 'Jul 3', source: 'Facebook', email: 'd.price@gmail.com', phone: '(346) 555-0102', avail: '—', track: 'nofit', stage: 'Background & References', reason: 'Background check not clear', date: 'Jul 24', days: '—', driving: false, cna: false,
+    next: 'Retained on record — no further action', warn: false, last: 'Background not clear · Jul 24',
+    cp: [d('Passed', 'done'), d('Passed', 'done'), d('Complete', 'done'), d('Not clear', 'bad'), d('—', 'none'), d('—', 'none')] }
+];
+
+const SECTIONS = {
+  positions: { title: 'Open Positions', sub: "What's open, being worked, and filled — move a role along as it progresses.", add: 'Add position', tabs: ['Open', 'Working on it', 'Closed · Filled'], views: true },
+  recruitment: { title: 'Recruitment', sub: 'Carry each applicant from application to hire. One pipeline per open role.', add: 'Add applicant', tabs: ['New Applicants', 'Hired', 'Not a Fit'], views: true },
+  onboarding: { title: 'Onboarding', sub: 'From offer accepted to a settled employee — orientation through the Week 2 check-in.', add: 'Add hire', tabs: ['Onboarding', 'Completed', 'Not a Fit'], views: true },
+  directory: { title: 'Applicant Directory', sub: "Everyone who's applied — searchable in one place.", add: 'Add applicant', tabs: null, views: false }
+};
+
+const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const dot = (tone) => 'width:7px;height:7px;flex:none;border-radius:50%;background:' + (TONE[tone] || TONE.none);
+const TD = 'padding:13px 16px;vertical-align:middle';
+const TH = 'text-align:left;padding:11px 16px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap';
+
+const URG = { Urgent: ['#B42318', '#FEF3F2'], High: ['#B54708', '#FFFAEB'], Medium: ['#1407A2', '#EEF0FE'], Low: ['#5B6274', '#F3F3F6'] };
+const DEPT = { 'Field Care': ['#0E9384', '#ECFDF7'], Clinical: ['#1407A2', '#EEF0FE'], Office: ['#5B6274', '#F3F3F6'] };
+
+const pill = (label, pair) => ({
+  isPill: true, label: label,
+  pillStyle: 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:500;white-space:nowrap;color:' + pair[0] + ';background:' + pair[1]
+});
+
+class Component extends DCLogic {
+  state = { joyOpen: false, joyQ: '', joyMic: false, section: 'positions', view: 'table', tab: 0, sel: null, dtab: 'Overview', q: '', ctx: null };
+
+  go(section) { this.setState({ section: section, tab: 0, q: '', ctx: null, hiringCollapsed: false }); }
+  pick(id) { this.setState({ sel: id, dtab: 'Overview' }); }
+
+  peopleFor() {
+    const s = this.state, out = [];
+    for (const p of PEOPLE) {
+      let keep = false;
+      if (s.section === 'directory') keep = true;
+      else if (s.section === 'recruitment') keep = s.tab === 0 ? p.track === 'new' : s.tab === 1 ? (p.track === 'onb' || p.track === 'onbDone') : p.track === 'nofit';
+      else if (s.section === 'onboarding') keep = s.tab === 0 ? p.track === 'onb' : s.tab === 1 ? p.track === 'onbDone' : p.track === 'nofit';
+      if (!keep) continue;
+      if (s.ctx && s.section === 'recruitment' && p.role !== s.ctx) continue;
+      out.push(p);
+    }
+    const q = s.q.trim().toLowerCase();
+    return q ? out.filter(p => (p.name + ' ' + p.role + ' ' + p.source).toLowerCase().includes(q)) : out;
+  }
+
+  positionsFor() {
+    const q = this.state.q.trim().toLowerCase();
+    let out = POSITIONS.filter(p => p.status === this.state.tab);
+    return q ? out.filter(p => (p.job + ' ' + p.loc + ' ' + p.dept).toLowerCase().includes(q)) : out;
+  }
+
+  dirStage(p) {
+    if (p.track === 'nofit') return d('Not a fit', 'bad');
+    if (p.track === 'onbDone') return d('Active employee', 'done');
+    if (p.track === 'onb') return d('Onboarding · ' + p.onbStage, 'prog');
+    return d(p.stage, 'prog');
+  }
+
+  buildTable() {
+    const s = this.state;
+    const person = (p) => ({ isPerson: true, label: p.name, sub: p.role, initials: initials(p.name), td: TD });
+    const text = (label, sub) => ({ isText: true, label: label, sub: sub || '', td: TD });
+    const stat = (c) => ({ isDot: true, label: c.label, dotStyle: dot(c.tone), td: TD });
+    const menu = { isMenu: true, label: '\u00a0', sub: '', initials: '', pillStyle: '', dotStyle: '', td: TD + ';text-align:right;width:52px' };
+
+    if (s.section === 'positions') {
+      return {
+        minW: '1120px',
+        cols: ['Job', 'Location', 'Department', 'Urgency', 'Description', 'Days / Hrs', 'Applicants', ''],
+        rows: this.positionsFor().map(p => ({
+          key: p.id,
+          open: () => this.setState({ section: 'recruitment', tab: 0, ctx: p.job, view: 'table' }),
+          cells: [
+            { isText: true, label: p.job, sub: p.days, td: TD + ';min-width:210px' },
+            text(p.loc), pill(p.dept, DEPT[p.dept]), pill(p.urg, URG[p.urg]),
+            { isText: true, label: p.desc, sub: '', td: TD + ';max-width:300px' },
+            text(p.sched), text(p.apps + ' in pipeline'), menu
+          ]
+        }))
+      };
+    }
+    if (s.section === 'directory') {
+      return {
+        minW: '1180px',
+        cols: ['Person', 'Email', 'Phone', 'Position', 'Source', 'Stage', 'Last activity'],
+        rows: this.peopleFor().map(p => ({
+          key: p.id, open: () => this.pick(p.id),
+          cells: [person(p), text(p.email), text(p.phone), text(p.role), text(p.source), stat(this.dirStage(p)), text(p.last)]
+        }))
+      };
+    }
+    if (s.section === 'recruitment') {
+      if (s.tab === 0) return {
+        minW: '1560px',
+        cols: ['Applicant', 'Recruiter', 'Applied', 'Source', 'Position', 'Phone Screen', 'Interview', 'Docs', 'Background', 'Refs', 'Offer', ''],
+        rows: this.peopleFor().map(p => ({
+          key: p.id, open: () => this.pick(p.id),
+          cells: [person(p), text(p.recruiter), text(p.applied), text(p.source), text(p.role)]
+            .concat(p.cp.map(stat)).concat([menu])
+        }))
+      };
+      if (s.tab === 1) return {
+        minW: '860px',
+        cols: ['Applicant', 'Position', 'Offer', 'Onboarding stage', ''],
+        rows: this.peopleFor().map(p => ({
+          key: p.id, open: () => this.pick(p.id),
+          cells: [person(p), text(p.role), text(p.offer), stat(d(p.onbStage, p.track === 'onbDone' ? 'done' : 'prog')), menu]
+        }))
+      };
+      return {
+        minW: '860px',
+        cols: ['Applicant', 'Position', 'Reason', 'Date', ''],
+        rows: this.peopleFor().map(p => ({
+          key: p.id, open: () => this.pick(p.id),
+          cells: [person(p), text(p.role), stat(d(p.reason, 'bad')), text(p.date), menu]
+        }))
+      };
+    }
+    if (s.tab === 2) return {
+      minW: '860px',
+      cols: ['Applicant', 'Position', 'Reason', 'Date', ''],
+      rows: this.peopleFor().map(p => ({
+        key: p.id, open: () => this.pick(p.id),
+        cells: [person(p), text(p.role), stat(d(p.reason, 'bad')), text(p.date), menu]
+      }))
+    };
+    return {
+      minW: '1240px',
+      cols: ['Employee', 'Position', 'Online Orient.', 'Office Orient.', 'Field Orient.', 'First Shift', 'Week 1', 'Week 2', ''],
+      rows: this.peopleFor().map(p => ({
+        key: p.id, open: () => this.pick(p.id),
+        cells: [person(p), text(p.role)].concat((p.ocp || []).map(stat)).concat([menu])
+      }))
+    };
+  }
+
+  buildBoard() {
+    const s = this.state;
+    const card = (o) => o;
+    if (s.section === 'positions') {
+      return ['Open', 'Working on it', 'Closed · Filled'].map((title, i) => {
+        const cards = POSITIONS.filter(p => p.status === i).map(p => ({
+          key: p.id, title: p.job, sub: p.loc + ' · ' + p.sched,
+          pills: [
+            { label: p.dept, style: 'display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;color:' + DEPT[p.dept][0] + ';background:' + DEPT[p.dept][1] },
+            { label: p.urg, style: 'display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;color:' + URG[p.urg][0] + ';background:' + URG[p.urg][1] }
+          ],
+          note: p.apps + ' in pipeline', noteStyle: 'font-size:12px;color:#5B6274', days: p.days,
+          open: () => this.setState({ section: 'recruitment', tab: 0, ctx: p.job, view: 'kanban' })
+        }));
+        return { key: title, title: title, count: cards.length, cards: cards, empty: cards.length === 0, dotStyle: dot(i === 0 ? 'prog' : i === 1 ? 'warn' : 'done') };
+      });
+    }
+    const people = this.peopleFor();
+    const mkCard = (p) => ({
+      key: p.id, title: p.name, sub: p.applied ? 'Applied ' + p.applied + ' · ' + p.source : p.role,
+      pills: [
+        { label: p.recruiter, style: 'display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;color:#5B6274;background:#F3F3F6' },
+        { label: p.role, style: 'display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;color:#1407A2;background:#EEF0FE' }
+      ],
+      note: p.next,
+      noteStyle: 'font-size:12px;line-height:1.45;padding:7px 9px;border-radius:8px;' + (p.warn ? 'color:#B54708;background:#FFFAEB' : 'color:#5B6274;background:#FAFAFB'),
+      days: p.days, open: () => this.pick(p.id)
+    });
+    let stages = null;
+    if (s.section === 'recruitment' && s.tab === 0) stages = RSTAGES.map(st => [st, (p) => p.stage === st]);
+    else if (s.section === 'onboarding' && s.tab === 0) stages = OSTAGES.map(st => [st, (p) => p.onbStage === st]);
+    if (!stages) {
+      const label = s.section === 'recruitment' ? (s.tab === 1 ? 'Hired · in review' : 'Not a Fit') : (s.tab === 1 ? 'Completed' : 'Not a Fit');
+      const cards = people.map(mkCard);
+      return [{ key: label, title: label, count: cards.length, cards: cards, empty: cards.length === 0, dotStyle: dot(s.tab === 1 ? 'done' : 'bad') }];
+    }
+    return stages.map((pair, i) => {
+      const cards = people.filter(pair[1]).map(mkCard);
+      return { key: pair[0], title: pair[0], count: cards.length, cards: cards, empty: cards.length === 0, dotStyle: dot(i === stages.length - 1 ? 'done' : 'prog') };
+    });
+  }
+
+  buildProfile(p) {
+    const onb = p.track === 'onb' || p.track === 'onbDone';
+    const si = onb ? OSTAGES.indexOf(p.onbStage) : RSTAGES.indexOf(p.stage);
+    const list = onb ? OSTAGES : RSTAGES;
+    const cardBase = 'display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid #ECECF1;border-radius:11px;background:#FCFCFD';
+    const val = 'font-size:13.5px;font-weight:500;color:#191A2E;line-height:1.35';
+    const na = (cond) => cond ? d('n/a', 'none') : null;
+
+    const docStatus = (idx) => si > idx ? d('Complete', 'done') : si === idx ? d('In progress', 'prog') : d('Not started', 'none');
+    const credTone = si >= 3 ? 'done' : si === 2 ? 'warn' : 'none';
+    const credLabel = si >= 3 ? 'Verified' : si === 2 ? 'Received' : 'Not started';
+    const cred = (label, isNA) => isNA
+      ? { label: label, status: 'n/a', dotStyle: dot('none'), upload: false }
+      : { label: label, status: credLabel, dotStyle: dot(credTone), upload: credTone !== 'done' };
+
+    return {
+      initials: initials(p.name),
+      name: p.name,
+      roleLine: p.role + ' · ' + p.dept,
+      description: p.name + ' applied for ' + p.role + ' from ' + p.source + ' on ' + p.applied + '. ' +
+        (p.track === 'nofit' ? 'Marked not a fit on ' + p.date + ' — ' + p.reason.toLowerCase() + '. Record retained.'
+          : onb ? 'Now in onboarding at ' + p.onbStage + '. Next: ' + p.next + '.'
+            : 'Currently at ' + p.stage + '. Next: ' + p.next + '.'),
+      cards: [
+        { label: 'Position', value: p.role, sub: p.dept, style: cardBase, valueStyle: val },
+        { label: 'Applied', value: p.applied, sub: p.source + ' · ' + p.recruiter, style: cardBase, valueStyle: val },
+        { label: 'Contact', value: p.phone, sub: p.email, style: cardBase, valueStyle: val },
+        { label: 'Next step', value: p.next, sub: p.warn ? 'Needs attention' : 'On track',
+          style: cardBase + (p.warn ? ';background:#FFFAEB;border-color:#FCE8B6' : ''),
+          valueStyle: val + ';font-size:12.5px' + (p.warn ? ';color:#B54708' : '') }
+      ],
+      progress: list.map((st, i) => ({
+        key: st, label: st,
+        status: i < si ? 'Done' : i === si ? 'In progress' : '—',
+        dotStyle: dot(i < si ? 'done' : i === si ? 'prog' : 'none')
+      })),
+      details: [
+        { key: 'n', label: 'Name', value: p.name },
+        { key: 'p', label: 'Position', value: p.role },
+        { key: 'd', label: 'Department', value: p.dept },
+        { key: 'e', label: 'Email', value: p.email },
+        { key: 'ph', label: 'Phone', value: p.phone },
+        { key: 'a', label: 'Applied from', value: p.source + ' · ' + p.applied },
+        { key: 'r', label: 'Recruiter', value: p.recruiter },
+        { key: 'av', label: 'Availability', value: p.avail }
+      ],
+      docGroups: [
+        { key: 'app', title: 'Application', items: [
+          { key: 'res', label: 'Résumé', status: 'Uploaded', dotStyle: dot('done'), upload: false },
+          { key: 'ea', label: 'Employee Application', status: 'Complete in Joy', dotStyle: dot('done'), upload: false }
+        ] },
+        { key: 'cred', title: 'Credentials', items: [
+          Object.assign({ key: 'dl' }, cred("Driver's License / ID", false)),
+          Object.assign({ key: 'cpr' }, cred('CPR Certification', false)),
+          Object.assign({ key: 'cna' }, cred('CNA License', !p.cna)),
+          Object.assign({ key: 'tb' }, cred('TB Test', false)),
+          Object.assign({ key: 'imm' }, cred('Immunizations', false)),
+          Object.assign({ key: 'ins' }, cred('Auto Insurance', !p.driving)),
+          Object.assign({ key: 'ssn' }, cred('Social Security Card', false))
+        ] },
+        { key: 'scr', title: 'Screening', items: [
+          { key: 'ps', label: 'Phone Screen', status: p.cp[0].label, dotStyle: dot(p.cp[0].tone), upload: false },
+          { key: 'iv', label: 'In-Person Interview', status: p.cp[1].label, dotStyle: dot(p.cp[1].tone), upload: false },
+          { key: 'bg', label: 'Background Check', status: p.cp[3].label, dotStyle: dot(p.cp[3].tone), upload: false },
+          { key: 'rf', label: 'Reference Checks (3)', status: p.cp[4].label, dotStyle: dot(p.cp[4].tone), upload: false },
+          { key: 'at', label: 'Auto Transport Check', status: p.driving ? (si >= 4 ? 'Clear' : 'Not started') : 'n/a', dotStyle: dot(p.driving && si >= 4 ? 'done' : 'none'), upload: false }
+        ] },
+        { key: 'off', title: 'Offer & Gusto', items: [
+          { key: 'ol', label: 'Offer Letter Sent', status: p.cp[5].label, dotStyle: dot(p.cp[5].tone), upload: false },
+          { key: 'w4', label: 'W-4', status: onb ? 'Complete · Gusto' : '—', dotStyle: dot(onb ? 'done' : 'none'), upload: false },
+          { key: 'pr', label: 'Payroll', status: onb ? 'Complete · Gusto' : '—', dotStyle: dot(onb ? 'done' : 'none'), upload: false },
+          { key: 'i9', label: 'I-9', status: onb ? (p.id === 'h2' ? 'Outstanding · Gusto' : 'Complete · Gusto') : '—', dotStyle: dot(onb ? (p.id === 'h2' ? 'warn' : 'done') : 'none'), upload: false },
+          { key: 'hb', label: 'Employee Handbook signed', status: onb ? 'Complete · Gusto' : '—', dotStyle: dot(onb ? 'done' : 'none'), upload: false },
+          { key: 'ot', label: 'Onboard Training', status: onb ? (si >= 2 ? 'Complete' : 'In progress') : '—', dotStyle: dot(onb ? (si >= 2 ? 'done' : 'prog') : 'none'), upload: false }
+        ] }
+      ],
+      activity: [{ key: 'x0', label: p.last, when: 'Most recent' }].concat(
+        list.slice(0, Math.max(si, 0)).reverse().map((st, i) => ({
+          key: 'x' + (i + 1), label: st + ' completed', when: 'via GHL'
+        }))
+      ).concat([{ key: 'xa', label: 'Application received from ' + p.source, when: p.applied }]),
+      nextAction: p.track === 'nofit' ? 'Reopen candidate' : onb ? 'Confirm ' + p.onbStage.toLowerCase() : this.actionFor(p)
+    };
+  }
+
+  actionFor(p) {
+    if (p.stage === 'Applied') return 'Schedule phone screen';
+    if (p.stage === 'Phone Screen') return 'Complete phone screen';
+    if (p.stage === 'Interview') return 'Complete in-person interview';
+    if (p.stage === 'Documents') return 'Request missing documents';
+    if (p.stage === 'Background & References') return 'Review background result';
+    return 'Follow up on offer letter';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const meta = SECTIONS[s.section];
+    const counts = {
+      positions: POSITIONS.filter(p => p.status < 2).length,
+      recruitment: PEOPLE.filter(p => p.track === 'new').length,
+      onboarding: PEOPLE.filter(p => p.track === 'onb').length,
+      directory: PEOPLE.length
+    };
+    const navBase = 'display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:none;background:transparent;padding:7px 9px;border-radius:8px;font-size:12.5px;cursor:pointer;';
+    const navItems = ['positions', 'recruitment', 'onboarding', 'directory'].map(k => ({
+      key: k, label: SECTIONS[k].title, count: counts[k], click: () => this.go(k),
+      style: navBase + (s.section === k ? 'color:#1407A2;font-weight:500;background:#EEF0FE' : 'color:#6E6E76;font-weight:400'),
+      countStyle: 'margin-left:auto;font-size:11px;color:' + (s.section === k ? '#1407A2' : '#9B9BA3')
+    }));
+
+    const tabBase = 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;';
+    const tabCounts = (i) => {
+      if (s.section === 'positions') return POSITIONS.filter(p => p.status === i).length;
+      if (s.section === 'recruitment') return i === 0 ? PEOPLE.filter(p => p.track === 'new').length : i === 1 ? PEOPLE.filter(p => p.track === 'onb' || p.track === 'onbDone').length : PEOPLE.filter(p => p.track === 'nofit').length;
+      return i === 0 ? PEOPLE.filter(p => p.track === 'onb').length : i === 1 ? PEOPLE.filter(p => p.track === 'onbDone').length : PEOPLE.filter(p => p.track === 'nofit').length;
+    };
+    const tabs = (meta.tabs || []).map((label, i) => ({
+      key: label, label: label, count: tabCounts(i), click: () => this.setState({ tab: i }),
+      style: tabBase + (s.tab === i ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
+      countStyle: 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.tab === i ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.tab === i ? '#1407A2' : '#9B9BA3')
+    }));
+
+    const needsTracks = s.section === 'recruitment' ? ['new'] : s.section === 'onboarding' ? ['onb'] : [];
+    const needs = (s.tab === 0 ? PEOPLE.filter(p => needsTracks.includes(p.track) && p.warn) : []).map(p => ({
+      key: p.id, name: p.name, what: p.blocker || p.next, click: () => this.pick(p.id)
+    }));
+
+    const segBase = 'border:none;border-radius:7px;padding:0 12px;height:28px;font-size:12.5px;cursor:pointer;';
+    const table = this.buildTable();
+    const isKanban = meta.views && s.view === 'kanban';
+    const sel = PEOPLE.find(x => x.id === s.sel);
+
+    const dtabBase = 'background:transparent;border:none;padding:0 0 10px;margin-bottom:-1px;font-size:13px;cursor:pointer;';
+    const dtabs = ['Overview', 'Documents', 'Activity'].map(l => ({
+      key: l, label: l, click: () => this.setState({ dtab: l }),
+      style: dtabBase + (s.dtab === l ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent')
+    }));
+
+    return {
+      joyOpen: s.joyOpen,
+      toggleJoy: () => this.setState({ joyOpen: !s.joyOpen, joyMic: false }),
+      joyQ: s.joyQ,
+      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyStatus: s.joyMic ? 'Listening…' : '',
+      joyStatusStyle: 'font-size:11px;color:#1407A2;' + (s.joyMic ? '' : 'display:none'),
+      toggleMic: () => this.setState({ joyMic: !s.joyMic }),
+      micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
+        (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+      joySend: () => this.setState({ joyQ: '', joyMic: false }),
+      joyPrompts: ["Who is blocked in hiring right now?","Which applicants need documents?","Summarize this week’s pipeline"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      hiringOpen: !s.hiringCollapsed,
+      toggleHiring: () => this.setState({ hiringCollapsed: !s.hiringCollapsed }),
+      chevronStyle: 'flex:none;margin-left:auto;transition:transform .16s ease;transform:rotate(' + (s.hiringCollapsed ? '-90deg' : '0deg') + ')',
+      meta: meta, navItems: navItems, tabs: tabs, hasTabs: !!meta.tabs, hasViews: !!meta.views,
+      q: s.q, onSearch: (e) => this.setState({ q: e.target.value }),
+      setTable: () => this.setState({ view: 'table' }), setKanban: () => this.setState({ view: 'kanban' }),
+      tableBtn: segBase + (s.view === 'table' ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92'),
+      kanbanBtn: segBase + (s.view === 'kanban' ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92'),
+      showNeeds: needs.length > 0,
+      needsOpen: !s.needsCollapsed,
+      needs: needs,
+      needsToggle: s.needsCollapsed ? 'Show ' + needs.length : 'Hide',
+      toggleNeeds: () => this.setState({ needsCollapsed: !s.needsCollapsed }),
+      showContext: !!s.ctx && s.section === 'recruitment',
+      ctxLabel: s.ctx || '',
+      ctxCount: s.ctx ? PEOPLE.filter(p => p.role === s.ctx && p.track === 'new').length + ' active applicants' : '',
+      clearCtx: () => this.setState({ ctx: null }),
+      isTable: !isKanban, isKanban: isKanban,
+      cols: table.cols.map((c, i) => ({ key: c + i, label: c || '\u00a0', style: TH })),
+      rows: table.rows, minW: table.minW, isEmpty: table.rows.length === 0,
+      board: isKanban ? this.buildBoard() : [],
+      drawerOpen: !!sel, closeDrawer: () => this.setState({ sel: null }),
+      dtabs: dtabs, dOverview: s.dtab === 'Overview', dDocs: s.dtab === 'Documents', dActivity: s.dtab === 'Activity',
+      p: sel ? this.buildProfile(sel) : {}
+    };
+  }
+}
+
+</script>
+</body>
+</html>

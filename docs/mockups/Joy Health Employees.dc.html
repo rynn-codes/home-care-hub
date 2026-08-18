@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+button{font-family:inherit}
+input{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1320px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;overflow-y:auto">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Dashboard</a>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+
+      <button onClick="{{ toggleEmployees }}" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;cursor:pointer;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6;margin-top:2px">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="{{ chevronStyle }}"><path d="M4.5 6.5L8 10l3.5-3.5"></path></svg>
+      </button>
+      <sc-if value="{{ employeesOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:1px;margin:2px 0 2px 10px;padding-left:12px;border-left:1px solid #ECECF1">
+          <button onClick="{{ goDirectory }}" style="{{ dirNavStyle }}">
+            <span>Directory</span>
+            <span style="{{ dirCountStyle }}">{{ employeeCount }}</span>
+          </button>
+        </div>
+      </sc-if>
+
+      <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions<span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">6</span></a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.6 13.4h10.8"></path><path d="M4.4 11V7.4M7.4 11V4.4M10.4 11V8.8M13.4 11V5.6"></path></svg>Reports</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#191A2E">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><circle cx="8" cy="8" r="5.4"></circle><path d="M8 2.6v1.2M8 12.2v1.2M2.6 8h1.2M12.2 8h1.2"></path></svg>Settings</a>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">JR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Joan Robinson</span>
+        <span style="font-size:11px;color:#9B9BA3">Administrator</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:13px 44px;display:flex;align-items:center;gap:10px">
+      <button onClick="{{ goDirectory }}" style="background:transparent;border:none;padding:0;font-size:12.5px;color:#9B9BA3;cursor:pointer" style-hover="color:#191A2E">Employees</button>
+      <sc-for list="{{ crumbs }}" as="c">
+        <span style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12.5px;color:#C9C9D0">/</span>
+          <span style="{{ c.style }}">{{ c.label }}</span>
+        </span>
+      </sc-for>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
+    </header>
+
+    <sc-if value="{{ isDirectory }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:30px 44px 90px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:5px;min-width:340px">
+            <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Employee Directory</h1>
+            <p style="margin:0;font-size:13.5px;color:#5B6274;max-width:560px;text-wrap:pretty">Everyone on staff — role, status, compliance, and current assignments.</p>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:212px">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
+              <input type="text" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search employees" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
+            </div>
+            <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round"><path d="M2.4 4h11.2M4.4 8h7.2M6.4 12h3.2"></path></svg>Filter
+            </button>
+            <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Add employee
+            </button>
+          </div>
+        </div>
+
+        <sc-if value="{{ showAlerts }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;padding:11px 14px">
+            <span style="display:flex;align-items:center;gap:8px;flex:none">
+              <span style="width:7px;height:7px;border-radius:50%;background:#F79009"></span>
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Compliance attention</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ alerts }}" as="a">
+                <button onClick="{{ a.click }}" style="display:flex;align-items:center;gap:7px;background:#FFFAEB;border:1px solid #FCE8B6;border-radius:999px;padding:5px 12px;font-size:12.5px;color:#B54708;cursor:pointer" style-hover="background:#FEF3D6">
+                  <span style="font-weight:500;color:#191A2E">{{ a.name }}</span>{{ a.what }}
+                </button>
+              </sc-for>
+            </span>
+          </div>
+        </sc-if>
+
+        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:1220px">
+              <thead>
+                <tr>
+                  <sc-for list="{{ dirCols }}" as="c">
+                    <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">{{ c.label }}</th>
+                  </sc-for>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ employees }}" as="r">
+                  <tr onClick="{{ r.open }}" style="border-top:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                    <td style="padding:13px 16px">
+                      <span style="display:flex;align-items:center;gap:10px">
+                        <span style="width:30px;height:30px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                        <span style="display:flex;flex-direction:column;line-height:1.35">
+                          <span style="font-size:13px;font-weight:500;color:#191A2E">{{ r.name }}</span>
+                          <span style="font-size:11.5px;color:#9B9BA3">{{ r.title }}</span>
+                        </span>
+                      </span>
+                    </td>
+                    <td style="padding:13px 16px"><span style="{{ r.roleStyle }}">{{ r.role }}</span></td>
+                    <td style="padding:13px 16px">
+                      <span style="display:flex;align-items:center;gap:7px">
+                        <span style="{{ r.statusDot }}"></span>
+                        <span style="font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.status }}</span>
+                      </span>
+                    </td>
+                    <td style="padding:13px 16px">
+                      <span style="display:flex;align-items:center;gap:7px">
+                        <span style="{{ r.compDot }}"></span>
+                        <span style="font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.compliance }}</span>
+                      </span>
+                    </td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274">{{ r.clientsLine }}</td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.hours }}</td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.nextShift }}</td>
+                    <td style="padding:13px 16px;font-size:12.5px;color:#9B9BA3">{{ r.hired }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isEmployee }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:26px 44px 90px;display:flex;flex-direction:column;gap:20px">
+
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <span style="width:56px;height:56px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ e.initials }}</span>
+          <div style="display:flex;flex-direction:column;gap:5px;padding-top:2px">
+            <span style="{{ e.statusPill }}">{{ e.status }}</span>
+            <span style="font-size:23px;font-weight:600;letter-spacing:-.02em;line-height:1.15">{{ e.name }}</span>
+            <span style="font-size:12.5px;color:#8A8A92">{{ e.title }} · {{ e.role }} · {{ e.location }}</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:9px;padding-top:6px">
+            <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">Message</button>
+            <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Assign shift
+            </button>
+            <button style="width:34px;height:34px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:14px;color:#8A8A92;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">···</button>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:26px;border-bottom:1px solid #ECECF1">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+            <button onClick="{{ t.click }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ tProfile }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Details</span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ e.details }}" as="d" hint-placeholder-count="9">
+                  <div style="display:flex;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="font-size:12.5px;color:#9B9BA3;width:112px;flex:none">{{ d.label }}</span>
+                    <span style="font-size:13px;color:#191A2E;text-wrap:pretty">{{ d.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3;margin-top:4px">Emergency contact</span>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ECECF1;border-radius:11px;background:#FCFCFD">
+                <span style="width:30px;height:30px;flex:none;border-radius:50%;background:#F1F2F6;color:#5B6274;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ e.kinInitials }}</span>
+                <span style="display:flex;flex-direction:column;line-height:1.35">
+                  <span style="font-size:13px;font-weight:500">{{ e.kin }}</span>
+                  <span style="font-size:11.5px;color:#9B9BA3">{{ e.kinLine }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <span style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;letter-spacing:-.01em">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>Highlights
+                </span>
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+                  <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:12.5px;color:#5B6274;font-weight:500">Summary</span>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.3" stroke-linecap="round" style="margin-left:auto"><path d="M8 2.4l1.2 3.2L12.4 6.8 9.2 8 8 11.2 6.8 8 3.6 6.8 6.8 5.6z"></path></svg>
+                    </span>
+                    <p style="margin:0;font-size:14px;line-height:1.55;color:#191A2E;text-wrap:pretty">{{ e.summary }}</p>
+                  </div>
+                  <div style="{{ e.compCardStyle }}">
+                    <span style="font-size:12.5px;font-weight:500;color:#5B6274">Compliance</span>
+                    <span style="font-size:15px;font-weight:600;color:#191A2E">{{ e.compliance }}</span>
+                    <span style="font-size:12px;color:#5B6274">{{ e.complianceLine }}</span>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+                  <sc-for list="{{ e.highlights }}" as="h" hint-placeholder-count="3">
+                    <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+                      <span style="font-size:12.5px;color:#5B6274;font-weight:500">{{ h.label }}</span>
+                      <span style="font-size:15px;font-weight:600;color:#191A2E;line-height:1.3">{{ h.value }}</span>
+                      <span style="font-size:12px;color:#8A8A92;line-height:1.45">{{ h.sub }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <span style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;letter-spacing:-.01em">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round"><path d="M1.6 8h3l1.6-4 2.4 8 1.6-4h4.2"></path></svg>Activity
+                  <button onClick="{{ goActivity }}" style="background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0;margin-left:2px">View all</button>
+                </span>
+                <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+                  <sc-for list="{{ e.activityShort }}" as="a" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #F3F3F6">
+                      <span style="{{ a.dotStyle }}"></span>
+                      <span style="font-size:13px;color:#191A2E">{{ a.label }}</span>
+                      <span style="margin-left:auto;font-size:12px;color:#9B9BA3;white-space:nowrap">{{ a.when }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tActivity }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:20px 22px;max-width:820px">
+            <sc-for list="{{ e.activity }}" as="a" hint-placeholder-count="7">
+              <div style="display:flex;gap:14px;padding-bottom:18px">
+                <span style="display:flex;flex-direction:column;align-items:center;flex:none;padding-top:5px">
+                  <span style="{{ a.dotStyle }}"></span>
+                  <span style="width:1px;flex:1;background:#ECECF1;margin-top:5px"></span>
+                </span>
+                <span style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:13.5px;color:#191A2E;line-height:1.45">{{ a.label }}</span>
+                  <span style="font-size:11.5px;color:#9B9BA3">{{ a.when }}</span>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tEmployment }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px">
+                <span style="font-size:13.5px;font-weight:600">Employment</span>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 20px">
+                  <sc-for list="{{ e.employment }}" as="f" hint-placeholder-count="6">
+                    <div style="display:flex;flex-direction:column;gap:3px">
+                      <span style="font-size:11.5px;color:#9B9BA3">{{ f.label }}</span>
+                      <span style="font-size:13px;color:#191A2E">{{ f.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #ECECF1">
+                  <span style="font-size:13.5px;font-weight:600">Credentials & compliance</span>
+                  <span style="margin-left:auto;font-size:12px;color:#9B9BA3">{{ e.complianceLine }}</span>
+                </div>
+                <table style="width:100%;border-collapse:collapse">
+                  <thead>
+                    <tr>
+                      <sc-for list="{{ credCols }}" as="c2">
+                        <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">{{ c2.label }}</th>
+                      </sc-for>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ e.credentials }}" as="r">
+                      <tr style="border-top:1px solid #F3F3F6">
+                        <td style="padding:12px 18px;font-size:13px;color:#191A2E">{{ r.label }}</td>
+                        <td style="padding:12px 18px">
+                          <span style="display:flex;align-items:center;gap:7px">
+                            <span style="{{ r.dotStyle }}"></span>
+                            <span style="font-size:12.5px;color:#5B6274">{{ r.status }}</span>
+                          </span>
+                        </td>
+                        <td style="padding:12px 18px;font-size:12.5px;color:#5B6274">{{ r.issued }}</td>
+                        <td style="padding:12px 18px;font-size:12.5px;color:#5B6274">{{ r.expires }}</td>
+                        <td style="padding:12px 18px;text-align:right">
+                          <sc-if value="{{ r.action }}" hint-placeholder-val="{{ false }}">
+                            <button style="border:1px solid #ECECF1;background:#FFFFFF;border-radius:7px;font-size:11.5px;color:#1407A2;padding:4px 10px;cursor:pointer" style-hover="background:#EEF0FE">{{ r.action }}</button>
+                          </sc-if>
+                        </td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px">
+              <sc-for list="{{ e.rail }}" as="g" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ g.title }}</span>
+                    <button style="margin-left:auto;background:transparent;border:none;font-size:12px;color:#1407A2;cursor:pointer;padding:0">{{ g.action }}</button>
+                  </span>
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F3F3F6">
+                        <span style="font-size:12.5px;color:#9B9BA3">{{ r.label }}</span>
+                        <span style="margin-left:auto;font-size:12.5px;color:#191A2E;text-align:right">{{ r.value }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tSchedule }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <sc-for list="{{ e.scheduleTiles }}" as="b" hint-placeholder-count="4">
+                <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ b.label }}</span>
+                  <span style="{{ b.valueStyle }}">{{ b.value }}</span>
+                  <span style="font-size:11.5px;color:#8A8A92">{{ b.sub }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px">
+              <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px">
+                <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">August 2026</span>
+                <span style="display:flex;align-items:center;gap:14px;margin-left:auto;font-size:12.5px;color:#8A8A92">
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#12B76A"></span>Completed</span>
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#1407A2"></span>Scheduled</span>
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#F79009"></span>Overtime risk</span>
+                </span>
+                <span style="display:flex;align-items:center;gap:4px">
+                  <button style="width:28px;height:28px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;color:#8A8A92;cursor:pointer" style-hover="background:#FAFAFB">‹</button>
+                  <button style="height:28px;padding:0 12px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;font-size:12.5px;color:#191A2E;cursor:pointer" style-hover="background:#FAFAFB">Today</button>
+                  <button style="width:28px;height:28px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;color:#8A8A92;cursor:pointer" style-hover="background:#FAFAFB">›</button>
+                </span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);border:1px solid #ECECF1;border-radius:11px;overflow:hidden">
+                <sc-for list="{{ dow }}" as="w">
+                  <div style="padding:8px 10px;background:#FCFCFD;border-bottom:1px solid #ECECF1;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9B9BA3">{{ w.label }}</div>
+                </sc-for>
+                <sc-for list="{{ days }}" as="d">
+                  <div style="{{ d.cellStyle }}">
+                    <span style="{{ d.numStyle }}">{{ d.num }}</span>
+                    <sc-if value="{{ d.hasShift }}" hint-placeholder-val="{{ false }}">
+                      <span style="{{ d.shiftStyle }}">
+                        <span style="display:block;font-size:10px;opacity:.9">{{ d.time }}</span>
+                        <span style="display:block;font-size:11px;font-weight:500">{{ d.who }}</span>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tDocs }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:18px">
+              <sc-for list="{{ e.docGroups }}" as="g" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ g.title }}</span>
+                    <button style="margin-left:auto;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Add</button>
+                  </span>
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F3F3F6">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#B9B9C1" stroke-width="1.4" stroke-linecap="round" style="flex:none"><path d="M3.4 2.6h6L12.6 6v7.4H3.4z"></path><path d="M9.4 2.6V6h3.2"></path></svg>
+                        <span style="display:flex;flex-direction:column;line-height:1.35">
+                          <span style="font-size:13px;color:#191A2E">{{ it.label }}</span>
+                          <span style="font-size:11.5px;color:#9B9BA3">{{ it.meta }}</span>
+                        </span>
+                        <span style="{{ it.badgeStyle }}">{{ it.badge }}</span>
+                        <span style="width:22px;text-align:right;color:#B9B9C1;font-size:14px">⋮</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:13.5px;font-weight:600">Signatures</span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ e.signatures }}" as="s" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="width:28px;height:28px;flex:none;border-radius:50%;background:#F1F2F6;color:#5B6274;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ s.initials }}</span>
+                    <span style="display:flex;flex-direction:column;line-height:1.35">
+                      <span style="font-size:12.5px;color:#191A2E">{{ s.name }}</span>
+                      <span style="font-size:11px;color:#9B9BA3">{{ s.when }}</span>
+                    </span>
+                    <span style="{{ s.style }}">{{ s.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tRoles }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+                <span style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13.5px;font-weight:600">Roles</span>
+                  <button style="margin-left:auto;height:28px;padding:0 11px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;font-size:12px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">Edit roles</button>
+                </span>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ e.roleChips }}" as="r" hint-placeholder-count="3">
+                    <span style="{{ r.style }}">{{ r.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;padding-top:4px">
+                  <sc-for list="{{ e.permissions }}" as="p" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F3F3F6">
+                      <span style="{{ p.dotStyle }}"></span>
+                      <span style="display:flex;flex-direction:column;line-height:1.35">
+                        <span style="font-size:13px;color:#191A2E">{{ p.label }}</span>
+                        <span style="font-size:11.5px;color:#9B9BA3">{{ p.sub }}</span>
+                      </span>
+                      <span style="margin-left:auto;font-size:12px;color:#5B6274">{{ p.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #ECECF1">
+                  <span style="font-size:13.5px;font-weight:600">Client assignments</span>
+                  <button style="margin-left:auto;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Assign client</button>
+                </div>
+                <sc-for list="{{ e.assignments }}" as="a" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #F3F3F6">
+                    <span style="width:30px;height:30px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ a.initials }}</span>
+                    <span style="display:flex;flex-direction:column;line-height:1.35">
+                      <span style="font-size:13px;font-weight:500;color:#191A2E">{{ a.name }}</span>
+                      <span style="font-size:11.5px;color:#9B9BA3">{{ a.sub }}</span>
+                    </span>
+                    <span style="{{ a.badgeStyle }}">{{ a.badge }}</span>
+                    <span style="margin-left:auto;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ a.hours }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Skills & competencies</span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ e.skills }}" as="s" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="{{ s.dotStyle }}"></span>
+                    <span style="font-size:13px;color:#191A2E">{{ s.label }}</span>
+                    <span style="margin-left:auto;font-size:12px;color:#8A8A92">{{ s.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3;margin-top:4px">Preferences</span>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ e.preferences }}" as="p" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ p.label }}</span>
+                    <span style="margin-left:auto;font-size:12.5px;color:#191A2E;text-align:right">{{ p.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </sc-if>
+  </main>
+
+    <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:28px;bottom:80px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F3F3F6;display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:13.5px;font-weight:500;color:#191A2E">Ask Joy</span>
+        <span style="{{ joyStatusStyle }}">{{ joyStatus }}</span>
+        <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
+        </button>
+        <button onClick="{{ joySend }}" style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:9px;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 6.6L8 2.8l4 3.8"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+
+<button onClick="{{ toggleJoy }}" style="position:fixed;right:28px;bottom:26px;z-index:40;display:flex;align-items:center;gap:9px;height:42px;padding:0 18px 0 14px;background:#191A2E;border:none;border-radius:999px;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px rgba(25,26,46,.22)" style-hover="background:#1407A2">
+    <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Ask Joy
+  </button>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const TONE = { done: '#12B76A', prog: '#1407A2', warn: '#F79009', teal: '#0E9384', none: '#D0D5DD', bad: '#D92D20' };
+const dot = (t) => 'width:7px;height:7px;flex:none;border-radius:50%;background:' + (TONE[t] || TONE.none);
+const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const pillS = (fg, bg) => 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:500;white-space:nowrap;color:' + fg + ';background:' + bg;
+
+const ROLES = { CNA: ['#1407A2', '#EEF0FE'], HHA: ['#0E9384', '#ECFDF7'], LVN: ['#B54708', '#FFFAEB'], Office: ['#5B6274', '#F3F3F6'] };
+const STATUS = { Active: 'done', Onboarding: 'prog', 'On leave': 'warn', Inactive: 'none' };
+const COMP = { Current: 'done', 'Expiring soon': 'warn', Expired: 'bad', Incomplete: 'warn' };
+
+const EMPLOYEES = [
+  { id: 'e1', name: 'Kelly Kuhn', title: 'Field Caregiver', role: 'CNA', status: 'Active', compliance: 'Current',
+    location: 'Houston · Memorial', hired: 'Mar 2, 2023', type: 'Full-time · hourly', rate: '$19.50 / hr', ot: '$29.25 / hr',
+    hours: '38 hrs / wk', nextShift: 'Tue, Aug 11 · 7:00 AM', clients: ['Lian Huang', 'Dorothy Aiken'],
+    phone: '(713) 555-0126', email: 'k.kuhn@gmail.com', address: '2210 Blalock Rd, Houston, TX 77080',
+    kin: 'Robert Kuhn', kinLine: 'Husband · (713) 555-0127', driving: true, gusto: 'Complete',
+    summary: 'Kelly is the agency\u2019s most tenured field caregiver, on the Huang case since April 2024. Credentials are all current and she carries 38 hours a week across two clients without overtime.',
+    complianceLine: 'All 8 items current',
+    highlights: [
+      { key: 'h1', label: 'Next shift', value: 'Tue, Aug 11', sub: '7:00 AM – 3:00 PM · Lian Huang' },
+      { key: 'h2', label: 'Assigned clients', value: '2 active', sub: 'Lian Huang, Dorothy Aiken' },
+      { key: 'h3', label: 'This week', value: '38 hrs', sub: '2 hrs below overtime threshold' }
+    ] },
+  { id: 'e2', name: 'Hassie Kohler', title: 'Field Caregiver', role: 'HHA', status: 'Active', compliance: 'Expiring soon',
+    location: 'Pearland', hired: 'Aug 14, 2024', type: 'Part-time · hourly', rate: '$17.75 / hr', ot: '$26.63 / hr',
+    hours: '24 hrs / wk', nextShift: 'Thu, Aug 13 · 10:00 AM', clients: ['Maribel Santos'],
+    phone: '(346) 555-0111', email: 'h.kohler@gmail.com', address: '1809 Country Pl Pkwy, Pearland, TX 77584',
+    kin: 'Dana Kohler', kinLine: 'Sister · (346) 555-0112', driving: true, gusto: 'Complete',
+    summary: 'Hassie covers companionship mornings for Maribel Santos and picks up weekend relief shifts. Her CPR certification lapses in three weeks — renewal is the only open item.',
+    complianceLine: 'CPR expires Aug 31',
+    highlights: [
+      { key: 'h1', label: 'Next shift', value: 'Thu, Aug 13', sub: '10:00 AM – 2:00 PM · Maribel Santos' },
+      { key: 'h2', label: 'Assigned clients', value: '1 active', sub: 'Maribel Santos' },
+      { key: 'h3', label: 'This week', value: '24 hrs', sub: 'Available for relief shifts' }
+    ] },
+  { id: 'e3', name: 'Allison Archibald', title: 'Field Caregiver', role: 'CNA', status: 'Active', compliance: 'Current',
+    location: 'Houston · Heights', hired: 'Jun 9, 2024', type: 'Full-time · hourly', rate: '$19.00 / hr', ot: '$28.50 / hr',
+    hours: '36 hrs / wk', nextShift: 'Wed, Aug 12 · 8:00 AM', clients: ['Dorothy Aiken'],
+    phone: '(713) 555-0134', email: 'a.archibald@gmail.com', address: '624 W 19th St, Houston, TX 77008',
+    kin: 'Marcus Archibald', kinLine: 'Brother · (713) 555-0135', driving: false, gusto: 'Complete',
+    summary: 'Allison is the consistent weekday caregiver on the Aiken dementia case, where family has asked for minimal substitution. She does not drive, so assignments stay inside the Heights.',
+    complianceLine: 'All 8 items current',
+    highlights: [
+      { key: 'h1', label: 'Next shift', value: 'Wed, Aug 12', sub: '8:00 AM – 2:00 PM · Dorothy Aiken' },
+      { key: 'h2', label: 'Assigned clients', value: '1 active', sub: 'Dorothy Aiken · consistency requested' },
+      { key: 'h3', label: 'This week', value: '36 hrs', sub: 'No transportation duties' }
+    ] },
+  { id: 'e4', name: 'Emmet Bauch', title: 'Field Caregiver', role: 'HHA', status: 'Active', compliance: 'Current',
+    location: 'Katy', hired: 'Jan 22, 2025', type: 'Full-time · hourly', rate: '$18.25 / hr', ot: '$27.38 / hr',
+    hours: '40 hrs / wk', nextShift: 'Today · 9:00 AM', clients: ['Harold Whitaker'],
+    phone: '(281) 555-0148', email: 'e.bauch@gmail.com', address: '1502 Pin Oak Rd, Katy, TX 77494',
+    kin: 'Lena Bauch', kinLine: 'Wife · (281) 555-0149', driving: true, gusto: 'Complete',
+    summary: 'Emmet covers the Whitaker Medicaid case at a full 40 hours. He is at the overtime threshold — additional shifts this week need approval.',
+    complianceLine: 'All 8 items current',
+    highlights: [
+      { key: 'h1', label: 'Next shift', value: 'Today', sub: '9:00 AM – 2:00 PM · Harold Whitaker' },
+      { key: 'h2', label: 'Assigned clients', value: '1 active', sub: 'Harold Whitaker' },
+      { key: 'h3', label: 'This week', value: '40 hrs', sub: 'At overtime threshold' }
+    ] },
+  { id: 'e5', name: 'Rosa Medina', title: 'Field Caregiver', role: 'CNA', status: 'Onboarding', compliance: 'Incomplete',
+    location: 'Houston · Northwest', hired: 'Jul 25, 2026', type: 'Full-time · hourly', rate: '$19.00 / hr', ot: '$28.50 / hr',
+    hours: 'Not scheduled', nextShift: 'Fri, Aug 14 · ride-along', clients: [],
+    phone: '(713) 555-0121', email: 'rosa.medina@gmail.com', address: '9330 Hammerly Blvd, Houston, TX 77080',
+    kin: 'Luis Medina', kinLine: 'Husband · (713) 555-0122', driving: true, gusto: 'Complete',
+    summary: 'Rosa came out of the July hiring cycle and is at field orientation. She is not yet on a case; her ride-along is Friday and TB documentation is still outstanding.',
+    complianceLine: 'TB test outstanding',
+    highlights: [
+      { key: 'h1', label: 'Next step', value: 'Field orientation', sub: 'Fri, Aug 14 · ride-along with Kelly Kuhn' },
+      { key: 'h2', label: 'Assigned clients', value: 'None yet', sub: 'Assign after first shift' },
+      { key: 'h3', label: 'Onboarding', value: '3 of 6 steps', sub: 'Online and office orientation complete' }
+    ] },
+  { id: 'e6', name: 'Amani McClure', title: 'Field Caregiver', role: 'HHA', status: 'On leave', compliance: 'Current',
+    location: 'Sugar Land', hired: 'Oct 3, 2024', type: 'Part-time · hourly', rate: '$17.50 / hr', ot: '$26.25 / hr',
+    hours: 'On leave', nextShift: 'Returns Sep 1', clients: [],
+    phone: '(832) 555-0158', email: 'a.mcclure@gmail.com', address: '1140 Sweetwater Blvd, Sugar Land, TX 77478',
+    kin: 'Trina McClure', kinLine: 'Mother · (832) 555-0159', driving: true, gusto: 'Complete',
+    summary: 'Amani is on approved medical leave through the end of August. Her clients were reassigned; hold her credentials active for a September return.',
+    complianceLine: 'All 8 items current',
+    highlights: [
+      { key: 'h1', label: 'Status', value: 'On leave', sub: 'Approved through Aug 31' },
+      { key: 'h2', label: 'Assigned clients', value: 'Reassigned', sub: 'Restore on return' },
+      { key: 'h3', label: 'Returns', value: 'Sep 1', sub: 'Confirm availability 1 week prior' }
+    ] },
+  { id: 'e7', name: 'Priya Shah', title: 'Case Manager', role: 'LVN', status: 'Active', compliance: 'Current',
+    location: 'Houston HQ', hired: 'May 6, 2024', type: 'Full-time · salary', rate: '$78,000 / yr', ot: 'Exempt',
+    hours: '40 hrs / wk', nextShift: 'Supervisory visits · Tue', clients: ['Dorothy Aiken', 'Maribel Santos'],
+    phone: '(713) 555-0181', email: 'p.shah@joyhealth.com', address: '3200 Kirby Dr, Houston, TX 77098',
+    kin: 'Ravi Shah', kinLine: 'Husband · (713) 555-0182', driving: true, gusto: 'Complete',
+    summary: 'Priya runs clinical oversight for the Heights and Pearland caseloads — supervisory visits, care plan revisions, and assessment signatures.',
+    complianceLine: 'All 8 items current · LVN license verified',
+    highlights: [
+      { key: 'h1', label: 'This week', value: '4 supervisory visits', sub: 'Tue and Thu field days' },
+      { key: 'h2', label: 'Caseload', value: '2 clients', sub: 'Dorothy Aiken, Maribel Santos' },
+      { key: 'h3', label: 'Pending', value: '1 signature', sub: 'Aiken assessment awaiting sign-off' }
+    ] },
+  { id: 'e8', name: 'Dana Whitfield', title: 'Scheduling Coordinator', role: 'Office', status: 'Active', compliance: 'Current',
+    location: 'Houston HQ', hired: 'Feb 12, 2023', type: 'Full-time · hourly', rate: '$24.00 / hr', ot: '$36.00 / hr',
+    hours: '40 hrs / wk', nextShift: 'Office · Mon–Fri', clients: [],
+    phone: '(713) 555-0104', email: 'd.whitfield@joyhealth.com', address: '810 Waugh Dr, Houston, TX 77019',
+    kin: 'Marie Whitfield', kinLine: 'Mother · (713) 555-0105', driving: true, gusto: 'Complete',
+    summary: 'Dana owns the schedule board and the recruiting pipeline. Office role — no field credentials required beyond background and handbook.',
+    complianceLine: 'Office requirements met',
+    highlights: [
+      { key: 'h1', label: 'Coverage', value: 'Mon–Fri', sub: '8:00 AM – 5:00 PM · Houston HQ' },
+      { key: 'h2', label: 'Open shifts', value: '2 unfilled', sub: 'Aug 18 and Aug 25 · Huang case' },
+      { key: 'h3', label: 'Recruiting', value: '4 applicants', sub: 'Active in the hiring pipeline' }
+    ] }
+];
+
+const ACTIVITY = [
+  { key: 'a1', label: 'Shift completed — Lian Huang, 7:00 AM to 3:00 PM', when: 'Aug 7 · 3:04 PM', tone: 'done' },
+  { key: 'a2', label: 'Clocked in from client home (GPS verified)', when: 'Aug 7 · 6:58 AM', tone: 'prog' },
+  { key: 'a3', label: 'CPR certification uploaded', when: 'Aug 3 · 9:18 AM', tone: 'done' },
+  { key: 'a4', label: 'Picked up open shift — Dorothy Aiken, Aug 2', when: 'Aug 1 · 4:22 PM', tone: 'prog' },
+  { key: 'a5', label: 'Annual training completed — infection control', when: 'Jul 22 · 11:40 AM', tone: 'done' },
+  { key: 'a6', label: 'Employee handbook re-signed', when: 'Jul 1 · 8:05 AM', tone: 'done' },
+  { key: 'a7', label: 'Hired — onboarding completed', when: 'Mar 2, 2023', tone: 'done' }
+];
+
+const TABS = ['Profile', 'Activity', 'Employment & Compliance', 'Schedule', 'Docs', 'Roles'];
+
+class Component extends DCLogic {
+  state = { joyOpen: false, joyQ: '', joyMic: false, view: 'directory', id: null, tab: 'Profile', q: '', employeesCollapsed: false };
+
+  open(id, tab) { this.setState({ view: 'employee', id: id, tab: tab || 'Profile' }); }
+
+  credentials(e) {
+    const office = e.role === 'Office';
+    const soon = e.compliance === 'Expiring soon';
+    const inc = e.compliance === 'Incomplete';
+    const row = (label, status, tone, issued, expires, action) => ({ key: label, label: label, status: status, dotStyle: dot(tone), issued: issued, expires: expires, action: action || '' });
+    const out = [
+      row('Background check', 'Clear', 'done', e.hired, 'Renews ' + (parseInt(e.hired.slice(-4), 10) + 3), ''),
+      row('Employee handbook', 'Signed', 'done', 'Jul 1, 2026', 'Annual', ''),
+      row("Driver's license", office || !e.driving ? 'n/a' : 'Verified', office || !e.driving ? 'none' : 'done', office || !e.driving ? '—' : 'Mar 2, 2023', office || !e.driving ? '—' : 'Mar 2, 2027', '')
+    ];
+    if (!office) {
+      out.push(row('CPR certification', soon ? 'Expiring soon' : 'Current', soon ? 'warn' : 'done', 'Aug 31, 2024', 'Aug 31, 2026', soon ? 'Request renewal' : ''));
+      out.push(row(e.role === 'CNA' ? 'CNA license' : e.role === 'LVN' ? 'LVN license' : 'HHA certificate', 'Verified', 'done', 'Jan 15, 2023', 'Jan 15, 2027', ''));
+      out.push(row('TB test', inc ? 'Outstanding' : 'Current', inc ? 'warn' : 'done', inc ? '—' : 'Feb 10, 2026', inc ? '—' : 'Feb 10, 2027', inc ? 'Request upload' : ''));
+      out.push(row('Immunizations', 'On file', 'done', 'Feb 10, 2026', 'Annual', ''));
+      out.push(row('Auto insurance', e.driving ? 'Current' : 'n/a', e.driving ? 'done' : 'none', e.driving ? 'Jan 1, 2026' : '—', e.driving ? 'Jan 1, 2027' : '—', ''));
+      out.push(row('Annual training', 'Complete', 'done', 'Jul 22, 2026', 'Jul 2027', ''));
+    }
+    return out;
+  }
+
+  calendar(e) {
+    const clients = e.clients.length ? e.clients : ['Orientation'];
+    const out = [];
+    for (let i = 0; i < 42; i++) {
+      const dayNum = i - 5;
+      const inMonth = dayNum >= 1 && dayNum <= 31;
+      const weekend = i % 7 === 0 || i % 7 === 6;
+      const hasShift = inMonth && dayNum <= 28 && !weekend && e.status === 'Active';
+      const past = dayNum < 10, today = dayNum === 10;
+      const otRisk = dayNum === 21 || dayNum === 28;
+      const bg = otRisk ? '#F79009' : past ? '#12B76A' : today ? '#1407A2' : '#3B49C7';
+      out.push({
+        key: 'd' + i, num: inMonth ? String(dayNum) : (dayNum < 1 ? String(26 + i) : 'Sep ' + (dayNum - 31)),
+        cellStyle: 'min-height:82px;padding:6px;border-right:1px solid #F3F3F6;border-bottom:1px solid #F3F3F6;display:flex;flex-direction:column;gap:4px;background:' + (today ? '#FBFBFE' : inMonth ? '#FFFFFF' : '#FCFCFD'),
+        numStyle: 'font-size:11.5px;' + (today ? 'font-weight:600;color:#1407A2' : inMonth ? 'color:#5B6274' : 'color:#C9C9D0'),
+        hasShift: hasShift,
+        time: '7:00 AM – 3:00 PM',
+        who: clients[i % clients.length],
+        shiftStyle: 'display:block;padding:4px 6px;border-radius:6px;line-height:1.25;color:#FFFFFF;background:' + bg
+      });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const q = s.q.trim().toLowerCase();
+    const list = EMPLOYEES.filter(e => !q || (e.name + ' ' + e.title + ' ' + e.role + ' ' + e.location).toLowerCase().includes(q));
+    const e0 = EMPLOYEES.find(x => x.id === s.id);
+    const flagged = EMPLOYEES.filter(x => x.compliance !== 'Current');
+
+    const base = {
+      joyOpen: s.joyOpen,
+      toggleJoy: () => this.setState({ joyOpen: !s.joyOpen, joyMic: false }),
+      joyQ: s.joyQ,
+      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyStatus: s.joyMic ? 'Listening…' : '',
+      joyStatusStyle: 'font-size:11px;color:#1407A2;' + (s.joyMic ? '' : 'display:none'),
+      toggleMic: () => this.setState({ joyMic: !s.joyMic }),
+      micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
+        (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
+      joySend: () => this.setState({ joyQ: '', joyMic: false }),
+      joyPrompts: ["Whose credentials expire soon?","Who is approaching overtime?","Who is available this weekend?"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      employeesOpen: !s.employeesCollapsed,
+      toggleEmployees: () => this.setState({ employeesCollapsed: !s.employeesCollapsed }),
+      chevronStyle: 'flex:none;margin-left:auto;transition:transform .16s ease;transform:rotate(' + (s.employeesCollapsed ? '-90deg' : '0deg') + ')',
+      goDirectory: () => this.setState({ view: 'directory', id: null, employeesCollapsed: false }),
+      dirNavStyle: 'display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:none;background:' + (s.view === 'directory' ? '#EEF0FE' : 'transparent') + ';padding:7px 9px;border-radius:8px;font-size:12.5px;cursor:pointer;color:' + (s.view === 'directory' ? '#1407A2' : '#6E6E76') + ';font-weight:' + (s.view === 'directory' ? '500' : '400'),
+      dirCountStyle: 'margin-left:auto;font-size:11px;color:' + (s.view === 'directory' ? '#1407A2' : '#9B9BA3'),
+      employeeCount: EMPLOYEES.length,
+      q: s.q, onSearch: (ev) => this.setState({ q: ev.target.value }),
+      isDirectory: s.view === 'directory', isEmployee: s.view === 'employee',
+      dirCols: ['Employee', 'Role', 'Status', 'Compliance', 'Assigned clients', 'Weekly hours', 'Next shift', 'Hired'].map((l, i) => ({ key: l + i, label: l })),
+      credCols: ['Item', 'Status', 'Issued', 'Expires', ''].map((l, i) => ({ key: 'c' + i, label: l || '\u00a0' })),
+      dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(l => ({ key: l, label: l })),
+      showAlerts: flagged.length > 0,
+      alerts: flagged.map(x => ({
+        key: x.id, name: x.name, what: x.complianceLine.toLowerCase().indexOf('cpr') === 0 ? 'CPR expires Aug 31' : x.complianceLine,
+        click: () => this.open(x.id, 'Employment & Compliance')
+      })),
+      employees: list.map(e => ({
+        key: e.id, name: e.name, initials: initials(e.name), title: e.title,
+        role: e.role, roleStyle: pillS(ROLES[e.role][0], ROLES[e.role][1]),
+        status: e.status, statusDot: dot(STATUS[e.status]),
+        compliance: e.compliance, compDot: dot(COMP[e.compliance]),
+        clientsLine: e.clients.length ? e.clients.join(', ') : '—',
+        hours: e.hours, nextShift: e.nextShift, hired: e.hired,
+        open: () => this.open(e.id)
+      })),
+      crumbs: s.view === 'employee' && e0
+        ? [{ key: 'n', label: e0.name, style: 'font-size:12.5px;color:' + (s.tab === 'Profile' ? '#191A2E' : '#9B9BA3') + ';font-weight:500' }]
+          .concat(s.tab === 'Profile' ? [] : [{ key: 't', label: s.tab, style: 'font-size:12.5px;color:#191A2E;font-weight:500' }])
+        : [{ key: 'd', label: 'Directory', style: 'font-size:12.5px;color:#191A2E;font-weight:500' }]
+    };
+
+    if (!e0) return base;
+
+    const office = e0.role === 'Office';
+
+    return Object.assign(base, {
+      tabs: TABS.map(l => ({
+        key: l, label: l, click: () => this.setState({ tab: l }),
+        style: 'background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;white-space:nowrap;' +
+          (s.tab === l ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent')
+      })),
+      tProfile: s.tab === 'Profile', tActivity: s.tab === 'Activity', tEmployment: s.tab === 'Employment & Compliance',
+      tSchedule: s.tab === 'Schedule', tDocs: s.tab === 'Docs', tRoles: s.tab === 'Roles',
+      goActivity: () => this.setState({ tab: 'Activity' }),
+      days: this.calendar(e0),
+      e: {
+        name: e0.name, initials: initials(e0.name), status: e0.status, title: e0.title, role: e0.role, location: e0.location,
+        statusPill: 'align-self:flex-start;' + pillS(TONE[STATUS[e0.status]], e0.status === 'Active' ? '#ECFDF3' : e0.status === 'Onboarding' ? '#EEF0FE' : e0.status === 'On leave' ? '#FFFAEB' : '#F3F3F6'),
+        summary: e0.summary, compliance: e0.compliance, complianceLine: e0.complianceLine,
+        compCardStyle: 'border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;border:1px solid ' +
+          (e0.compliance === 'Current' ? '#ECECF1;background:#FFFFFF' : '#FCE8B6;background:#FFFAEB'),
+        highlights: e0.highlights,
+        kin: e0.kin, kinLine: e0.kinLine, kinInitials: initials(e0.kin),
+        details: [
+          { key: 'd1', label: 'Name', value: e0.name },
+          { key: 'd2', label: 'Title', value: e0.title },
+          { key: 'd3', label: 'Role', value: e0.role },
+          { key: 'd4', label: 'Address', value: e0.address },
+          { key: 'd5', label: 'Phone', value: e0.phone },
+          { key: 'd6', label: 'Email', value: e0.email },
+          { key: 'd7', label: 'Hired', value: e0.hired },
+          { key: 'd8', label: 'Employment', value: e0.type },
+          { key: 'd9', label: 'Drives', value: e0.driving ? 'Yes · insured' : 'No' },
+          { key: 'd10', label: 'Assigned clients', value: e0.clients.length ? e0.clients.join(', ') : 'None' }
+        ],
+        activity: ACTIVITY.map(a => ({ key: a.key, label: a.label, when: a.when, dotStyle: dot(a.tone) })),
+        activityShort: ACTIVITY.slice(0, 4).map(a => ({ key: a.key, label: a.label, when: a.when, dotStyle: dot(a.tone) })),
+        employment: [
+          { key: 'f1', label: 'Status', value: e0.status },
+          { key: 'f2', label: 'Employment type', value: e0.type },
+          { key: 'f3', label: 'Hire date', value: e0.hired },
+          { key: 'f4', label: 'Base rate', value: e0.rate },
+          { key: 'f5', label: 'Overtime rate', value: e0.ot },
+          { key: 'f6', label: 'Weekly hours', value: e0.hours },
+          { key: 'f7', label: 'Gusto onboarding', value: e0.gusto },
+          { key: 'f8', label: 'Payroll', value: 'Direct deposit · biweekly' },
+          { key: 'f9', label: 'Work location', value: e0.location }
+        ],
+        credentials: this.credentials(e0),
+        rail: [
+          { key: 'r1', title: 'Gusto', action: 'Open', rows: [
+            { key: 'g1', label: 'W-4', value: 'Complete' },
+            { key: 'g2', label: 'I-9', value: 'Complete' },
+            { key: 'g3', label: 'Payroll setup', value: 'Complete' },
+            { key: 'g4', label: 'Handbook', value: 'Signed Jul 1, 2026' }
+          ] },
+          { key: 'r2', title: 'Time & attendance', action: 'View', rows: [
+            { key: 't1', label: 'Clock method', value: 'Mobile · GPS' },
+            { key: 't2', label: 'Late arrivals (90d)', value: '1' },
+            { key: 't3', label: 'Missed shifts (90d)', value: '0' }
+          ] },
+          { key: 'r3', title: 'Reviews', action: 'Add', rows: [
+            { key: 'v1', label: 'Last review', value: 'Mar 2026 · Meets' },
+            { key: 'v2', label: 'Next review', value: 'Mar 2027' }
+          ] }
+        ],
+        scheduleTiles: [
+          { key: 's1', label: 'This week', value: e0.hours, sub: e0.status === 'Active' ? 'Across ' + (e0.clients.length || 0) + ' client(s)' : e0.status, valueStyle: 'font-size:20px;font-weight:600;letter-spacing:-.02em;color:#191A2E' },
+          { key: 's2', label: 'Overtime risk', value: e0.hours === '40 hrs / wk' ? 'At threshold' : 'None', sub: '40 hr weekly limit', valueStyle: 'font-size:20px;font-weight:600;letter-spacing:-.02em;color:' + (e0.hours === '40 hrs / wk' ? '#B54708' : '#191A2E') },
+          { key: 's3', label: 'Next shift', value: e0.nextShift, sub: e0.clients[0] || 'Unassigned', valueStyle: 'font-size:15px;font-weight:600;letter-spacing:-.01em;color:#191A2E;line-height:1.3' },
+          { key: 's4', label: 'Availability', value: office ? 'Mon–Fri' : 'Weekdays', sub: office ? '8:00 AM – 5:00 PM' : 'Mornings preferred', valueStyle: 'font-size:20px;font-weight:600;letter-spacing:-.02em;color:#191A2E' }
+        ],
+        docGroups: [
+          { key: 'g1', title: 'Employment', items: [
+            { key: 'i1', label: 'Offer Letter', meta: 'Signed ' + e0.hired, badge: 'Signed', badgeStyle: 'margin-left:auto;' + pillS('#12B76A', '#ECFDF3') },
+            { key: 'i2', label: 'Employee Application', meta: 'Captured at hiring', badge: 'On file', badgeStyle: 'margin-left:auto;' + pillS('#5B6274', '#F3F3F6') },
+            { key: 'i3', label: 'Employee Handbook', meta: 'Re-signed Jul 1, 2026', badge: 'Signed', badgeStyle: 'margin-left:auto;' + pillS('#12B76A', '#ECFDF3') }
+          ] },
+          { key: 'g2', title: 'Credentials', items: [
+            { key: 'i4', label: 'CPR Certification', meta: e0.compliance === 'Expiring soon' ? 'Expires Aug 31, 2026' : 'Valid through Aug 31, 2026', badge: e0.compliance === 'Expiring soon' ? 'Expiring' : 'Current', badgeStyle: 'margin-left:auto;' + (e0.compliance === 'Expiring soon' ? pillS('#B54708', '#FFFAEB') : pillS('#12B76A', '#ECFDF3')) },
+            { key: 'i5', label: e0.role + ' License', meta: 'Verified Jan 15, 2023', badge: 'Verified', badgeStyle: 'margin-left:auto;' + pillS('#12B76A', '#ECFDF3') },
+            { key: 'i6', label: 'TB Test', meta: e0.compliance === 'Incomplete' ? 'Not received' : 'On file Feb 10, 2026', badge: e0.compliance === 'Incomplete' ? 'Missing' : 'On file', badgeStyle: 'margin-left:auto;' + (e0.compliance === 'Incomplete' ? pillS('#B54708', '#FFFAEB') : pillS('#5B6274', '#F3F3F6')) }
+          ] },
+          { key: 'g3', title: 'Policies & training', items: [
+            { key: 'i7', label: 'HIPAA Acknowledgement', meta: 'Signed Jul 1, 2026', badge: 'Signed', badgeStyle: 'margin-left:auto;' + pillS('#12B76A', '#ECFDF3') },
+            { key: 'i8', label: 'Annual Training Certificate', meta: 'Completed Jul 22, 2026', badge: 'Complete', badgeStyle: 'margin-left:auto;' + pillS('#12B76A', '#ECFDF3') }
+          ] }
+        ],
+        signatures: [
+          { key: 'g1', name: e0.name, initials: initials(e0.name), when: 'Jul 1 at 8:05 AM', status: 'Signed', style: 'margin-left:auto;font-size:11px;color:#12B76A;font-weight:500' },
+          { key: 'g2', name: 'Joan Robinson', initials: 'JR', when: 'Jul 1 at 9:12 AM', status: 'Countersigned', style: 'margin-left:auto;font-size:11px;color:#12B76A;font-weight:500' },
+          { key: 'g3', name: 'Steve Cook', initials: 'SC', when: 'Pending', status: 'Needs signature', style: 'margin-left:auto;font-size:11px;color:#D92D20;font-weight:500' }
+        ],
+        roleChips: (office ? [e0.title, 'Scheduler', 'Recruiter'] : [e0.role, e0.title, e0.driving ? 'Transportation approved' : 'No transportation']).map((l, i) => ({
+          key: l + i, label: l,
+          style: pillS(i === 0 ? '#1407A2' : '#5B6274', i === 0 ? '#EEF0FE' : '#F3F3F6')
+        })),
+        permissions: [
+          { key: 'p1', label: 'App access', sub: office ? 'Full office workspace' : 'Caregiver mobile app', value: office ? 'Admin' : 'Standard', dotStyle: dot('done') },
+          { key: 'p2', label: 'Client records', sub: office ? 'All clients' : 'Assigned clients only', value: office ? 'All' : 'Assigned', dotStyle: dot('done') },
+          { key: 'p3', label: 'Schedule editing', sub: office ? 'Can publish and reassign shifts' : 'View and claim open shifts', value: office ? 'Full' : 'Limited', dotStyle: dot(office ? 'done' : 'prog') },
+          { key: 'p4', label: 'Billing & payroll', sub: office ? 'Read only' : 'No access', value: office ? 'Read' : 'None', dotStyle: dot(office ? 'prog' : 'none') }
+        ],
+        assignments: (e0.clients.length ? e0.clients : []).map((n, i) => ({
+          key: n, name: n, initials: initials(n),
+          sub: i === 0 ? 'Primary caregiver' : 'Backup coverage',
+          badge: i === 0 ? 'Primary' : 'Backup',
+          badgeStyle: 'margin-left:12px;' + (i === 0 ? pillS('#1407A2', '#EEF0FE') : pillS('#5B6274', '#F3F3F6')),
+          hours: i === 0 ? '24 hrs / wk' : '12 hrs / wk'
+        })),
+        skills: [
+          { key: 'k1', label: 'Transfers & mobility', status: 'Verified', dotStyle: dot('done') },
+          { key: 'k2', label: 'Dementia care', status: e0.role === 'CNA' ? 'Verified' : 'Training', dotStyle: dot(e0.role === 'CNA' ? 'done' : 'prog') },
+          { key: 'k3', label: 'Medication reminders', status: 'Verified', dotStyle: dot('done') },
+          { key: 'k4', label: 'Meal preparation', status: 'Verified', dotStyle: dot('done') },
+          { key: 'k5', label: 'Hoyer lift', status: e0.role === 'CNA' ? 'Verified' : 'Not trained', dotStyle: dot(e0.role === 'CNA' ? 'done' : 'none') },
+          { key: 'k6', label: 'Transportation', status: e0.driving ? 'Approved' : 'Not approved', dotStyle: dot(e0.driving ? 'done' : 'none') }
+        ],
+        preferences: [
+          { key: 'r1', label: 'Preferred shifts', value: office ? 'Office hours' : 'Weekday mornings' },
+          { key: 'r2', label: 'Max weekly hours', value: '40' },
+          { key: 'r3', label: 'Travel radius', value: e0.driving ? '20 miles' : '5 miles' },
+          { key: 'r4', label: 'Languages', value: 'English, Spanish' }
+        ]
+      }
+    });
+  }
+}
+
+</script>
+</body>
+</html>
