@@ -1,5 +1,6 @@
 import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from "@/lib/admissionsSeed";
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
+import type { UserRole } from "@/domain/consents/witness";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -79,6 +80,10 @@ export interface DemoConsentSession {
    */
   decisions: Record<string, "agree" | "decline" | "not_applicable" | undefined>;
   signerName: string | null;
+  /** The Joy representative who took the signature. §19 and the packet's own
+   *  "JOY HEALTHCARE REPRESENTATIVE" line on almost every page. */
+  witnessName?: string | null;
+  witnessRole?: UserRole | null;
   signerRelationship: string | null;
   signedAt: string | null;
 }
@@ -94,10 +99,21 @@ export interface DemoPreOnboarding {
   activatedAt: string | null;
 }
 
+/**
+ * Who is using the app. Stands in for the signed-in user until roles come from
+ * `users.role` in the database — the signing rule needs to know a role, and
+ * hardcoding "Admin" in the header made every session look like the owner.
+ */
+export interface DemoUser {
+  name: string;
+  role: UserRole;
+}
+
 export interface DemoState {
   admissions: SeedAdmission[];
   people: SeedPerson[];
   intakes: Record<string, DemoIntake>;
+  currentUser: DemoUser;
   assessments: Record<string, DemoAssessment>;
   consentSessions: Record<string, DemoConsentSession>;
   preOnboarding: Record<string, DemoPreOnboarding>;
@@ -111,6 +127,7 @@ function initial(): DemoState {
     admissions: seedAdmissions,
     people: seedPeople,
     intakes: {},
+    currentUser: { name: "Karynn Verrett", role: "ceo_admin" },
     assessments: {},
     consentSessions: {},
     preOnboarding: {},

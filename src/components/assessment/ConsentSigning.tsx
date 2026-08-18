@@ -14,6 +14,7 @@ import {
   type ConsentItem,
 } from "@/domain/consents/registry";
 import { cn } from "@/lib/utils";
+import { canWitnessSignature, witnessLine, witnessRefusal } from "@/domain/consents/witness";
 
 interface Props {
   admissionId: string;
@@ -44,7 +45,7 @@ interface Props {
  *    the packet asks. The family never signs the same sentence twice.
  */
 export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Props) {
-  const { consentSessions, saveConsents } = useDemo();
+  const { consentSessions, saveConsents, currentUser } = useDemo();
   const stored = consentSessions[admissionId];
 
   const [decisions, setDecisions] = useState<ConsentDecisions>(() => stored?.decisions ?? {});
@@ -75,6 +76,14 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
         <h2 className="mt-3 text-xl font-semibold tracking-tight">
           {stored?.signerName} signed for {clientName}
         </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Taken by{" "}
+          {witnessLine(
+            stored?.witnessName && stored?.witnessRole
+              ? { name: stored.witnessName, role: stored.witnessRole }
+              : null,
+          )}
+        </p>
         <p className="mt-2 max-w-prose text-sm text-muted-foreground">
           One signature and one set of initials, placed on every page the packet asks for.
           Each consent kept its own decision.
@@ -104,6 +113,34 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
   }
 
   if (phase === "sign") {
+    // Karynn's rule, 18 Aug: only an RN or the Admin/Owner may take the
+    // client's signature. Everyone else can still run the review and record
+    // decisions — this stops at the signature, not at the conversation.
+    if (!canWitnessSignature(currentUser.role)) {
+      return (
+        <section className="rounded-2xl border border-border bg-surface p-8">
+          <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+            <TriangleAlert className="h-5 w-5 text-[hsl(var(--warning))]" aria-hidden="true" />
+            An RN needs to finish this
+          </h2>
+          <p className="mt-3 max-w-prose text-sm text-muted-foreground">{witnessRefusal(currentUser.role)}</p>
+          <p className="mt-3 max-w-prose text-sm text-muted-foreground">
+            Every decision you recorded is saved. The packet has a Joy representative line beside
+            the client's signature on almost every page, and signing it attests that the consents
+            were explained before they were agreed to.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
+            <Button variant="outline" onClick={() => setPhase("review")}>
+              Back to the consents
+            </Button>
+            <Button variant="ghost" onClick={onBack}>
+              Back to the assessment
+            </Button>
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section className="rounded-2xl border border-border bg-surface p-8">
         <h2 className="text-xl font-semibold tracking-tight">Sign once</h2>
@@ -182,6 +219,8 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
                 decisions,
                 signerName,
                 signerRelationship,
+                witnessName: currentUser.name,
+                witnessRole: currentUser.role,
                 signedAt: new Date().toISOString(),
               });
               setPhase("done");

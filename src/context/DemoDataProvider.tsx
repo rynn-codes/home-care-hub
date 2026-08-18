@@ -36,6 +36,8 @@ interface DemoContextValue extends DemoState {
     simulateFailure?: boolean;
   }) => void;
   retryCommunication: (id: string) => void;
+  currentUser: DemoState["currentUser"];
+  setCurrentUser: (user: DemoState["currentUser"]) => void;
   reset: () => void;
 }
 
@@ -377,6 +379,10 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const setCurrentUser = useCallback<DemoContextValue["setCurrentUser"]>((user) => {
+    setState((s) => ({ ...s, currentUser: user }));
+  }, []);
+
   const reset = useCallback(() => setState(resetDemoState()), []);
 
   const value = useMemo<DemoContextValue>(
@@ -385,6 +391,8 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       addReferral,
       saveIntake,
       completeIntake,
+      currentUser: state.currentUser,
+      setCurrentUser,
       saveAssessment,
       saveConsents,
       savePreOnboarding,
@@ -394,7 +402,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, reset],
+    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
