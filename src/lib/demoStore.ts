@@ -114,6 +114,8 @@ export interface DemoState {
   people: SeedPerson[];
   intakes: Record<string, DemoIntake>;
   currentUser: DemoUser;
+  /** Caregiver assigned to a visit, keyed by visit id. Overrides the seed. */
+  assignments: Record<string, string>;
   assessments: Record<string, DemoAssessment>;
   consentSessions: Record<string, DemoConsentSession>;
   preOnboarding: Record<string, DemoPreOnboarding>;
@@ -128,6 +130,7 @@ function initial(): DemoState {
     people: seedPeople,
     intakes: {},
     currentUser: { name: "Karynn Verrett", role: "ceo_admin" },
+    assignments: {},
     assessments: {},
     consentSessions: {},
     preOnboarding: {},

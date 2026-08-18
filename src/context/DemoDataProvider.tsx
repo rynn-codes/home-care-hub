@@ -36,6 +36,8 @@ interface DemoContextValue extends DemoState {
     simulateFailure?: boolean;
   }) => void;
   retryCommunication: (id: string) => void;
+  assignments: DemoState["assignments"];
+  assignShift: (visitId: string, caregiverName: string) => void;
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
   reset: () => void;
@@ -379,6 +381,24 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const assignShift = useCallback<DemoContextValue["assignShift"]>((visitId, caregiverName) => {
+    setState((s) => ({
+      ...s,
+      assignments: { ...s.assignments, [visitId]: caregiverName },
+      domainEvents: [
+        {
+          id: newId("evt"),
+          eventType: "shift.assigned",
+          aggregateType: "visit",
+          aggregateId: visitId,
+          status: "processed",
+          createdAt: new Date().toISOString(),
+        },
+        ...s.domainEvents,
+      ],
+    }));
+  }, []);
+
   const setCurrentUser = useCallback<DemoContextValue["setCurrentUser"]>((user) => {
     setState((s) => ({ ...s, currentUser: user }));
   }, []);
@@ -391,6 +411,8 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       addReferral,
       saveIntake,
       completeIntake,
+      assignments: state.assignments,
+      assignShift,
       currentUser: state.currentUser,
       setCurrentUser,
       saveAssessment,
@@ -402,7 +424,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, setCurrentUser, reset],
+    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

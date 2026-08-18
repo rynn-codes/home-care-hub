@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDemo } from "@/context/DemoDataProvider";
+import { AssignCaregiver } from "@/components/scheduling/AssignCaregiver";
+import { seedClients } from "@/lib/clientsSeed";
 import { seedVisits } from "@/lib/schedulingSeed";
 import {
   hoursOf,
@@ -43,9 +45,25 @@ function fmtTime(iso: string) {
 }
 
 export default function Scheduling() {
-  const { scheduleEvents } = useDemo();
+  const { scheduleEvents, assignments, assignShift, consentSessions } = useDemo();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState<Visit | null>(null);
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+  /**
+   * Whether this client agreed to be driven. Undefined when nobody has asked —
+   * which is not a refusal, and must not be treated as one.
+   */
+  const transportConsentFor = (clientName: string): boolean | undefined => {
+    const session = Object.values(consentSessions).find((s) => s.clientName === clientName);
+    const decision = session?.decisions?.transportation;
+    if (!decision) {
+      const seeded = seedClients.find((c) => `${c.firstName} ${c.lastName}` === clientName);
+      const seededDecision = seeded?.decisions?.transportation;
+      return seededDecision ? seededDecision === "agree" : undefined;
+    }
+    return decision === "agree";
+  };
 
   const weekStart = useMemo(() => {
     const d = startOfWeek(new Date());
@@ -64,8 +82,11 @@ export default function Scheduling() {
       endsAt: new Date(new Date(e.startsAt).getTime() + e.durationMinutes * 60_000).toISOString(),
       eventType: e.eventType,
     }));
-    return [...seedVisits, ...booked];
-  }, [scheduleEvents]);
+    // Assignments made in the app override whatever the seed said.
+    return [...seedVisits, ...booked].map((v) =>
+      assignments[v.id] ? { ...v, caregiverName: assignments[v.id] } : v,
+    );
+  }, [scheduleEvents, assignments]);
 
   const weekVisits = useMemo(() => {
     const end = new Date(weekStart);
@@ -261,7 +282,15 @@ export default function Scheduling() {
         tested; drag-and-drop, recurring visits and the day and month views are not built yet.
       </p>
 
-      <VisitDrawer visit={selected} onClose={() => setSelected(null)} allVisits={weekVisits} />
+      <VisitDrawer
+        visit={selected}
+        onClose={() => setSelected(null)}
+        // The whole week, not just the day, so overtime is counted honestly.
+        allVisits={visits}
+        today={today}
+        transportConsent={selected ? transportConsentFor(selected.clientName) : undefined}
+        onAssign={assignShift}
+      />
     </>
   );
 }
@@ -270,10 +299,17 @@ function VisitDrawer({
   visit,
   onClose,
   allVisits,
+  today,
+  transportConsent,
+  onAssign,
 }: {
   visit: Visit | null;
   onClose: () => void;
   allVisits: Visit[];
+  today: string;
+  /** Undefined when nobody has asked this client yet. */
+  transportConsent?: boolean;
+  onAssign: (visitId: string, caregiverName: string) => void;
 }) {
   const conflicts = useMemo(
     () => (visit ? scheduleConflicts(allVisits).filter((c) => c.message.includes(visit.clientName) || c.conflictsWith?.id === visit.id) : []),
@@ -322,19 +358,22 @@ function VisitDrawer({
               </div>
             )}
 
-            {visit.caregiverName === null && (
-              <div className="mt-5 rounded-xl border border-border p-4">
-                <p className="text-sm font-medium">This shift needs coverage</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Caregiver matching by availability, distance and skills is specified in §21 and
-                  not built yet.
-                </p>
-              </div>
+            {visit.caregiverName === null && visit.eventType !== "rn_assessment" && (
+              <AssignCaregiver
+                visit={visit}
+                allVisits={allVisits}
+                today={today}
+                clientAgreedToTransport={transportConsent}
+                onAssign={(name) => {
+                  onAssign(visit.id, name);
+                  onClose();
+                }}
+              />
             )}
 
             <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
-              Reassignment needs human confirmation before it commits, then notifies through
-              Spruce. Neither is wired up yet.
+              Assignment saves on this device and records a domain event. Notifying the caregiver
+              through Spruce is not wired up.
             </p>
           </>
         )}
