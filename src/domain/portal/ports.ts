@@ -3,6 +3,8 @@ import type { OtpChallenge } from "@/domain/portal/otp";
 import type { PortalGrant, PortalIdentity } from "@/domain/portal/identity";
 import type { MessagePurpose, OutboundMessage, SmsCarrier } from "@/domain/portal/messaging";
 import type { GustoStatus } from "@/domain/portal/onboarding";
+import type { ChartDraft } from "@/domain/portal/charting";
+import type { CareTask, VisitRecord } from "@/domain/portal/visit";
 
 /**
  * The seams a developer connects to make the portal real.
@@ -144,4 +146,44 @@ export interface HrOnboardingService {
   status(employeeRef: string): Promise<GustoStatus | null>;
   /** A link for this person, if the provider issues per-person links. */
   onboardingUrl(employeeRef: string): Promise<string | null>;
+}
+
+// ------------------------------------------------------------ charting --
+
+/**
+ * The model that turns a caregiver's narrative into chart lines — §12.
+ *
+ * Note what it is not allowed to do. It receives the visit record and the
+ * caregiver's own words, and it returns a draft whose every non-recorded line
+ * cites a span of that narrative. `validateDraft` then checks those citations
+ * against the text before a caregiver is shown anything, so a service that
+ * invents a fact produces a draft that is thrown away rather than a chart that
+ * is confirmed.
+ *
+ * That check runs on Joy's side, not the provider's. A port that trusted the
+ * model to police itself would be a port with no guarantee at all.
+ *
+ * Returning null means "no draft" and is a perfectly good answer — Joy falls
+ * back to the caregiver's verbatim words, which is a less tidy chart and a
+ * strictly more trustworthy one.
+ */
+export interface ChartDraftingService {
+  draft(input: {
+    record: VisitRecord;
+    tasks: readonly CareTask[];
+    visitId: string;
+  }): Promise<ChartDraft | null>;
+}
+
+/**
+ * Speech to text for the dictate option — §12 and §14.
+ *
+ * Separate from the drafting service on purpose. Transcription is a different
+ * risk: its failure is a wrong word, not an invented fact, and a caregiver can
+ * see a wrong word. Joy treats the transcript as the caregiver's own words
+ * once she has read it, which is why the UI must show it to her before it
+ * becomes the narrative.
+ */
+export interface DictationService {
+  transcribe(audio: Blob): Promise<{ text: string; confidence: number } | null>;
 }

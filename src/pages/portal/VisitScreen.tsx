@@ -21,6 +21,10 @@ import {
   tasksForVisit,
   type TaskOutcome,
 } from "@/domain/portal/visit";
+import type { ChartDraft, ConfirmedChart } from "@/domain/portal/charting";
+import { chartLines, confirmChart } from "@/domain/portal/charting";
+import { VerbatimChartDraftingService } from "@/domain/portal/memoryAdapters";
+import { usePortalSession } from "@/context/PortalSessionProvider";
 import { cn } from "@/lib/utils";
 
 /**
@@ -44,15 +48,27 @@ async function serverNow(): Promise<string> {
 
 const OUTCOMES: TaskOutcome[] = ["done", "declined", "not_needed"];
 
+/**
+ * No model is connected, so this drafts from what the caregiver recorded and
+ * quotes her own words. It produces a complete, confirmable chart — see
+ * `VerbatimChartDraftingService`.
+ */
+const drafting = new VerbatimChartDraftingService();
+
 export default function VisitScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const visit = useMemo(() => seedVisits.find((v) => v.id === id), [id]);
   const tasks = useMemo(() => (visit ? tasksForVisit(visit) : []), [visit]);
 
+  const { grant } = usePortalSession();
   const [record, setRecord] = useState(() => newVisitRecord(id ?? ""));
   const [busy, setBusy] = useState(false);
   const [showCheck, setShowCheck] = useState(false);
+  const [draft, setDraft] = useState<ChartDraft | null>(null);
+  const [confirmedChart, setConfirmedChart] = useState<ConfirmedChart | null>(null);
+  const [chartError, setChartError] = useState<string | null>(null);
+  const [edited, setEdited] = useState(false);
   const now = new Date();
 
   if (!visit) {
@@ -79,6 +95,41 @@ export default function VisitScreen() {
       setRecord((r) => failClockIn(r));
     } finally {
       setBusy(false);
+    }
+  }
+
+  /**
+   * §12: build the chart, then show it for confirmation. The caregiver is not
+   * clocked out by this — reviewing the record and ending the shift are two
+   * different acts, and merging them would mean confirming a clinical document
+   * by tapping a button labelled "Clock out".
+   */
+  async function buildChart() {
+    setBusy(true);
+    try {
+      const d = await drafting.draft({ record, tasks, visitId: id ?? "" });
+      setDraft(d);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function confirm() {
+    if (!draft) return;
+    try {
+      setConfirmedChart(
+        confirmChart({
+          draft,
+          personId: grant?.personId ?? null,
+          at: new Date().toISOString(),
+          edited,
+        }),
+      );
+      setChartError(null);
+    } catch (e) {
+      // Surfaced rather than swallowed. A refusal here means a line could not
+      // account for itself, which the caregiver needs to see.
+      setChartError(e instanceof Error ? e.message : "This chart could not be confirmed.");
     }
   }
 
@@ -227,6 +278,65 @@ export default function VisitScreen() {
             />
           )}
 
+          {/* ------------------------------------------------- chart --- */}
+          {draft && !confirmedChart && (
+            <div className="mt-10 rounded-2xl border border-border bg-surface p-5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Your visit note
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Check this over — it becomes the official record once you confirm it.
+              </p>
+
+              <dl className="mt-4 space-y-3.5">
+                {chartLines(draft).map((line) => (
+                  <div key={line.heading}>
+                    <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {line.heading}
+                      {/* A caregiver reviewing should know which lines are
+                          hers and which are a suggestion. */}
+                      {line.drafted && (
+                        <span className="rounded-full bg-[hsl(var(--primary-soft))] px-2 py-0.5 text-[10px] font-medium normal-case text-[hsl(var(--accent-foreground))]">
+                          Suggested
+                        </span>
+                      )}
+                    </dt>
+                    <dd className="mt-0.5 text-base">{line.body}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              {chartError && (
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  {chartError}
+                </p>
+              )}
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button className="h-12 flex-1 rounded-2xl text-base" onClick={confirm}>
+                  Confirm
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-12 rounded-2xl text-base"
+                  onClick={() => {
+                    setDraft(null);
+                    setEdited(true);
+                  }}
+                >
+                  Change something
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {confirmedChart && (
+            <p className="mt-10 flex items-center gap-2 rounded-2xl border border-[hsl(var(--success)/0.4)] bg-[hsl(var(--success)/0.06)] p-4 text-sm">
+              <Check className="h-4 w-4 shrink-0 text-[hsl(var(--success))]" aria-hidden="true" />
+              Visit note confirmed. It is now the official record.
+            </p>
+          )}
+
           {/* --------------------------------------------- clock out --- */}
           <div className="mt-10 border-t border-border pt-6">
             {showCheck && (
@@ -254,9 +364,20 @@ export default function VisitScreen() {
             <Button
               className="h-14 w-full rounded-2xl text-base"
               disabled={busy}
-              onClick={() => (ready ? finish(false) : setShowCheck(true))}
+              onClick={() => {
+                if (!ready) {
+                  setShowCheck(true);
+                  return;
+                }
+                // §12 before §11: the record is confirmed, then the shift ends.
+                if (!confirmedChart) {
+                  void buildChart();
+                  return;
+                }
+                void finish(false);
+              }}
             >
-              Clock out
+              {ready && !confirmedChart ? "Review your visit note" : "Clock out"}
             </Button>
 
             {showCheck && !ready && (

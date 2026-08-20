@@ -11,6 +11,9 @@ import type {
   SmsSender,
 } from "@/domain/portal/ports";
 import type { GustoStatus } from "@/domain/portal/onboarding";
+import type { ChartDraftingService, DictationService } from "@/domain/portal/ports";
+import { draftFromRecord, withVerbatimObservation, markValidated } from "@/domain/portal/charting";
+import type { CareTask, VisitRecord } from "@/domain/portal/visit";
 import {
   composeMessage,
   looksLikeItLeaksDetail,
@@ -305,6 +308,40 @@ export class NullHrOnboardingService implements HrOnboardingService {
   }
 
   async onboardingUrl(): Promise<string | null> {
+    return null;
+  }
+}
+
+/**
+ * Charting with no model connected.
+ *
+ * This is not a stub that returns null — it produces a real, complete,
+ * confirmable chart. Everything §12's example shows except the observation
+ * line comes from what the caregiver already tapped, and the observation is her
+ * own words unchanged.
+ *
+ * Worth being clear about what that means: Joy's charting works today, without
+ * AI. The model would make the observation line tidier. It would not make the
+ * chart possible, and a design that waited for it would have been a design that
+ * put a language model on the critical path of a clinical record for the sake
+ * of prose.
+ */
+export class VerbatimChartDraftingService implements ChartDraftingService {
+  async draft(input: { record: VisitRecord; tasks: readonly CareTask[]; visitId: string }) {
+    return markValidated(
+      withVerbatimObservation(draftFromRecord(input.record, input.tasks, input.visitId)),
+    );
+  }
+}
+
+/**
+ * No speech to text.
+ *
+ * Returns null rather than an empty string, so the UI can tell "she said
+ * nothing" from "nothing is listening" and say the second one out loud.
+ */
+export class NullDictationService implements DictationService {
+  async transcribe(): Promise<{ text: string; confidence: number } | null> {
     return null;
   }
 }
