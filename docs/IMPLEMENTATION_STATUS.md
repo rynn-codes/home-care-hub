@@ -106,7 +106,8 @@ No second frontend was created and no framework was replaced, per section 3.
   nothing calls it on a timer, so events would accumulate unprocessed.
 - The live Spruce, OpenAI, GHL and Gusto adapters.
 - Offline draft and resume for field assessment.
-- `docs/ARCHITECTURE.md` and `INTEGRATIONS.md`.
+- `docs/ARCHITECTURE.md`. (`INTEGRATIONS.md` now exists — every port, what it
+  needs, and what Joy does until it is wired.)
 
 ## Migrations
 
