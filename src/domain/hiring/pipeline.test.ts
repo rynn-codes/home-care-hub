@@ -133,19 +133,31 @@ describe("the first-shift gate", () => {
     expect(readiness.missingBlocking).toContain("auto_insurance");
   });
 
-  // A BEHAVIOUR CHANGE worth stating. Hiring used to block a first shift on the
-  // signed handbook; Joy's credential requirements mark the handbook as not
-  // blocking scheduling, and hiring now reads that same flag. So the handbook is
-  // chased rather than a barrier.
+  // SETTLED, 20 Aug. Unifying hiring and scheduling onto one set of credential
+  // requirements changed this behaviour, and the change was flagged to Karynn as
+  // the one flag to flip if it was wrong. It was: "Yes! That is a requirement."
   //
-  // The consistency is the point: two different answers to "does the handbook
-  // stop this person working" was the bug. If Karynn wants it to block, the fix
-  // is one flag in credentialRequirementsSeed, and it then blocks everywhere.
-  it("separates what blocks a shift from what is merely due", () => {
+  // So the handbook blocks a first shift again — but now it blocks everywhere,
+  // from one flag, rather than hiring and scheduling each holding their own
+  // opinion. Two different answers to "does the handbook stop this person
+  // working" was the original bug, and it stays fixed whichever way the flag
+  // points.
+  it("blocks a first shift on the signed handbook", () => {
     const a = applicant({ drives: false, documents: docs(documentsRequiredBeforeFirstShift(seedCredentialRequirements, "cna", false)) });
     const readiness = firstShiftReadiness(a);
     expect(readiness.ready).toBe(true);
-    expect(readiness.missingSoon).toEqual(["handbook", "immunizations", "annual_training"]);
+    // Everything blocking is present, so what is left is genuinely due later.
+    expect(readiness.missingSoon).toEqual(["immunizations", "annual_training"]);
+  });
+
+  it("keeps somebody off the schedule while the handbook is outstanding", () => {
+    const required = documentsRequiredBeforeFirstShift(seedCredentialRequirements, "cna", false);
+    const withoutHandbook = required.filter((key) => key !== "handbook");
+    const a = applicant({ drives: false, documents: docs(withoutHandbook) });
+
+    const readiness = firstShiftReadiness(a);
+    expect(readiness.ready).toBe(false);
+    expect(readiness.missingBlocking).toEqual(["handbook"]);
   });
 });
 

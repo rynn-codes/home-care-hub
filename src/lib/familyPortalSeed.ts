@@ -60,6 +60,7 @@ export const seedMoments: Moment[] = [
     sharedAt: daysAgo(0),
     withheldReason: null,
     edited: true,
+    origin: "caregiver",
   },
   {
     id: "mo2",
@@ -75,6 +76,7 @@ export const seedMoments: Moment[] = [
     sharedAt: daysAgo(3),
     withheldReason: null,
     edited: false,
+    origin: "caregiver",
   },
   {
     id: "mo3",
@@ -90,6 +92,7 @@ export const seedMoments: Moment[] = [
     sharedAt: daysAgo(5),
     withheldReason: null,
     edited: true,
+    origin: "caregiver",
   },
 ];
 

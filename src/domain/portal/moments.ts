@@ -44,6 +44,17 @@ export type MomentState =
   /** Held back by the office. */
   | "withheld";
 
+/**
+ * Where the published wording came from.
+ *
+ * This is what decides who may approve it — see `requiresOfficeReview`.
+ */
+export type MomentOrigin =
+  /** The caregiver's own words, published as written. */
+  | "caregiver"
+  /** A model drafted or rewrote the wording from what she said. */
+  | "ai_drafted";
+
 export interface Moment {
   id: string;
   /** §15: "remain linked to the visit that produced the update." */
@@ -62,6 +73,29 @@ export interface Moment {
   withheldReason: string | null;
   /** True when the body was changed from the caregiver's original words. */
   edited: boolean;
+  origin: MomentOrigin;
+}
+
+/**
+ * Whether the office must look at this before a family does.
+ *
+ * KARYNN'S RULE, 20 AUG. Asked whether caregivers should share directly or
+ * whether the office should review first, she answered neither: "This will
+ * depend on if AI is providing the moment based off of the caregiver's update."
+ *
+ * That is a better rule than the one it replaces, and it is the same
+ * distinction §12 draws for charting. A caregiver publishing her own sentence
+ * is a person saying something true about a visit she was at. A model rewriting
+ * that sentence has introduced a step where a fact can change — the thing §15
+ * forbids when it says never invent activities, mood, food, conversation or
+ * events — and that step is exactly what a second pair of eyes is for.
+ *
+ * So the gate is provenance, not policy. Nobody has to remember to switch a
+ * setting when drafting is connected: the day a model starts writing these,
+ * they start needing review, because the origin says so.
+ */
+export function requiresOfficeReview(moment: Moment): boolean {
+  return moment.origin === "ai_drafted";
 }
 
 // ------------------------------------------------------------ drafting --
@@ -79,6 +113,8 @@ export function draftMoment(input: {
   narrative: string;
   byPersonId: string | null;
   at: string;
+  /** Defaults to the caregiver's own words, which is what Joy does today. */
+  origin?: MomentOrigin;
 }): Moment {
   if (!input.byPersonId) {
     throw new Error(
@@ -107,6 +143,7 @@ export function draftMoment(input: {
     sharedAt: null,
     withheldReason: null,
     edited: false,
+    origin: input.origin ?? "caregiver",
   };
 }
 
@@ -186,31 +223,20 @@ export function checkMoment(input: {
 
 // ---------------------------------------------------------- approval --
 
-/**
- * Who signs a Moment off before a family sees it.
- *
- * §14's flow shows the caregiver tapping [Approve & Share] herself, so that is
- * the default. `office` routes every Moment to the RN or admin first.
- *
- * FLAGGED FOR KARYNN. She has been consistently careful about what reaches a
- * family — she is the only one who takes a client's signature, and she reviews
- * the consents in person. Caregiver self-approval is what the addendum
- * describes and it is faster; office approval means nothing reaches a daughter
- * without a second pair of eyes, at the cost of somebody having to read them.
- * This is a one-line change either way.
- */
-export type MomentApprovalPolicy = "caregiver" | "office";
-
-export const DEFAULT_APPROVAL_POLICY: MomentApprovalPolicy = "caregiver";
-
 export interface Approver {
   personId: string;
   /** Whether this person holds an RN or admin role. */
   isOffice: boolean;
 }
 
-export function mayApprove(approver: Approver, policy: MomentApprovalPolicy): boolean {
-  return policy === "caregiver" ? true : approver.isOffice;
+/**
+ * May this person publish this Moment?
+ *
+ * Follows `requiresOfficeReview`, which follows the origin. A caregiver may
+ * publish her own words; only the office may publish a model's.
+ */
+export function mayApprove(approver: Approver, moment: Moment): boolean {
+  return requiresOfficeReview(moment) ? approver.isOffice : true;
 }
 
 /**
@@ -223,12 +249,10 @@ export function mayApprove(approver: Approver, policy: MomentApprovalPolicy): bo
 export function approveMoment(input: {
   moment: Moment;
   approver: Approver;
-  policy?: MomentApprovalPolicy;
   disclosureConsent: ConsentDecision | undefined;
   at: string;
 }): Moment {
   const { moment, approver, disclosureConsent, at } = input;
-  const policy = input.policy ?? DEFAULT_APPROVAL_POLICY;
 
   if (moment.state === "shared") {
     throw new Error("This Moment has already been shared with the family.");
@@ -236,8 +260,11 @@ export function approveMoment(input: {
   if (moment.state === "skipped") {
     throw new Error("There is no Moment here to share.");
   }
-  if (!mayApprove(approver, policy)) {
-    throw new Error("Moments are reviewed by the office before the family sees them.");
+  if (!mayApprove(approver, moment)) {
+    throw new Error(
+      "This wording was drafted rather than written by the caregiver, so the office " +
+        "checks it before the family sees it.",
+    );
   }
 
   const check = checkMoment({ body: moment.body, disclosureConsent });
@@ -267,7 +294,16 @@ export function withholdMoment(moment: Moment, reason: string): Moment {
  * changed it is not the person credited with writing it.
  */
 export function editMoment(moment: Moment, body: string): Moment {
-  return { ...moment, body: body.trim(), edited: body.trim() !== moment.narrative };
+  const next = body.trim();
+  return {
+    ...moment,
+    body: next,
+    edited: next !== moment.narrative,
+    // A person rewriting a drafted Moment has taken it back. The words are
+    // hers now and the extra review no longer applies — which is the point of
+    // gating on provenance rather than on who typed last.
+    origin: next === moment.narrative ? moment.origin : "caregiver",
+  };
 }
 
 // ---------------------------------------------------------- timeline --

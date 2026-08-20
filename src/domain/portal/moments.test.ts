@@ -6,6 +6,7 @@ import {
   editMoment,
   mayApprove,
   momentsTimeline,
+  requiresOfficeReview,
   withholdMoment,
   type Moment,
 } from "@/domain/portal/moments";
@@ -132,10 +133,8 @@ describe("§14 — approval", () => {
     ).toThrow(/needs the caregiver who wrote it/);
   });
 
-  it("keeps a caregiver from approving when the office reviews", () => {
-    expect(mayApprove(CAREGIVER, "office")).toBe(false);
-    expect(mayApprove(OFFICE, "office")).toBe(true);
-    expect(mayApprove(CAREGIVER, "caregiver")).toBe(true);
+  it("lets a caregiver publish her own words", () => {
+    expect(mayApprove(CAREGIVER, moment())).toBe(true);
   });
 
   it("will not share the same Moment twice", () => {
@@ -158,6 +157,55 @@ describe("§14 — approval", () => {
     expect(() =>
       approveMoment({ moment: skipped, approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
     ).toThrow(/no Moment here/);
+  });
+});
+
+describe("Karynn's rule — review depends on who wrote the wording", () => {
+  // 20 Aug, asked whether caregivers should share directly or the office should
+  // review: "This will depend on if AI is providing the moment based off of the
+  // caregiver's update."
+  const drafted = () => moment({ origin: "ai_drafted" });
+
+  it("lets a caregiver share her own sentence without a queue", () => {
+    expect(requiresOfficeReview(moment())).toBe(false);
+    expect(() =>
+      approveMoment({ moment: moment(), approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
+    ).not.toThrow();
+  });
+
+  it("sends a drafted one to the office first", () => {
+    // A model rewriting her sentence introduces a step where a fact can
+    // change, which is what the second pair of eyes is for.
+    expect(requiresOfficeReview(drafted())).toBe(true);
+    expect(() =>
+      approveMoment({ moment: drafted(), approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
+    ).toThrow(/drafted rather than written/);
+  });
+
+  it("lets the office publish a drafted one", () => {
+    const shared = approveMoment({
+      moment: drafted(),
+      approver: OFFICE,
+      disclosureConsent: "accept",
+      at: "t",
+    });
+    expect(shared.state).toBe("shared");
+    expect(shared.approvedByPersonId).toBe("p-karynn");
+  });
+
+  it("hands it back to the caregiver once she rewrites it herself", () => {
+    // Gating on provenance rather than on who typed last is what makes this
+    // work: she has taken the words back, so the extra review lapses.
+    const rewritten = editMoment(drafted(), "She watched her programme and we talked about the garden.");
+    expect(rewritten.origin).toBe("caregiver");
+    expect(mayApprove(CAREGIVER, rewritten)).toBe(true);
+  });
+
+  it("needs nobody to remember a setting when drafting is connected", () => {
+    // The gate is the origin. The day a model starts writing these, they start
+    // needing review, because the data says so.
+    expect(requiresOfficeReview(moment({ origin: "ai_drafted" }))).toBe(true);
+    expect(requiresOfficeReview(moment({ origin: "caregiver" }))).toBe(false);
   });
 });
 

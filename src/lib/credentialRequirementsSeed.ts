@@ -46,10 +46,21 @@ export const seedCredentialRequirements: CredentialRequirement[] = [
     requiredForDriving: false,
     expirationRequired: true,
     verificationRequired: false,
-    // A lapsed acknowledgement is a real gap in a file and is not a reason to
-    // leave a client without a caregiver.
+    // Karynn, 20 Aug: "Yes! That is a requirement." No signed handbook, no
+    // first shift — the same standing as a CPR card. This reverses the earlier
+    // setting, which had been flagged to her as the one flag to flip if wrong.
+    //
+    // suppliedBy stays `agency` because the signature happens in Gusto today:
+    // "Gusto has them sign the handbook so I know it's done." Joy must not ask
+    // a new hire to photograph it. Joy learns it is done from the HR provider
+    // — see HrOnboardingService — or from the office recording it.
+    //
+    // She expects to move this onto Joy's own platform later. When that
+    // happens this becomes suppliedBy: "employee" and nothing else changes,
+    // because whether a requirement blocks is already separate from where the
+    // document comes from.
     suppliedBy: "agency",
-    blocksSchedulingWhenExpired: false,
+    blocksSchedulingWhenExpired: true,
     warningDays: [30, 7],
     active: true,
   },
