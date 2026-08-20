@@ -158,15 +158,12 @@ export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
 };
 
 /**
- * ONE ROW ABOVE IS INFERRED RATHER THAN INSTRUCTED, and it is a one-line change.
+ * Every row is Karynn's decision. Nothing here is inferred.
  *
- * `family_invitation` is on GHL because it is a handoff rather than a care
- * message: the family met Joy as a lead in GHL, and "here is your portal link"
- * invites a tap, not a reply. If Karynn would rather the first message a new
- * family gets come from the office number, move it to spruce.
- *
- * Everything else is her decision directly — all login codes on GHL, care and
- * shift notifications on Spruce.
+ * `family_invitation` was the last one that was — put on GHL because the family
+ * met Joy as a lead there and "here is your portal link" invites a tap rather
+ * than a reply. She confirmed it on 20 Aug rather than moving it to the office
+ * number, so the reasoning above is now hers as well as the routing.
  */
 
 /**

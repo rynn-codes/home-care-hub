@@ -198,14 +198,9 @@ Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
 
 Recorded here so they are not only in a chat log.
 
-- **Open shifts in the employee portal.** `0007`'s read policy deliberately
-  hides unstaffed visits from caregivers. Offering them is a real feature and
-  should be a decision, not a side effect.
 - **The workweek boundary.** Joy computes overtime from a Monday start.
   Gusto has its own setting and the two must match — a mismatch changes
   overtime silently for anybody working a weekend.
-- **Family portal invitation.** Sent from GHL, which is inferred rather than
-  instructed. Every other SMS route is her explicit decision.
 - **Real client rates.** Billing refuses to invoice a client with no rate
   rather than sending a zero, so every client needs one before go-live. The
   packet has these emailed separately for privacy, so they do not belong in the
