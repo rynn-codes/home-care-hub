@@ -32,6 +32,8 @@ import PortalLogin from "./pages/portal/PortalLogin";
 import PortalChoose from "./pages/portal/PortalChoose";
 import PortalClosed from "./pages/portal/PortalClosed";
 import PortalFamilyHome from "./pages/portal/FamilyHome";
+import PortalCandidateStatus from "./pages/portal/CandidateStatus";
+import PortalDocuments from "./pages/portal/Documents";
 import { PortalSessionProvider } from "@/context/PortalSessionProvider";
 import { RequirePortal } from "@/components/portal/RequirePortal";
 
@@ -60,8 +62,12 @@ const App = () => (
             <Route path="/portal/closed" element={<PortalClosed />} />
 
             <Route element={<RequirePortal audience="workforce" />}>
-              <Route path="/portal/work" element={<PortalApplication />} />
+              {/* §7: one identity, one portal, changing state. The workforce
+                  home is the status screen — it is what a candidate returns to
+                  and what an onboarding hire sees next. */}
+              <Route path="/portal/work" element={<PortalCandidateStatus />} />
               <Route path="/portal/work/application" element={<PortalApplication />} />
+              <Route path="/portal/work/documents" element={<PortalDocuments />} />
             </Route>
 
             {/* §18–24 are steps 11–15 and not built. This is not the family

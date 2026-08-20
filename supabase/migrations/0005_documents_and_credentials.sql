@@ -157,6 +157,17 @@ create table credential_requirements (
 
   expiration_required            boolean not null default true,
   verification_required          boolean not null default true,
+
+  -- Who produces the document. 'employee' is theirs to find — a CPR card, a
+  -- licence, a TB result. 'agency' is Joy's to run or issue: the background
+  -- check, the training Joy delivers.
+  --
+  -- The portal asks candidates to upload things, and without this the ask is
+  -- drawn straight from "what is required" — inviting a caregiver to
+  -- photograph her own background check, a document she has never seen.
+  supplied_by                    text not null default 'employee'
+    constraint credential_requirements_supplied_by_valid
+    check (supplied_by in ('employee', 'agency')),
   -- The rule Scheduling consumes. §12: Scheduling reads eligibility, it does
   -- not decide it.
   blocks_scheduling_when_expired boolean not null default true,

@@ -132,6 +132,21 @@ export interface CredentialRequirement {
   requiredForDriving: boolean;
   expirationRequired: boolean;
   verificationRequired: boolean;
+  /**
+   * Who produces this document.
+   *
+   * `employee` is theirs to find — a CPR card, a driver's licence, a TB result
+   * from their own clinic. `agency` is Joy's to run or issue: a background
+   * check, the training Joy delivers.
+   *
+   * The distinction exists because the portal asks candidates to upload things.
+   * Without it the upload list is drawn straight from "what is required", and a
+   * caregiver is invited to photograph her own background check — a document
+   * she has never seen and cannot obtain. Requirements already drive
+   * scheduling, hiring and the audit packet, so this belongs with them rather
+   * than in a list the portal keeps privately.
+   */
+  suppliedBy: "employee" | "agency";
   /** Whether an expiry stops this person being scheduled. */
   blocksSchedulingWhenExpired: boolean;
   /** §13's warning points, in days before expiry, largest first. */
