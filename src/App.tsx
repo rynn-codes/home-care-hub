@@ -27,6 +27,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import OAuthConsent from "./pages/OAuthConsent";
+import PortalApplication from "./pages/portal/Application";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,14 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
+            {/* The portal sits outside the admin shell entirely — §1: "Do not
+                force caregivers or families into the CEO/admin dashboard."
+                It is also outside RequireAuth, which guards Supabase sessions:
+                a candidate is not a Supabase user, they hold a portal grant
+                proven by phone OTP. That guard is still to build, and until it
+                exists this route is open. Do not ship it in this state. */}
+            <Route path="/portal/work/application" element={<PortalApplication />} />
             {/* Everything inside the shell requires a session. The real boundary
                 is row level security in the database; this only keeps people out
                 of screens they have no right to see. */}
