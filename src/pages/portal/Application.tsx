@@ -3,6 +3,9 @@ import { ArrowLeft, Check, CloudOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ApplicationQuestion } from "@/components/portal/ApplicationQuestion";
+import { PortalFrame } from "@/components/portal/PortalFrame";
+import type { E164 } from "@/domain/portal/phone";
+import { usePortalSession } from "@/context/PortalSessionProvider";
 import {
   APPLICATION_ORDER,
   INITIAL_AUTOSAVE,
@@ -40,14 +43,7 @@ import {
  * this file walks it. Adding a question should never mean touching a component.
  */
 
-const FACTS = {
-  name: "Jamisha Harper",
-  phone: "+17135550100" as const,
-  email: null,
-  roleApplied: "Caregiver",
-};
-
-/** Stand-in for the port a developer connects. Fails sometimes, on purpose. */
+/** Stand-in for the port a developer connects. */
 async function saveDraft(_answers: ApplicationAnswers): Promise<void> {
   await new Promise((r) => setTimeout(r, 400));
 }
@@ -79,7 +75,21 @@ function SaveIndicator({ status }: { status: AutosaveStatus }) {
 }
 
 export default function Application() {
-  const [answers, setAnswers] = useState<ApplicationAnswers>(() => prefillApplication(FACTS));
+  const { identity, grant } = usePortalSession();
+
+  // §4: prefill from what Joy already knows. The grant carries the greeting
+  // name and the verified phone, so neither is asked for again.
+  const facts = useMemo(
+    () => ({
+      name: grant?.greetingName ?? "",
+      phone: (identity?.phone ?? "") as E164,
+      email: null,
+      roleApplied: "Caregiver",
+    }),
+    [grant, identity],
+  );
+
+  const [answers, setAnswers] = useState<ApplicationAnswers>(() => prefillApplication(facts));
   const [step, setStep] = useState<ApplicationStep>(() => "welcome");
   const [autosave, setAutosave] = useState<AutosaveStatus>(INITIAL_AUTOSAVE);
   const [submitted, setSubmitted] = useState(false);
@@ -151,7 +161,7 @@ export default function Application() {
 
   if (submitted) {
     return (
-      <Frame>
+      <PortalFrame>
         <div className="py-12 text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[hsl(var(--success)/0.12)]">
             <Check className="h-7 w-7 text-[hsl(var(--success))]" aria-hidden="true" />
@@ -164,12 +174,12 @@ export default function Application() {
             changes. You can sign back in any time with this number to check.
           </p>
         </div>
-      </Frame>
+      </PortalFrame>
     );
   }
 
   return (
-    <Frame>
+    <PortalFrame>
       {/* -------------------------------------------------------- header -- */}
       <header className="mb-8">
         <div className="flex items-baseline justify-between gap-3">
@@ -205,7 +215,7 @@ export default function Application() {
 
       {/* ---------------------------------------------------------- body -- */}
       <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
-        {step === "welcome" ? `Hi ${FACTS.name.split(" ")[0]}` : STEP_LABELS[step]}
+        {step === "welcome" ? `Hi ${facts.name.split(" ")[0]}` : STEP_LABELS[step]}
       </h1>
       {STEP_INTROS[step] && (
         <p className="mt-3 text-base leading-relaxed text-muted-foreground">{STEP_INTROS[step]}</p>
@@ -281,20 +291,7 @@ export default function Application() {
           {submission.missing.length > 3 ? ` and ${submission.missing.length - 3} more` : ""}.
         </p>
       )}
-    </Frame>
+    </PortalFrame>
   );
 }
 
-/**
- * The portal frame. Warm neutral, one column, nothing else on the page.
- *
- * No sidebar, no breadcrumbs, no navigation. §1: "Do not force caregivers or
- * families into the CEO/admin dashboard."
- */
-function Frame({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-background px-5 pb-16 pt-8">
-      <div className="mx-auto w-full max-w-md">{children}</div>
-    </div>
-  );
-}
