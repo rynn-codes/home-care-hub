@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,14 +18,16 @@ import {
   EMPTY_DRAFT,
   REFERRING_KINDS,
   canSave,
+  draftFromContact,
   draftProblems,
+  type Contact,
   type ContactDraft,
   type ContactKind,
 } from "@/domain/people/contacts";
 import { cn } from "@/lib/utils";
 
 /**
- * Typing in a business card.
+ * Typing in a business card, or correcting one.
  *
  * Almost every field is optional, deliberately. Cards vary — some have a unit
  * and no address, some are a name and a mobile — and a form that insists on
@@ -40,6 +42,11 @@ import { cn } from "@/lib/utils";
  * The kind is asked for with the referring options first and marked, because
  * that single choice decides whether this person ever appears on the follow-up
  * list — which is the whole reason the screen is worth opening.
+ *
+ * One dialog for adding and editing. They are the same fields with the same
+ * rules, and two copies would drift the first time a field was added to one of
+ * them — which is exactly the kind of divergence somebody only notices when a
+ * correction silently fails to save something.
  */
 
 const KIND_ORDER: ContactKind[] = [
@@ -80,17 +87,28 @@ function Field({
   );
 }
 
-export function AddContactDialog({
+export function ContactDialog({
   open,
   onOpenChange,
-  onAdd,
+  onSave,
+  /** Present when correcting somebody rather than adding them. */
+  editing,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (draft: ContactDraft) => void;
+  onSave: (draft: ContactDraft) => void;
+  editing?: Contact | null;
 }) {
   const [draft, setDraft] = useState<ContactDraft>(EMPTY_DRAFT);
   const [touched, setTouched] = useState(false);
+
+  // Load the contact when the dialog opens, and only then. Doing it on every
+  // render would discard whatever is being typed.
+  useEffect(() => {
+    if (!open) return;
+    setDraft(editing ? draftFromContact(editing) : EMPTY_DRAFT);
+    setTouched(false);
+  }, [open, editing]);
 
   const problems = draftProblems(draft);
   const set = (patch: Partial<ContactDraft>) => setDraft((d) => ({ ...d, ...patch }));
@@ -107,10 +125,11 @@ export function AddContactDialog({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add a contact</DialogTitle>
+          <DialogTitle>{editing ? `Edit ${editing.name}` : "Add a contact"}</DialogTitle>
           <DialogDescription>
-            Business contacts, referral sources and partners. Only the name and one way to reach
-            them are required — fill in what the card actually has.
+            {editing
+              ? "Clearing a field removes it. When they were added and when you last spoke stay as they are."
+              : "Business contacts, referral sources and partners. Only the name and one way to reach them are required — fill in what the card actually has."}
           </DialogDescription>
         </DialogHeader>
 
@@ -249,12 +268,21 @@ export function AddContactDialog({
             onClick={() => {
               setTouched(true);
               if (!canSave(draft)) return;
-              onAdd(draft);
+              onSave(draft);
               close(false);
             }}
           >
-            <Plus className="mr-1.5 h-4 w-4" />
-            Add contact
+            {editing ? (
+              <>
+                <Check className="mr-1.5 h-4 w-4" />
+                Save changes
+              </>
+            ) : (
+              <>
+                <Plus className="mr-1.5 h-4 w-4" />
+                Add contact
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

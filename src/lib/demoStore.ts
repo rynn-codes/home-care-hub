@@ -135,8 +135,21 @@ export interface DemoState {
    * refresh.
    */
   contacts: Contact[];
-  /** Contact id to the ISO date somebody last spoke to them. */
-  contactLog: Record<string, string>;
+  /**
+   * Changes to contacts, by id.
+   *
+   * An override map rather than editing rows in place, because the seeded cards
+   * are not rows — they live in `peopleSeed.ts` and cannot be mutated. Anything
+   * that changes a contact goes through here, which is also what lets a
+   * conversation be logged against a seeded contact.
+   *
+   * This started as `contactLog`, a map of one field. Editing needed the same
+   * mechanism for every other field, and two override maps doing the same job
+   * is one more than anybody should have to reason about.
+   */
+  contactEdits: Record<string, Partial<Contact>>;
+  /** Contacts removed from the list. Seeded ones cannot be deleted outright. */
+  deletedContactIds: string[];
 }
 
 function initial(): DemoState {
@@ -154,7 +167,8 @@ function initial(): DemoState {
     communications: [],
     domainEvents: [],
     contacts: [],
-    contactLog: {},
+    contactEdits: {},
+    deletedContactIds: [],
   };
 }
 

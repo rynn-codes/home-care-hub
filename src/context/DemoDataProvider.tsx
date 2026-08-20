@@ -15,11 +15,15 @@ import {
 } from "@/lib/demoStore";
 import type { SeedAdmission } from "@/lib/admissionsSeed";
 import type { Contact } from "@/domain/people/contacts";
+import { seedContacts } from "@/lib/peopleSeed";
 
 interface DemoContextValue extends DemoState {
   addReferral: (admission: SeedAdmission, person: DemoState["people"][number]) => void;
   saveIntake: (admissionId: string, intake: Partial<DemoIntake>) => void;
   addContact: (contact: Contact) => void;
+  editContact: (contactId: string, patch: Partial<Contact>) => void;
+  deleteContact: (contactId: string) => void;
+  restoreContact: (contact: Contact) => void;
   logContact: (contactId: string, on: string) => void;
   completeIntake: (admissionId: string) => void;
   saveAssessment: (admissionId: string, patch: Partial<DemoAssessment>) => void;
@@ -62,15 +66,68 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Recording a conversation, rather than editing the contact.
+   * Any change to a contact, by id.
    *
-   * Kept in its own map so it applies to seeded contacts too — those are not in
-   * `state.contacts` and never will be, and a caller should not have to know
-   * which list somebody came from to say they rang them.
+   * Goes through the override map rather than editing a row, so it works on
+   * seeded contacts as well as added ones — a caller should not have to know
+   * which list somebody came from in order to change their phone number.
    */
-  const logContact = useCallback<DemoContextValue["logContact"]>((contactId, on) => {
-    setState((s) => ({ ...s, contactLog: { ...s.contactLog, [contactId]: on.slice(0, 10) } }));
+  const editContact = useCallback<DemoContextValue["editContact"]>((contactId, patch) => {
+    setState((s) => ({
+      ...s,
+      contactEdits: { ...s.contactEdits, [contactId]: { ...s.contactEdits[contactId], ...patch } },
+    }));
   }, []);
+
+  /**
+   * Remove a contact from the list.
+   *
+   * An id list rather than a filter, because a seeded contact cannot be removed
+   * from `peopleSeed.ts` at runtime. Their edits are dropped at the same time —
+   * keeping overrides for a contact nobody can see is how a resurrected row
+   * comes back wearing changes nobody remembers making.
+   */
+  const deleteContact = useCallback<DemoContextValue["deleteContact"]>((contactId) => {
+    setState((s) => {
+      const { [contactId]: _dropped, ...edits } = s.contactEdits;
+      return {
+        ...s,
+        contacts: s.contacts.filter((c) => c.id !== contactId),
+        contactEdits: edits,
+        deletedContactIds: [...s.deletedContactIds, contactId],
+      };
+    });
+  }, []);
+
+  /**
+   * Put a deleted contact back.
+   *
+   * Undo rather than a confirmation dialog for the ordinary case. A prompt
+   * before every delete taxes the intentional ones — somebody clearing out
+   * duplicates hits it repeatedly — while doing nothing for the mis-click,
+   * which is dismissed as reflexively as it was triggered. Being able to undo
+   * costs nothing when the delete was meant.
+   */
+  const restoreContact = useCallback<DemoContextValue["restoreContact"]>((contact) => {
+    setState((s) => {
+      // A seeded contact comes back simply by no longer being hidden. One typed
+      // into the app was removed from the list and has to be put back, or it
+      // would un-hide a row that no longer exists.
+      const seeded = seedContacts.some((c) => c.id === contact.id);
+
+      return {
+        ...s,
+        deletedContactIds: s.deletedContactIds.filter((id) => id !== contact.id),
+        contacts: seeded ? s.contacts : [contact, ...s.contacts],
+      };
+    });
+  }, []);
+
+  /** Recording a conversation is one field's worth of edit. */
+  const logContact = useCallback<DemoContextValue["logContact"]>(
+    (contactId, on) => editContact(contactId, { lastContactedOn: on.slice(0, 10) }),
+    [editContact],
+  );
 
   const addReferral = useCallback<DemoContextValue["addReferral"]>((admission, person) => {
     setState((s) => ({
@@ -450,6 +507,9 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       ...state,
       addReferral,
       addContact,
+      editContact,
+      deleteContact,
+      restoreContact,
       logContact,
       saveIntake,
       completeIntake,
@@ -468,7 +528,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, addContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, setCurrentUser, reset],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

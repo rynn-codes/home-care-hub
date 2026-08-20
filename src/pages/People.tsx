@@ -1,16 +1,18 @@
 import { useMemo, useState } from "react";
-import { Building2, Mail, Phone, Plus, Search, TriangleAlert } from "lucide-react";
+import { Building2, Mail, Pencil, Phone, Plus, Search, Trash2, TriangleAlert } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { AddContactDialog } from "@/components/people/AddContactDialog";
+import { ContactDialog } from "@/components/people/ContactDialog";
 import { useDemo } from "@/context/DemoDataProvider";
 import {
   CONTACT_KIND_LABELS,
   contactLine,
+  applyDraft,
   contactFromDraft,
   contactStanding,
+  deletionWarning,
   displayName,
   isReferrer,
   needsFollowUp,
@@ -41,10 +43,14 @@ function ContactRow({
   contact,
   today,
   onSpoke,
+  onEdit,
+  onDelete,
 }: {
   contact: Contact;
   today: string;
   onSpoke: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const chase = needsFollowUp(contact, today);
 
@@ -118,11 +124,30 @@ function ContactRow({
             <button
               type="button"
               onClick={onSpoke}
-              className="mt-1 -my-1 py-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              className="mt-1 -my-1 block py-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Spoke to them today
             </button>
           )}
+
+          <div className="mt-2 flex justify-end gap-1">
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label={`Edit ${contact.name}`}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground"
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label={`Remove ${contact.name}`}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </div>
     </li>
@@ -132,18 +157,28 @@ function ContactRow({
 export default function People() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [query, setQuery] = useState("");
-  const [adding, setAdding] = useState(false);
-  const { contacts: added, contactLog, addContact, logContact } = useDemo();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Contact | null>(null);
+  const {
+    contacts: added,
+    contactEdits,
+    deletedContactIds,
+    addContact,
+    editContact,
+    deleteContact,
+    restoreContact,
+    logContact,
+  } = useDemo();
 
   // Added contacts merge with the seeded cards rather than replacing them, the
   // same way new hires merge with the seeded workforce. The log applies to both,
   // so a caller does not have to know which list somebody came from.
   const all = useMemo(
     () =>
-      [...added, ...seedContacts].map((c) =>
-        contactLog[c.id] ? { ...c, lastContactedOn: contactLog[c.id] } : c,
-      ),
-    [added, contactLog],
+      [...added, ...seedContacts]
+        .filter((c) => !deletedContactIds.includes(c.id))
+        .map((c) => ({ ...c, ...contactEdits[c.id] })),
+    [added, contactEdits, deletedContactIds],
   );
 
   const contacts = useMemo(
@@ -160,7 +195,12 @@ export default function People() {
         title="People"
         description="Business contacts, referral sources and partners — everybody who is not a client or an employee."
         actions={
-          <Button onClick={() => setAdding(true)}>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setDialogOpen(true);
+            }}
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             Add contact
           </Button>
@@ -202,6 +242,24 @@ export default function People() {
               logContact(contact.id, today);
               toast(`Noted — spoke to ${contact.name} today`);
             }}
+            onEdit={() => {
+              setEditing(contact);
+              setDialogOpen(true);
+            }}
+            onDelete={() => {
+              // A warning only for a contact carrying referrals, because that
+              // is the only record of where those admissions came from.
+              // Everything else deletes immediately and offers undo — a prompt
+              // before every delete taxes the intentional ones and is dismissed
+              // reflexively on the mis-click it was meant to catch.
+              const warning = deletionWarning(contact);
+              if (warning && !window.confirm(`${warning}\n\nRemove them anyway?`)) return;
+
+              deleteContact(contact.id);
+              toast(`${contact.name} removed`, {
+                action: { label: "Undo", onClick: () => restoreContact(contact) },
+              });
+            }}
           />
         ))}
         {contacts.length === 0 && (
@@ -220,15 +278,19 @@ export default function People() {
         </span>
       </p>
 
-      <AddContactDialog
-        open={adding}
-        onOpenChange={setAdding}
-        onAdd={(draft) => {
-          const contact = contactFromDraft({
-            draft,
-            id: `contact-${Date.now()}`,
-            today,
-          });
+      <ContactDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editing={editing}
+        onSave={(draft) => {
+          if (editing) {
+            // The whole contact, so clearing a field actually clears it.
+            editContact(editing.id, applyDraft(editing, draft));
+            toast.success(`${draft.name.trim()} updated`);
+            return;
+          }
+
+          const contact = contactFromDraft({ draft, id: `contact-${Date.now()}`, today });
           addContact(contact);
           toast.success(`${contact.name} added`);
         }}

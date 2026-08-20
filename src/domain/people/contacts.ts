@@ -294,3 +294,60 @@ export function contactFromDraft(input: {
 export function recordContact(contact: Contact, on: string): Contact {
   return { ...contact, lastContactedOn: on.slice(0, 10) };
 }
+
+/** Fill the form from an existing contact, for editing. */
+export function draftFromContact(contact: Contact): ContactDraft {
+  return {
+    name: contact.name,
+    credentials: contact.credentials ?? "",
+    title: contact.title ?? "",
+    organization: contact.organization ?? "",
+    unit: contact.unit ?? "",
+    kind: contact.kind,
+    email: contact.email ?? "",
+    phone: contact.phone ?? "",
+    address: contact.address ?? "",
+    notes: contact.notes ?? "",
+  };
+}
+
+/**
+ * Apply an edited form back onto a contact.
+ *
+ * Everything the form owns is replaced, including with nulls — clearing a field
+ * has to mean clearing it, or somebody who deletes a wrong phone number finds
+ * it still there. What the form does not own is preserved: when they were
+ * added, when they were last spoken to, and which admissions came from them.
+ */
+export function applyDraft(contact: Contact, draft: ContactDraft): Contact {
+  return {
+    ...contact,
+    name: draft.name.trim(),
+    credentials: trimmed(draft.credentials),
+    title: trimmed(draft.title),
+    organization: trimmed(draft.organization),
+    unit: trimmed(draft.unit),
+    kind: draft.kind,
+    email: trimmed(draft.email),
+    phone: trimmed(draft.phone),
+    address: trimmed(draft.address),
+    notes: trimmed(draft.notes),
+  };
+}
+
+/**
+ * What deleting this contact would cost.
+ *
+ * A business card list is not a clinical record and somebody should be able to
+ * remove a duplicate without ceremony. But a contact carrying referrals is
+ * carrying the only record of where those admissions came from, and losing that
+ * quietly is how an agency stops knowing which relationships actually work.
+ *
+ * So: no friction for an ordinary contact, one sentence of warning for one that
+ * has sent Joy work.
+ */
+export function deletionWarning(contact: Contact): string | null {
+  if (contact.referrals.length === 0) return null;
+  const n = contact.referrals.length;
+  return `${contact.name} is recorded as the source of ${n} ${n === 1 ? "admission" : "admissions"}. Removing them loses that.`;
+}

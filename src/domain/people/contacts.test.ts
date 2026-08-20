@@ -12,6 +12,9 @@ import {
   contactFromDraft,
   draftProblems,
   recordContact,
+  applyDraft,
+  deletionWarning,
+  draftFromContact,
   EMPTY_DRAFT,
   type Contact,
   type ContactDraft,
@@ -227,5 +230,65 @@ describe("recording a conversation", () => {
 
   it("takes the date only, whatever it is given", () => {
     expect(recordContact(contact(), "2026-08-20T14:32:00Z").lastContactedOn).toBe("2026-08-20");
+  });
+});
+
+
+describe("editing a contact", () => {
+  it("round-trips through the form without losing anything", () => {
+    const original = contact({ notes: "By appointment only." });
+    const same = applyDraft(original, draftFromContact(original));
+    expect(same).toEqual(original);
+  });
+
+  it("clears a field when somebody empties it", () => {
+    // The failure this prevents: deleting a wrong phone number and finding it
+    // still there, because an empty string was treated as "no change".
+    const edited = applyDraft(contact(), { ...draftFromContact(contact()), phone: "" });
+    expect(edited.phone).toBeNull();
+  });
+
+  it("keeps what the form does not own", () => {
+    // When they were added, when they were last spoken to, and which
+    // admissions came from them are not the form's to overwrite.
+    const original = contact({
+      addedOn: "2026-01-01",
+      lastContactedOn: "2026-06-01",
+      referrals: ["adm-1"],
+    });
+    const edited = applyDraft(original, { ...draftFromContact(original), name: "New Name" });
+
+    expect(edited.name).toBe("New Name");
+    expect(edited.addedOn).toBe("2026-01-01");
+    expect(edited.lastContactedOn).toBe("2026-06-01");
+    expect(edited.referrals).toEqual(["adm-1"]);
+  });
+
+  it("can change the kind, and therefore whether they are chased", () => {
+    const partner = contact({ kind: "partner" });
+    expect(isReferrer(partner)).toBe(false);
+
+    const promoted = applyDraft(partner, { ...draftFromContact(partner), kind: "outreach" });
+    expect(isReferrer(promoted)).toBe(true);
+  });
+});
+
+describe("deleting a contact", () => {
+  it("says nothing about an ordinary contact", () => {
+    // A business card list is not a clinical record. Removing a duplicate
+    // should not require ceremony.
+    expect(deletionWarning(contact({ referrals: [] }))).toBeNull();
+  });
+
+  it("warns when the contact is the record of where admissions came from", () => {
+    // Losing this quietly is how an agency stops knowing which relationships
+    // actually work.
+    const warning = deletionWarning(contact({ referrals: ["adm-1", "adm-2"] }));
+    expect(warning).toContain("2 admissions");
+    expect(warning).toContain("Bria Bonnette");
+  });
+
+  it("reads properly for a single referral", () => {
+    expect(deletionWarning(contact({ referrals: ["adm-1"] }))).toContain("1 admission.");
   });
 });
