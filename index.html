@@ -18,7 +18,38 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+    <!--
+      Loaded without blocking the first paint.
+
+      A plain stylesheet link here holds rendering until Google answers. On an
+      office connection that is imperceptible; on a caregiver's phone in a
+      client's house with one bar it is a blank white screen, and if the request
+      never resolves the app never appears at all. That is not hypothetical —
+      it is exactly what happened in a sandbox with no egress, where the load
+      event never fired and healthy pages timed out.
+
+      `rel="preload"` fetches without blocking, then the onload handler promotes
+      it to a stylesheet once it arrives. The noscript copy keeps the fonts for
+      anybody with JavaScript disabled. Text paints immediately in the fallback
+      stack either way, and `display=swap` swaps the real face in when it lands.
+
+      The better fix is self-hosting both families — one fewer third party, no
+      DNS lookup, and nothing to fail. That needs the font files, so it is a job
+      for whoever has network access, not something to fake here.
+    -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      />
+    </noscript>
   </head>
 
   <body>

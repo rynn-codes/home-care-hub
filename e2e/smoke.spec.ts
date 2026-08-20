@@ -76,3 +76,45 @@ test.describe("the front door", () => {
     ]);
   });
 });
+
+test.describe("a bad connection", () => {
+  test("the app paints when the font host never answers", async ({ page }) => {
+    // Not hypothetical. A render-blocking stylesheet link held the page until
+    // Google replied; where nothing replied, the load event never fired and the
+    // screen stayed white. On a caregiver's phone in a client's house that is
+    // the difference between a slow app and no app.
+    //
+    // Every external request is already blocked for this suite, so this test
+    // asserts the fix rather than simulating it: fonts are unreachable here by
+    // construction, and the page must still come up.
+    const log = watchForErrors(page);
+    await signInAsStaff(page, PROJECT_REF);
+
+    const started = Date.now();
+    await page.goto("/", { waitUntil: "load" });
+    await expect(page.locator("h1").first()).toBeVisible();
+
+    // Generous, because this is a floor not a benchmark. Before the fix the
+    // load event did not fire at all.
+    expect(Date.now() - started).toBeLessThan(10_000);
+    expect(log.errors).toEqual([]);
+  });
+
+  test("text is readable in the fallback face", async ({ page }) => {
+    await signInAsStaff(page, PROJECT_REF);
+    await page.goto("/");
+
+    const family = await page
+      .locator("body")
+      .evaluate((el) => getComputedStyle(el).fontFamily);
+
+    // The generic at the end must be sans-serif, not serif. (An earlier
+    // version of this test asserted `not /serif$/`, which matches
+    // "sans-serif" — the assertion was wrong, not the stack.)
+    expect(family).toMatch(/sans-serif$/);
+
+    // And there must be a real system face before it, so the first paint is a
+    // UI font rather than whatever the browser defaults to.
+    expect(family).toMatch(/system-ui|-apple-system|Segoe UI|Roboto/);
+  });
+});

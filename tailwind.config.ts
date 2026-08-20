@@ -11,9 +11,34 @@ export default {
       screens: { "2xl": "1400px" },
     },
     extend: {
+      // The fallbacks matter more than they look. Fonts now load without
+      // blocking the first paint, so this stack is what a caregiver actually
+      // reads for the first few hundred milliseconds — and everything Joy
+      // renders on a phone is read in it if the network never answers.
+      // System UI faces are chosen because they are metrically closer to Inter
+      // than a generic sans, which makes the swap far less jarring.
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        sans: [
+          'Inter',
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif',
+        ],
+        display: [
+          '"Plus Jakarta Sans"',
+          'Inter',
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          '"Segoe UI"',
+          'sans-serif',
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
