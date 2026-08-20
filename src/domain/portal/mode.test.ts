@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PortalGrant, PortalIdentity } from "@/domain/portal/identity";
+import { portalRoute, type PortalGrant, type PortalIdentity } from "@/domain/portal/identity";
 import {
   accessBasis,
   modeBanner,
@@ -173,5 +173,20 @@ describe("recordPortalAccess", () => {
       basis: "dual",
       at: "2026-08-20T09:05:00Z",
     });
+  });
+});
+
+describe("where a mismatched audience goes", () => {
+  // The guard's rule, asserted on the data it reads. Somebody holding one
+  // grant who lands on the other portal's URL has nothing to choose between,
+  // so the picker would be a screen with one option — a dead end that looks
+  // like a decision. They go back to their own portal instead.
+  it("knows when somebody has a second portal to be offered", () => {
+    const both = resolveMode(identity([WORK, CARE]), null);
+    expect(both.choices.some((g) => g.audience === "family")).toBe(true);
+
+    const onlyFamily = resolveMode(identity([CARE]), null);
+    expect(onlyFamily.choices.some((g) => g.audience === "workforce")).toBe(false);
+    expect(portalRoute(onlyFamily.grant!)).toBe("/portal/care");
   });
 });

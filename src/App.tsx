@@ -32,6 +32,8 @@ import PortalLogin from "./pages/portal/PortalLogin";
 import PortalChoose from "./pages/portal/PortalChoose";
 import PortalClosed from "./pages/portal/PortalClosed";
 import PortalFamilyHome from "./pages/portal/FamilyHome";
+import PortalFamilyMoments from "./pages/portal/FamilyMoments";
+import PortalFamilyDocuments from "./pages/portal/FamilyDocuments";
 import PortalDocuments from "./pages/portal/Documents";
 import PortalWorkforceHome from "./pages/portal/WorkforceHome";
 import PortalEmployeeSchedule from "./pages/portal/EmployeeSchedule";
@@ -74,11 +76,12 @@ const App = () => (
               <Route path="/portal/work/visit/:id" element={<PortalVisitScreen />} />
             </Route>
 
-            {/* §18–24 are steps 11–15 and not built. This is not the family
-                portal; it is an honest landing place so the choose screen
-                cannot route somebody into a 404. */}
+            {/* §18–24, the client and family side. Same guard, different
+                audience — a workforce grant does not open these. */}
             <Route element={<RequirePortal audience="family" />}>
               <Route path="/portal/care" element={<PortalFamilyHome />} />
+              <Route path="/portal/care/moments" element={<PortalFamilyMoments />} />
+              <Route path="/portal/care/documents" element={<PortalFamilyDocuments />} />
             </Route>
             {/* Everything inside the shell requires a session. The real boundary
                 is row level security in the database; this only keeps people out

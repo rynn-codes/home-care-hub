@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import { modeBanner } from "@/domain/portal/mode";
+import { portalRoute } from "@/domain/portal/identity";
 
 /**
  * The portal's front door.
@@ -27,8 +28,14 @@ export function RequirePortal({ audience }: { audience?: "workforce" | "family" 
   }
 
   // Holding a workforce grant does not entitle you to the family portal.
+  //
+  // Where to send them depends on whether they have anywhere else to go. Only
+  // somebody holding both grants gets the picker; for everybody else it would
+  // be a screen with one option, which reads as a choice and is a dead end.
+  // They are simply put back where they belong.
   if (audience && grant.audience !== audience) {
-    return <Navigate to="/portal/choose" replace />;
+    const holdsRequested = resolution?.choices.some((g) => g.audience === audience) ?? false;
+    return <Navigate to={holdsRequested ? "/portal/choose" : portalRoute(grant)} replace />;
   }
 
   return (
