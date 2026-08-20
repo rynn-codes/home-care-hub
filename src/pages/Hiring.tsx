@@ -20,6 +20,15 @@ import {
 } from "@/domain/hiring/pipeline";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { ApplicantDrawer } from "@/components/hiring/ApplicantDrawer";
+import { InviteCandidateDialog } from "@/components/hiring/InviteCandidateDialog";
+import {
+  invitationSummary,
+  issueInvitation,
+  newInvitationToken,
+  type Invitation,
+} from "@/domain/hiring/invitation";
+import { composeMessage } from "@/domain/portal/messaging";
+import type { E164 } from "@/domain/portal/phone";
 import { useDemo } from "@/context/DemoDataProvider";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -57,12 +66,16 @@ interface ApplicantRow extends Applicant {
   blockedCount: number;
   headline: string;
   action: string;
+  /** Where their portal invitation stands, or that they have not had one. */
+  portal: string;
 }
 
 export default function Hiring() {
   const [filter, setFilter] = useState<Filter>("open");
   const [selected, setSelected] = useState<Applicant | null>(null);
   const [applicants, setApplicants] = useState<Applicant[]>(seedApplicants);
+  const [invitations, setInvitations] = useState<Record<string, Invitation>>({});
+  const [inviting, setInviting] = useState(false);
   const { hireEmployee } = useDemo();
   const navigate = useNavigate();
 
@@ -99,9 +112,17 @@ export default function Hiring() {
                 : "Open onboarding"
               : "Open applicant";
 
-        return { ...a, stale, days, blockedCount: readiness.missingBlocking.length, headline, action };
+        return {
+          ...a,
+          stale,
+          days,
+          blockedCount: readiness.missingBlocking.length,
+          headline,
+          action,
+          portal: invitationSummary(invitations[a.id] ?? null, today),
+        };
       }),
-    [applicants, today],
+    [applicants, invitations, today],
   );
 
   const filtered = useMemo(
@@ -133,7 +154,7 @@ export default function Hiring() {
       <PageHeader
         title="Hiring"
         description="Applicants and onboarding, organised by who is waiting on you."
-        actions={<Button>Add applicant</Button>}
+        actions={<Button onClick={() => setInviting(true)}>Invite a candidate</Button>}
       />
 
       <p className="mb-5 text-sm text-muted-foreground">
@@ -182,6 +203,61 @@ export default function Hiring() {
         />
       ))}
 
+      <InviteCandidateDialog
+        open={inviting}
+        onOpenChange={setInviting}
+        onInvite={(draft) => {
+          // §2's boundary in one action: the decision to move forward is what
+          // creates the Joy record, so the applicant and the invitation are
+          // made together rather than the record existing first and sitting
+          // there uninvited.
+          const id = `a-${Date.now()}`;
+          const applicant: Applicant = {
+            id,
+            name: draft.name.trim(),
+            roleApplied: draft.roleApplied.trim() || "Caregiver",
+            track: "hiring",
+            stage: "interview",
+            onboardingStage: null,
+            stageSince: today,
+            appliedOn: today,
+            source: "GHL",
+            recruiter: null,
+            email: draft.email.trim(),
+            phone: draft.e164,
+            availability: "Not yet given",
+            drives: false,
+            documents: {},
+          };
+
+          const invitation = issueInvitation({
+            id: `inv-${id}`,
+            applicantId: id,
+            phone: draft.e164 as E164,
+            token: newInvitationToken(),
+            // Stand-in for the signed-in user. The domain refuses a null, so
+            // this cannot quietly become an unattributed decision once auth
+            // is wired — it becomes a compile-time hole to fill.
+            byUserId: "u-demo",
+            asOf: new Date().toISOString(),
+          });
+
+          setApplicants((all) => [applicant, ...all]);
+          setInvitations((all) => ({ ...all, [id]: invitation }));
+          setInviting(false);
+
+          // Composed but not sent — nothing is connected. Showing the text Joy
+          // would send is more honest than a toast claiming it went out.
+          const preview = composeMessage("candidate_invitation", draft.e164 as E164, {
+            firstName: draft.name.trim().split(" ")[0],
+            link: `joyhealth.app/p/${invitation.token.slice(0, 8)}…`,
+          });
+          toast.success(`${applicant.name} added and ready to invite`, {
+            description: `${preview.body} — via ${preview.carrier.toUpperCase()}, once SMS is connected.`,
+          });
+        }}
+      />
+
       <ApplicantDrawer
         applicant={selected}
         today={today}
@@ -208,7 +284,8 @@ export default function Hiring() {
 
       <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
         Demo data, held in this screen only. Applicants are fictional; recruiters are real staff.
-        The stage rules and the first-shift document gate are implemented and tested.
+        The stage rules and the first-shift document gate are implemented and tested. Invitations
+        are issued for real but not delivered — no SMS provider is connected.
       </p>
     </>
   );
@@ -232,6 +309,9 @@ function ApplicantRowView({ item, onOpen }: { item: ApplicantRow; onOpen: () => 
               ? ONBOARDING_STAGE_LABELS[item.onboardingStage]
               : HIRING_STAGE_LABELS[item.stage]}
           </span>
+          {item.track === "hiring" && (
+            <span className="text-xs text-muted-foreground">· {item.portal}</span>
+          )}
           {item.stale && (
             <span className="flex items-center gap-1 text-xs font-medium text-[hsl(var(--warning))]">
               <Clock className="h-3 w-3" aria-hidden="true" />
