@@ -210,10 +210,49 @@ Recorded here so they are not only in a chat log.
 - **Whether GoHighLevel will sign a BAA**, and whether its A2P 10DLC
   registration covers authentication traffic. Both gate go-live.
 
+## Browser tests
+
+```sh
+npm run test:e2e          # 23 tests, about 50 seconds
+npm run test:e2e:ui       # the Playwright inspector
+```
+
+These exist because of a specific failure. A missing import turned Home into a
+blank white page, and nothing caught it: `vite build` transpiled without type
+checking, and every unit test passed because none of them mount a route. The
+only thing that found it was opening the app.
+
+So the suite is deliberately shallow — every screen comes up, the console stays
+quiet, something rendered — plus the portal flows and the two boundaries that
+matter: the login screen must answer an unknown number exactly as it answers a
+known one, and a workforce grant must not open the family portal.
+
+Two things about how it runs, both learned the hard way:
+
+- It serves the **built bundle**, not the dev server, and never reuses a server
+  already on the port. A stray dev server meant 20 tests passed against Vite's
+  on-demand compilation rather than the artifact that ships.
+- It **blocks external requests**. `index.html` pulls a render-blocking
+  stylesheet from Google Fonts; where there is no egress that request hangs
+  until it resets, `load` never fires, and navigations time out on pages that
+  are perfectly fine. Blocking took the suite from 6.2 minutes to 48 seconds
+  and removed three failures that were never application bugs.
+
 ## Test and build state
 
-As of the latest commit: `npm run build` passes and `npm test` passes with 577
-tests. The database suites pass 80 assertions across five files. `npm run lint`
+As of the latest commit: `npm run build` passes — and now type-checks first,
+which it did not before — `npm test` passes with 648 tests, `npm run test:e2e`
+passes 23, and the database suites pass 80 assertions across five files.
+
+`npm run typecheck` is a script in its own right. It was not being run at all
+before, and turned up 28 accumulated errors the first time it was, four of them
+real bugs in shipped code.
+
+Note for whoever picks this up: the project compiles with `strict: false`, and
+with strictNullChecks off TypeScript will not narrow a union by a boolean
+discriminant — it keeps the `ok: true` arm in both branches, silently. Use `in`
+narrowing until somebody turns strict mode on, which is worth doing and will
+cascade. `npm run lint`
 is unchanged from its long-standing baseline — every remaining problem is
 pre-existing, in shadcn UI components, `tailwind.config.ts`, or the generated
 `supabase/functions/mcp/index.ts` bundle. None are in hand-written code.
