@@ -22,6 +22,7 @@ import {
   type TaskOutcome,
 } from "@/domain/portal/visit";
 import type { ChartDraft, ConfirmedChart } from "@/domain/portal/charting";
+import { approveMoment, draftMoment, type Moment } from "@/domain/portal/moments";
 import { chartLines, confirmChart } from "@/domain/portal/charting";
 import { VerbatimChartDraftingService } from "@/domain/portal/memoryAdapters";
 import { usePortalSession } from "@/context/PortalSessionProvider";
@@ -69,6 +70,10 @@ export default function VisitScreen() {
   const [confirmedChart, setConfirmedChart] = useState<ConfirmedChart | null>(null);
   const [chartError, setChartError] = useState<string | null>(null);
   const [edited, setEdited] = useState(false);
+  const [momentText, setMomentText] = useState("");
+  const [moment, setMoment] = useState<Moment | null>(null);
+  const [momentError, setMomentError] = useState<string | null>(null);
+  const [momentSkipped, setMomentSkipped] = useState(false);
   const now = new Date();
 
   if (!visit) {
@@ -130,6 +135,37 @@ export default function VisitScreen() {
       // Surfaced rather than swallowed. A refusal here means a line could not
       // account for itself, which the caregiver needs to see.
       setChartError(e instanceof Error ? e.message : "This chart could not be confirmed.");
+    }
+  }
+
+  /**
+   * §14: ask near visit completion, and never publish without the approval
+   * step. The check runs before sharing, so a Moment that reads like a chart
+   * line is stopped here rather than landing on a daughter's phone.
+   *
+   * The consent is hardcoded to `accept` for the demo. In the real thing it
+   * comes from this client's disclosure list — see `checkMoment`.
+   */
+  function shareMoment() {
+    try {
+      const drafted = draftMoment({
+        id: `moment-${id}`,
+        visitId: id ?? "",
+        clientPersonId: visit?.clientName ?? "",
+        narrative: momentText,
+        byPersonId: grant?.personId ?? null,
+        at: new Date().toISOString(),
+      });
+      const shared = approveMoment({
+        moment: drafted,
+        approver: { personId: grant?.personId ?? "", isOffice: false },
+        disclosureConsent: "accept",
+        at: new Date().toISOString(),
+      });
+      setMoment(shared);
+      setMomentError(null);
+    } catch (e) {
+      setMomentError(e instanceof Error ? e.message : "This could not be shared.");
     }
   }
 
@@ -335,6 +371,65 @@ export default function VisitScreen() {
               <Check className="h-4 w-4 shrink-0 text-[hsl(var(--success))]" aria-hidden="true" />
               Visit note confirmed. It is now the official record.
             </p>
+          )}
+
+          {/* -------------------------------------------------- moment --- */}
+          {confirmedChart && !moment && !momentSkipped && (
+            <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
+              <p className="text-lg font-medium leading-snug">
+                Anything you'd like the family to know about today?
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Just the warm bit — something they'd like to hear. The care record stays in
+                your visit note.
+              </p>
+
+              <Textarea
+                value={momentText}
+                onChange={(e) => {
+                  setMomentText(e.target.value);
+                  setMomentError(null);
+                }}
+                rows={4}
+                placeholder="She watched Family Feud and talked about her garden."
+                className="mt-4 rounded-2xl border-border bg-surface px-4 py-3 text-base"
+              />
+
+              {momentError && (
+                <p role="alert" className="mt-3 text-sm text-destructive">
+                  {momentError}
+                </p>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button
+                  className="h-12 flex-1 rounded-2xl text-base"
+                  disabled={!momentText.trim()}
+                  onClick={shareMoment}
+                >
+                  Share with family
+                </Button>
+                {/* §14 offers Skip as a real option. A caregiver who had a
+                    quiet shift must not be nudged into inventing something
+                    charming — that is how §15's "never invent" gets broken. */}
+                <Button
+                  variant="ghost"
+                  className="h-12 rounded-2xl text-base"
+                  onClick={() => setMomentSkipped(true)}
+                >
+                  Skip
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {moment && (
+            <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Shared with the family 💛
+              </p>
+              <p className="mt-2 text-base leading-relaxed">{moment.body}</p>
+            </div>
           )}
 
           {/* --------------------------------------------- clock out --- */}
