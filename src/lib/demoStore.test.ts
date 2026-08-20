@@ -14,8 +14,6 @@ describe("restricted answers", () => {
     state.assessments["adm-1"] = {
       admissionId: "adm-1",
       answers: { ssn: "123-45-6789", county: "Harris" },
-      visited: [],
-      currentId: null,
       completedAt: null,
       startedAt: new Date().toISOString(),
     };
@@ -33,8 +31,6 @@ describe("restricted answers", () => {
     state.assessments["adm-1"] = {
       admissionId: "adm-1",
       answers: { ssn: "123-45-6789" },
-      visited: [],
-      currentId: null,
       completedAt: null,
       startedAt: new Date().toISOString(),
     };

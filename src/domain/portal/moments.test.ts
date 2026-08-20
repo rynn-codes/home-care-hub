@@ -41,7 +41,7 @@ describe("§13 — a Moment is not the chart", () => {
   it("refuses a Moment that reads like a chart line", () => {
     const check = checkMoment({
       body: "Bathing assistance completed. Medication reminder given.",
-      disclosureConsent: "accept",
+      disclosureConsent: "agree",
     });
     expect(check.ok).toBe(false);
     expect(check.problems[0].problem).toBe("clinical_content");
@@ -52,7 +52,7 @@ describe("§13 — a Moment is not the chart", () => {
     // fell, from a page headed "a little moment from today".
     const check = checkMoment({
       body: "She had a small fall in the hallway but she was cheerful afterwards.",
-      disclosureConsent: "accept",
+      disclosureConsent: "agree",
     });
     expect(check.ok).toBe(false);
     expect(check.problems.some((p) => p.problem === "clinical_content")).toBe(true);
@@ -61,7 +61,7 @@ describe("§13 — a Moment is not the chart", () => {
   it("keeps notes meant for the office out of the family portal", () => {
     const check = checkMoment({
       body: "Lovely afternoon. Please call the office about the care plan update.",
-      disclosureConsent: "accept",
+      disclosureConsent: "agree",
     });
     expect(check.problems.some((p) => p.problem === "staff_note")).toBe(true);
   });
@@ -70,7 +70,7 @@ describe("§13 — a Moment is not the chart", () => {
     expect(
       checkMoment({
         body: "She enjoyed watching Family Feud and spent time talking about her garden.",
-        disclosureConsent: "accept",
+        disclosureConsent: "agree",
       }).ok,
     ).toBe(true);
   });
@@ -111,7 +111,7 @@ describe("§14 — approval", () => {
     const shared = approveMoment({
       moment: moment(),
       approver: CAREGIVER,
-      disclosureConsent: "accept",
+      disclosureConsent: "agree",
       at: "2026-08-20T13:20:00Z",
     });
     expect(shared.createdByPersonId).toBe("p-jamisha");
@@ -141,11 +141,11 @@ describe("§14 — approval", () => {
     const shared = approveMoment({
       moment: moment(),
       approver: CAREGIVER,
-      disclosureConsent: "accept",
+      disclosureConsent: "agree",
       at: "t1",
     });
     expect(() =>
-      approveMoment({ moment: shared, approver: CAREGIVER, disclosureConsent: "accept", at: "t2" }),
+      approveMoment({ moment: shared, approver: CAREGIVER, disclosureConsent: "agree", at: "t2" }),
     ).toThrow(/already been shared/);
   });
 
@@ -155,7 +155,7 @@ describe("§14 — approval", () => {
     const skipped = moment({ narrative: "", body: "", state: "skipped" });
     expect(skipped.state).toBe("skipped");
     expect(() =>
-      approveMoment({ moment: skipped, approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
+      approveMoment({ moment: skipped, approver: CAREGIVER, disclosureConsent: "agree", at: "t" }),
     ).toThrow(/no Moment here/);
   });
 });
@@ -169,7 +169,7 @@ describe("Karynn's rule — review depends on who wrote the wording", () => {
   it("lets a caregiver share her own sentence without a queue", () => {
     expect(requiresOfficeReview(moment())).toBe(false);
     expect(() =>
-      approveMoment({ moment: moment(), approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
+      approveMoment({ moment: moment(), approver: CAREGIVER, disclosureConsent: "agree", at: "t" }),
     ).not.toThrow();
   });
 
@@ -178,7 +178,7 @@ describe("Karynn's rule — review depends on who wrote the wording", () => {
     // change, which is what the second pair of eyes is for.
     expect(requiresOfficeReview(drafted())).toBe(true);
     expect(() =>
-      approveMoment({ moment: drafted(), approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
+      approveMoment({ moment: drafted(), approver: CAREGIVER, disclosureConsent: "agree", at: "t" }),
     ).toThrow(/drafted rather than written/);
   });
 
@@ -186,7 +186,7 @@ describe("Karynn's rule — review depends on who wrote the wording", () => {
     const shared = approveMoment({
       moment: drafted(),
       approver: OFFICE,
-      disclosureConsent: "accept",
+      disclosureConsent: "agree",
       at: "t",
     });
     expect(shared.state).toBe("shared");
@@ -226,7 +226,7 @@ describe("editing", () => {
   it("checks the edit, not the original", () => {
     const edited = editMoment(moment(), "She was given her medication on time.");
     expect(() =>
-      approveMoment({ moment: edited, approver: CAREGIVER, disclosureConsent: "accept", at: "t" }),
+      approveMoment({ moment: edited, approver: CAREGIVER, disclosureConsent: "agree", at: "t" }),
     ).toThrow(/visit chart/);
   });
 });

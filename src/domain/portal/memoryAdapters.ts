@@ -303,11 +303,13 @@ export class MemoryPortalDirectory implements PortalDirectory {
  * otherwise would be them, on payday.
  */
 export class NullHrOnboardingService implements HrOnboardingService {
-  async status(): Promise<GustoStatus | null> {
+  // The parameter is named and unused on purpose: the signature is the port's,
+  // so swapping a real adapter in is a drop-in rather than a signature change.
+  async status(_employeeRef: string): Promise<GustoStatus | null> {
     return null;
   }
 
-  async onboardingUrl(): Promise<string | null> {
+  async onboardingUrl(_employeeRef: string): Promise<string | null> {
     return null;
   }
 }

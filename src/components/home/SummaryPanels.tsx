@@ -3,14 +3,14 @@ import { useDemo } from "@/context/DemoDataProvider";
 import { alertSummary, complianceAlerts } from "@/domain/credentials/alerts";
 import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 import { seedEmployees } from "@/lib/employeesSeed";
+import { useHomeSignals } from "@/components/home/useHomeSignals";
+import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { CountLink, HomePanel } from "@/components/home/HomePanel";
 import {
   admissionsSummary,
-  billingStatus,
   compliance,
   employeeTasks,
-  payrollStatus,
   recentActivity,
   upcomingDeadlines,
 } from "@/lib/joySeed";
@@ -110,32 +110,42 @@ export function RecentActivity() {
   );
 }
 
+/**
+ * Payroll and Billing read the same signals the strip does.
+ *
+ * Both previously rendered hardcoded rows from the seed, so a panel could
+ * disagree with the strip directly above it on the same screen.
+ */
 export function PayrollPanel() {
+  const signal = useHomeSignals().find((s) => s.key === "payroll");
+
   return (
     <HomePanel title="Payroll" action={{ label: "Review payroll", to: "/payroll" }}>
-      <dl className="divide-y divide-border">
-        {payrollStatus.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-3 py-2.5">
-            <dt className="text-sm text-muted-foreground">{row.label}</dt>
-            <dd className="text-sm font-medium">{row.value}</dd>
-          </div>
-        ))}
-      </dl>
+      <div className="flex items-baseline justify-between gap-3 py-2.5">
+        <dt className="text-sm text-muted-foreground">This period</dt>
+        <dd className={cn("text-sm font-medium", signal?.urgent && "text-[hsl(var(--warning))]")}>
+          {signal?.value === "Ready" ? "Ready to send" : `${signal?.value} to sort out`}
+        </dd>
+      </div>
+      <p className="pb-1 text-xs text-muted-foreground">{signal?.detail}</p>
     </HomePanel>
   );
 }
 
 export function BillingPanel() {
+  const signal = useHomeSignals().find((s) => s.key === "billing");
+
   return (
     <HomePanel title="Billing" action={{ label: "Billing audit", to: "/billing" }}>
-      <dl className="divide-y divide-border">
-        {billingStatus.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-3 py-2.5">
-            <dt className="text-sm text-muted-foreground">{row.label}</dt>
-            <dd className="text-sm font-medium">{row.value}</dd>
-          </div>
-        ))}
-      </dl>
+      <div className="flex items-baseline justify-between gap-3 py-2.5">
+        <dt className="text-sm text-muted-foreground">This week</dt>
+        <dd className={cn("text-sm font-medium", signal?.urgent && "text-[hsl(var(--warning))]")}>
+          {signal?.detail}
+        </dd>
+      </div>
+      <p className="pb-1 text-xs text-muted-foreground">
+        Invoiced weekly in advance, on the terms in the service agreement.
+      </p>
     </HomePanel>
   );
 }

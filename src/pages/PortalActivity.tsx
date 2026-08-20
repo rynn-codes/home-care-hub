@@ -91,7 +91,7 @@ export default function PortalActivity() {
       const shared = approveMoment({
         moment,
         approver: ADMIN,
-        disclosureConsent: "accept",
+        disclosureConsent: "agree",
         at: new Date().toISOString(),
       });
       setMoments((all) => all.map((m) => (m.id === shared.id ? shared : m)));

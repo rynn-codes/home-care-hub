@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatPhone, normalizePhone } from "@/domain/portal/phone";
+import { PHONE_PROBLEM_MESSAGES, formatPhone, normalizePhone } from "@/domain/portal/phone";
 
 /**
  * Inviting a candidate Joy has decided to move forward with.
@@ -59,6 +59,15 @@ export function InviteCandidateDialog({
   const [touched, setTouched] = useState(false);
 
   const phone = normalizePhone(draft.phone);
+  // `"problem" in phone` rather than `!phone.ok`, deliberately. This project
+  // compiles with `strict: false`, and with strictNullChecks off TypeScript
+  // does not narrow a union by a boolean discriminant — it keeps the `ok: true`
+  // arm in both branches. `in` narrowing works either way.
+  //
+  // The original read `phone.reason`, which exists on neither arm, so a
+  // mistyped number showed an empty red line and no explanation. Nothing caught
+  // it: the build does not type-check, and no test rendered this dialog.
+  const phoneProblem = "problem" in phone ? PHONE_PROBLEM_MESSAGES[phone.problem] : null;
   const nameOk = draft.name.trim().length > 1;
   const ready = nameOk && phone.ok;
 
@@ -118,7 +127,9 @@ export function InviteCandidateDialog({
             />
             <p id="invite-phone-note" className="text-xs text-muted-foreground">
               {touched && draft.phone.length > 0 && !phone.ok ? (
-                <span className="text-destructive">{phone.reason}</span>
+                // `problem`, not `reason` — this was rendering undefined, so a
+                // mistyped number showed an empty red line and no explanation.
+                <span className="text-destructive">{phoneProblem}</span>
               ) : phone.ok ? (
                 // Shown back formatted so a mistyped digit is visible before
                 // the link goes to a stranger's phone.

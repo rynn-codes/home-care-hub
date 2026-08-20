@@ -159,7 +159,7 @@ export default function VisitScreen() {
       const shared = approveMoment({
         moment: drafted,
         approver: { personId: grant?.personId ?? "", isOffice: false },
-        disclosureConsent: "accept",
+        disclosureConsent: "agree",
         at: new Date().toISOString(),
       });
       setMoment(shared);

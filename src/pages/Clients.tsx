@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { ClientDirectory } from "@/components/clients/ClientDirectory";
 import { ClientRecordView } from "@/components/clients/ClientRecordView";
 import { useDemo } from "@/context/DemoDataProvider";
+import { consentSessionForClient } from "@/lib/demoStore";
 import { seedClients } from "@/lib/clientsSeed";
 import {
   buildClientRecord,
@@ -33,7 +34,7 @@ import {
 export default function Clients() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { people, consentSessions } = useDemo();
+  const { people, consentSessions, admissions } = useDemo();
   const [query, setQuery] = useState("");
 
   // The date is read once per render rather than inside the domain module, so
@@ -46,8 +47,9 @@ export default function Clients() {
     const admitted: ClientInput[] = people
       .filter((p) => p.clientStatus === "active")
       .map((p) => {
-        const session = Object.values(consentSessions).find(
-          (s) => s.clientName === `${p.firstName} ${p.lastName}`,
+        const session = consentSessionForClient(
+          { admissions, consentSessions },
+          `${p.firstName} ${p.lastName}`,
         );
         return {
           personId: p.personId,

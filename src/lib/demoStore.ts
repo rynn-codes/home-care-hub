@@ -209,3 +209,28 @@ export function resetDemoState(): DemoState {
 export function newId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
+
+
+/**
+ * The consent session for a client, by the name shown on screen.
+ *
+ * Consent sessions are keyed by admission id, and neither the session nor the
+ * person record carries a client name — the name lives on the admission. Two
+ * screens had independently guessed at `session.clientName`, a field that has
+ * never existed on `DemoConsentSession`, so both lookups silently returned
+ * undefined: a client admitted during the demo showed no consents at all, and
+ * Scheduling fell through to the seeded decision every time.
+ *
+ * Neither the build nor the tests caught it, because `strict: false` lets an
+ * unknown property read as `undefined` at runtime and the comparison simply
+ * never matched. `tsc --noEmit` did.
+ *
+ * One function so the two screens cannot drift apart again.
+ */
+export function consentSessionForClient(
+  state: Pick<DemoState, "admissions" | "consentSessions">,
+  clientName: string,
+): DemoConsentSession | undefined {
+  const admission = state.admissions.find((a) => a.name === clientName);
+  return admission ? state.consentSessions[admission.id] : undefined;
+}

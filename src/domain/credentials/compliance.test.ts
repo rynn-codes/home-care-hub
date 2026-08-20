@@ -22,6 +22,7 @@ function requirement(over: Partial<CredentialRequirement> = {}): CredentialRequi
     requiredForDriving: false,
     expirationRequired: true,
     verificationRequired: true,
+    suppliedBy: "employee",
     blocksSchedulingWhenExpired: true,
     warningDays: [90, 60, 30, 14, 7],
     active: true,
@@ -141,6 +142,7 @@ describe("audit readiness", () => {
       credentialType: "auto_insurance",
       displayName: "Auto insurance",
       requiredForDriving: true,
+      suppliedBy: "employee",
       blocksSchedulingWhenExpired: false,
     }),
   ];

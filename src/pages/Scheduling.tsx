@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDemo } from "@/context/DemoDataProvider";
+import { consentSessionForClient } from "@/lib/demoStore";
 import { AssignCaregiver } from "@/components/scheduling/AssignCaregiver";
 import { seedClients } from "@/lib/clientsSeed";
 import { seedVisits } from "@/lib/schedulingSeed";
@@ -45,7 +46,7 @@ function fmtTime(iso: string) {
 }
 
 export default function Scheduling() {
-  const { scheduleEvents, assignments, assignShift, consentSessions } = useDemo();
+  const { scheduleEvents, assignments, assignShift, consentSessions, admissions } = useDemo();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState<Visit | null>(null);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -55,7 +56,7 @@ export default function Scheduling() {
    * which is not a refusal, and must not be treated as one.
    */
   const transportConsentFor = (clientName: string): boolean | undefined => {
-    const session = Object.values(consentSessions).find((s) => s.clientName === clientName);
+    const session = consentSessionForClient({ admissions, consentSessions }, clientName);
     const decision = session?.decisions?.transportation;
     if (!decision) {
       const seeded = seedClients.find((c) => `${c.firstName} ${c.lastName}` === clientName);

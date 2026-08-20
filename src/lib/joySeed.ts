@@ -16,31 +16,12 @@
  * tables are to be created to back these numbers.
  */
 
-export interface PriorityItem {
-  key: string;
-  label: string;
-  value: string;
-  /** Where the tile navigates. Every tile is a filtered view, never a dead number. */
-  to: string;
-  /** Set when the item needs attention today, so it reads without relying on colour. */
-  urgent?: boolean;
-}
-
 /**
  * The priority strip, restored to all six items.
  *
  * Dashboard v3 shipped only four of these, and only on the mobile frame. The
  * full set appears in v2 and in the Dashboard Revision Request.
  */
-export const priorityStrip: PriorityItem[] = [
-  { key: "open-shifts", label: "Open Shifts", value: "4", to: "/scheduling", urgent: true },
-  { key: "assessments", label: "Assessments Today", value: "3", to: "/admissions" },
-  { key: "orientations", label: "Orientations", value: "2", to: "/operations/hiring" },
-  { key: "payroll-due", label: "Payroll Due", value: "Aug 10", to: "/payroll" },
-  { key: "billing-due", label: "Billing Due", value: "Aug 10", to: "/billing" },
-  { key: "supervisor", label: "Supervisor Visits", value: "5", to: "/scheduling", urgent: true },
-];
-
 export interface AgendaEntry {
   id: string;
   time: string;
@@ -112,23 +93,6 @@ export const recentActivity: ActivityEntry[] = [
   { id: "r2", actor: "Brandon", message: "Completed Gusto onboarding", at: "8:52 AM" },
   { id: "r3", actor: "Mercy Discharge Planning", message: "Referral received for R. Alvarez", at: "8:15 AM" },
   { id: "r4", actor: "Vanessa", message: "Released 12:00 PM shift to the open board", at: "7:38 AM" },
-];
-
-export interface StatusLine {
-  label: string;
-  value: string;
-}
-
-export const payrollStatus: StatusLine[] = [
-  { label: "Payroll complete in Joy", value: "Monday, Aug 10" },
-  { label: "Latest Gusto submission", value: "Thursday, Aug 13" },
-  { label: "Pending reviews", value: "3 timecards" },
-];
-
-export const billingStatus: StatusLine[] = [
-  { label: "Invoice period", value: "Aug 15 – 21" },
-  { label: "Send by", value: "Aug 10" },
-  { label: "Status", value: "4 exceptions · 18 ready" },
 ];
 
 export interface Deadline {
