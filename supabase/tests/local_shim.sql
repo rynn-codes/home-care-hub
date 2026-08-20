@@ -11,6 +11,7 @@
 --   psql -f supabase/migrations/0002_audit_and_events.sql
 --   psql -f supabase/migrations/0003_rls.sql
 --   psql -f supabase/tests/rls_test.sql
+--   psql -f supabase/tests/credentials_test.sql   (needs rls_test.sql's helpers)
 
 create schema if not exists auth;
 
