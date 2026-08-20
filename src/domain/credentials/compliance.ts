@@ -280,3 +280,78 @@ export function needsAttention(
       severity: o.blocksScheduling ? ("blocking" as const) : ("warning" as const),
     }));
 }
+
+export type ComplianceVerdict = "current" | "expiring" | "incomplete" | "blocked";
+
+export interface ComplianceSummary {
+  verdict: ComplianceVerdict;
+  /** One line for a directory row, naming the problem rather than counting. */
+  summary: string;
+}
+
+/**
+ * The directory line.
+ *
+ * "2 items need attention" sends somebody hunting; "CPR certification expires
+ * in 44 days" is already the answer. Ordered by how bad it is, so the worst
+ * thing is the thing that gets said.
+ */
+export function complianceSummary(readiness: AuditReadiness): ComplianceSummary {
+  const named = (type: string) =>
+    readiness.outcomes.find((o) => o.credentialType === type)?.displayName ?? type;
+
+  if (readiness.expired.length > 0) {
+    const rest = readiness.expired.length - 1;
+    return {
+      verdict: "blocked",
+      summary: `${named(readiness.expired[0])} expired${rest > 0 ? ` · ${rest} more lapsed` : ""}`,
+    };
+  }
+  if (readiness.missing.length > 0) {
+    const rest = readiness.missing.length - 1;
+    return {
+      verdict: "incomplete",
+      summary: `${named(readiness.missing[0])} outstanding${rest > 0 ? ` · ${rest} more missing` : ""}`,
+    };
+  }
+  if (readiness.needsReview.length > 0) {
+    return {
+      verdict: "incomplete",
+      summary: `${named(readiness.needsReview[0])} awaiting review`,
+    };
+  }
+  if (readiness.expiring.length > 0) {
+    const outcome = readiness.outcomes.find((o) => o.credentialType === readiness.expiring[0]);
+    return {
+      verdict: "expiring",
+      summary: `${outcome?.displayName} expires in ${outcome?.daysRemaining} days`,
+    };
+  }
+  return { verdict: "current", summary: `All ${readiness.required} items current` };
+}
+
+/**
+ * Whether somebody may be given a shift at all.
+ *
+ * Employment status and compliance are different questions with the same
+ * answer: on leave is not a compliance failure, and a lapsed TB test is not an
+ * absence, but either one means do not send them.
+ */
+export function canWorkShifts(readiness: AuditReadiness, employmentStatus: string): boolean {
+  if (employmentStatus !== "active") return false;
+  return schedulingEligibility(readiness).eligible;
+}
+
+/**
+ * Whether somebody may drive a client.
+ *
+ * The other half of the client's transport consent (packet p11). Both must
+ * hold before anyone gets in a car.
+ */
+export function canDriveClients(readiness: AuditReadiness, drives: boolean): boolean {
+  if (!drives) return false;
+  return ["drivers_license", "auto_insurance"].every((type) => {
+    const outcome = readiness.outcomes.find((o) => o.credentialType === type);
+    return outcome?.status === "current" || outcome?.status === "expiring";
+  });
+}

@@ -2,14 +2,17 @@ import { useState } from "react";
 import { ArrowLeft, Ban, Car, MessageSquare, Plus, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { EMPLOYEE_STATUS_LABELS, ROLE_LABELS } from "@/domain/employees/credentials";
 import {
-  EMPLOYEE_STATUS_LABELS,
-  ROLE_LABELS,
+  auditReadiness,
   canDriveClients,
   canWorkShifts,
-  employeeCompliance,
-  type CredentialStatus,
-} from "@/domain/employees/credentials";
+  complianceSummary,
+  type RequirementOutcome,
+} from "@/domain/credentials/compliance";
+import { credentialsFromRecords } from "@/domain/credentials/fromSeed";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
+import type { CredentialStatus } from "@/domain/documents/types";
 import { seedEmployeeActivity, type SeedEmployee } from "@/lib/employeesSeed";
 
 /**
@@ -32,19 +35,23 @@ const TONE: Record<string, string> = {
   bad: "bg-destructive",
 };
 
-const STATE_LABEL: Record<CredentialStatus["state"], string> = {
+const STATE_LABEL: Record<CredentialStatus, string> = {
   current: "Current",
   expiring: "Expiring soon",
   expired: "Expired",
   missing: "Outstanding",
+  pending_review: "Awaiting review",
+  rejected: "Rejected",
   not_applicable: "N/A",
 };
 
-const STATE_TONE: Record<CredentialStatus["state"], string> = {
+const STATE_TONE: Record<CredentialStatus, string> = {
   current: "text-[hsl(var(--success))]",
   expiring: "text-[hsl(var(--warning))]",
   expired: "text-destructive",
   missing: "text-[hsl(var(--warning))]",
+  pending_review: "text-primary",
+  rejected: "text-destructive",
   not_applicable: "text-muted-foreground",
 };
 
@@ -68,10 +75,18 @@ export function EmployeeRecordView({
 }) {
   const [tab, setTab] = useState<Tab>("Profile");
 
-  const input = { role: employee.role, drives: employee.drives, records: employee.records };
-  const compliance = employeeCompliance(input, today);
-  const employable = canWorkShifts(compliance, employee.status);
-  const mayDrive = canDriveClients(input, today);
+  // One engine, reading requirements as data. §27: the same readiness result
+  // feeds this screen, Operations, Home, Hiring and scheduling eligibility.
+  const readiness = auditReadiness(
+    { employeeId: employee.id, role: employee.role, drives: employee.drives },
+    seedCredentialRequirements,
+    credentialsFromRecords(employee.id, employee.records),
+    today,
+  );
+  const compliance = complianceSummary(readiness);
+  const employable = canWorkShifts(readiness, employee.status);
+  const mayDrive = canDriveClients(readiness, employee.drives);
+  const blocking = readiness.outcomes.filter((o) => o.blocksScheduling && o.status !== "current");
   const activity = seedEmployeeActivity[employee.id] ?? [];
   const initials = employee.name
     .split(" ")
@@ -131,25 +146,25 @@ export function EmployeeRecordView({
         <div
           className={cn(
             "mb-6 rounded-xl border p-4",
-            compliance.blocking.length > 0
+            blocking.length > 0
               ? "border-destructive/40 bg-destructive/5"
               : "border-border bg-surface-muted",
           )}
         >
           <p className="flex items-center gap-2 text-sm font-semibold">
-            {compliance.blocking.length > 0 ? (
+            {blocking.length > 0 ? (
               <TriangleAlert className="h-4 w-4 text-destructive" aria-hidden="true" />
             ) : (
               <Ban className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             )}
-            {compliance.blocking.length > 0
+            {blocking.length > 0
               ? "Cannot be scheduled"
               : `Not available — ${EMPLOYEE_STATUS_LABELS[employee.status].toLowerCase()}`}
           </p>
-          {compliance.blocking.length > 0 && (
+          {blocking.length > 0 && (
             <ul className="mt-2 space-y-1">
-              {compliance.blocking.map((c) => (
-                <li key={c.key} className="text-sm text-muted-foreground">
+              {blocking.map((c) => (
+                <li key={c.credentialType} className="text-sm text-muted-foreground">
                   {c.action}
                 </li>
               ))}
@@ -296,17 +311,17 @@ export function EmployeeRecordView({
                   </tr>
                 </thead>
                 <tbody>
-                  {compliance.items.map((item) => (
-                    <tr key={item.key} className="border-b border-border last:border-0">
-                      <td className="py-2.5 pr-4">{item.label}</td>
-                      <td className={cn("whitespace-nowrap py-2.5 pr-4", STATE_TONE[item.state])}>
-                        {STATE_LABEL[item.state]}
+                  {readiness.outcomes.map((item) => (
+                    <tr key={item.credentialType} className="border-b border-border last:border-0">
+                      <td className="py-2.5 pr-4">{item.displayName}</td>
+                      <td className={cn("whitespace-nowrap py-2.5 pr-4", STATE_TONE[item.status])}>
+                        {STATE_LABEL[item.status]}
                       </td>
                       <td className="whitespace-nowrap py-2.5 pr-4 text-muted-foreground">
-                        {item.issued ?? "—"}
+                        {item.expiresAt ? "—" : "—"}
                       </td>
                       <td className="whitespace-nowrap py-2.5 text-muted-foreground">
-                        {item.expires ?? "—"}
+                        {item.expiresAt ?? "—"}
                       </td>
                     </tr>
                   ))}

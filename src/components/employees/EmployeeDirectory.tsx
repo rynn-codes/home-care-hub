@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 import {
   EMPLOYEE_STATUS_LABELS,
   ROLE_LABELS,
-  type EmployeeCompliance,
   type EmployeeRole,
   type EmployeeStatus,
 } from "@/domain/employees/credentials";
+import type { ComplianceSummary } from "@/domain/credentials/compliance";
 
 /**
  * The directory from the approved Employees mockup: everyone on staff, with
@@ -28,7 +28,7 @@ export interface DirectoryRow {
   role: EmployeeRole;
   status: EmployeeStatus;
   location: string;
-  compliance: EmployeeCompliance;
+  compliance: ComplianceSummary;
   clients: string[];
   nextShift: string | null;
   weeklyHours: number | null;

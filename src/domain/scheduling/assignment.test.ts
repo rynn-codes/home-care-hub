@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { assessAssignment, rankCandidates, type Candidate, type AssignmentContext } from "@/domain/scheduling/assignment";
 import type { Visit } from "@/domain/scheduling/conflicts";
-import { requiredCredentials, type CredentialRecord } from "@/domain/employees/credentials";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
+import { credentialsFromRecords } from "@/domain/credentials/fromSeed";
+import { requirementApplies } from "@/domain/credentials/compliance";
 
 const TODAY = "2026-08-18";
 
@@ -14,17 +16,21 @@ const VISIT: Visit = {
   endsAt: "2026-08-20T13:00:00.000Z",
 };
 
-function records(role: Candidate["role"], drives: boolean): Record<string, CredentialRecord> {
-  const out: Record<string, CredentialRecord> = {};
-  for (const req of requiredCredentials(role, drives)) {
-    out[req.key] = { issued: "2026-01-01", expires: "2027-01-01" };
+/** Everything this person needs, all comfortably in date. */
+function records(role: string, drives: boolean): Record<string, { issued: string; expires: string }> {
+  const out: Record<string, { issued: string; expires: string }> = {};
+  for (const req of seedCredentialRequirements) {
+    if (!requirementApplies(req, { employeeId: "e1", role, drives })) continue;
+    out[req.credentialType] = { issued: "2026-01-01", expires: "2027-01-01" };
   }
   return out;
 }
 
-function candidate(over: Partial<Candidate> = {}): Candidate {
+function candidate(over: Partial<Candidate> & { records?: Record<string, { issued: string; expires: string }> } = {}): Candidate {
   const role = over.role ?? "cna";
   const drives = over.drives ?? true;
+  const raw = over.records ?? records(role, drives);
+  const { records: _ignored, ...rest } = over;
   return {
     employeeId: "e1",
     name: "Chanel P",
@@ -32,12 +38,27 @@ function candidate(over: Partial<Candidate> = {}): Candidate {
     drives,
     status: "active",
     weeklyHours: 20,
-    records: records(role, drives),
-    ...over,
+    credentials: credentialsFromRecords(over.employeeId ?? "e1", raw),
+    ...rest,
   };
 }
 
+/** Rebuild a candidate with one credential altered. */
+function withRecord(
+  over: Partial<Candidate>,
+  key: string,
+  record: { issued: string; expires: string } | null,
+): Candidate {
+  const role = over.role ?? "cna";
+  const drives = over.drives ?? true;
+  const raw = records(role, drives);
+  if (record === null) delete raw[key];
+  else raw[key] = record;
+  return candidate({ ...over, records: raw });
+}
+
 const ctx = (over: Partial<AssignmentContext> = {}): AssignmentContext => ({
+  requirements: seedCredentialRequirements,
   visit: VISIT,
   existing: [],
   today: TODAY,
@@ -52,18 +73,20 @@ describe("credentials at assignment", () => {
   });
 
   it("refuses someone with an expired credential", () => {
-    const c = candidate();
-    c.records.tb_test = { issued: "2025-02-10", expires: "2026-02-10" };
-    const a = assessAssignment(c, ctx());
+    const a = assessAssignment(
+      withRecord({}, "tb_test", { issued: "2025-02-10", expires: "2026-02-10" }),
+      ctx(),
+    );
     expect(a.canAssign).toBe(false);
     expect(a.blocking[0].kind).toBe("credential_blocked");
   });
 
   // The one a human scheduler misses: green when booked, uncovered on the day.
   it("refuses a credential that is valid today but expires before the shift", () => {
-    const c = candidate();
-    c.records.cpr = { issued: "2024-08-19", expires: "2026-08-19" };
-    const a = assessAssignment(c, ctx());
+    const a = assessAssignment(
+      withRecord({}, "cpr", { issued: "2024-08-19", expires: "2026-08-19" }),
+      ctx(),
+    );
     expect(a.canAssign).toBe(false);
     expect(a.blocking.map((b) => b.kind)).toContain("credential_expires_before_shift");
     expect(a.blocking.find((b) => b.kind === "credential_expires_before_shift")?.message).toMatch(
@@ -72,9 +95,10 @@ describe("credentials at assignment", () => {
   });
 
   it("does not report the same lapse twice", () => {
-    const c = candidate();
-    c.records.tb_test = { issued: "2024-02-10", expires: "2025-02-10" };
-    const a = assessAssignment(c, ctx());
+    const a = assessAssignment(
+      withRecord({}, "tb_test", { issued: "2024-02-10", expires: "2025-02-10" }),
+      ctx(),
+    );
     expect(a.blocking.filter((b) => b.message.includes("TB test"))).toHaveLength(1);
   });
 
@@ -123,9 +147,10 @@ describe("transport", () => {
   });
 
   it("refuses a driver whose insurance has lapsed", () => {
-    const c = candidate();
-    c.records.auto_insurance = { issued: "2024-01-01", expires: "2025-01-01" };
-    const a = assessAssignment(c, driving);
+    const a = assessAssignment(
+      withRecord({}, "auto_insurance", { issued: "2024-01-01", expires: "2025-01-01" }),
+      driving,
+    );
     expect(a.canAssign).toBe(false);
     expect(a.blocking.some((b) => /insurance/i.test(b.message))).toBe(true);
   });

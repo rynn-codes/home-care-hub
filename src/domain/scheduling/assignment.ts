@@ -1,9 +1,6 @@
-import {
-  employeeCompliance,
-  credentialStatuses,
-  type EmployeeCredentialInput,
-  type EmployeeStatus,
-} from "@/domain/employees/credentials";
+import { auditReadiness, schedulingEligibility } from "@/domain/credentials/compliance";
+import type { EmployeeStatus } from "@/domain/employees/credentials";
+import type { CredentialRequirement, EmployeeCredential } from "@/domain/documents/types";
 import {
   OVERTIME_THRESHOLD_HOURS,
   findConflicts,
@@ -49,15 +46,21 @@ export interface AssignmentIssue {
   severity: "blocking" | "warning";
 }
 
-export interface Candidate extends EmployeeCredentialInput {
+export interface Candidate {
   employeeId: string;
   name: string;
+  role: string;
+  drives: boolean;
   status: EmployeeStatus;
+  /** Credentials as the compliance engine reads them. */
+  credentials: EmployeeCredential[];
   /** Hours already scheduled this week, before this shift. */
   weeklyHours: number;
 }
 
 export interface AssignmentContext {
+  /** Policy, read as data. §6 — never a switch on role. */
+  requirements: readonly CredentialRequirement[];
   visit: Visit;
   /** Everything already on the schedule, including other caregivers' work. */
   existing: readonly Visit[];
@@ -89,11 +92,7 @@ function shiftDate(visit: Visit): string {
 
 export function assessAssignment(candidate: Candidate, ctx: AssignmentContext): AssignmentAssessment {
   const issues: AssignmentIssue[] = [];
-  const input: EmployeeCredentialInput = {
-    role: candidate.role,
-    drives: candidate.drives,
-    records: candidate.records,
-  };
+  const context = { employeeId: candidate.employeeId, role: candidate.role, drives: candidate.drives };
 
   // --- 4. Employment status -------------------------------------------------
   if (candidate.status !== "active") {
@@ -110,11 +109,14 @@ export function assessAssignment(candidate: Candidate, ctx: AssignmentContext): 
   }
 
   // --- 2. Credentials -------------------------------------------------------
-  const todayCompliance = employeeCompliance(input, ctx.today);
-  for (const item of todayCompliance.blocking) {
+  // §12: Scheduling consumes eligibility, it does not decide it. Which
+  // credentials block is the requirement's own configuration to state.
+  const today = auditReadiness(context, ctx.requirements, candidate.credentials, ctx.today);
+  const eligibility = schedulingEligibility(today);
+  for (const item of eligibility.blockedBy) {
     issues.push({
       kind: "credential_blocked",
-      message: `${item.label} is ${item.state === "expired" ? "expired" : "outstanding"}`,
+      message: `${item.displayName} is ${item.status === "expired" ? "expired" : item.status === "rejected" ? "rejected" : "outstanding"}`,
       severity: "blocking",
     });
   }
@@ -122,14 +124,14 @@ export function assessAssignment(candidate: Candidate, ctx: AssignmentContext): 
   // A credential valid today but expired by the shift date is the one a human
   // scheduler misses: the record looks green when they book it, and the person
   // is uncovered on the day.
-  const onTheDay = credentialStatuses(input, shiftDate(ctx.visit));
-  for (const item of onTheDay) {
-    const alreadyFlagged = todayCompliance.blocking.some((b) => b.key === item.key);
+  const onTheDay = auditReadiness(context, ctx.requirements, candidate.credentials, shiftDate(ctx.visit));
+  for (const item of schedulingEligibility(onTheDay).blockedBy) {
+    const alreadyFlagged = eligibility.blockedBy.some((b) => b.credentialType === item.credentialType);
     if (alreadyFlagged) continue;
-    if (item.state === "expired") {
+    if (item.status === "expired") {
       issues.push({
         kind: "credential_expires_before_shift",
-        message: `${item.label} expires on ${item.expires}, before this shift`,
+        message: `${item.displayName} expires on ${item.expiresAt}, before this shift`,
         severity: "blocking",
       });
     }
@@ -172,12 +174,14 @@ export function assessAssignment(candidate: Candidate, ctx: AssignmentContext): 
         severity: "blocking",
       });
     } else {
-      const driving = onTheDay.filter((i) => ["drivers_license", "auto_insurance"].includes(i.key));
+      const driving = onTheDay.outcomes.filter((i) =>
+        ["drivers_license", "auto_insurance"].includes(i.credentialType),
+      );
       for (const item of driving) {
-        if (item.state !== "current") {
+        if (item.status !== "current" && item.status !== "expiring") {
           issues.push({
             kind: "cannot_drive",
-            message: `${candidate.name}'s ${item.label.toLowerCase()} is not current`,
+            message: `${candidate.name}'s ${item.displayName.toLowerCase()} is not current`,
             severity: "blocking",
           });
         }

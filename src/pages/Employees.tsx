@@ -3,7 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmployeeDirectory, type DirectoryRow } from "@/components/employees/EmployeeDirectory";
 import { EmployeeRecordView } from "@/components/employees/EmployeeRecordView";
-import { employeeCompliance } from "@/domain/employees/credentials";
+import { auditReadiness, complianceSummary } from "@/domain/credentials/compliance";
+import { credentialsFromRecords } from "@/domain/credentials/fromSeed";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 import { seedEmployees, type SeedEmployee } from "@/lib/employeesSeed";
 import { useDemo } from "@/context/DemoDataProvider";
 
@@ -51,7 +53,14 @@ export default function Employees() {
       role: e.role,
       status: e.status,
       location: e.location,
-      compliance: employeeCompliance({ role: e.role, drives: e.drives, records: e.records }, today),
+      compliance: complianceSummary(
+        auditReadiness(
+          { employeeId: e.id, role: e.role, drives: e.drives },
+          seedCredentialRequirements,
+          credentialsFromRecords(e.id, e.records),
+          today,
+        ),
+      ),
       clients: e.clients,
       nextShift: e.nextShift,
       weeklyHours: e.weeklyHours,

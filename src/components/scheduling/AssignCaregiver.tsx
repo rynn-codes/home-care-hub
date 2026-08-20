@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { rankCandidates, type Candidate } from "@/domain/scheduling/assignment";
 import { hoursOf, type Visit } from "@/domain/scheduling/conflicts";
 import { seedEmployees } from "@/lib/employeesSeed";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
+import { credentialsFromRecords } from "@/domain/credentials/fromSeed";
 
 /**
  * Choosing who covers a shift.
@@ -67,7 +69,7 @@ export function AssignCaregiver({
           role: e.role,
           drives: e.drives,
           status: e.status,
-          records: e.records,
+          credentials: credentialsFromRecords(e.id, e.records),
           weeklyHours: weeklyHours[e.name] ?? 0,
         })),
     [weeklyHours],
@@ -76,6 +78,7 @@ export function AssignCaregiver({
   const ranked = useMemo(
     () =>
       rankCandidates(candidates, {
+        requirements: seedCredentialRequirements,
         visit,
         existing: allVisits,
         today,
