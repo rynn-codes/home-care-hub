@@ -114,8 +114,27 @@ has it. And no portal user can issue a portal grant; that is a staff act,
 because granting yourself a second audience is the path from a caregiver login
 to a family login over somebody else's records.
 
-Verified in `portal_test.sql` and `visits_test.sql`, both running as
-`authenticated`.
+`0008` adds the tables the portals write into, and puts three rules in the
+database rather than only in TypeScript — because a policy survives a bug in a
+component:
+
+- **A confirmed chart cannot be edited.** A trigger refuses it. The caregiver
+  attested to that record; changing it afterwards is an amendment, a different
+  act with a different trail, and one nobody has designed yet.
+- **A drafted or quoted chart line must cite something.** A check constraint,
+  so writing an uncited clinical claim is impossible rather than merely tested
+  against.
+- **Only the office may share a Moment a model worded.** A caregiver publishes
+  her own words freely; the `with check` clause on `moments_update` is what
+  stops her publishing a model's. The consequence of getting this wrong is a
+  fabricated sentence about somebody's mother arriving on her daughter's phone.
+
+A family reads no chart at all — §13 keeps raw chart notes out of the family
+portal, and making them unreadable is a stronger guarantee than every future
+screen remembering not to render them.
+
+Verified in `portal_test.sql`, `visits_test.sql` and `charting_test.sql`, all
+running as `authenticated`.
 
 ## When adding a table
 
@@ -146,4 +165,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0007`: 80 assertions across five files.
+As of `0008`: 99 assertions across six files.

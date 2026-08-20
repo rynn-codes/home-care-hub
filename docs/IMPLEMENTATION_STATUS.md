@@ -91,9 +91,9 @@ No second frontend was created and no framework was replaced, per section 3.
 
 - **Billing.** No sprint was ever written for it. It is the largest piece of
   genuinely new ground left.
-- **The admin side of the portal.** No Moments approval queue, no view of
-  clock-out exceptions, no document-request UI, no portal grant management.
-  Everything the portals write is currently only visible in the portals.
+- **A UI for requesting a document from a family.** The table and policies
+  exist in `0008`; nothing on the admin side creates a row yet.
+- **Portal grant management.** No screen issues or revokes a portal grant.
 - AI conversation mode for intake. Manual mode is built first by design (§34);
   the AI path sits behind `AI_PHONE_INTAKE_ENABLED`, which is off.
 - A create service. The referral drawer adds to the in-memory queue and says so
@@ -123,6 +123,7 @@ supabase/migrations/0004_admissions.sql        admissions, referral fields, stag
 supabase/migrations/0005_documents_and_credentials.sql  documents, credentials, sensitivity
 supabase/migrations/0006_portal_access.sql     portal grants, is_staff(), portal read policies
 supabase/migrations/0007_visits_and_time.sql   the schedule, the clock, assignment-based access
+supabase/migrations/0008_charting_and_moments.sql  charts, Moments, preferences, document requests
 ```
 
 To verify locally:
@@ -136,12 +137,14 @@ psql -f supabase/migrations/0004_admissions.sql
 psql -f supabase/migrations/0005_documents_and_credentials.sql
 psql -f supabase/migrations/0006_portal_access.sql
 psql -f supabase/migrations/0007_visits_and_time.sql
+psql -f supabase/migrations/0008_charting_and_moments.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
 psql -f supabase/tests/credentials_test.sql  # 17
 psql -f supabase/tests/portal_test.sql       # 16
 psql -f supabase/tests/visits_test.sql       # 18
+psql -f supabase/tests/charting_test.sql     # 19
 ```
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
@@ -243,7 +246,7 @@ Two things about how it runs, both learned the hard way:
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
 which it did not before — `npm test` passes with 648 tests, `npm run test:e2e`
-passes 23, and the database suites pass 80 assertions across five files.
+passes 25, and the database suites pass 99 assertions across six files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

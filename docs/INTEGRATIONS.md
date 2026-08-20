@@ -35,18 +35,18 @@ Nothing else matters much until these three are done.
 
 ### 1. Apply the migrations
 
-Seven files in `supabase/migrations`, verified against a local Postgres 16 and
+Eight files in `supabase/migrations`, verified against a local Postgres 16 and
 **never applied to the Supabase project** — Karynn's standing decision, and it
 still holds. Until somebody applies them, every row level security policy in
 this repository is absent from the live database.
 
 ```sh
 psql -f supabase/tests/local_shim.sql        # local only, never against Supabase
-psql -f supabase/migrations/0001_foundation.sql   # …through 0007
+psql -f supabase/migrations/0001_foundation.sql   # …through 0008
 psql -f supabase/tests/rls_test.sql          # then the other four suites
 ```
 
-80 assertions across five suites. **Every one runs under `set local role
+99 assertions across six suites. **Every one runs under `set local role
 authenticated`** — RLS is bypassed for the table owner, so a suite running as
 `postgres` passes while proving nothing. That mistake was made once here
 already.
@@ -233,7 +233,7 @@ Four layers, each catching what the others structurally cannot:
 npm run typecheck     # was not being run at all; found 28 errors the first time
 npm test              # 648 unit tests
 npm run test:e2e      # 25 browser tests — every screen renders, console quiet
-psql -f supabase/tests/…   # 80 policy assertions, as `authenticated`
+psql -f supabase/tests/…   # 99 policy assertions, as `authenticated`
 ```
 
 `npm run build` runs the type check first, so "the build passes" means what
