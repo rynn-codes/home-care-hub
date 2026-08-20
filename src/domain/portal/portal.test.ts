@@ -270,13 +270,13 @@ describe("MemoryOtpService", () => {
     expect(sms.outbox[0].carrier).toBe("ghl");
   });
 
-  it("sends a family member's code from theirs instead", async () => {
+  it("sends a family member's code from GHL too — they met Joy as a lead there", async () => {
     const { otp, sms } = build([
       grant({ id: "g1", phone: "+17132319662", audience: "family", subjectPersonId: "p9" }),
     ]);
     await otp.request("+17132319662", T0);
     expect(sms.outbox[0].purpose).toBe("login_code_family");
-    expect(sms.outbox[0].carrier).toBe("spruce");
+    expect(sms.outbox[0].carrier).toBe("ghl");
   });
 });
 
@@ -322,30 +322,45 @@ describe("SMS routing and templates", () => {
     expect(msg.body).toContain("Open your Joy portal");
   });
 
-  it("marks every client-facing purpose as needing a BAA", () => {
-    for (const purpose of ALL) {
-      const reachesClient = SMS_ROUTING[purpose] === "spruce";
-      expect(requiresBusinessAssociateAgreement(purpose)).toBe(reachesClient);
-    }
+  it("keeps every login code off the office number", () => {
+    // Karynn, 20 Aug: all OTPs through GHL.
+    expect(SMS_ROUTING.login_code_workforce).toBe("ghl");
+    expect(SMS_ROUTING.login_code_family).toBe("ghl");
+  });
+
+  it("sends the care notification from the number a person is watching", () => {
+    // A family that texts back "why did Monday move?" must reach the office.
+    expect(SMS_ROUTING.care_notification).toBe("spruce");
+  });
+
+  it("marks the purposes that reach a client, whichever number carries them", () => {
+    // The BAA follows the audience, not the carrier — family codes go via GHL
+    // and still need one.
+    expect(requiresBusinessAssociateAgreement("login_code_family")).toBe(true);
+    expect(requiresBusinessAssociateAgreement("care_notification")).toBe(true);
+    expect(requiresBusinessAssociateAgreement("login_code_workforce")).toBe(false);
+    expect(requiresBusinessAssociateAgreement("candidate_invitation")).toBe(false);
   });
 
   it("refuses to send rather than falling back to whichever number is configured", async () => {
+    // Silently sending a care notification from GHL would undo the separation.
     const router = new MemorySmsRouter({ ghl: new MemorySmsSender("ghl") });
     await expect(
       router.deliver({ purpose: "care_notification", to: "+17132319662" }),
     ).rejects.toThrow(/No sender registered for spruce/);
   });
 
-  it("routes a candidate invitation to GHL and a family one to Spruce", async () => {
+  it("splits identity traffic from the care conversation", async () => {
     const ghl = new MemorySmsSender("ghl");
     const spruce = new MemorySmsSender("spruce");
     const router = new MemorySmsRouter({ ghl, spruce });
 
     await router.deliver({ purpose: "candidate_invitation", to: "+17135550100" });
-    await router.deliver({ purpose: "family_invitation", to: "+17135550101" });
+    await router.deliver({ purpose: "login_code_family", to: "+17135550101", inputs: { code: "123456" } });
+    await router.deliver({ purpose: "care_notification", to: "+17135550101" });
 
-    expect(ghl.outbox).toHaveLength(1);
-    expect(spruce.outbox).toHaveLength(1);
+    expect(ghl.outbox.map((m) => m.purpose)).toEqual(["candidate_invitation", "login_code_family"]);
+    expect(spruce.outbox.map((m) => m.purpose)).toEqual(["care_notification"]);
   });
 });
 

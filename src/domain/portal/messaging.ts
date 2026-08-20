@@ -33,11 +33,34 @@ import type { E164 } from "@/domain/portal/phone";
  * one.
  */
 
+/**
+ * The numbers Joy sends from, and the principle that decides which.
+ *
+ * CAN THEY USEFULLY REPLY?
+ *
+ * That is the whole test, and it falls out of Karynn's two instructions on
+ * 20 Aug — "All OTPs need to go through GHL", and "Care notification questions
+ * will come from Spruce."
+ *
+ * Spruce is the office's number: where a human at Joy has a conversation with a
+ * client. Tell a family their mother's Monday visit moved and some of them will
+ * text back asking why. That reply has to land in front of an actual person at
+ * Joy, so the message it answers must have come from the number a person is
+ * watching. Sending it from a marketing platform routes a worried family into a
+ * channel nobody reads.
+ *
+ * GHL carries everything a reply makes no sense to. A login code cannot be
+ * replied to. Neither can a recruiting handoff — that conversation continues in
+ * the thread the recruiter is already in, which is GHL's.
+ *
+ * The separation cuts the other way too: a client who gets automated traffic on
+ * Spruce learns to skim the number the RN uses to tell them something urgent.
+ */
 export type SmsCarrier = "ghl" | "spruce" | "transactional";
 
 export const CARRIER_LABELS: Record<SmsCarrier, string> = {
   ghl: "GoHighLevel",
-  spruce: "Spruce",
+  spruce: "Spruce — the office number",
   transactional: "Dedicated verification sender (unused — see SMS_ROUTING)",
 };
 
@@ -49,15 +72,20 @@ export const CARRIER_LABELS: Record<SmsCarrier, string> = {
  */
 export const CARRIER_PREFLIGHT: Record<SmsCarrier, string> = {
   ghl:
-    "Confirm the GHL number's A2P 10DLC campaign covers an authentication / 2FA " +
-    "use case, not marketing alone. Codes on a marketing-only registration are " +
-    "the traffic carriers filter first, and a filtered code looks like a broken portal.",
+    "Two questions, both before launch. (1) Will GoHighLevel sign a business " +
+    "associate agreement covering Joy's plan? Family login codes and portal " +
+    "invitations go down this number, so the answer gates go-live. (2) Does " +
+    "the number's A2P 10DLC campaign cover an authentication / 2FA use case and " +
+    "not marketing alone? Codes on a marketing-only registration are the traffic " +
+    "carriers filter first, and a filtered code looks like a broken portal.",
   spruce:
-    "Confirm the BAA covers automated sends, not only staff-typed messages, and " +
-    "that Spruce exposes an API for programmatic delivery on Joy's plan.",
+    "Confirm the BAA covers automated sends and not only staff-typed messages, " +
+    "and that Spruce exposes an API for programmatic delivery on Joy's plan. If " +
+    "it does not, care notifications need a different route — not a quiet " +
+    "fallback to GHL, which would undo the separation on purpose here.",
   transactional:
-    "Only needed if login codes prove unreliable on GHL or Spruce. Whichever " +
-    "provider is chosen must sign a BAA before it carries anything to a client.",
+    "Only needed if login codes prove unreliable on GHL. Whichever provider is " +
+    "chosen must sign a BAA before it carries anything to a client.",
 };
 
 export type MessagePurpose =
@@ -115,16 +143,31 @@ export type MessagePurpose =
  */
 export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
   login_code_workforce: "ghl",
-  login_code_family: "spruce",
+  login_code_family: "ghl",
   candidate_invitation: "ghl",
   candidate_update: "ghl",
-  family_invitation: "spruce",
+  family_invitation: "ghl",
   care_notification: "spruce",
-  shift_notification: "spruce",
+  shift_notification: "ghl",
 };
 
 /**
- * True when a purpose is addressed to a client or their family.
+ * TWO ROWS ABOVE ARE INFERRED RATHER THAN INSTRUCTED. Both are one-line changes.
+ *
+ * `family_invitation` is on GHL because it is a handoff, not a care message:
+ * the family met Joy as a lead in GHL, and "here is your portal link" invites a
+ * tap, not a reply. If Karynn would rather the first message a new family gets
+ * come from the office number, move it to spruce.
+ *
+ * `shift_notification` is on GHL because it goes to staff, and the reply-test
+ * was stated about families. But a caregiver whose Tuesday just moved may well
+ * text back, and if caregivers reach the office through Spruce then this
+ * belongs there by the same logic that put care_notification there.
+ */
+
+/**
+ * True when a purpose is addressed to a client or their family — which is to
+ * say, the purposes whose carrier must be covered by a BAA.
  *
  * `login_code_family` belongs here even though its body is six digits and
  * nothing else. The protected fact is not the content — it is that Joy Health,
