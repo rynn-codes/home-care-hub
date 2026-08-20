@@ -76,6 +76,47 @@ migration runner exists. Two of the brief's named Sprint 1 failure tests,
 That last point is the important one. Everything described here is correct in
 source control and absent in production.
 
+## The portal roles, and the hole they opened
+
+`employee` and `client_contact` have been in the `user_role` enum since `0001`.
+Nothing distinguished them from staff until `0006`, and the read policies in
+`0003` say only "same organization".
+
+This was measured rather than assumed. Against the schema as it stood before
+`0006`, a user with role `employee` and an active session read **every `people`
+row and every `client_profile` in the organization** — every client's full name.
+The portal's React guard was irrelevant: anyone holding the anon key calls
+PostgREST directly, which is the whole reason `0003` exists.
+
+`0006` narrows every broad read policy to `is_staff()` or a specific portal
+predicate. `is_staff()` is written as a positive list rather than "not employee,
+not client_contact", so a role added to the enum later is not staff until
+somebody says so — the negative form fails by silently granting everything.
+
+`0007` adds the rule `0006` could not express, because there was no `visits`
+table to hang it on: **a caregiver reads the clients she is assigned to, and
+that access lapses.** Thirty days past the last visit. Access that followed
+assignment forever would mean somebody who covered one shift in March could
+still read that client in September, which is not a relationship anyone
+consented to. Forward-looking access is unbounded — she needs to prepare for
+next week.
+
+What portal users get back, and nothing more:
+
+| Role | Reads |
+|---|---|
+| `employee` | Own person, own employment record, own credentials, own general and clinical credential documents, own visits, own time entries, clients assigned within the window |
+| `client_contact` | The person named on their grant, that person's profile, admission and visits, and their own entry in the relationships list |
+
+Two things portal users explicitly do **not** get. A caregiver cannot read the
+background check run about her — that stays with the owner and HR, as `0005`
+has it. And no portal user can issue a portal grant; that is a staff act,
+because granting yourself a second audience is the path from a caregiver login
+to a family login over somebody else's records.
+
+Verified in `portal_test.sql` and `visits_test.sql`, both running as
+`authenticated`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -86,3 +127,23 @@ source control and absent in production.
 4. Grant to `authenticated` explicitly. RLS narrows access; it does not grant it.
 5. Grant nothing to `anon`.
 6. Add assertions to `rls_test.sql`, including one that must fail.
+7. Ask what a **portal** user sees. `is_staff()` is not automatic — a new table
+   with a plain `organization_id = current_org_id()` policy is readable by every
+   caregiver and every family member with a login. That is the mistake `0006`
+   had to go back and fix across five tables.
+
+## Running the SQL suites
+
+```
+psql -f supabase/tests/local_shim.sql
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0007
+psql -f supabase/tests/rls_test.sql               # then the rest
+```
+
+`rls_test.sql` defines `assert()` and `act_as()`; `portal_test.sql` and
+`visits_test.sql` define their own so they run standalone. **Every assertion
+must run under `set local role authenticated`** — RLS is bypassed for the table
+owner, so a suite running as `postgres` passes while proving nothing. That
+mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
+
+As of `0007`: 80 assertions across five files.
