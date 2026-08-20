@@ -4,6 +4,7 @@ import { Check, CircleDashed, TriangleAlert } from "lucide-react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import { candidateStatus, type StatusLine, type StatusState } from "@/domain/portal/candidateStatus";
+import { onboardingStatus } from "@/domain/portal/onboarding";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { cn } from "@/lib/utils";
 
@@ -43,16 +44,46 @@ function Line({ line }: { line: StatusLine }) {
 export default function CandidateStatus() {
   const { grant } = usePortalSession();
 
-  // Demo wiring. The real version reads the applicant this grant hangs off.
-  const view = useMemo(
-    () =>
-      candidateStatus({
-        applicant: seedApplicants.find((a) => a.track === "hiring") ?? seedApplicants[0],
-        applicationSubmitted: true,
-        greetingName: grant?.greetingName ?? "there",
-      }),
-    [grant],
-  );
+  /**
+   * One screen, two states — §6 and §7. A candidate and an onboarding hire see
+   * the same page with different lines on it, because "the existing Joy portal
+   * changes state" and "no new account, no new employee app login".
+   *
+   * Demo wiring picks the applicant from the seed. The real version reads the
+   * applicant this grant hangs off.
+   */
+  const view = useMemo(() => {
+    const onboarding = grant?.state === "onboarding";
+    const applicant =
+      seedApplicants.find((a) => (onboarding ? a.track === "onboarding" : a.track === "hiring")) ??
+      seedApplicants[0];
+    const greetingName = grant?.greetingName ?? "there";
+
+    if (!onboarding) {
+      return {
+        ...candidateStatus({ applicant, applicationSubmitted: true, greetingName }),
+        greeting: `Hi, ${greetingName}`,
+      };
+    }
+
+    const state = onboardingStatus({
+      applicant,
+      applicationSubmitted: true,
+      // Nothing is connected to Gusto. `NullHrOnboardingService` returns null
+      // and the view renders that honestly rather than inventing a step.
+      gusto: null,
+      orientation: { onlineOrientation: null, fieldOrientation: null },
+    });
+
+    return {
+      greeting: `Welcome to Joy, ${greetingName}`,
+      lines: state.lines,
+      currentStatus: "You're getting ready to start",
+      nextStepHeadline: state.headline,
+      nextStepDetail: state.detail,
+      action: state.action,
+    };
+  }, [grant]);
 
   return (
     <PortalFrame>
@@ -92,14 +123,27 @@ export default function CandidateStatus() {
           {view.nextStepDetail}
         </p>
 
-        {view.action && (
-          <Link
-            to={view.action.to}
-            className="mt-6 flex h-12 w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-primary-foreground"
-          >
-            {view.action.label}
-          </Link>
-        )}
+        {/* Gusto's link leaves Joy, so it must not go through the router —
+            react-router would treat an absolute URL as an in-app path and
+            render a 404 instead of opening Gusto. */}
+        {view.action &&
+          (view.action.to.startsWith("http") ? (
+            <a
+              href={view.action.to}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-primary-foreground"
+            >
+              {view.action.label}
+            </a>
+          ) : (
+            <Link
+              to={view.action.to}
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-primary-foreground"
+            >
+              {view.action.label}
+            </Link>
+          ))}
       </div>
 
       <p className="mt-10 text-sm text-muted-foreground">

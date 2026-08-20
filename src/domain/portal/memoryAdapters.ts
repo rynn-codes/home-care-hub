@@ -1,7 +1,16 @@
 import { evaluateRequest, evaluateVerification, expiryFor, OTP_POLICY, type OtpChallenge } from "@/domain/portal/otp";
 import type { E164 } from "@/domain/portal/phone";
 import type { PortalGrant, PortalIdentity } from "@/domain/portal/identity";
-import type { OtpRequestResult, OtpService, OtpVerifyResult, PortalDirectory, SmsRouter, SmsSender } from "@/domain/portal/ports";
+import type {
+  HrOnboardingService,
+  OtpRequestResult,
+  OtpService,
+  OtpVerifyResult,
+  PortalDirectory,
+  SmsRouter,
+  SmsSender,
+} from "@/domain/portal/ports";
+import type { GustoStatus } from "@/domain/portal/onboarding";
 import {
   composeMessage,
   looksLikeItLeaksDetail,
@@ -279,5 +288,23 @@ export class MemoryPortalDirectory implements PortalDirectory {
 
   async revoke(input: { grantId: string }) {
     this.grants = this.grants.map((g) => (g.id === input.grantId ? { ...g, active: false } : g));
+  }
+}
+
+/**
+ * No payroll provider is connected.
+ *
+ * Returns null rather than a plausible "in_progress", for the same reason
+ * `MemorySmsSender` reports `delivered: false`: a fake status here would show a
+ * new hire that their W-4 was underway, and the first person to find out
+ * otherwise would be them, on payday.
+ */
+export class NullHrOnboardingService implements HrOnboardingService {
+  async status(): Promise<GustoStatus | null> {
+    return null;
+  }
+
+  async onboardingUrl(): Promise<string | null> {
+    return null;
   }
 }

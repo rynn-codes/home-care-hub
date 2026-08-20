@@ -2,6 +2,7 @@ import type { E164 } from "@/domain/portal/phone";
 import type { OtpChallenge } from "@/domain/portal/otp";
 import type { PortalGrant, PortalIdentity } from "@/domain/portal/identity";
 import type { MessagePurpose, OutboundMessage, SmsCarrier } from "@/domain/portal/messaging";
+import type { GustoStatus } from "@/domain/portal/onboarding";
 
 /**
  * The seams a developer connects to make the portal real.
@@ -122,4 +123,25 @@ export interface PortalSessionStore {
   /** Choosing between two grants, per `resolvePortal`'s "choose" outcome. */
   select(grantId: string): Promise<void>;
   clear(): Promise<void>;
+}
+
+// ------------------------------------------------------------------ hr --
+
+/**
+ * Gusto, or whichever payroll provider replaces it.
+ *
+ * §6 assigns the HR workflow to Gusto deliberately — W-4, I-9, direct deposit
+ * — and tells Joy not to rebuild it. So this port is narrow on purpose: Joy
+ * asks where somebody has got to and gets a link to send them. It has no
+ * ability to read a tax form or a bank detail, and that is the point. A wider
+ * port would invite Joy to start storing the things it decided not to store.
+ *
+ * `status` returning null means "not connected", not "not started". The
+ * difference matters on screen: one is a prompt, the other would be Joy
+ * telling a new hire their paperwork is underway when Joy has no idea.
+ */
+export interface HrOnboardingService {
+  status(employeeRef: string): Promise<GustoStatus | null>;
+  /** A link for this person, if the provider issues per-person links. */
+  onboardingUrl(employeeRef: string): Promise<string | null>;
 }
