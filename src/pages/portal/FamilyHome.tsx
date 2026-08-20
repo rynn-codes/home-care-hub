@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Check, ChevronRight, CircleDashed, TriangleAlert } from "lucide-react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
+import { OfficeNumber } from "@/components/portal/OfficeNumber";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import {
   admissionLines,
@@ -184,9 +185,7 @@ export default function FamilyHome() {
 
       <p className="mt-10 text-sm text-muted-foreground">
         Anything at all, call us on{" "}
-        <a href="tel:+17132319662" className="underline underline-offset-4">
-          (713) 231-9662
-        </a>
+        <OfficeNumber />
         .
       </p>
     </PortalFrame>

@@ -9,6 +9,7 @@ import { formatPhone, normalizePhone, type E164 } from "@/domain/portal/phone";
 import { OTP_POLICY } from "@/domain/portal/otp";
 import { portalRoute } from "@/domain/portal/identity";
 import { PortalFrame } from "@/components/portal/PortalFrame";
+import { OfficeNumber } from "@/components/portal/OfficeNumber";
 
 /**
  * Phone sign-in — §3, and §29's step 1.
@@ -233,9 +234,7 @@ export default function PortalLogin() {
 
       <p className="mt-10 text-sm text-muted-foreground">
         Trouble signing in? Call the office on{" "}
-        <a href="tel:+17132319662" className="underline underline-offset-4">
-          (713) 231-9662
-        </a>
+        <OfficeNumber />
         .
       </p>
     </PortalFrame>

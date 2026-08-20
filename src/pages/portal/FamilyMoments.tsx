@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
+import { OfficeNumber } from "@/components/portal/OfficeNumber";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import { momentsTimeline } from "@/domain/portal/moments";
 import { preferencesForVisit } from "@/domain/portal/preferences";
@@ -74,9 +75,7 @@ export default function FamilyMoments() {
 
       <p className="mt-10 text-sm text-muted-foreground">
         Call us any time on{" "}
-        <a href="tel:+17132319662" className="underline underline-offset-4">
-          (713) 231-9662
-        </a>
+        <OfficeNumber />
         .
       </p>
     </PortalFrame>

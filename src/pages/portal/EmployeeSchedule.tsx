@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { PortalFrame } from "@/components/portal/PortalFrame";
+import { OfficeNumber } from "@/components/portal/OfficeNumber";
 import { mySchedule, type MyVisit } from "@/domain/portal/employeeHome";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { demoCaregiverName } from "@/lib/portalDemo";
@@ -80,9 +81,7 @@ export default function EmployeeSchedule() {
 
       <p className="mt-10 text-sm text-muted-foreground">
         Your schedule is set by the office. To change something, call{" "}
-        <a href="tel:+17132319662" className="underline underline-offset-4">
-          (713) 231-9662
-        </a>
+        <OfficeNumber />
         .
       </p>
     </PortalFrame>

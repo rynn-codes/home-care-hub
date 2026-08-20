@@ -121,12 +121,15 @@ export function PayrollPanel() {
 
   return (
     <HomePanel title="Payroll" action={{ label: "Review payroll", to: "/payroll" }}>
-      <div className="flex items-baseline justify-between gap-3 py-2.5">
+      {/* A dl, because dt and dd outside one are meaningless to a screen
+          reader — it announces the value with no idea what it labels. Left out
+          when these panels were rewritten to read the real engines. */}
+      <dl className="flex items-baseline justify-between gap-3 py-2.5">
         <dt className="text-sm text-muted-foreground">This period</dt>
         <dd className={cn("text-sm font-medium", signal?.urgent && "text-[hsl(var(--warning))]")}>
           {signal?.value === "Ready" ? "Ready to send" : `${signal?.value} to sort out`}
         </dd>
-      </div>
+      </dl>
       <p className="pb-1 text-xs text-muted-foreground">{signal?.detail}</p>
     </HomePanel>
   );
@@ -137,12 +140,12 @@ export function BillingPanel() {
 
   return (
     <HomePanel title="Billing" action={{ label: "Billing audit", to: "/billing" }}>
-      <div className="flex items-baseline justify-between gap-3 py-2.5">
+      <dl className="flex items-baseline justify-between gap-3 py-2.5">
         <dt className="text-sm text-muted-foreground">This week</dt>
         <dd className={cn("text-sm font-medium", signal?.urgent && "text-[hsl(var(--warning))]")}>
           {signal?.detail}
         </dd>
-      </div>
+      </dl>
       <p className="pb-1 text-xs text-muted-foreground">
         Invoiced weekly in advance, on the terms in the service agreement.
       </p>

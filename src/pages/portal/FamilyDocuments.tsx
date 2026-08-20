@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Camera, Check, Clock, TriangleAlert } from "lucide-react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
+import { OfficeNumber } from "@/components/portal/OfficeNumber";
 import {
   DOCUMENT_REQUEST_LABELS,
   type DocumentRequestState,
@@ -156,9 +157,7 @@ export default function FamilyDocuments() {
 
       <p className="mt-8 text-sm text-muted-foreground">
         Would rather bring them in? Call{" "}
-        <a href="tel:+17132319662" className="underline underline-offset-4">
-          (713) 231-9662
-        </a>
+        <OfficeNumber />
         .
       </p>
     </PortalFrame>

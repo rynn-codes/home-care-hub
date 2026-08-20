@@ -25,7 +25,14 @@
     --secondary-foreground: 240 7% 20%;
 
     --muted: 40 12% 94%;
-    --muted-foreground: 240 4% 45%;
+    /* Secondary text, and therefore most of the words on any screen: every
+     * helper line, every "expires in 28 days", every explanation under a
+     * heading. It measured 4.44:1 against the warm background — close enough to
+     * look fine on a desk and just under WCAG AA, which is exactly the failure
+     * nobody notices until somebody with tired eyes is reading it in a car.
+     * Two points darker clears it with margin, including on the muted surface
+     * where the contrast is tightest. */
+    --muted-foreground: 240 4% 42%;
 
     --accent: 245 88% 95%;
     --accent-foreground: 245 92% 28%;
@@ -33,9 +40,23 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 60% 40%;
+    /* Dark enough to read as text, not only to notice as a dot.
+     *
+     * These were 152 60% 40% and 38 92% 50%, which measure 3.08:1 and 2.05:1
+     * against the warm background — both below WCAG AA's 4.5:1 for text, and
+     * amber at 50% is genuinely hard to read. That matters here more than on
+     * most products: "needs you" on Home and "expires in 28 days" in the
+     * portal are amber text, and they are read by caregivers outdoors on a
+     * phone and by families who are often elderly.
+     *
+     * Darkening the token rather than adding a second one for text means
+     * nobody has to remember which to reach for, and the amber and green still
+     * read as amber and green — richer, not different. Measured at 4.67:1 and
+     * 4.57:1.
+     */
+    --success: 152 60% 32%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 32%;
     --warning-foreground: 0 0% 100%;
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
@@ -84,6 +105,8 @@
 
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
+    /* Lighter on a dark ground, for the same reason: contrast runs the other
+       way. Not yet measured — the dark theme is unused by any Joy screen. */
     --success: 152 60% 45%;
     --warning: 38 92% 55%;
     --info: 217 91% 65%;

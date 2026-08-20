@@ -220,7 +220,7 @@ Recorded here so they are not only in a chat log.
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 23 tests, about 50 seconds
+npm run test:e2e          # 36 tests, about a minute
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -239,6 +239,26 @@ Two things about how it runs, both learned the hard way:
 - It serves the **built bundle**, not the dev server, and never reuses a server
   already on the port. A stray dev server meant 20 tests passed against Vite's
   on-demand compilation rather than the artifact that ships.
+The accessibility suite checks WCAG 2.1 AA with axe across the admin screens
+and both portals, plus tap-target size on a phone viewport. It found four real
+failures the first time it ran, all fixed:
+
+- **Amber and green were unreadable as text** — 2.05:1 and 3.08:1 against the
+  warm background, where AA wants 4.5:1. Those tokens carry "needs you" on Home
+  and "expires in 28 days" in the portal, read by caregivers outdoors and by
+  families who are often elderly. Both darkened, and measured.
+- **Muted foreground sat at 4.44:1** — just under, which is the failure nobody
+  notices because it looks fine on a desk. It is most of the words on any
+  screen.
+- **A payer pill used a hardcoded hex pair** at 3.61:1, bypassing the tokens
+  entirely.
+- **`dt`/`dd` outside a `dl`** in two Home panels, mine, from the commit that
+  rewired them to the real engines. A screen reader announces the value with no
+  idea what it labels.
+
+Automated checks catch perhaps a third of what matters — they do not know
+whether a label makes sense. This is a floor, not a pass mark.
+
 - It **blocks external requests**. `index.html` pulls a render-blocking
   stylesheet from Google Fonts; where there is no egress that request hangs
   until it resets, `load` never fires, and navigations time out on pages that
@@ -249,7 +269,7 @@ Two things about how it runs, both learned the hard way:
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
 which it did not before — `npm test` passes with 648 tests, `npm run test:e2e`
-passes 25, and the database suites pass 103 assertions across six files.
+passes 36, and the database suites pass 103 assertions across six files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Camera, Check, Clock, TriangleAlert, Upload } from "lucide-react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
+import { OfficeNumber } from "@/components/portal/OfficeNumber";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import {
   ACCEPTED_UPLOAD_TYPES,
@@ -178,9 +179,7 @@ export default function PortalDocuments() {
 
       <p className="mt-8 text-sm text-muted-foreground">
         Stuck? Call the office on{" "}
-        <a href="tel:+17132319662" className="underline underline-offset-4">
-          (713) 231-9662
-        </a>
+        <OfficeNumber />
         {grant?.greetingName ? " and ask for help." : "."}
       </p>
     </PortalFrame>

@@ -18,7 +18,10 @@ import type { ClientRecord } from "@/domain/clients/roster";
 
 const PAYER_TONE: Record<string, string> = {
   "Private Pay": "text-primary bg-primary-soft",
-  "Medicaid · STAR+PLUS": "text-[#0E9384] bg-[#ECFDF7]",
+  // #0E9384 measured 3.61:1 on its own background — a pill is small text, so
+  // it needs 4.5:1. Darkened to #0B7268, which is 5.51:1 and still reads teal.
+  // The amber pair beside it already passes at 5.2:1 and is left alone.
+  "Medicaid · STAR+PLUS": "text-[#0B7268] bg-[#ECFDF7]",
   "LTC Insurance": "text-[#B54708] bg-[#FFFAEB]",
   "VA Community Care": "text-muted-foreground bg-surface-muted",
   Medicare: "text-muted-foreground bg-surface-muted",
