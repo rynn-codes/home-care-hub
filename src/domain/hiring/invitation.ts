@@ -2,7 +2,21 @@ import type { E164 } from "@/domain/portal/phone";
 import type { HiringStage } from "@/domain/hiring/pipeline";
 
 /**
- * Inviting a candidate into Joy, after Joy has decided to move forward.
+ * Inviting somebody into Joy, after Joy has decided to move forward.
+ *
+ * TWO AUDIENCES, ONE LIFECYCLE
+ *
+ * §2 and §19 describe the same shape twice. A candidate is invited after the
+ * in-person interview; a family is invited after the in-person assessment. Both
+ * are a decision Joy made about a person, both send a link, both expire, both
+ * get resent, and both are redeemed by a phone that must match.
+ *
+ * So the lifecycle here is shared and `audience` says which it is. What differs
+ * is only the gate — `canInvite` for a candidate, `canInviteFamily` for a
+ * responsible party — because the thing being waited for is different. Two
+ * copies of expiry, resend and redemption would have drifted, and the half that
+ * drifted would have been the family half, which nobody tests by using it
+ * daily.
  *
  * §2 draws the boundary this file sits on: "GHL owns the recruiting process up
  * through the in-person interview. Joy does not need to house every early-stage
@@ -45,9 +59,18 @@ export type InvitationState =
   /** Withdrawn by Joy. */
   | "revoked";
 
+export type InvitationAudience = "workforce" | "family";
+
 export interface Invitation {
   id: string;
-  applicantId: string;
+  audience: InvitationAudience;
+  /**
+   * The applicant, for a workforce invitation. The responsible party, for a
+   * family one — the person who will hold the portal, not the client.
+   */
+  subjectId: string;
+  /** Whose care this concerns. Null for a candidate. §19. */
+  clientPersonId: string | null;
   /** Where it was sent. Redemption must match this. */
   phone: E164;
   /**
@@ -131,6 +154,54 @@ export function canInvite(input: {
   return { eligible: true, reason: null };
 }
 
+/**
+ * Whether a family may be invited yet — §19.
+ *
+ * The flow is: phone intake or referral, in-person assessment, a decision to
+ * move forward, then the portal link. The assessment is the gate, for the same
+ * reason the interview gates a candidate: before it, Joy has not decided
+ * anything, and a portal showing an admission status Joy has not reached would
+ * be telling a worried family that their father's care is further along than
+ * it is.
+ */
+export function canInviteFamily(input: {
+  assessmentComplete: boolean;
+  movingForward: boolean;
+  phone: string | null;
+  existing: Invitation | null;
+  asOf: string;
+}): InviteEligibility {
+  if (!input.assessmentComplete) {
+    return {
+      eligible: false,
+      reason: "The in-person assessment has not been completed yet.",
+    };
+  }
+
+  if (!input.movingForward) {
+    return {
+      eligible: false,
+      // Not a failure state. Joy may simply not have decided.
+      reason: "Joy has not decided to move forward with this admission yet.",
+    };
+  }
+
+  if (!input.phone) {
+    return { eligible: false, reason: "No mobile number on file for the responsible party." };
+  }
+
+  const live = input.existing ? invitationState(input.existing, input.asOf) : null;
+
+  if (live === "accepted") {
+    return { eligible: false, reason: "This family already has a Joy portal." };
+  }
+  if (live === "sent" || live === "opened") {
+    return { eligible: false, reason: "An invitation is already open. Resend it instead." };
+  }
+
+  return { eligible: true, reason: null };
+}
+
 export function addDays(isoDate: string, days: number): string {
   const d = new Date(`${isoDate.slice(0, 10)}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -139,7 +210,10 @@ export function addDays(isoDate: string, days: number): string {
 
 export interface IssueInput {
   id: string;
-  applicantId: string;
+  audience?: InvitationAudience;
+  subjectId: string;
+  /** Required for a family invitation; meaningless for a candidate. */
+  clientPersonId?: string | null;
   phone: E164;
   token: string;
   byUserId: string | null;
@@ -163,7 +237,9 @@ export function issueInvitation(input: IssueInput): Invitation {
 
   return {
     id: input.id,
-    applicantId: input.applicantId,
+    audience: input.audience ?? "workforce",
+    subjectId: input.subjectId,
+    clientPersonId: input.clientPersonId ?? null,
     phone: input.phone,
     token: input.token,
     issuedByUserId: input.byUserId,

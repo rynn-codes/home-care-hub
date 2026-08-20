@@ -35,7 +35,7 @@ function invitation(over: Partial<Invitation> = {}): Invitation {
   return {
     ...issueInvitation({
       id: "i1",
-      applicantId: "a1",
+      subjectId: "a1",
       phone: "+17135550100",
       token: "tok",
       byUserId: "u1",

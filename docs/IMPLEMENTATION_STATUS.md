@@ -91,9 +91,12 @@ No second frontend was created and no framework was replaced, per section 3.
 
 - **Billing.** No sprint was ever written for it. It is the largest piece of
   genuinely new ground left.
-- **A UI for requesting a document from a family.** The table and policies
-  exist in `0008`; nothing on the admin side creates a row yet.
-- **Portal grant management.** No screen issues or revokes a portal grant.
+- **Revoking a portal grant.** Issuing one exists on the client record and in
+  Hiring; nothing takes one back. Needed before a discharge or a departure.
+- **Inviting a family mid-admission.** `canInviteFamily` implements §19's gate —
+  assessment complete, Joy moving forward — and the client record satisfies both
+  by construction. The admission review screen is where that gate is live and
+  where the button should also appear.
 - AI conversation mode for intake. Manual mode is built first by design (§34);
   the AI path sits behind `AI_PHONE_INTAKE_ENABLED`, which is off.
 - A create service. The referral drawer adds to the in-memory queue and says so

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { ArrowLeft, Check, FileText, MessageSquare, Plus, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { FamilyPortalCard } from "@/components/clients/FamilyPortalCard";
+import { RequestDocumentCard } from "@/components/clients/RequestDocumentCard";
+import { seedRequestedDocuments } from "@/lib/familyPortalSeed";
 import { refusedConsents, type ClientRecord, type ComplianceItem } from "@/domain/clients/roster";
 import { seedActivity } from "@/lib/clientsSeed";
 
@@ -346,6 +349,30 @@ export function ClientRecordView({ client, onBack }: { client: ClientRecord; onB
               </ul>
             )}
           </section>
+
+          {/* §19 and §21. The family portal has existed with no way for anybody
+              to reach it, and document requests had a table and a portal screen
+              but nothing that created a row. Both actions belong on the client
+              record, because both are decisions about this client. */}
+          {/* Both §19 gates are satisfied by construction here: a client
+              record only exists once somebody has been assessed and admitted.
+              The interesting case — inviting a family *during* admission, when
+              those gates are live — belongs on the admission review screen, and
+              `canInviteFamily` is what it will call. */}
+          <FamilyPortalCard
+            clientName={client.preferredName || client.name}
+            clientPersonId={client.personId}
+            responsibleParty={client.responsiblePartyName}
+            responsiblePartyPhone={null}
+            assessmentComplete
+            movingForward
+            existing={null}
+          />
+
+          <RequestDocumentCard
+            clientName={client.preferredName || client.name}
+            requests={seedRequestedDocuments}
+          />
         </div>
       )}
 

@@ -232,7 +232,7 @@ export default function Hiring() {
 
           const invitation = issueInvitation({
             id: `inv-${id}`,
-            applicantId: id,
+            subjectId: id,
             phone: draft.e164 as E164,
             token: newInvitationToken(),
             // Stand-in for the signed-in user. The domain refuses a null, so

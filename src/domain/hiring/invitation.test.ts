@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canInvite,
+  canInviteFamily,
   invitationState,
   invitationSummary,
   issueInvitation,
@@ -22,7 +23,7 @@ function invite(overrides: Partial<Invitation> = {}): Invitation {
   return {
     ...issueInvitation({
       id: "inv-1",
-      applicantId: "a-1",
+      subjectId: "a-1",
       phone: PHONE,
       token: "tok-a",
       byUserId: USER,
@@ -81,7 +82,7 @@ describe("issueInvitation", () => {
     expect(() =>
       issueInvitation({
         id: "inv-1",
-        applicantId: "a-1",
+        subjectId: "a-1",
         phone: PHONE,
         token: "tok-a",
         byUserId: null,
@@ -268,5 +269,99 @@ describe("invitationSummary", () => {
   it("records why an invitation was withdrawn", () => {
     const gone = revokeInvitation(invite(), { reason: "Took another job", asOf: T0 });
     expect(invitationSummary(gone, T0)).toMatch(/withdrawn — Took another job/);
+  });
+});
+
+describe("§19 — inviting a family", () => {
+  // The same lifecycle as a candidate, gated on a different decision. Two
+  // copies of expiry and redemption would have drifted, and the half that
+  // drifted would be the family half — nobody exercises it daily.
+  const base = {
+    assessmentComplete: true,
+    movingForward: true,
+    phone: "+17135550110",
+    existing: null,
+    asOf: "2026-08-20",
+  };
+
+  it("waits for the in-person assessment", () => {
+    // Before it Joy has decided nothing, and a portal showing an admission
+    // status Joy has not reached tells a worried family their father's care is
+    // further along than it is.
+    const check = canInviteFamily({ ...base, assessmentComplete: false });
+    expect(check.eligible).toBe(false);
+    expect(check.reason).toContain("assessment has not been completed");
+  });
+
+  it("waits for Joy to decide, and does not call that a failure", () => {
+    const check = canInviteFamily({ ...base, movingForward: false });
+    expect(check.eligible).toBe(false);
+    expect(check.reason).toContain("has not decided to move forward");
+  });
+
+  it("needs a number to send to", () => {
+    expect(canInviteFamily({ ...base, phone: null }).reason).toContain("No mobile number");
+  });
+
+  it("invites once both are true", () => {
+    expect(canInviteFamily(base).eligible).toBe(true);
+  });
+
+  it("will not issue a second while one is open", () => {
+    const open = issueInvitation({
+      id: "i1",
+      audience: "family",
+      subjectId: "p-susan",
+      clientPersonId: "p-marcus",
+      phone: "+17135550110",
+      token: "tok",
+      byUserId: "u1",
+      asOf: "2026-08-19",
+    });
+    expect(canInviteFamily({ ...base, existing: open }).reason).toContain("Resend it instead");
+  });
+
+  it("records whose care it concerns", () => {
+    const invitation = issueInvitation({
+      id: "i1",
+      audience: "family",
+      subjectId: "p-susan",
+      clientPersonId: "p-marcus",
+      phone: "+17135550110",
+      token: "tok",
+      byUserId: "u1",
+      asOf: "2026-08-19",
+    });
+    // The person who holds the portal is not the person it is about.
+    expect(invitation.subjectId).toBe("p-susan");
+    expect(invitation.clientPersonId).toBe("p-marcus");
+    expect(invitation.audience).toBe("family");
+  });
+
+  it("defaults to workforce, so existing callers are unchanged", () => {
+    const invitation = issueInvitation({
+      id: "i2",
+      subjectId: "a-1",
+      phone: "+17135550100",
+      token: "tok",
+      byUserId: "u1",
+      asOf: "2026-08-19",
+    });
+    expect(invitation.audience).toBe("workforce");
+    expect(invitation.clientPersonId).toBeNull();
+  });
+
+  it("expires on the same clock as a candidate's", () => {
+    const invitation = issueInvitation({
+      id: "i3",
+      audience: "family",
+      subjectId: "p-susan",
+      clientPersonId: "p-marcus",
+      phone: "+17135550110",
+      token: "tok",
+      byUserId: "u1",
+      asOf: "2026-08-01",
+    });
+    expect(invitationState(invitation, "2026-08-20")).toBe("expired");
   });
 });
