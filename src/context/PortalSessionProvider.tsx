@@ -10,13 +10,20 @@ import type { OtpService } from "@/domain/portal/ports";
  *
  * A NOTE ON WHAT THIS IS AND IS NOT
  *
- * This holds a verified identity in React state. That is fine for a prototype
+ * This holds a verified identity in the browser. That is fine for a prototype
  * and wrong for production, and the difference is not a detail: the real
  * session must be an httpOnly cookie or a server-verified token, because a
  * portal session in JavaScript is readable by anything that gets script into
  * the page. The `OtpService` port is the seam — swapping `MemoryOtpService` for
  * an edge function moves verification server side without this file changing
  * shape.
+ *
+ * It is mirrored into `sessionStorage` so a refresh does not throw somebody
+ * back to the login screen. That is a prototype affordance and nothing more:
+ * sessionStorage, not localStorage, so it dies with the tab rather than sitting
+ * on a shared phone until someone clears it. It does not make the design above
+ * any less wrong, and restoring re-resolves the grants rather than trusting
+ * what was stored, so a revoked grant cannot be resurrected by a stale blob.
  *
  * What *is* durable here is the remembered mode. It is a preference, not a
  * credential: knowing that somebody last used the work portal reveals nothing
@@ -26,6 +33,25 @@ import type { OtpService } from "@/domain/portal/ports";
  */
 
 const REMEMBERED_KEY = "joy.portal.mode";
+const SESSION_KEY = "joy.portal.session";
+
+function readStoredIdentity(): PortalIdentity | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? (JSON.parse(raw) as PortalIdentity) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredIdentity(identity: PortalIdentity | null) {
+  try {
+    if (identity) sessionStorage.setItem(SESSION_KEY, JSON.stringify(identity));
+    else sessionStorage.removeItem(SESSION_KEY);
+  } catch {
+    // A refresh will then land on the login screen. Annoying, not broken.
+  }
+}
 
 function readRemembered(): RememberedMode | null {
   try {
@@ -70,9 +96,18 @@ interface PortalSession {
 const Ctx = createContext<PortalSession | null>(null);
 
 export function PortalSessionProvider({ children }: { children: React.ReactNode }) {
-  const [identity, setIdentity] = useState<PortalIdentity | null>(null);
-  const [grant, setGrant] = useState<PortalGrant | null>(null);
-  const [resolution, setResolution] = useState<ModeResolution | null>(null);
+  // Restore by re-resolving, never by trusting the stored grant. The phone was
+  // verified; what it unlocks is decided again from live grants each time.
+  const restored = useMemo(() => {
+    const stored = readStoredIdentity();
+    return stored ? { identity: stored, resolution: resolveMode(stored, readRemembered()) } : null;
+  }, []);
+
+  const [identity, setIdentity] = useState<PortalIdentity | null>(restored?.identity ?? null);
+  const [grant, setGrant] = useState<PortalGrant | null>(restored?.resolution.grant ?? null);
+  const [resolution, setResolution] = useState<ModeResolution | null>(
+    restored?.resolution ?? null,
+  );
 
   // One instance for the life of the app, so challenges and rate limits
   // survive a re-render. A new service per render would reset the cooldown
@@ -85,6 +120,7 @@ export function PortalSessionProvider({ children }: { children: React.ReactNode 
 
   const signIn = useCallback((next: PortalIdentity) => {
     const resolved = resolveMode(next, readRemembered());
+    writeStoredIdentity(next);
     setIdentity(next);
     setResolution(resolved);
     setGrant(resolved.grant);
@@ -97,6 +133,7 @@ export function PortalSessionProvider({ children }: { children: React.ReactNode 
   }, []);
 
   const signOut = useCallback(() => {
+    writeStoredIdentity(null);
     setIdentity(null);
     setGrant(null);
     setResolution(null);

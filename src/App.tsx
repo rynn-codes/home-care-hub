@@ -32,8 +32,10 @@ import PortalLogin from "./pages/portal/PortalLogin";
 import PortalChoose from "./pages/portal/PortalChoose";
 import PortalClosed from "./pages/portal/PortalClosed";
 import PortalFamilyHome from "./pages/portal/FamilyHome";
-import PortalCandidateStatus from "./pages/portal/CandidateStatus";
 import PortalDocuments from "./pages/portal/Documents";
+import PortalWorkforceHome from "./pages/portal/WorkforceHome";
+import PortalEmployeeSchedule from "./pages/portal/EmployeeSchedule";
+import PortalVisitScreen from "./pages/portal/VisitScreen";
 import { PortalSessionProvider } from "@/context/PortalSessionProvider";
 import { RequirePortal } from "@/components/portal/RequirePortal";
 
@@ -62,12 +64,14 @@ const App = () => (
             <Route path="/portal/closed" element={<PortalClosed />} />
 
             <Route element={<RequirePortal audience="workforce" />}>
-              {/* §7: one identity, one portal, changing state. The workforce
-                  home is the status screen — it is what a candidate returns to
-                  and what an onboarding hire sees next. */}
-              <Route path="/portal/work" element={<PortalCandidateStatus />} />
+              {/* §6 and §7: one identity, one portal, changing state. What
+                  /portal/work shows is decided by the grant, not by the URL,
+                  so a caregiver's bookmark survives being hired. */}
+              <Route path="/portal/work" element={<PortalWorkforceHome />} />
               <Route path="/portal/work/application" element={<PortalApplication />} />
               <Route path="/portal/work/documents" element={<PortalDocuments />} />
+              <Route path="/portal/work/schedule" element={<PortalEmployeeSchedule />} />
+              <Route path="/portal/work/visit/:id" element={<PortalVisitScreen />} />
             </Route>
 
             {/* §18–24 are steps 11–15 and not built. This is not the family
