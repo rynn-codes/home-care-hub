@@ -20,6 +20,18 @@ export interface Visit {
   endsAt: string;
   /** rn_assessment visits are the RN's, not a caregiver's. */
   eventType?: string;
+  /**
+   * Charge for this visit when Joy's default says not to, or the reverse.
+   *
+   * Karynn, 20 Aug: "RN admission is free unless noted otherwise." The note is
+   * this field. An admission assessment is unbilled by default and the office
+   * can mark one chargeable — a second assessment after a hospital stay, say —
+   * without changing what every other assessment costs.
+   *
+   * Undefined means "use the default for this kind of visit", which is not the
+   * same as false. See `isBillable`.
+   */
+  billableOverride?: boolean;
 }
 
 export type ConflictKind =

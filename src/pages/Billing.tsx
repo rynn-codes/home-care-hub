@@ -205,8 +205,9 @@ export default function Billing() {
 
       <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
         Rates shown are placeholders, not Joy's pricing. Time and a half applies over 40 hours and
-        on the seven holidays named in the agreement, and never twice for the same hour. Suspending
-        care for non-payment is permitted by the agreement and is deliberately not automatic.
+        on the seven holidays named in the agreement, and never twice for the same hour. The RN's
+        admission assessment is free unless a visit is marked otherwise. Suspending care for
+        non-payment is permitted by the agreement and is deliberately not automatic.
       </p>
     </>
   );

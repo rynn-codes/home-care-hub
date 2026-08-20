@@ -73,17 +73,33 @@ export const PAYMENT_DUE_DAYS = 1;
 export const SUSPENSION_AFTER_HOURS = 24;
 
 /**
- * Event types that are billable client care despite being marked events.
+ * Event types Joy charges for by default.
  *
- * Empty today, and deliberately so. The RN's admission assessment is the
- * obvious candidate — Karynn has not said whether Joy charges for it, and the
- * packet does not mention it, so Joy does not. FLAGGED for her.
+ * Empty, and settled rather than merely unanswered. Karynn ruled on 20 Aug:
+ * "RN admission is free unless noted otherwise." So the assessment is not on
+ * this list, and the exception is per-visit rather than per-type — see
+ * `billableOverride`. A blanket flag would have made every future assessment
+ * chargeable the moment somebody wanted to charge for one.
  */
 export const BILLABLE_EVENT_TYPES: readonly string[] = [];
 
-/** Ordinary client care, or an event Joy has said it charges for. */
+/**
+ * Is there anything to charge for here?
+ *
+ * Three cases, in order. An explicit note on the visit wins — that is Karynn's
+ * "unless noted otherwise", and it can go either way: charge for an assessment
+ * that would normally be free, or waive a visit that would normally be billed.
+ * Then ordinary client care, which carries no event type. Then anything else,
+ * which is not billable until it is listed.
+ *
+ * The default for an unrecognised event type is deliberately "no". Failing to
+ * charge is recoverable; charging a family for something that never happened
+ * to them is not.
+ */
 export function isBillable(visit: Visit): boolean {
-  return !visit.eventType || BILLABLE_EVENT_TYPES.includes(visit.eventType);
+  if (visit.billableOverride !== undefined) return visit.billableOverride;
+  if (!visit.eventType) return true;
+  return BILLABLE_EVENT_TYPES.includes(visit.eventType);
 }
 
 export type PaymentMethod = "card" | "ach" | "check";

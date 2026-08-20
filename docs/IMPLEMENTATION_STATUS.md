@@ -199,6 +199,10 @@ Recorded here so they are not only in a chat log.
   overtime silently for anybody working a weekend.
 - **Family portal invitation.** Sent from GHL, which is inferred rather than
   instructed. Every other SMS route is her explicit decision.
+- **Real client rates.** Billing refuses to invoice a client with no rate
+  rather than sending a zero, so every client needs one before go-live. The
+  packet has these emailed separately for privacy, so they do not belong in the
+  repository — they belong in the database.
 - **Real pay rates.** The figures on the Employees screen came from the mockup
   and are fiction. Payroll deliberately computes no wages because of this.
 - **Packet page 15** still prints her mobile number; she has ruled that only the

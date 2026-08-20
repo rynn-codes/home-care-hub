@@ -286,6 +286,53 @@ describe("what is not billable", () => {
     expect(invoice.lines).toEqual([]);
   });
 
+  it("does not charge for an RN admission assessment", () => {
+    // Karynn, 20 Aug: "RN admission is free unless noted otherwise."
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [visit({ eventType: "rn_assessment", startsAt: `${WEEK}T09:00:00`, endsAt: `${WEEK}T11:00:00` })],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines).toEqual([]);
+  });
+
+  it("charges for one when the office notes otherwise", () => {
+    // The note is per visit, not per type. A blanket flag would make every
+    // future assessment chargeable the moment somebody wanted to charge once
+    // — a second assessment after a hospital stay, say.
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [
+        visit({
+          eventType: "rn_assessment",
+          billableOverride: true,
+          startsAt: `${WEEK}T09:00:00`,
+          endsAt: `${WEEK}T11:00:00`,
+        }),
+      ],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines[0].hours).toBe(2);
+    expect(invoice.subtotal).toBe(60);
+  });
+
+  it("waives an ordinary visit when the office notes that too", () => {
+    // The override goes both ways. Joy waiving a visit is as real an act as
+    // charging for one, and it should not need a workaround.
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [{ ...day(WEEK, "a"), billableOverride: false }],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines).toEqual([]);
+  });
+
+  it("distinguishes 'not noted' from 'noted as free'", () => {
+    // undefined means use the default; false means somebody decided.
+    const ordinary = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    expect(ordinary.lines[0].hours).toBe(8);
+  });
+
   it("still bills ordinary care, which carries no event type", () => {
     const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
     expect(invoice.lines[0].hours).toBe(8);
