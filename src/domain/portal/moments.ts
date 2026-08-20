@@ -1,4 +1,5 @@
 import type { ConsentDecision } from "@/domain/consents/registry";
+import { clinicalTermIn, staffTermIn } from "@/domain/portal/familySafeText";
 
 /**
  * Personal Touches — §13 to §17, and §29's step 14.
@@ -126,47 +127,6 @@ export interface MomentCheck {
   problems: Array<{ problem: MomentProblem; detail: string }>;
 }
 
-/**
- * Words that mean this belongs in the chart, not the family portal.
- *
- * Deliberately blunt. It will occasionally stop something harmless — "she had a
- * fall of leaves in the garden" would trip on `fall` — and that is the right
- * way for it to fail, because a caregiver can rephrase in four seconds and the
- * alternative failure is an incident report arriving as a warm update.
- */
-const CLINICAL_TERMS = [
-  "medication",
-  "med ",
-  "dose",
-  "diagnos",
-  "incident",
-  "fall",
-  "fell",
-  "wound",
-  "catheter",
-  "incontinen",
-  "bowel",
-  "toilet",
-  "blood pressure",
-  "vitals",
-  "bathing assistance",
-  "transfer assist",
-  "hospice",
-  "dementia",
-  "refused care",
-  "declined care",
-];
-
-/** Phrasing that is a note to the office, not to a family. */
-const STAFF_TERMS = [
-  "supervisor",
-  "call the office",
-  "let the office know",
-  "needs review",
-  "care plan update",
-  "family is difficult",
-  "per my notes",
-];
 
 /**
  * Whether a Moment may be shared at all.
@@ -205,8 +165,7 @@ export function checkMoment(input: {
     return { ok: false, problems };
   }
 
-  const clinical = CLINICAL_TERMS.find((term) => lower.includes(term));
-  if (clinical) {
+  if (clinicalTermIn(lower)) {
     problems.push({
       problem: "clinical_content",
       detail:
@@ -215,8 +174,7 @@ export function checkMoment(input: {
     });
   }
 
-  const staff = STAFF_TERMS.find((term) => lower.includes(term));
-  if (staff) {
+  if (staffTermIn(lower)) {
     problems.push({
       problem: "staff_note",
       detail: "This looks like a note for the office rather than for the family.",
@@ -342,29 +300,4 @@ export function momentsTimeline(moments: readonly Moment[], asOf: Date): Timelin
       const at = new Date(m.sharedAt!);
       return { id: m.id, when: sameDay(at, asOf) ? "Today" : fmt.format(at), body: m.body };
     });
-}
-
-// ------------------------------------------------------- preferences --
-
-/**
- * §17's "Getting to Know Me".
- *
- * "These are deliberately maintained personal preferences, not uncontrolled AI
- * memory." So a preference is a row somebody added on purpose, with a name
- * against it — never something inferred from Moments or charts. Nothing in this
- * file writes one.
- */
-export interface Preference {
-  id: string;
-  clientPersonId: string;
-  text: string;
-  addedByPersonId: string;
-  addedAt: string;
-  /** Preferences are shown to caregivers before a visit, so they are approved. */
-  approved: boolean;
-}
-
-/** What a caregiver sees before a visit. Approved only. */
-export function visiblePreferences(preferences: readonly Preference[]): string[] {
-  return preferences.filter((p) => p.approved).map((p) => p.text);
 }

@@ -6,7 +6,6 @@ import {
   editMoment,
   mayApprove,
   momentsTimeline,
-  visiblePreferences,
   withholdMoment,
   type Moment,
 } from "@/domain/portal/moments";
@@ -226,12 +225,3 @@ describe("§16 — a care history, not a feed", () => {
   });
 });
 
-describe("§17 — preferences are maintained, not inferred", () => {
-  it("shows only what somebody approved", () => {
-    const prefs = [
-      { id: "1", clientPersonId: "c1", text: "Likes gospel music in the morning", addedByPersonId: "p", addedAt: "t", approved: true },
-      { id: "2", clientPersonId: "c1", text: "Seems to dislike Tuesdays", addedByPersonId: "p", addedAt: "t", approved: false },
-    ];
-    expect(visiblePreferences(prefs)).toEqual(["Likes gospel music in the morning"]);
-  });
-});

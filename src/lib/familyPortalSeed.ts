@@ -1,5 +1,6 @@
 import type { AdmissionProgress, RequestedDocument } from "@/domain/portal/familyPortal";
 import type { Moment } from "@/domain/portal/moments";
+import type { Preference } from "@/domain/portal/preferences";
 
 /**
  * Demo data for the family portal.
@@ -92,11 +93,73 @@ export const seedMoments: Moment[] = [
   },
 ];
 
-/** §17 — deliberately maintained, not inferred. */
-export const seedPreferences = [
-  "Enjoys chess",
-  "Likes sitting on the porch after lunch",
-  "Coffee with one cream",
-  "Gospel music in the morning",
-  "Happy to talk about the lake house",
+/**
+ * §17 — deliberately maintained, not inferred.
+ *
+ * Real records rather than a string list, because §17's distinction only means
+ * something if each one carries who added it and who approved it. The last one
+ * is a family suggestion still waiting on the office, so the approval queue and
+ * the pre-visit card have something to actually differ about.
+ */
+export const seedPreferences: Preference[] = [
+  {
+    id: "pref1",
+    clientPersonId: "p-marcus",
+    text: "Enjoys chess",
+    state: "approved",
+    addedByPersonId: "p-jamisha",
+    addedAt: daysAgo(20),
+    approvedByPersonId: "p-karynn",
+    approvedAt: daysAgo(19),
+    retiredReason: null,
+    source: "caregiver",
+  },
+  {
+    id: "pref2",
+    clientPersonId: "p-marcus",
+    text: "Likes sitting on the porch after lunch",
+    state: "approved",
+    addedByPersonId: "p-karynn",
+    addedAt: daysAgo(18),
+    approvedByPersonId: "p-karynn",
+    approvedAt: daysAgo(18),
+    retiredReason: null,
+    source: "office",
+  },
+  {
+    id: "pref3",
+    clientPersonId: "p-marcus",
+    text: "Coffee with one cream",
+    state: "approved",
+    addedByPersonId: "p-susan",
+    addedAt: daysAgo(15),
+    approvedByPersonId: "p-karynn",
+    approvedAt: daysAgo(14),
+    retiredReason: null,
+    source: "family",
+  },
+  {
+    id: "pref4",
+    clientPersonId: "p-marcus",
+    text: "Gospel music in the morning",
+    state: "approved",
+    addedByPersonId: "p-susan",
+    addedAt: daysAgo(15),
+    approvedByPersonId: "p-karynn",
+    approvedAt: daysAgo(14),
+    retiredReason: null,
+    source: "family",
+  },
+  {
+    id: "pref5",
+    clientPersonId: "p-marcus",
+    text: "Happy to talk about the lake house",
+    state: "proposed",
+    addedByPersonId: "p-susan",
+    addedAt: daysAgo(1),
+    approvedByPersonId: null,
+    approvedAt: null,
+    retiredReason: null,
+    source: "family",
+  },
 ];

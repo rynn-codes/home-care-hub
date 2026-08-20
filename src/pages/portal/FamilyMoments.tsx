@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import { momentsTimeline } from "@/domain/portal/moments";
+import { preferencesForVisit } from "@/domain/portal/preferences";
 import { seedMoments, seedPreferences } from "@/lib/familyPortalSeed";
 
 /**
@@ -19,6 +20,10 @@ export default function FamilyMoments() {
   const { grant } = usePortalSession();
   const asOf = useMemo(() => new Date(), []);
   const entries = useMemo(() => momentsTimeline(seedMoments, asOf), [asOf]);
+
+  // Approved only. A suggestion nobody has reviewed must not read as something
+  // Joy has agreed — including back to the family who suggested it.
+  const preferences = useMemo(() => preferencesForVisit(seedPreferences, "p-marcus"), []);
 
   const subjectName = grant?.subjectName ?? "your family member";
 
@@ -56,7 +61,7 @@ export default function FamilyMoments() {
           missed.
         </p>
         <ul className="mt-4 space-y-2">
-          {seedPreferences.map((pref) => (
+          {preferences.map((pref) => (
             <li key={pref} className="flex gap-2.5 text-base">
               <span className="text-muted-foreground" aria-hidden="true">
                 •
