@@ -86,6 +86,10 @@ No second frontend was created and no framework was replaced, per section 3.
   `/portal`, outside the admin shell.
 - **Payroll** — hours from the clock, split per workweek, with exceptions.
   Joy produces hours; Gusto produces wages. No pay rates are in the code.
+- **People** — business contacts, referral sources and partners, organised
+  around who can send Joy work and who has gone quiet. Karynn's scope, 18 Aug:
+  "our general contact list for ancillary people". Adding and editing are not
+  wired up; it reads a seeded list.
 
 ## What does not exist
 

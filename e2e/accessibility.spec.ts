@@ -43,6 +43,7 @@ test.describe("the admin app", () => {
     ["/operations", "Operations"],
     ["/operations/portal", "Portal activity"],
     ["/clients", "Clients"],
+    ["/people", "People"],
     ["/payroll", "Payroll"],
     ["/billing", "Billing"],
   ] as Array<[string, string]>) {
