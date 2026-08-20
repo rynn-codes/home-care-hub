@@ -14,10 +14,13 @@ import {
   type DemoState,
 } from "@/lib/demoStore";
 import type { SeedAdmission } from "@/lib/admissionsSeed";
+import type { Contact } from "@/domain/people/contacts";
 
 interface DemoContextValue extends DemoState {
   addReferral: (admission: SeedAdmission, person: DemoState["people"][number]) => void;
   saveIntake: (admissionId: string, intake: Partial<DemoIntake>) => void;
+  addContact: (contact: Contact) => void;
+  logContact: (contactId: string, on: string) => void;
   completeIntake: (admissionId: string) => void;
   saveAssessment: (admissionId: string, patch: Partial<DemoAssessment>) => void;
   saveConsents: (admissionId: string, patch: Partial<DemoConsentSession>) => void;
@@ -53,6 +56,21 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveDemoState(state);
   }, [state]);
+
+  const addContact = useCallback<DemoContextValue["addContact"]>((contact) => {
+    setState((s) => ({ ...s, contacts: [contact, ...s.contacts] }));
+  }, []);
+
+  /**
+   * Recording a conversation, rather than editing the contact.
+   *
+   * Kept in its own map so it applies to seeded contacts too — those are not in
+   * `state.contacts` and never will be, and a caller should not have to know
+   * which list somebody came from to say they rang them.
+   */
+  const logContact = useCallback<DemoContextValue["logContact"]>((contactId, on) => {
+    setState((s) => ({ ...s, contactLog: { ...s.contactLog, [contactId]: on.slice(0, 10) } }));
+  }, []);
 
   const addReferral = useCallback<DemoContextValue["addReferral"]>((admission, person) => {
     setState((s) => ({
@@ -431,6 +449,8 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       addReferral,
+      addContact,
+      logContact,
       saveIntake,
       completeIntake,
       assignments: state.assignments,
@@ -448,7 +468,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, setCurrentUser, reset],
+    [state, addReferral, addContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

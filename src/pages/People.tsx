@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
-import { Building2, Mail, Phone, Search, TriangleAlert } from "lucide-react";
+import { Building2, Mail, Phone, Plus, Search, TriangleAlert } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { AddContactDialog } from "@/components/people/AddContactDialog";
+import { useDemo } from "@/context/DemoDataProvider";
 import {
   CONTACT_KIND_LABELS,
   contactLine,
+  contactFromDraft,
   contactStanding,
   displayName,
   isReferrer,
@@ -32,7 +37,15 @@ import { cn } from "@/lib/utils";
  * out deliberately.
  */
 
-function ContactRow({ contact, today }: { contact: Contact; today: string }) {
+function ContactRow({
+  contact,
+  today,
+  onSpoke,
+}: {
+  contact: Contact;
+  today: string;
+  onSpoke: () => void;
+}) {
   const chase = needsFollowUp(contact, today);
 
   return (
@@ -97,6 +110,19 @@ function ContactRow({ contact, today }: { contact: Contact; today: string }) {
           >
             {contactStanding(contact, today)}
           </p>
+
+          {/* Without a way to reset the clock, every contact turns amber after
+              three months and the list becomes noise people learn to ignore —
+              which is worse than not flagging anything. */}
+          {isReferrer(contact) && (
+            <button
+              type="button"
+              onClick={onSpoke}
+              className="mt-1 -my-1 py-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Spoke to them today
+            </button>
+          )}
         </div>
       </div>
     </li>
@@ -106,24 +132,43 @@ function ContactRow({ contact, today }: { contact: Contact; today: string }) {
 export default function People() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [query, setQuery] = useState("");
+  const [adding, setAdding] = useState(false);
+  const { contacts: added, contactLog, addContact, logContact } = useDemo();
 
-  const contacts = useMemo(
-    () => sortContacts(searchContacts(seedContacts, query), today),
-    [query, today],
+  // Added contacts merge with the seeded cards rather than replacing them, the
+  // same way new hires merge with the seeded workforce. The log applies to both,
+  // so a caller does not have to know which list somebody came from.
+  const all = useMemo(
+    () =>
+      [...added, ...seedContacts].map((c) =>
+        contactLog[c.id] ? { ...c, lastContactedOn: contactLog[c.id] } : c,
+      ),
+    [added, contactLog],
   );
 
-  const chasing = seedContacts.filter((c) => needsFollowUp(c, today)).length;
-  const referrers = seedContacts.filter(isReferrer).length;
+  const contacts = useMemo(
+    () => sortContacts(searchContacts(all, query), today),
+    [all, query, today],
+  );
+
+  const chasing = all.filter((c) => needsFollowUp(c, today)).length;
+  const referrers = all.filter(isReferrer).length;
 
   return (
     <>
       <PageHeader
         title="People"
         description="Business contacts, referral sources and partners — everybody who is not a client or an employee."
+        actions={
+          <Button onClick={() => setAdding(true)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Add contact
+          </Button>
+        }
       />
 
       <p className="mb-4 text-sm text-muted-foreground">
-        {seedContacts.length} {seedContacts.length === 1 ? "contact" : "contacts"}
+        {all.length} {all.length === 1 ? "contact" : "contacts"}
         {referrers > 0 && ` · ${referrers} who can send Joy work`}
         {chasing > 0 && (
           <span className="text-[hsl(var(--warning))]">
@@ -149,7 +194,15 @@ export default function People() {
 
       <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
         {contacts.map((contact) => (
-          <ContactRow key={contact.id} contact={contact} today={today} />
+          <ContactRow
+            key={contact.id}
+            contact={contact}
+            today={today}
+            onSpoke={() => {
+              logContact(contact.id, today);
+              toast(`Noted — spoke to ${contact.name} today`);
+            }}
+          />
         ))}
         {contacts.length === 0 && (
           <li className="px-4 py-10 text-center text-sm text-muted-foreground">
@@ -162,10 +215,24 @@ export default function People() {
         <Building2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span>
           Referral sources are flagged after three months without contact, which is roughly how
-          quickly an agency drops off a discharge planner's list. Adding and editing contacts is
-          not wired up yet — this reads a seeded list.
+          quickly an agency drops off a discharge planner's list. Contacts you add are kept in
+          the browser for the demo; the Supabase table replaces that.
         </span>
       </p>
+
+      <AddContactDialog
+        open={adding}
+        onOpenChange={setAdding}
+        onAdd={(draft) => {
+          const contact = contactFromDraft({
+            draft,
+            id: `contact-${Date.now()}`,
+            today,
+          });
+          addContact(contact);
+          toast.success(`${contact.name} added`);
+        }}
+      />
     </>
   );
 }

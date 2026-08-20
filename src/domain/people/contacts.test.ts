@@ -8,7 +8,13 @@ import {
   needsFollowUp,
   searchContacts,
   sortContacts,
+  canSave,
+  contactFromDraft,
+  draftProblems,
+  recordContact,
+  EMPTY_DRAFT,
   type Contact,
+  type ContactDraft,
 } from "@/domain/people/contacts";
 
 const TODAY = "2026-08-20";
@@ -149,4 +155,77 @@ describe("the directory", () => {
     expect(searchContacts(list, "").length).toBe(2);
   });
 
+});
+
+
+describe("adding a contact", () => {
+  const draft = (over: Partial<ContactDraft> = {}): ContactDraft => ({
+    ...EMPTY_DRAFT,
+    name: "Kerwin Jones",
+    email: "kjones11@villagemd.com",
+    ...over,
+  });
+
+  it("insists on a name", () => {
+    expect(draftProblems(draft({ name: "" }))).toContain("no_name");
+    expect(canSave(draft({ name: "" }))).toBe(false);
+  });
+
+  it("insists on some way to reach them", () => {
+    // A row with a name and no email or phone is a note, not a contact, and it
+    // sits in the list looking like something Joy can act on.
+    expect(draftProblems(draft({ email: "", phone: "" }))).toContain("no_way_to_reach");
+    expect(canSave(draft({ email: "", phone: "(346) 589-6432" }))).toBe(true);
+  });
+
+  it("accepts everything else being blank", () => {
+    // Cards vary. A form that demands completeness gets abandoned halfway,
+    // which loses the contact entirely.
+    expect(canSave(draft())).toBe(true);
+  });
+
+  it("catches an obviously wrong email without being clever about it", () => {
+    expect(draftProblems(draft({ email: "kjones11" }))).toContain("bad_email");
+    // A stricter pattern rejects real addresses; the cost of a typo here is a
+    // bounced email, not a broken record.
+    expect(draftProblems(draft({ email: "k.jones+home@village-md.co.uk" }))).toEqual([]);
+  });
+
+  it("turns blanks into nulls rather than empty strings", () => {
+    // An empty string renders as a gap where a field should be; null renders
+    // as nothing at all, which is what "the card did not say" looks like.
+    const contact = contactFromDraft({ draft: draft(), id: "c9", today: TODAY });
+    expect(contact.credentials).toBeNull();
+    expect(contact.unit).toBeNull();
+    expect(contact.address).toBeNull();
+  });
+
+  it("counts today as the day they were spoken to", () => {
+    // Somebody typing in a card was almost always handed it that day. Leaving
+    // it null puts a brand-new contact on the follow-up list in ninety days
+    // having never been rung, which is true and useless.
+    const contact = contactFromDraft({ draft: draft(), id: "c9", today: TODAY });
+    expect(contact.lastContactedOn).toBe(TODAY);
+    expect(needsFollowUp(contact, TODAY)).toBe(false);
+  });
+
+  it("keeps the kind the person chose", () => {
+    const contact = contactFromDraft({ draft: draft({ kind: "outreach" }), id: "c9", today: TODAY });
+    expect(contact.kind).toBe("outreach");
+    expect(isReferrer(contact)).toBe(true);
+  });
+});
+
+describe("recording a conversation", () => {
+  it("resets the follow-up clock", () => {
+    // Without this every contact turns amber after three months and the list
+    // becomes noise somebody learns to ignore.
+    const stale = contact({ lastContactedOn: "2026-01-01" });
+    expect(needsFollowUp(stale, TODAY)).toBe(true);
+    expect(needsFollowUp(recordContact(stale, TODAY), TODAY)).toBe(false);
+  });
+
+  it("takes the date only, whatever it is given", () => {
+    expect(recordContact(contact(), "2026-08-20T14:32:00Z").lastContactedOn).toBe("2026-08-20");
+  });
 });

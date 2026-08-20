@@ -88,8 +88,9 @@ No second frontend was created and no framework was replaced, per section 3.
   Joy produces hours; Gusto produces wages. No pay rates are in the code.
 - **People** — business contacts, referral sources and partners, organised
   around who can send Joy work and who has gone quiet. Karynn's scope, 18 Aug:
-  "our general contact list for ancillary people". Adding and editing are not
-  wired up; it reads a seeded list.
+  "our general contact list for ancillary people". Contacts can be added and
+  conversations logged; both persist in the browser for the demo, the same way
+  the rest of the Golden Demo does.
 
 ## What does not exist
 

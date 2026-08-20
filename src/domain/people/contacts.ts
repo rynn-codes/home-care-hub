@@ -180,3 +180,117 @@ export function searchContacts(contacts: readonly Contact[], query: string): Con
   );
 }
 
+
+
+// ------------------------------------------------------------- writing --
+
+export interface ContactDraft {
+  name: string;
+  credentials: string;
+  title: string;
+  organization: string;
+  unit: string;
+  kind: ContactKind;
+  email: string;
+  phone: string;
+  address: string;
+  notes: string;
+}
+
+export const EMPTY_DRAFT: ContactDraft = {
+  name: "",
+  credentials: "",
+  title: "",
+  organization: "",
+  kind: "discharge_planner",
+  unit: "",
+  email: "",
+  phone: "",
+  address: "",
+  notes: "",
+};
+
+export type DraftProblem = "no_name" | "no_way_to_reach" | "bad_email";
+
+export const DRAFT_MESSAGES: Record<DraftProblem, string> = {
+  no_name: "A name, at least.",
+  no_way_to_reach: "An email or a phone number — otherwise there is no contact to keep.",
+  bad_email: "That email address does not look right.",
+};
+
+/**
+ * What a contact must have before it is worth saving.
+ *
+ * Only three things, and the middle one is the point: a row with a name and no
+ * way to reach the person is a note, not a contact, and it will sit in the list
+ * looking like something Joy can act on. Everything else on the card is
+ * optional because business cards vary and half-entering somebody beats not
+ * entering them.
+ */
+export function draftProblems(draft: ContactDraft): DraftProblem[] {
+  const problems: DraftProblem[] = [];
+
+  if (draft.name.trim().length < 2) problems.push("no_name");
+  if (!draft.email.trim() && !draft.phone.trim()) problems.push("no_way_to_reach");
+
+  // Deliberately loose. A stricter pattern rejects real addresses, and the
+  // cost of a typo here is a bounced email, not a broken record.
+  if (draft.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(draft.email.trim())) {
+    problems.push("bad_email");
+  }
+
+  return problems;
+}
+
+export function canSave(draft: ContactDraft): boolean {
+  return draftProblems(draft).length === 0;
+}
+
+function trimmed(value: string): string | null {
+  const next = value.trim();
+  return next.length > 0 ? next : null;
+}
+
+/**
+ * Turn a filled-in form into a contact.
+ *
+ * `lastContactedOn` is set to today, because the moment somebody types a card
+ * in is almost always the day they were handed it. Leaving it null would put a
+ * brand-new contact straight onto the follow-up list in ninety days having
+ * never been spoken to, which is technically true and useless.
+ */
+export function contactFromDraft(input: {
+  draft: ContactDraft;
+  id: string;
+  today: string;
+}): Contact {
+  const { draft } = input;
+
+  return {
+    id: input.id,
+    name: draft.name.trim(),
+    credentials: trimmed(draft.credentials),
+    title: trimmed(draft.title),
+    organization: trimmed(draft.organization),
+    unit: trimmed(draft.unit),
+    kind: draft.kind,
+    email: trimmed(draft.email),
+    phone: trimmed(draft.phone),
+    address: trimmed(draft.address),
+    notes: trimmed(draft.notes),
+    addedOn: input.today,
+    lastContactedOn: input.today,
+    referrals: [],
+  };
+}
+
+/**
+ * Record that somebody spoke to them.
+ *
+ * Without this the follow-up clock is a countdown nobody can reset, so every
+ * contact turns amber after three months and the list becomes noise somebody
+ * learns to ignore — which is worse than not flagging at all.
+ */
+export function recordContact(contact: Contact, on: string): Contact {
+  return { ...contact, lastContactedOn: on.slice(0, 10) };
+}

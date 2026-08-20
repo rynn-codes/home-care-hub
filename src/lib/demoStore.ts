@@ -2,6 +2,7 @@ import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from 
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
 import type { UserRole } from "@/domain/consents/witness";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
+import type { Contact } from "@/domain/people/contacts";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -125,6 +126,17 @@ export interface DemoState {
   scheduleEvents: DemoScheduleEvent[];
   communications: DemoCommunication[];
   domainEvents: DemoDomainEvent[];
+  /**
+   * Business contacts added through the app, newest first.
+   *
+   * Merged with `seedContacts` on the People screen rather than replacing it,
+   * the same way `newHires` merges with the seeded workforce — so the cards
+   * Karynn has already handed over stay put and anything typed in survives a
+   * refresh.
+   */
+  contacts: Contact[];
+  /** Contact id to the ISO date somebody last spoke to them. */
+  contactLog: Record<string, string>;
 }
 
 function initial(): DemoState {
@@ -141,6 +153,8 @@ function initial(): DemoState {
     scheduleEvents: [],
     communications: [],
     domainEvents: [],
+    contacts: [],
+    contactLog: {},
   };
 }
 
