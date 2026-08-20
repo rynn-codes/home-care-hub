@@ -41,4 +41,62 @@ export const seedContacts: Contact[] = [
     lastContactedOn: daysAgo(0),
     referrals: [],
   },
+  {
+    id: "contact-okpara",
+    name: "Curtis Okpara",
+    credentials: "MD",
+    title: "Internal Medicine",
+    organization: "E.X.A.M by Dr. O",
+    unit: "Concierge Medicine",
+    // A concierge internist's patients are exactly the demographic that needs
+    // home care, and he keeps them rather than discharging them — so the
+    // relationship runs both ways over years rather than one referral at a time.
+    kind: "physician",
+    email: "info@exambydoctoro.com",
+    phone: "(281) 393-4465",
+    address: "5373 W Alabama St, Houston, TX 77056",
+    notes:
+      "By appointment only. Active on social — @exam.by.dr.o on Instagram, exam by dr.o on " +
+      "Facebook, dr.curtisokpara on TikTok.",
+    addedOn: daysAgo(0),
+    lastContactedOn: daysAgo(0),
+    referrals: [],
+  },
+  {
+    id: "contact-jones",
+    name: "Kerwin Jones",
+    credentials: null,
+    title: "Outreach Specialist",
+    organization: "VillageMD",
+    unit: null,
+    // Connecting VillageMD's patients to services is the job, so he is a
+    // referral channel by definition rather than by accident.
+    kind: "outreach",
+    email: "kjones11@villagemd.com",
+    phone: "(346) 589-6432",
+    address: null,
+    notes: null,
+    addedOn: daysAgo(0),
+    lastContactedOn: daysAgo(0),
+    referrals: [],
+  },
+  {
+    id: "contact-rhodes",
+    name: "Craig Rhodes Sr.",
+    credentials: null,
+    title: "Broker Manager",
+    organization: "VillageMD",
+    unit: null,
+    // Broker relationships are an insurance channel rather than a clinical one,
+    // so he is a partner and not chased on the referral clock. Worth knowing
+    // when an LTC insurance question comes up mid-admission.
+    kind: "partner",
+    email: "crhodes2@villagemd.com",
+    phone: "(713) 256-8133",
+    address: null,
+    notes: "Office (469) 729-8738. Same organisation as Kerwin Jones.",
+    addedOn: daysAgo(0),
+    lastContactedOn: daysAgo(0),
+    referrals: [],
+  },
 ];

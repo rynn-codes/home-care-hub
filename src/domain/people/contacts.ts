@@ -33,6 +33,15 @@ export type ContactKind =
   | "discharge_planner"
   | "physician"
   | "case_manager"
+  /**
+   * Whose job is connecting their organisation's patients to services.
+   *
+   * Added when a VillageMD outreach specialist's card arrived and none of the
+   * existing kinds fitted: not a clinician, not a case manager, and calling him
+   * a "partner" would have dropped him out of the follow-up list — which is the
+   * one thing about him that matters, since referrals are literally his role.
+   */
+  | "outreach"
   | "facility"
   | "vendor"
   | "partner"
@@ -43,6 +52,7 @@ export const CONTACT_KIND_LABELS: Record<ContactKind, string> = {
   discharge_planner: "Discharge planning",
   physician: "Physician",
   case_manager: "Case management",
+  outreach: "Outreach",
   facility: "Facility",
   vendor: "Vendor",
   partner: "Partner",
@@ -55,6 +65,7 @@ export const REFERRING_KINDS: readonly ContactKind[] = [
   "discharge_planner",
   "physician",
   "case_manager",
+  "outreach",
   "facility",
 ];
 
@@ -169,12 +180,3 @@ export function searchContacts(contacts: readonly Contact[], query: string): Con
   );
 }
 
-/** Grouped for the directory. Organizations matter more than individuals here. */
-export function byOrganization(contacts: readonly Contact[]): Array<[string, Contact[]]> {
-  const groups = new Map<string, Contact[]>();
-  for (const contact of contacts) {
-    const key = contact.organization ?? "No organization";
-    groups.set(key, [...(groups.get(key) ?? []), contact]);
-  }
-  return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-}

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   FOLLOW_UP_AFTER_DAYS,
-  byOrganization,
   contactLine,
   contactStanding,
   displayName,
@@ -50,6 +49,20 @@ describe("how a contact reads", () => {
 });
 
 describe("who is worth chasing", () => {
+  it("counts an outreach specialist as a referrer", () => {
+    // Connecting their organisation's patients to services is the job. Filing
+    // him as a "partner" would drop him off the follow-up list, which is the
+    // one thing about him that matters.
+    expect(isReferrer(contact({ kind: "outreach", referrals: [] }))).toBe(true);
+  });
+
+  it("does not chase a broker manager on the referral clock", () => {
+    // An insurance channel rather than a clinical one. Worth having when an
+    // LTC insurance question comes up; not worth a quarterly call.
+    const quiet = contact({ kind: "partner", lastContactedOn: "2026-01-01" });
+    expect(needsFollowUp(quiet, TODAY)).toBe(false);
+  });
+
   it("treats a discharge planner as a referrer before she has referred anybody", () => {
     // The point of recording her is what she might send, not what she has.
     expect(isReferrer(contact({ referrals: [] }))).toBe(true);
@@ -136,11 +149,4 @@ describe("the directory", () => {
     expect(searchContacts(list, "").length).toBe(2);
   });
 
-  it("groups by organization, because that is how referrals arrive", () => {
-    const list = [contact(), contact({ id: "c2", organization: null })];
-    expect(byOrganization(list).map(([org]) => org)).toEqual([
-      "Houston Methodist",
-      "No organization",
-    ]);
-  });
 });
