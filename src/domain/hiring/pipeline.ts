@@ -9,10 +9,11 @@
  *
  * SOURCE NOTE. `Joy_Health_Hiring_Screen_Roadmap.md` is named in the brief and
  * is not in the repository — this is built from the Hiring mockup and §39
- * instead, which is exactly the gap finding F8 describes. Two things I have had
- * to assume are marked ASSUMPTION below; both are one-line changes when the
- * roadmap arrives, and both are wrong in a way that matters if I have guessed
- * badly, so they are stated rather than buried.
+ * instead, which is exactly the gap finding F8 describes. Karynn confirmed on
+ * 18 Aug that the roadmap was named by the brief but never written, so this is
+ * the source of truth now rather than a stand-in. One thing remains an
+ * ASSUMPTION and is marked below: which documents block a first shift. The
+ * seven-day staleness threshold was confirmed.
  */
 
 export type HiringStage =
@@ -82,6 +83,13 @@ export const NO_FIT_LABELS: Record<NoFitReason, string> = {
   no_response: "Stopped responding",
 };
 
+export interface DocumentRecord {
+  /** ISO date the document was issued or signed. */
+  issued: string;
+  /** ISO date it lapses. Null for items that do not expire. */
+  expires: string | null;
+}
+
 export interface Applicant {
   id: string;
   name: string;
@@ -99,8 +107,14 @@ export interface Applicant {
   availability: string;
   drives: boolean;
   noFitReason?: NoFitReason | null;
-  /** Credential keys supplied so far, matching the Employees module. */
-  documents: string[];
+  /**
+   * Documents supplied so far, keyed the same as the Employees credential
+   * module so a hire converts without translation. Each carries its own dates,
+   * because a CPR card without an expiry is not a record of anything — and
+   * inventing the expiry at conversion time would put fiction into the
+   * compliance clock on somebody's first day.
+   */
+  documents: Record<string, DocumentRecord>;
   /** Set once the offer is accepted. */
   offerAcceptedOn?: string | null;
 }
@@ -141,7 +155,7 @@ export interface FirstShiftReadiness {
 }
 
 export function firstShiftReadiness(applicant: Applicant): FirstShiftReadiness {
-  const have = new Set(applicant.documents);
+  const have = new Set(Object.keys(applicant.documents));
   const blocking = [
     ...REQUIRED_BEFORE_FIRST_SHIFT,
     ...(applicant.drives ? REQUIRED_TO_DRIVE : []),
@@ -180,7 +194,7 @@ export function canAdvanceHiring(applicant: Applicant, to: HiringStage): Transit
     };
   }
 
-  if (to === "offer" && !applicant.documents.includes("background_check")) {
+  if (to === "offer" && !applicant.documents.background_check) {
     return {
       allowed: false,
       reason: "The background check has not cleared. An offer cannot be made before it does.",
@@ -256,10 +270,89 @@ export function daysInStage(applicant: Applicant, today: string): number {
   return Math.max(0, Math.round(ms / 86_400_000));
 }
 
-/** ASSUMPTION, pending the roadmap: a week without movement is stale. */
+/**
+ * A week in the same stage, on an applicant who is still open.
+ *
+ * Karynn confirmed seven days on 18 Aug. Worth being precise about what this
+ * measures, because it is a proxy rather than the real thing: the clock runs
+ * from entering the current STAGE, so it catches records that are not moving,
+ * not people who have not been contacted. Ringing somebody who then says "let
+ * me think" does not reset it, and moving somebody a stage without ringing them
+ * does. Replacing stageSince with a lastContactedAt would fix that; ruled on 18
+ * Aug to leave it until the pipeline has been used in anger and it is clear
+ * whether the proxy actually misleads.
+ */
 export const STALE_AFTER_DAYS = 7;
 
 export function isStale(applicant: Applicant, today: string): boolean {
   if (applicant.track === "no_fit" || applicant.track === "hired") return false;
   return daysInStage(applicant, today) >= STALE_AFTER_DAYS;
+}
+
+/**
+ * The employee record a completed onboarding produces.
+ *
+ * Deliberately the shape the Employees module already reads, so becoming staff
+ * is a conversion rather than a re-entry. The documents collected during hiring
+ * become the credential records: the paperwork chased for six weeks IS the
+ * compliance record, and re-keying it would be both wasteful and a chance to
+ * get it wrong.
+ */
+export interface HireDetails {
+  /** Chosen at the offer, not derivable from the application. */
+  title: string;
+  role: "cna" | "hha" | "lvn" | "office";
+  employmentType: string;
+  /** Null for salaried staff. */
+  baseRate: number | null;
+  weeklyHours: number | null;
+  location: string;
+  startsOn: string;
+}
+
+export interface HiredEmployee {
+  id: string;
+  name: string;
+  title: string;
+  role: HireDetails["role"];
+  status: "active";
+  location: string;
+  hiredOn: string;
+  employmentType: string;
+  baseRate: number | null;
+  weeklyHours: number | null;
+  drives: boolean;
+  phone: string;
+  email: string;
+  nextShift: null;
+  clients: never[];
+  kin: null;
+  kinLine: null;
+  summary: string;
+  records: Record<string, DocumentRecord>;
+}
+
+export function toEmployee(applicant: Applicant, details: HireDetails): HiredEmployee {
+  return {
+    id: `emp-${applicant.id.replace(/^app-/, "")}`,
+    name: applicant.name,
+    title: details.title,
+    role: details.role,
+    status: "active",
+    location: details.location,
+    hiredOn: details.startsOn,
+    employmentType: details.employmentType,
+    baseRate: details.baseRate,
+    weeklyHours: details.weeklyHours,
+    drives: applicant.drives,
+    phone: applicant.phone,
+    email: applicant.email,
+    nextShift: null,
+    clients: [],
+    kin: null,
+    kinLine: null,
+    summary: `Completed onboarding on ${details.startsOn}. Applied ${applicant.appliedOn} via ${applicant.source}.`,
+    // Straight across. No dates are invented at this boundary.
+    records: { ...applicant.documents },
+  };
 }

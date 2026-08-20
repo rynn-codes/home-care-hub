@@ -37,6 +37,8 @@ interface DemoContextValue extends DemoState {
   }) => void;
   retryCommunication: (id: string) => void;
   assignments: DemoState["assignments"];
+  newHires: DemoState["newHires"];
+  hireEmployee: (employee: DemoState["newHires"][number]) => void;
   assignShift: (visitId: string, caregiverName: string) => void;
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
@@ -399,6 +401,26 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const hireEmployee = useCallback<DemoContextValue["hireEmployee"]>((employee) => {
+    setState((s) => ({
+      ...s,
+      // Replace rather than append, so completing onboarding twice cannot
+      // produce two of the same person.
+      newHires: [...s.newHires.filter((e) => e.id !== employee.id), employee],
+      domainEvents: [
+        {
+          id: newId("evt"),
+          eventType: "employee.hired",
+          aggregateType: "employee",
+          aggregateId: employee.id,
+          status: "processed",
+          createdAt: new Date().toISOString(),
+        },
+        ...s.domainEvents,
+      ],
+    }));
+  }, []);
+
   const setCurrentUser = useCallback<DemoContextValue["setCurrentUser"]>((user) => {
     setState((s) => ({ ...s, currentUser: user }));
   }, []);
@@ -412,6 +434,8 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       saveIntake,
       completeIntake,
       assignments: state.assignments,
+      newHires: state.newHires,
+      hireEmployee,
       assignShift,
       currentUser: state.currentUser,
       setCurrentUser,
@@ -424,7 +448,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, setCurrentUser, reset],
+    [state, addReferral, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

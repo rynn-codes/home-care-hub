@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   HIRING_ORDER,
+  toEmployee,
   REQUIRED_BEFORE_FIRST_SHIFT,
   canAdvanceHiring,
   canAdvanceOnboarding,
@@ -13,7 +14,8 @@ import {
 
 const TODAY = "2026-08-18";
 
-const ALL_DOCS = [
+/** Every document, all comfortably in date. */
+const ALL_DOCS = docs([
   "background_check",
   "tb_test",
   "licence",
@@ -23,7 +25,13 @@ const ALL_DOCS = [
   "annual_training",
   "drivers_license",
   "auto_insurance",
-];
+]);
+
+function docs(keys: readonly string[]): Applicant["documents"] {
+  return Object.fromEntries(
+    keys.map((k) => [k, { issued: "2026-07-01", expires: "2027-07-01" }]),
+  );
+}
 
 function applicant(over: Partial<Applicant> = {}): Applicant {
   return {
@@ -40,7 +48,7 @@ function applicant(over: Partial<Applicant> = {}): Applicant {
     phone: "(713) 555-0142",
     availability: "Weekdays, mornings",
     drives: true,
-    documents: [],
+    documents: {},
     ...over,
   };
 }
@@ -59,12 +67,12 @@ describe("hiring stages", () => {
 
   // Sequence is discipline. This one is liability.
   it("refuses an offer before the background check has cleared", () => {
-    const ready = applicant({ stage: "background", documents: ["licence"] });
+    const ready = applicant({ stage: "background", documents: docs(["licence"]) });
     const refusal = canAdvanceHiring(ready, "offer");
     expect(refusal.allowed).toBe(false);
     expect(refusal.reason).toMatch(/background check has not cleared/i);
 
-    const cleared = applicant({ stage: "background", documents: ["background_check"] });
+    const cleared = applicant({ stage: "background", documents: docs(["background_check"]) });
     expect(canAdvanceHiring(cleared, "offer").allowed).toBe(true);
   });
 
@@ -89,7 +97,7 @@ describe("hiring stages", () => {
 
 describe("the first-shift gate", () => {
   it("blocks a first shift until the required documents are in", () => {
-    const a = applicant({ track: "onboarding", onboardingStage: "field_orientation", documents: [] });
+    const a = applicant({ track: "onboarding", onboardingStage: "field_orientation", documents: {} });
     const check = canAdvanceOnboarding(a, "first_shift");
     expect(check.allowed).toBe(false);
     expect(check.reason).toMatch(/documents outstanding/i);
@@ -110,14 +118,14 @@ describe("the first-shift gate", () => {
       drives: false,
       track: "onboarding",
       onboardingStage: "field_orientation",
-      documents: [...REQUIRED_BEFORE_FIRST_SHIFT],
+      documents: docs(REQUIRED_BEFORE_FIRST_SHIFT),
     });
     expect(firstShiftReadiness(a).ready).toBe(true);
     expect(canAdvanceOnboarding(a, "first_shift").allowed).toBe(true);
   });
 
   it("requires them from somebody who will", () => {
-    const a = applicant({ drives: true, documents: [...REQUIRED_BEFORE_FIRST_SHIFT] });
+    const a = applicant({ drives: true, documents: docs(REQUIRED_BEFORE_FIRST_SHIFT) });
     const readiness = firstShiftReadiness(a);
     expect(readiness.ready).toBe(false);
     expect(readiness.missingBlocking).toContain("auto_insurance");
@@ -125,7 +133,7 @@ describe("the first-shift gate", () => {
 
   // Immunisations and training are real but do not stop a first shift.
   it("separates what blocks a shift from what is merely due", () => {
-    const a = applicant({ drives: false, documents: [...REQUIRED_BEFORE_FIRST_SHIFT] });
+    const a = applicant({ drives: false, documents: docs(REQUIRED_BEFORE_FIRST_SHIFT) });
     const readiness = firstShiftReadiness(a);
     expect(readiness.ready).toBe(true);
     expect(readiness.missingSoon).toEqual(["immunizations", "annual_training"]);
@@ -149,7 +157,7 @@ describe("becoming an active employee", () => {
   });
 
   it("refuses to complete with documents still outstanding", () => {
-    const gaps = applicant({ track: "onboarding", onboardingStage: "week_2", documents: [] });
+    const gaps = applicant({ track: "onboarding", onboardingStage: "week_2", documents: {} });
     expect(canBecomeActiveEmployee(gaps).allowed).toBe(false);
   });
 });
@@ -169,5 +177,52 @@ describe("staleness", () => {
   it("does not chase closed or hired people", () => {
     expect(isStale(applicant({ stageSince: "2026-01-01", track: "no_fit" }), TODAY)).toBe(false);
     expect(isStale(applicant({ stageSince: "2026-01-01", track: "hired" }), TODAY)).toBe(false);
+  });
+});
+
+describe("becoming an employee", () => {
+  const details = {
+    title: "Field caregiver",
+    role: "cna" as const,
+    employmentType: "Full-time · hourly",
+    baseRate: 19.5,
+    weeklyHours: 36,
+    location: "Houston · Memorial",
+    startsOn: "2026-08-24",
+  };
+
+  // The paperwork chased for six weeks IS the compliance record. Re-keying it
+  // would be wasteful and a chance to get it wrong; inventing expiry dates at
+  // this boundary would put fiction into the clock on somebody's first day.
+  it("carries the hiring documents across as credential records, dates intact", () => {
+    const a = applicant({ track: "onboarding", onboardingStage: "week_2", documents: ALL_DOCS });
+    const employee = toEmployee(a, details);
+    expect(employee.records).toEqual(ALL_DOCS);
+    expect(employee.records.cpr.expires).toBe("2027-07-01");
+  });
+
+  it("keeps the person's own details and takes the rest from the offer", () => {
+    const a = applicant({ track: "onboarding", onboardingStage: "week_2", documents: ALL_DOCS });
+    const employee = toEmployee(a, details);
+    expect(employee.name).toBe(a.name);
+    expect(employee.phone).toBe(a.phone);
+    expect(employee.drives).toBe(a.drives);
+    expect(employee.baseRate).toBe(19.5);
+    expect(employee.hiredOn).toBe("2026-08-24");
+    expect(employee.status).toBe("active");
+  });
+
+  it("starts with no clients and no shift booked", () => {
+    const employee = toEmployee(
+      applicant({ track: "onboarding", onboardingStage: "week_2", documents: ALL_DOCS }),
+      details,
+    );
+    expect(employee.clients).toEqual([]);
+    expect(employee.nextShift).toBeNull();
+  });
+
+  it("derives a stable employee id from the applicant", () => {
+    const employee = toEmployee(applicant({ id: "app-ortega" }), details);
+    expect(employee.id).toBe("emp-ortega");
   });
 });

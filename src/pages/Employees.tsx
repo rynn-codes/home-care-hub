@@ -4,7 +4,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmployeeDirectory, type DirectoryRow } from "@/components/employees/EmployeeDirectory";
 import { EmployeeRecordView } from "@/components/employees/EmployeeRecordView";
 import { employeeCompliance } from "@/domain/employees/credentials";
-import { seedEmployees } from "@/lib/employeesSeed";
+import { seedEmployees, type SeedEmployee } from "@/lib/employeesSeed";
+import { useDemo } from "@/context/DemoDataProvider";
 
 /**
  * Employees — everyone on staff.
@@ -22,11 +23,22 @@ export default function Employees() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const { newHires } = useDemo();
+
+  // People hired through Onboarding appear alongside the seed. The shapes match
+  // because toEmployee() produces exactly what this screen already reads.
+  const everyone = useMemo<SeedEmployee[]>(() => {
+    const hiredIds = new Set(newHires.map((e) => e.id));
+    return [
+      ...(newHires as unknown as SeedEmployee[]),
+      ...seedEmployees.filter((e) => !hiredIds.has(e.id)),
+    ];
+  }, [newHires]);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const rows = useMemo<DirectoryRow[]>(() => {
-    const built = seedEmployees.map((e) => ({
+    const built = everyone.map((e) => ({
       id: e.id,
       name: e.name,
       initials: e.name
@@ -58,9 +70,9 @@ export default function Employees() {
     };
 
     return built.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
-  }, [today]);
+  }, [everyone, today]);
 
-  const selected = id ? seedEmployees.find((e) => e.id === id) : undefined;
+  const selected = id ? everyone.find((e) => e.id === id) : undefined;
 
   if (id && !selected) {
     return (

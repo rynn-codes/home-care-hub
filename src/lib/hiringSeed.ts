@@ -28,7 +28,9 @@ export const seedApplicants: Applicant[] = [
     phone: "(713) 555-0142",
     availability: "Weekdays, mornings",
     drives: true,
-    documents: ["handbook"],
+    documents: {
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+    },
   },
   {
     id: "app-hill",
@@ -44,7 +46,11 @@ export const seedApplicants: Applicant[] = [
     phone: "(281) 555-0117",
     availability: "Weekdays, open",
     drives: true,
-    documents: ["handbook", "licence", "cpr"],
+    documents: {
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+      licence: { issued: "2024-01-15", expires: "2028-01-15" },
+      cpr: { issued: "2025-06-01", expires: "2027-06-01" },
+    },
   },
   {
     id: "app-bello",
@@ -62,7 +68,12 @@ export const seedApplicants: Applicant[] = [
     drives: true,
     // No background_check yet, so the offer is blocked. This is the record that
     // demonstrates the one hiring rule that is a liability rather than tidiness.
-    documents: ["handbook", "licence", "cpr", "tb_test"],
+    documents: {
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+      licence: { issued: "2024-01-15", expires: "2028-01-15" },
+      cpr: { issued: "2025-06-01", expires: "2027-06-01" },
+      tb_test: { issued: "2026-07-22", expires: "2027-07-22" },
+    },
   },
   {
     id: "app-nguyen",
@@ -78,7 +89,7 @@ export const seedApplicants: Applicant[] = [
     phone: "(713) 555-0176",
     availability: "Mon–Fri, days",
     drives: false,
-    documents: [],
+    documents: {},
   },
   {
     id: "app-lopez",
@@ -95,7 +106,7 @@ export const seedApplicants: Applicant[] = [
     phone: "(346) 555-0133",
     availability: "Weekend nights",
     drives: false,
-    documents: [],
+    documents: {},
   },
   {
     id: "app-medina",
@@ -114,7 +125,14 @@ export const seedApplicants: Applicant[] = [
     drives: true,
     offerAcceptedOn: "2026-07-25",
     // Missing the TB test, so the first shift is blocked.
-    documents: ["background_check", "handbook", "licence", "cpr", "drivers_license", "auto_insurance"],
+    documents: {
+      background_check: { issued: "2026-07-20", expires: "2029-07-20" },
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+      licence: { issued: "2024-01-15", expires: "2028-01-15" },
+      cpr: { issued: "2025-06-01", expires: "2027-06-01" },
+      drivers_license: { issued: "2023-03-02", expires: "2027-03-02" },
+      auto_insurance: { issued: "2026-01-01", expires: "2027-01-01" },
+    },
   },
   {
     id: "app-carter",
@@ -133,15 +151,15 @@ export const seedApplicants: Applicant[] = [
     drives: false,
     offerAcceptedOn: "2026-08-01",
     // Everything in. Ready to become an active employee.
-    documents: [
-      "background_check",
-      "tb_test",
-      "licence",
-      "cpr",
-      "handbook",
-      "immunizations",
-      "annual_training",
-    ],
+    documents: {
+      background_check: { issued: "2026-07-20", expires: "2029-07-20" },
+      tb_test: { issued: "2026-07-22", expires: "2027-07-22" },
+      licence: { issued: "2024-01-15", expires: "2028-01-15" },
+      cpr: { issued: "2025-06-01", expires: "2027-06-01" },
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+      immunizations: { issued: "2026-07-22", expires: "2027-07-22" },
+      annual_training: { issued: "2026-07-30", expires: "2027-07-30" },
+    },
   },
   {
     id: "app-vega",
@@ -158,7 +176,7 @@ export const seedApplicants: Applicant[] = [
     availability: "—",
     drives: false,
     noFitReason: "interview_no_show",
-    documents: [],
+    documents: {},
   },
   {
     id: "app-frost",
@@ -175,7 +193,10 @@ export const seedApplicants: Applicant[] = [
     availability: "Mon–Fri, days",
     drives: true,
     noFitReason: "background_not_clear",
-    documents: ["handbook", "licence"],
+    documents: {
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+      licence: { issued: "2024-01-15", expires: "2028-01-15" },
+    },
   },
   {
     id: "app-webb",
@@ -192,6 +213,10 @@ export const seedApplicants: Applicant[] = [
     availability: "Weekdays, evenings",
     drives: true,
     noFitReason: "withdrew",
-    documents: ["background_check", "handbook", "licence"],
+    documents: {
+      background_check: { issued: "2026-07-20", expires: "2029-07-20" },
+      handbook: { issued: "2026-07-25", expires: "2027-07-25" },
+      licence: { issued: "2024-01-15", expires: "2028-01-15" },
+    },
   },
 ];

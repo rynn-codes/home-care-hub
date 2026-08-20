@@ -6,7 +6,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   HIRING_ORDER,
@@ -23,6 +26,7 @@ import {
   daysInStage,
   firstShiftReadiness,
   type Applicant,
+  type HireDetails,
   type NoFitReason,
 } from "@/domain/hiring/pipeline";
 
@@ -53,9 +57,10 @@ interface Props {
   today: string;
   onClose: () => void;
   onChange: (next: Applicant) => void;
+  onHire: (applicant: Applicant, details: HireDetails) => void;
 }
 
-export function ApplicantDrawer({ applicant, today, onClose, onChange }: Props) {
+export function ApplicantDrawer({ applicant, today, onClose, onChange, onHire }: Props) {
   return (
     <Sheet open={applicant !== null} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
@@ -65,6 +70,7 @@ export function ApplicantDrawer({ applicant, today, onClose, onChange }: Props) 
             today={today}
             onChange={onChange}
             onClose={onClose}
+            onHire={onHire}
           />
         )}
       </SheetContent>
@@ -77,11 +83,13 @@ function ApplicantBody({
   today,
   onChange,
   onClose,
+  onHire,
 }: {
   applicant: Applicant;
   today: string;
   onChange: (next: Applicant) => void;
   onClose: () => void;
+  onHire: (applicant: Applicant, details: HireDetails) => void;
 }) {
   const readiness = firstShiftReadiness(applicant);
   const days = daysInStage(applicant, today);
@@ -93,13 +101,19 @@ function ApplicantBody({
     ...REQUIRED_WITHIN_FIRST_MONTH,
   ];
 
-  const toggleDoc = (key: string) => {
-    const have = applicant.documents.includes(key);
+  const removeDoc = (key: string) => {
+    const next = { ...applicant.documents };
+    delete next[key];
+    onChange({ ...applicant, documents: next });
+  };
+
+  // Received with an expiry, not just a tick. A CPR card with no expiry is not
+  // a record of anything, and inventing the date when the person becomes an
+  // employee would put fiction into their compliance clock on day one.
+  const receiveDoc = (key: string, expires: string) => {
     onChange({
       ...applicant,
-      documents: have
-        ? applicant.documents.filter((d) => d !== key)
-        : [...applicant.documents, key],
+      documents: { ...applicant.documents, [key]: { issued: today, expires: expires || null } },
     });
   };
 
@@ -154,7 +168,8 @@ function ApplicantBody({
         </p>
         <ul className="mt-3 divide-y divide-border rounded-xl border border-border">
           {allDocs.map((key) => {
-            const have = applicant.documents.includes(key);
+            const record = applicant.documents[key];
+            const have = Boolean(record);
             const blocking = !REQUIRED_WITHIN_FIRST_MONTH.includes(
               key as (typeof REQUIRED_WITHIN_FIRST_MONTH)[number],
             );
@@ -172,11 +187,29 @@ function ApplicantBody({
                       aria-hidden="true"
                     />
                   )}
-                  <span className={cn(!have && "text-muted-foreground")}>{DOC_LABELS[key] ?? key}</span>
+                  <span className={cn(!have && "text-muted-foreground")}>
+                    {DOC_LABELS[key] ?? key}
+                    {record?.expires && (
+                      <span className="block text-xs text-muted-foreground">
+                        Expires {record.expires}
+                      </span>
+                    )}
+                  </span>
                 </span>
-                <Button variant="ghost" size="sm" onClick={() => toggleDoc(key)}>
-                  {have ? "Remove" : "Mark received"}
-                </Button>
+                {have ? (
+                  <Button variant="ghost" size="sm" onClick={() => removeDoc(key)}>
+                    Remove
+                  </Button>
+                ) : (
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <input
+                      type="date"
+                      aria-label={`${DOC_LABELS[key] ?? key} expiry date`}
+                      className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                      onChange={(e) => e.target.value && receiveDoc(key, e.target.value)}
+                    />
+                  </span>
+                )}
               </li>
             );
           })}
@@ -293,23 +326,17 @@ function ApplicantBody({
           <div className="mt-5 border-t border-border pt-4">
             {(() => {
               const check = canBecomeActiveEmployee(applicant);
-              return (
-                <>
-                  <Button
-                    className="w-full"
-                    disabled={!check.allowed}
-                    onClick={() => {
-                      onChange({ ...applicant, track: "hired", stageSince: stamp() });
-                      onClose();
-                    }}
-                  >
-                    Complete onboarding — becomes an active employee
-                  </Button>
-                  {!check.allowed && check.reason && (
+              if (!check.allowed) {
+                return (
+                  <>
+                    <Button className="w-full" disabled>
+                      Complete onboarding — becomes an active employee
+                    </Button>
                     <p className="mt-1.5 text-xs text-muted-foreground">{check.reason}</p>
-                  )}
-                </>
-              );
+                  </>
+                );
+              }
+              return <HireForm applicant={applicant} today={today} onHire={onHire} />;
             })()}
           </div>
         </section>
@@ -320,5 +347,129 @@ function ApplicantBody({
         records only whether they are done. That boundary is deliberate and not wired up yet.
       </p>
     </>
+  );
+}
+
+/**
+ * The details an offer settles that the application cannot.
+ *
+ * Role, rate and hours are negotiated, not derived — guessing them would put a
+ * number on somebody's pay record that nobody agreed to.
+ */
+function HireForm({
+  applicant,
+  today,
+  onHire,
+}: {
+  applicant: Applicant;
+  today: string;
+  onHire: (applicant: Applicant, details: HireDetails) => void;
+}) {
+  const guessedRole = /LVN/i.test(applicant.roleApplied)
+    ? "lvn"
+    : /HHA/i.test(applicant.roleApplied)
+      ? "hha"
+      : /CNA/i.test(applicant.roleApplied)
+        ? "cna"
+        : "office";
+
+  const [title, setTitle] = useState(
+    guessedRole === "office" ? applicant.roleApplied : "Field caregiver",
+  );
+  const [role, setRole] = useState<HireDetails["role"]>(guessedRole as HireDetails["role"]);
+  const [employmentType, setEmploymentType] = useState("Full-time · hourly");
+  const [rate, setRate] = useState("");
+  const [hours, setHours] = useState("");
+  const [location, setLocation] = useState("Houston");
+  const [startsOn, setStartsOn] = useState(today);
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-medium">Employment details</p>
+      <p className="text-xs text-muted-foreground">
+        Set at the offer, not derived from the application. These go straight onto the employee
+        record.
+      </p>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="hire-title" className="text-xs">Job title</Label>
+          <Input id="hire-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="hire-role" className="text-xs">Role</Label>
+          <select
+            id="hire-role"
+            value={role}
+            onChange={(e) => setRole(e.target.value as HireDetails["role"])}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="cna">CNA</option>
+            <option value="hha">HHA</option>
+            <option value="lvn">LVN</option>
+            <option value="office">Office</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="hire-type" className="text-xs">Employment type</Label>
+          <Input
+            id="hire-type"
+            value={employmentType}
+            onChange={(e) => setEmploymentType(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="hire-location" className="text-xs">Work location</Label>
+          <Input id="hire-location" value={location} onChange={(e) => setLocation(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="hire-rate" className="text-xs">Base rate / hour</Label>
+          <Input
+            id="hire-rate"
+            type="number"
+            step="0.25"
+            placeholder="Leave blank if salaried"
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="hire-hours" className="text-xs">Weekly hours</Label>
+          <Input
+            id="hire-hours"
+            type="number"
+            value={hours}
+            onChange={(e) => setHours(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <Label htmlFor="hire-start" className="text-xs">Start date</Label>
+          <Input
+            id="hire-start"
+            type="date"
+            value={startsOn}
+            onChange={(e) => setStartsOn(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <Button
+        className="w-full"
+        disabled={!title.trim() || !startsOn}
+        onClick={() =>
+          onHire(applicant, {
+            title: title.trim(),
+            role,
+            employmentType,
+            baseRate: rate === "" ? null : Number(rate),
+            weeklyHours: hours === "" ? null : Number(hours),
+            location,
+            startsOn,
+          })
+        }
+      >
+        Complete onboarding — becomes an active employee
+      </Button>
+    </div>
   );
 }

@@ -14,10 +14,15 @@ import {
   daysInStage,
   firstShiftReadiness,
   isStale,
+  toEmployee,
   type Applicant,
+  type HireDetails,
 } from "@/domain/hiring/pipeline";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { ApplicantDrawer } from "@/components/hiring/ApplicantDrawer";
+import { useDemo } from "@/context/DemoDataProvider";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Operations → Hiring.
@@ -58,6 +63,8 @@ export default function Hiring() {
   const [filter, setFilter] = useState<Filter>("open");
   const [selected, setSelected] = useState<Applicant | null>(null);
   const [applicants, setApplicants] = useState<Applicant[]>(seedApplicants);
+  const { hireEmployee } = useDemo();
+  const navigate = useNavigate();
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -182,6 +189,20 @@ export default function Hiring() {
         onChange={(next) => {
           setApplicants((all) => all.map((a) => (a.id === next.id ? next : a)));
           setSelected(next);
+        }}
+        onHire={(applicant: Applicant, details: HireDetails) => {
+          // The documents chased through hiring become the credential record.
+          // Nothing is re-keyed and no dates are invented at this boundary.
+          const employee = toEmployee(applicant, details);
+          hireEmployee(employee);
+          setApplicants((all) =>
+            all.map((a) => (a.id === applicant.id ? { ...a, track: "hired" as const } : a)),
+          );
+          setSelected(null);
+          toast.success(`${applicant.name} is now on staff`, {
+            description: "Their credentials carried across. Open the record to check them.",
+            action: { label: "Open", onClick: () => navigate(`/employees/${employee.id}`) },
+          });
         }}
       />
 

@@ -1,6 +1,7 @@
 import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from "@/lib/admissionsSeed";
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
 import type { UserRole } from "@/domain/consents/witness";
+import type { HiredEmployee } from "@/domain/hiring/pipeline";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -116,6 +117,8 @@ export interface DemoState {
   currentUser: DemoUser;
   /** Caregiver assigned to a visit, keyed by visit id. Overrides the seed. */
   assignments: Record<string, string>;
+  /** People hired through the app. Merged with the seed on the Employees screen. */
+  newHires: HiredEmployee[];
   assessments: Record<string, DemoAssessment>;
   consentSessions: Record<string, DemoConsentSession>;
   preOnboarding: Record<string, DemoPreOnboarding>;
@@ -131,6 +134,7 @@ function initial(): DemoState {
     intakes: {},
     currentUser: { name: "Karynn Verrett", role: "ceo_admin" },
     assignments: {},
+    newHires: [],
     assessments: {},
     consentSessions: {},
     preOnboarding: {},
