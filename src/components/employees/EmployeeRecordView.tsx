@@ -14,6 +14,9 @@ import { credentialsFromRecords } from "@/domain/credentials/fromSeed";
 import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 import type { CredentialStatus } from "@/domain/documents/types";
 import { seedEmployeeActivity, type SeedEmployee } from "@/lib/employeesSeed";
+import { buildAuditPacket } from "@/domain/credentials/auditPacket";
+import { AuditPacketPreview } from "@/components/employees/AuditPacketPreview";
+import { toast } from "sonner";
 
 /**
  * The employee record, following the approved mockup: Profile, Activity,
@@ -25,7 +28,7 @@ import { seedEmployeeActivity, type SeedEmployee } from "@/lib/employeesSeed";
  * screen says so at the top rather than leaving it to be inferred.
  */
 
-const TABS = ["Profile", "Activity", "Employment & Compliance", "Schedule", "Docs", "Roles"] as const;
+const TABS = ["Profile", "Activity", "Employment & Compliance", "Audit packet", "Schedule", "Docs", "Roles"] as const;
 type Tab = (typeof TABS)[number];
 
 const TONE: Record<string, string> = {
@@ -351,6 +354,36 @@ export function EmployeeRecordView({
             </dl>
           </section>
         </div>
+      )}
+
+      {tab === "Audit packet" && (
+        <AuditPacketPreview
+          packet={buildAuditPacket({
+            kind: "personnel_file",
+            employee: {
+              id: employee.id,
+              name: employee.name,
+              position: `${employee.title} · ${ROLE_LABELS[employee.role]}`,
+              hiredOn: employee.hiredOn,
+              employmentStatus: EMPLOYEE_STATUS_LABELS[employee.status],
+            },
+            readiness,
+            credentials: credentialsFromRecords(employee.id, employee.records),
+            documents: [],
+            folderFor: (type) =>
+              seedCredentialRequirements.find((r) => r.credentialType === type)?.folderType ?? "other",
+            generatedAt: today,
+            generatedByUserId: "Karynn Verrett",
+          })}
+          onGenerate={() =>
+            // §23: never fake processing success. There is no PDF toolchain
+            // connected, so the button says so rather than producing nothing.
+            toast.info("The PDF toolchain is not connected yet.", {
+              description:
+                "The packet is composed and ready. Generating pages is the AuditPacketService port, which your developer wires up.",
+            })
+          }
+        />
       )}
 
       {tab === "Activity" && (

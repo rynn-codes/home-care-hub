@@ -65,8 +65,36 @@ Every assertion runs as `authenticated`, the role PostgREST connects as. Run
 them as the table owner and RLS is bypassed — the file passes while proving
 nothing. That mistake is easy to make and was made once here already.
 
-## Still to build
+## Phases 2–4
 
-Phases 2–4 of the spec: the review-and-confirm UI (§10), renewal and duplicate
-handling (§24), the expiration notification schedule (§13), and the audit packet
-generator (§14–§18, §26). The engine those need is in place.
+All three are built bar the vendor adapters.
+
+| Phase | Where |
+|---|---|
+| 2 — Document intelligence | `src/domain/documents/validation.ts`, `src/domain/credentials/verification.ts`, `src/components/employees/CredentialReview.tsx` |
+| 3 — Compliance intelligence | `src/domain/credentials/alerts.ts`, wired into Home, Operations, Hiring and Scheduling |
+| 4 — Audit packet | `src/domain/credentials/auditPacket.ts`, previewed at Employees → *employee* → Audit packet |
+
+### The audit packet is a projection, not a record
+
+`buildAuditPacket()` is a pure function of (employee, readiness, credentials,
+documents). §25: generated artifacts are reproducible from verified data and the
+packet is never the database. Regenerate it a year later from the same records
+and you get the same packet — there is a test for exactly that.
+
+The preview shows the real structure: cover, credential summary, required
+checklist, and the Joy cover that precedes each original. **Generate PDF says the
+toolchain is not connected rather than producing an empty file** — §23, never
+fake processing success.
+
+Two rules the packet follows that are easy to lose:
+
+- **§16 — status carries a mark as well as a colour** (`✓ ! ✗ –`), so it survives
+  a mono printer and a colour-blind reader.
+- **§18 — extraction confidence appears nowhere.** The packet emphasises verified
+  facts and original evidence. A test asserts the string never leaks into it.
+
+### Still to connect
+
+The PDF toolchain behind `AuditPacketService`, and the vendor adapters in the
+table above. Everything they need is composed and tested.
