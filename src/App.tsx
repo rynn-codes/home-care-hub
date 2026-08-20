@@ -10,6 +10,7 @@ import { DemoDataProvider } from "@/context/DemoDataProvider";
 import Dashboard from "./pages/Dashboard";
 import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
+import PortalActivity from "./pages/PortalActivity";
 import Admissions from "./pages/Admissions";
 import PhoneIntake from "./pages/PhoneIntake";
 import Assessment from "./pages/Assessment";
@@ -94,6 +95,7 @@ const App = () => (
 
               <Route path="/operations" element={<Operations />} />
               <Route path="/operations/hiring" element={<Hiring />} />
+              <Route path="/operations/portal" element={<PortalActivity />} />
 
               <Route path="/admissions" element={<Admissions />} />
               <Route path="/admissions/:id/intake" element={<PhoneIntake />} />

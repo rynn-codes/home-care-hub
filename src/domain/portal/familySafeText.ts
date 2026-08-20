@@ -8,23 +8,38 @@
  * Extracted rather than copied. Two lists drift, and the day they drift is the
  * day one of them stops catching "fall".
  *
- * DELIBERATELY BLUNT
+ * BLUNT, BUT ANCHORED
  *
- * It matches substrings and will occasionally stop something harmless — "a fall
- * of leaves in the garden" trips on `fall`. That is the correct direction to
- * fail in. Rephrasing costs a caregiver four seconds; the failure it prevents
- * is a daughter learning her mother fell from a page headed "a little moment
- * from today".
+ * It will still occasionally stop something harmless — "a fall of leaves in the
+ * garden" trips on `fall`. That is the correct direction to fail in: rephrasing
+ * costs a caregiver four seconds, and the failure it prevents is a daughter
+ * learning her mother fell from a page headed "a little moment from today".
+ *
+ * What it must not do is stop ordinary sentences, and the first version did.
+ * Bare substring matching meant `med` fired inside "seeMED in good spirits" —
+ * and a caregiver describing somebody's mood writes "she seemed" constantly, so
+ * the check refused the most natural sentence in the feature. A rule that
+ * rejects normal writing is not cautious, it is broken: people route around it
+ * by writing worse Moments, or stop writing them.
+ *
+ * So terms match at a word boundary, as a prefix. `med` catches medication and
+ * meds and not seemed; `fall` catches fell-adjacent words and not rainfall.
  *
  * It is not a substitute for the approval step, and neither is the approval
  * step a substitute for it. §14 requires a human to approve; this stops the
  * obvious thing reaching that human already half-published.
  */
 
-/** Words that mean this belongs in the chart or the care plan. */
+/**
+ * Words that mean this belongs in the chart or the care plan.
+ *
+ * Matched at a word boundary as a prefix, never as a bare substring — see
+ * `clinicalTermIn`. Entries are therefore stems: `diagnos` catches diagnosis
+ * and diagnosed, `agitat` catches agitated and agitation.
+ */
 export const CLINICAL_TERMS = [
   "medication",
-  "med ",
+  "med",
   "dose",
   "diagnos",
   "incident",
@@ -69,12 +84,20 @@ export const STAFF_TERMS = [
   "per my notes",
 ] as const;
 
-export function clinicalTermIn(text: string): string | null {
+function escape(term: string): string {
+  return term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Word-boundary prefix match. See the note on `CLINICAL_TERMS`. */
+function matches(text: string, terms: readonly string[]): string | null {
   const lower = text.toLowerCase();
-  return CLINICAL_TERMS.find((term) => lower.includes(term)) ?? null;
+  return terms.find((term) => new RegExp(`\\b${escape(term)}`).test(lower)) ?? null;
+}
+
+export function clinicalTermIn(text: string): string | null {
+  return matches(text, CLINICAL_TERMS);
 }
 
 export function staffTermIn(text: string): string | null {
-  const lower = text.toLowerCase();
-  return STAFF_TERMS.find((term) => lower.includes(term)) ?? null;
+  return matches(text, STAFF_TERMS);
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, FolderOpen, TriangleAlert, UserPlus } from "lucide-react";
+import { BookOpen, FolderOpen, Heart, TriangleAlert, UserPlus } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDemo } from "@/context/DemoDataProvider";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,9 @@ import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 import { seedEmployees } from "@/lib/employeesSeed";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { firstShiftReadiness, isStale } from "@/domain/hiring/pipeline";
+import { buildPortalQueue, portalQueueSummary } from "@/domain/portal/officeQueue";
+import { seedMoments, seedPreferences, seedRequestedDocuments } from "@/lib/familyPortalSeed";
+import { seedTimeEntries } from "@/lib/payrollSeed";
 
 /**
  * Operations — running the agency, as opposed to serving one client.
@@ -79,6 +82,21 @@ export default function Operations() {
     );
     return { stale, blockedOnboarding };
   }, [today]);
+
+  // The portals write into Joy; this is the office's line of sight into that.
+  const portal = useMemo(
+    () =>
+      buildPortalQueue({
+        moments: seedMoments,
+        preferences: seedPreferences,
+        timeEntries: seedTimeEntries,
+        invitations: [],
+        documentRequests: seedRequestedDocuments,
+        nameFor: (id) => id.replace(/^p-/, ""),
+        asOf: today,
+      }),
+    [today],
+  );
 
   return (
     <>
@@ -172,6 +190,22 @@ export default function Operations() {
             </p>
           </Link>
         </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="mb-4 text-sm font-semibold">Portals</h2>
+        <Link
+          to="/operations/portal"
+          className="block rounded-2xl border border-border bg-surface p-5 transition-colors hover:bg-surface-muted"
+        >
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <Heart className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            {portalQueueSummary(portal)}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Moments, preference suggestions, clock-out exceptions and document requests.
+          </p>
+        </Link>
       </section>
 
       <section>
