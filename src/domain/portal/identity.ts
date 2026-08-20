@@ -75,6 +75,89 @@ export interface PortalGrant {
   state: PortalState;
   /** Revoked grants are kept so history survives; they never route anywhere. */
   active: boolean;
+  revokedAt?: string | null;
+  revokedReason?: string | null;
+  revokedByUserId?: string | null;
+}
+
+/**
+ * Why access was withdrawn.
+ *
+ * A closed list rather than free text, because these are the reasons that
+ * actually occur and a typed one gets searched for later. `other` carries a
+ * note, for the cases a list cannot anticipate.
+ */
+export type RevocationReason =
+  | "employment_ended"
+  | "client_discharged"
+  | "no_longer_authorised"
+  | "requested_by_person"
+  | "issued_in_error"
+  | "other";
+
+export const REVOCATION_LABELS: Record<RevocationReason, string> = {
+  employment_ended: "They no longer work for Joy",
+  client_discharged: "This client has been discharged",
+  no_longer_authorised: "They are no longer authorised for this person's care",
+  requested_by_person: "They asked us to remove their access",
+  issued_in_error: "It was issued by mistake",
+  other: "Something else",
+};
+
+/**
+ * Take a grant back.
+ *
+ * WHAT REVOCATION ACTUALLY DOES
+ *
+ * Row level security reads `active` on every query, so this takes effect on the
+ * next request rather than at the next sign-in. Somebody with the portal open
+ * stops loading data immediately; what is already on their screen stays there
+ * until they navigate, which is the same as any web application and is worth
+ * knowing rather than claiming otherwise.
+ *
+ * The grant is kept rather than deleted. Somebody read a client's schedule for
+ * eight months and the record of why they were allowed to should not vanish the
+ * day they stop — that is the history an audit asks for.
+ */
+export function revokeGrant(input: {
+  grant: PortalGrant;
+  reason: RevocationReason;
+  note?: string;
+  byUserId: string | null;
+  at: string;
+}): PortalGrant {
+  if (!input.byUserId) {
+    throw new Error(
+      "Revoking access needs the user doing it. Somebody will ring the office asking " +
+        "why their login stopped working, and 'the system did it' is not an answer.",
+    );
+  }
+
+  if (!input.grant.active) {
+    throw new Error("This access has already been withdrawn.");
+  }
+
+  if (input.reason === "other" && !input.note?.trim()) {
+    throw new Error("Choose a reason, or write one.");
+  }
+
+  return {
+    ...input.grant,
+    active: false,
+    revokedAt: input.at,
+    revokedByUserId: input.byUserId,
+    revokedReason:
+      input.reason === "other" ? input.note!.trim() : REVOCATION_LABELS[input.reason],
+  };
+}
+
+/** What the office sees against a withdrawn grant. */
+export function revocationSummary(grant: PortalGrant): string | null {
+  if (grant.active) return null;
+  const when = grant.revokedAt?.slice(0, 10);
+  return when
+    ? `Access withdrawn ${when} — ${grant.revokedReason ?? "no reason recorded"}`
+    : `Access withdrawn — ${grant.revokedReason ?? "no reason recorded"}`;
 }
 
 /** A verified phone plus everything it turned out to unlock. */

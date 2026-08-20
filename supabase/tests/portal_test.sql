@@ -190,6 +190,57 @@ begin
   select count(*) into visible from portal_grants;
   perform assert(visible = 2, 'the owner reads every portal grant');
 
+  -- ------------------------------------------------------- revocation --
+  raise notice 'Withdrawing access';
+  reset role;
+
+  -- Revoke the caregiver's grant, as the office would.
+  update portal_grants
+     set active = false,
+         revoked_at = now(),
+         revoked_by_user_id = (select id from users where role = 'ceo_admin' limit 1),
+         revoked_reason = 'They no longer work for Joy'
+   where person_id = f.caregiver and audience = 'workforce';
+
+  set local role authenticated;
+  perform act_as(f.auth_caregiver);
+
+  -- The property that matters is client data, and it is cut immediately:
+  -- portal_may_read_person reaches a client only through an *active* grant, and
+  -- RLS re-evaluates that on every query rather than at sign-in.
+  select count(*) into visible from client_profiles;
+  perform assert(visible = 0, 'a revoked grant stops reading client data on the next query, not the next sign-in');
+
+  -- Her own row stays readable, and that is correct rather than an oversight.
+  -- A portal grant and a user account are different things: revoking the grant
+  -- closes the portal, it does not deactivate the employee. Somebody who still
+  -- works for Joy but no longer uses the portal should not vanish from Joy's
+  -- own records. Deactivating the account is a separate act, in `users.status`.
+  select count(*) into visible from people where id = f.caregiver;
+  perform assert(visible = 1, 'revoking a portal grant does not deactivate the person''s Joy account');
+
+  raise notice 'A revocation is a record, not a flag';
+  reset role;
+
+  begin
+    update portal_grants
+       set active = false, revoked_at = null, revoked_by_user_id = null, revoked_reason = null
+     where person_id = f.daughter;
+    perform assert(false, 'an anonymous revocation must be refused');
+  exception when check_violation then
+    perform assert(true, 'access cannot be withdrawn without recording who did it and why');
+  end;
+
+  begin
+    update portal_grants
+       set active = true, revoked_reason = 'They no longer work for Joy'
+     where person_id = f.caregiver and audience = 'workforce';
+    perform assert(false, 'an active grant carrying a revocation reason must be refused');
+  exception when check_violation then
+    perform assert(true, 'a reactivated grant cannot keep the reason it was taken away');
+  end;
+
+  set local role authenticated;
   reset role;
   raise notice 'portal access boundary: all assertions passed';
 end $$;

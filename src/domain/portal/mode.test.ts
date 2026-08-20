@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { portalRoute, type PortalGrant, type PortalIdentity } from "@/domain/portal/identity";
+import {
+  portalRoute,
+  revocationSummary,
+  revokeGrant,
+  type PortalGrant,
+  type PortalIdentity,
+} from "@/domain/portal/identity";
 import {
   accessBasis,
   modeBanner,
@@ -188,5 +194,109 @@ describe("where a mismatched audience goes", () => {
     const onlyFamily = resolveMode(identity([CARE]), null);
     expect(onlyFamily.choices.some((g) => g.audience === "workforce")).toBe(false);
     expect(portalRoute(onlyFamily.grant!)).toBe("/portal/care");
+  });
+});
+
+describe("revoking access", () => {
+  const grant = (): PortalGrant => ({ ...WORK });
+
+  it("needs the person doing it", () => {
+    // Somebody will ring the office asking why their login stopped working.
+    expect(() =>
+      revokeGrant({ grant: grant(), reason: "employment_ended", byUserId: null, at: "2026-08-20" }),
+    ).toThrow(/needs the user doing it/);
+  });
+
+  it("records who, when and why", () => {
+    const revoked = revokeGrant({
+      grant: grant(),
+      reason: "employment_ended",
+      byUserId: "u-karynn",
+      at: "2026-08-20T09:00:00Z",
+    });
+    expect(revoked.active).toBe(false);
+    expect(revoked.revokedByUserId).toBe("u-karynn");
+    expect(revoked.revokedAt).toBe("2026-08-20T09:00:00Z");
+    expect(revoked.revokedReason).toBe("They no longer work for Joy");
+  });
+
+  it("keeps the grant rather than deleting it", () => {
+    // Somebody read a client's schedule for eight months. The record of why
+    // they were allowed to should not vanish the day they stop.
+    const revoked = revokeGrant({
+      grant: { ...CARE },
+      reason: "client_discharged",
+      byUserId: "u-karynn",
+      at: "2026-08-20",
+    });
+    expect(revoked.personId).toBe("p1");
+    expect(revoked.subjectPersonId).toBe("p9");
+    expect(revoked.subjectName).toBe("Marcus");
+  });
+
+  it("insists on a note when the reason is 'something else'", () => {
+    expect(() =>
+      revokeGrant({ grant: grant(), reason: "other", byUserId: "u1", at: "2026-08-20" }),
+    ).toThrow(/Choose a reason, or write one/);
+
+    const written = revokeGrant({
+      grant: grant(),
+      reason: "other",
+      note: "Duplicate of an existing grant",
+      byUserId: "u1",
+      at: "2026-08-20",
+    });
+    expect(written.revokedReason).toBe("Duplicate of an existing grant");
+  });
+
+  it("refuses to revoke twice", () => {
+    const once = revokeGrant({
+      grant: grant(),
+      reason: "employment_ended",
+      byUserId: "u1",
+      at: "2026-08-20",
+    });
+    expect(() =>
+      revokeGrant({ grant: once, reason: "issued_in_error", byUserId: "u1", at: "2026-08-21" }),
+    ).toThrow(/already been withdrawn/);
+  });
+
+  it("stops routing anywhere the moment it is revoked", () => {
+    // The property that matters. resolveMode already filters on `active`, so
+    // this asserts the two pieces agree rather than that either works alone.
+    const revoked = revokeGrant({
+      grant: grant(),
+      reason: "employment_ended",
+      byUserId: "u1",
+      at: "2026-08-20",
+    });
+    expect(resolveMode(identity([revoked]), null).outcome).toBe("none");
+  });
+
+  it("leaves a second grant working", () => {
+    // Somebody who stops working for Joy is still their father's responsible
+    // party. Revoking one audience must not silently close the other.
+    const revoked = revokeGrant({
+      grant: grant(),
+      reason: "employment_ended",
+      byUserId: "u1",
+      at: "2026-08-20",
+    });
+    const result = resolveMode(identity([revoked, CARE]), null);
+    expect(result.outcome).toBe("single");
+    expect(result.grant).toBe(CARE);
+  });
+
+  it("says what happened, for the office", () => {
+    const revoked = revokeGrant({
+      grant: grant(),
+      reason: "client_discharged",
+      byUserId: "u1",
+      at: "2026-08-20T09:00:00Z",
+    });
+    expect(revocationSummary(revoked)).toBe(
+      "Access withdrawn 2026-08-20 — This client has been discharged",
+    );
+    expect(revocationSummary(grant())).toBeNull();
   });
 });

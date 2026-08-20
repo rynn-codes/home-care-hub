@@ -165,4 +165,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0008`: 99 assertions across six files.
+As of `0009`: 103 assertions across six files.

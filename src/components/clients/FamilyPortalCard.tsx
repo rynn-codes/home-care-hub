@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link2, Send } from "lucide-react";
+import { Link2, Send, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,8 @@ import {
 } from "@/domain/hiring/invitation";
 import { PHONE_PROBLEM_MESSAGES, formatPhone, normalizePhone } from "@/domain/portal/phone";
 import { composeMessage } from "@/domain/portal/messaging";
+import { RevokeAccessDialog } from "@/components/portal/RevokeAccessDialog";
+import { revokeGrant, revocationSummary, type PortalGrant } from "@/domain/portal/identity";
 
 /**
  * Sending a family their portal link — §19.
@@ -49,6 +51,8 @@ export function FamilyPortalCard({
   const today = new Date().toISOString().slice(0, 10);
   const [phone, setPhone] = useState(responsiblePartyPhone ?? "");
   const [sent, setSent] = useState<Invitation | null>(existing);
+  const [grant, setGrant] = useState<PortalGrant | null>(null);
+  const [revoking, setRevoking] = useState(false);
 
   const parsed = normalizePhone(phone);
   const phoneProblem = "problem" in parsed ? PHONE_PROBLEM_MESSAGES[parsed.problem] : null;
@@ -79,6 +83,19 @@ export function FamilyPortalCard({
 
     setSent(invitation);
     onInvite?.(invitation);
+
+    // A grant exists from the moment the link goes out, so there is something
+    // to withdraw before they have ever signed in — which is exactly when a
+    // mistyped number needs taking back.
+    setGrant({
+      audience: "family",
+      personId: clientPersonId,
+      subjectPersonId: clientPersonId,
+      greetingName: responsibleParty?.split(" ")[0] ?? "",
+      subjectName: clientName,
+      state: "pre_admission",
+      active: true,
+    });
 
     // Says what would be sent rather than claiming it was. No SMS provider is
     // connected — see MemorySmsSender.
@@ -130,11 +147,22 @@ export function FamilyPortalCard({
         </div>
       )}
 
+      {grant && !grant.active && (
+        <p className="mt-3 text-xs text-destructive">{revocationSummary(grant)}</p>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button size="sm" disabled={!eligibility.eligible} onClick={invite}>
           <Send className="mr-1.5 h-3.5 w-3.5" />
           {sent ? "Resend link" : "Send portal link"}
         </Button>
+
+        {grant?.active && (
+          <Button size="sm" variant="ghost" onClick={() => setRevoking(true)}>
+            <ShieldOff className="mr-1.5 h-3.5 w-3.5" />
+            Withdraw access
+          </Button>
+        )}
 
         {!eligibility.eligible && eligibility.reason && (
           // Stated plainly, in muted text. "Joy has not decided to move forward
@@ -142,6 +170,27 @@ export function FamilyPortalCard({
           <p className="text-xs text-muted-foreground">{eligibility.reason}</p>
         )}
       </div>
+
+      {grant && (
+        <RevokeAccessDialog
+          open={revoking}
+          onOpenChange={setRevoking}
+          grant={grant}
+          personName={responsibleParty ?? "this family"}
+          onRevoke={({ reason, note }) => {
+            const revoked = revokeGrant({
+              grant,
+              reason,
+              note,
+              byUserId: "current-user",
+              at: new Date().toISOString(),
+            });
+            setGrant(revoked);
+            setSent(null);
+            toast("Access withdrawn", { description: revoked.revokedReason ?? undefined });
+          }}
+        />
+      )}
     </section>
   );
 }
