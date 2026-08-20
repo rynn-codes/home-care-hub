@@ -1,0 +1,310 @@
+import { describe, expect, it } from "vitest";
+import {
+  ACH_CONVENIENCE_FEE,
+  LATE_FEE,
+  ageing,
+  buildInvoice,
+  reconcile,
+  splitHours,
+  type ClientBillingTerms,
+} from "@/domain/billing/invoice";
+import type { Visit } from "@/domain/scheduling/conflicts";
+
+/** Clients are fictional throughout this repository. */
+function visit(over: Partial<Visit> = {}): Visit {
+  return {
+    id: "v1",
+    clientName: "Marcus Bell",
+    service: "Personal Care",
+    caregiverName: "Jamisha",
+    startsAt: "2026-08-17T09:00:00",
+    endsAt: "2026-08-17T17:00:00",
+    ...over,
+  };
+}
+
+/** Eight hours on a given date. */
+function day(date: string, id: string, hours = 8): Visit {
+  const end = String(9 + hours).padStart(2, "0");
+  return visit({ id, startsAt: `${date}T09:00:00`, endsAt: `${date}T${end}:00:00` });
+}
+
+function terms(over: Partial<ClientBillingTerms> = {}): ClientBillingTerms {
+  return {
+    clientPersonId: "c1",
+    clientName: "Marcus Bell",
+    hourlyRate: 30,
+    paymentMethod: "card",
+    depositRemaining: 0,
+    ...over,
+  };
+}
+
+const WEEK = "2026-08-17";
+
+describe("no rate on file", () => {
+  it("refuses to bill rather than billing zero", () => {
+    // A zero looks like a settled fact. A family would be told they owed
+    // nothing, and nobody would find out until the month closed.
+    const invoice = buildInvoice({
+      terms: terms({ hourlyRate: null }),
+      visits: [day(WEEK, "a")],
+      weekStart: WEEK,
+    });
+    expect(invoice.state).toBe("cannot_bill");
+    expect(invoice.total).toBeNull();
+    expect(invoice.blockedReason).toContain("No hourly rate on file");
+  });
+
+  it("still itemises the hours, so the gap is obviously the rate", () => {
+    const invoice = buildInvoice({
+      terms: terms({ hourlyRate: null }),
+      visits: [day(WEEK, "a")],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines[0].hours).toBe(8);
+    expect(invoice.lines[0].amount).toBeNull();
+  });
+});
+
+describe("time and a half — the signed terms", () => {
+  it("charges holiday hours at one and a half", () => {
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [day("2026-12-25", "x")],
+      weekStart: "2026-12-21",
+    });
+    const holiday = invoice.lines.find((l) => l.kind === "holiday");
+    expect(holiday?.multiplier).toBe(1.5);
+    expect(holiday?.amount).toBe(360);
+    expect(holiday?.description).toContain("Christmas Day");
+  });
+
+  it("charges over forty hours at one and a half", () => {
+    const week = ["a", "b", "c", "d", "e", "f"].map((id, i) => day(`2026-08-${17 + i}`, id, 8));
+    const invoice = buildInvoice({ terms: terms(), visits: week, weekStart: WEEK });
+    expect(invoice.lines.find((l) => l.kind === "standard")?.hours).toBe(40);
+    expect(invoice.lines.find((l) => l.kind === "overtime")?.hours).toBe(8);
+    expect(invoice.subtotal).toBe(40 * 30 + 8 * 30 * 1.5);
+  });
+
+  it("does not charge a holiday hour twice", () => {
+    // THE BUG THIS PREVENTS. A holiday hour that also pushes the week past 40
+    // must not be billed at 1.5× for the holiday and again at 1.5× for the
+    // overtime. The agreement describes one rate of one and a half, not a
+    // stacking one — and double-charging a family for one hour is the kind of
+    // error that ends a relationship.
+    // Mon 6 July to Fri 10 July, forty ordinary hours, plus the 4th.
+    const week = [
+      ...["a", "b", "c", "d", "e"].map((id, i) =>
+        day(`2026-07-${String(6 + i).padStart(2, "0")}`, id, 8),
+      ),
+      day("2026-07-04", "holiday", 8),
+    ];
+    const split = splitHours(week);
+    expect(split.holidays[0].hours).toBe(8);
+    // 40 ordinary hours remain, so nothing tips into overtime.
+    expect(split.standard).toBe(40);
+    expect(split.overtime).toBe(0);
+  });
+
+  it("measures overtime against non-holiday hours only", () => {
+    const week = [
+      ...["a", "b", "c", "d", "e", "f"].map((id, i) => day(`2026-07-${String(6 + i).padStart(2, "0")}`, id, 8)),
+      day("2026-07-04", "holiday", 8),
+    ];
+    const split = splitHours(week);
+    expect(split.standard).toBe(40);
+    expect(split.overtime).toBe(8);
+    expect(split.holidays[0].hours).toBe(8);
+  });
+});
+
+describe("the deposit", () => {
+  it("is applied, never charged", () => {
+    // The packet: "it goes toward the first weeks of service — it is not an
+    // extra charge."
+    const invoice = buildInvoice({
+      terms: terms({ depositRemaining: 1000 }),
+      visits: [day(WEEK, "a")],
+      weekStart: WEEK,
+    });
+    expect(invoice.subtotal).toBe(240);
+    expect(invoice.depositApplied).toBe(240);
+    expect(invoice.total).toBe(0);
+  });
+
+  it("never applies more deposit than the week costs", () => {
+    const invoice = buildInvoice({
+      terms: terms({ depositRemaining: 1000 }),
+      visits: [day(WEEK, "a", 4)],
+      weekStart: WEEK,
+    });
+    expect(invoice.depositApplied).toBe(120);
+  });
+
+  it("charges no card fee on a week the deposit covers", () => {
+    // The fee is on what is actually taken.
+    const invoice = buildInvoice({
+      terms: terms({ depositRemaining: 1000 }),
+      visits: [day(WEEK, "a")],
+      weekStart: WEEK,
+    });
+    expect(invoice.convenienceFee).toBe(0);
+  });
+});
+
+describe("convenience fees", () => {
+  it("charges 2.9 per cent on a card", () => {
+    const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    expect(invoice.convenienceFee).toBe(6.96);
+    expect(invoice.total).toBe(246.96);
+  });
+
+  it("charges a flat five on ACH", () => {
+    const invoice = buildInvoice({
+      terms: terms({ paymentMethod: "ach" }),
+      visits: [day(WEEK, "a")],
+      weekStart: WEEK,
+    });
+    expect(invoice.convenienceFee).toBe(ACH_CONVENIENCE_FEE);
+  });
+
+  it("charges nothing on a cheque", () => {
+    const invoice = buildInvoice({
+      terms: terms({ paymentMethod: "check" }),
+      visits: [day(WEEK, "a")],
+      weekStart: WEEK,
+    });
+    expect(invoice.convenienceFee).toBe(0);
+  });
+});
+
+describe("the week", () => {
+  it("bills only this client and only this week", () => {
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [
+        day(WEEK, "mine"),
+        visit({ id: "other", clientName: "Someone else", startsAt: `${WEEK}T09:00:00` }),
+        day("2026-09-14", "next month"),
+      ],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines[0].hours).toBe(8);
+  });
+
+  it("gives one calendar day to pay, per the agreement", () => {
+    const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    expect(invoice.dueOn).toBe("2026-08-18");
+  });
+});
+
+describe("ageing", () => {
+  it("says nothing alarming before the due date", () => {
+    expect(ageing({ dueOn: "2026-08-18", paid: false, asOf: "2026-08-17" }).daysOverdue).toBe(0);
+  });
+
+  it("charges the late fee only after the third day", () => {
+    expect(ageing({ dueOn: "2026-08-18", paid: false, asOf: "2026-08-21" }).lateFeeDue).toBe(0);
+    expect(ageing({ dueOn: "2026-08-18", paid: false, asOf: "2026-08-22" }).lateFeeDue).toBe(LATE_FEE);
+  });
+
+  it("reports that suspension is permitted without recommending it", () => {
+    // Suspending care is a person deciding somebody's mother does not get her
+    // caregiver tomorrow. Software reports that the option exists.
+    const late = ageing({ dueOn: "2026-08-18", paid: false, asOf: "2026-08-19" });
+    expect(late.suspensionPermitted).toBe(true);
+    expect(late.message).toContain("a call for a person to make");
+    expect(late.message).not.toMatch(/suspend now|cancel service/i);
+  });
+
+  it("says nothing at all once it is paid", () => {
+    expect(ageing({ dueOn: "2026-08-18", paid: true, asOf: "2026-09-01" })).toMatchObject({
+      daysOverdue: 0,
+      lateFeeDue: 0,
+      suspensionPermitted: false,
+    });
+  });
+});
+
+describe("reconciling advance billing against reality", () => {
+  it("notices a family was billed for a visit that did not happen", () => {
+    // The half that makes advance billing honest. Nobody chases this on the
+    // family's behalf unless Joy notices.
+    const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    const result = reconcile({ invoice, actualHours: 4 });
+    expect(result.owedToClient).toBe(true);
+    expect(result.differenceHours).toBe(4);
+    expect(result.message).toContain("Credit the difference");
+  });
+
+  it("notices extra hours that were worked and not billed", () => {
+    const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    const result = reconcile({ invoice, actualHours: 10 });
+    expect(result.owedToClient).toBe(false);
+    expect(result.message).toContain("Bill the difference");
+  });
+
+  it("says so when the week matched", () => {
+    const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    expect(reconcile({ invoice, actualHours: 8 }).message).toBe("The week matched the invoice.");
+  });
+});
+
+describe("what is not billable", () => {
+  it("does not invoice a caregiver for their own orientation", () => {
+    // FOUND BY LOOKING AT THE SCREEN. The schedule puts a new caregiver's name
+    // in the client column for a field orientation, so billing straight off
+    // the board produced an invoice addressed to a member of staff. No test
+    // caught it because every fixture happened to be ordinary care.
+    const invoice = buildInvoice({
+      terms: terms({ clientName: "Brandon (new caregiver)" }),
+      visits: [
+        visit({
+          clientName: "Brandon (new caregiver)",
+          service: "Field Orientation",
+          eventType: "field_orientation",
+          startsAt: `${WEEK}T14:00:00`,
+          endsAt: `${WEEK}T14:45:00`,
+        }),
+      ],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines).toEqual([]);
+    expect(invoice.subtotal).toBe(0);
+  });
+
+  it("treats a new event type as non-billable until somebody says otherwise", () => {
+    // Failing to charge is recoverable. Charging a family for something that
+    // never happened to them is not.
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [visit({ eventType: "some_new_thing" })],
+      weekStart: WEEK,
+    });
+    expect(invoice.lines).toEqual([]);
+  });
+
+  it("still bills ordinary care, which carries no event type", () => {
+    const invoice = buildInvoice({ terms: terms(), visits: [day(WEEK, "a")], weekStart: WEEK });
+    expect(invoice.lines[0].hours).toBe(8);
+  });
+});
+
+describe("an invoice for nothing", () => {
+  it("is settled rather than overdue", () => {
+    // A week the deposit covered was reporting itself days overdue, and
+    // offering to suspend somebody's care over it.
+    const settled = ageing({ dueOn: "2026-08-18", paid: false, total: 0, asOf: "2026-08-25" });
+    expect(settled.daysOverdue).toBe(0);
+    expect(settled.suspensionPermitted).toBe(false);
+    expect(settled.message).toContain("Covered by the deposit");
+  });
+
+  it("leaves a real balance ageing as before", () => {
+    const late = ageing({ dueOn: "2026-08-18", paid: false, total: 240, asOf: "2026-08-25" });
+    expect(late.daysOverdue).toBe(7);
+    expect(late.lateFeeDue).toBe(LATE_FEE);
+  });
+});
