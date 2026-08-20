@@ -1,6 +1,7 @@
 import type { E164 } from "@/domain/portal/phone";
 import type { OtpChallenge } from "@/domain/portal/otp";
 import type { PortalGrant, PortalIdentity } from "@/domain/portal/identity";
+import type { MessagePurpose, OutboundMessage, SmsCarrier } from "@/domain/portal/messaging";
 
 /**
  * The seams a developer connects to make the portal real.
@@ -55,9 +56,31 @@ export interface OtpService {
   pending?(phone: E164): Promise<OtpChallenge | null>;
 }
 
-/** Sending the message. Twilio, Supabase phone auth, or Spruce's own channel. */
+/**
+ * One carrier's outbound SMS. GHL, Spruce, or a transactional provider.
+ *
+ * `send` takes a composed `OutboundMessage`, never a loose body, so no caller
+ * can write its own text. `messaging.ts` explains why that matters.
+ */
 export interface SmsSender {
-  send(input: { to: E164; body: string }): Promise<{ delivered: boolean; providerId: string | null }>;
+  readonly carrier: SmsCarrier;
+  send(message: OutboundMessage): Promise<{ delivered: boolean; providerId: string | null }>;
+}
+
+/**
+ * Picks the carrier for a purpose and hands the message to it.
+ *
+ * This is the seam Karynn's GHL-or-Spruce question actually turns on. Joy's
+ * code asks for "the candidate invitation"; the routing table decides which
+ * number carries it. Moving a purpose between carriers is then a one-line
+ * change with a test behind it, not a migration.
+ */
+export interface SmsRouter {
+  deliver(input: {
+    purpose: MessagePurpose;
+    to: E164;
+    inputs?: Record<string, string | undefined>;
+  }): Promise<{ delivered: boolean; carrier: SmsCarrier; providerId: string | null }>;
 }
 
 // -------------------------------------------------------------- directory --

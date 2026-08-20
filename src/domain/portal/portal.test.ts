@@ -13,7 +13,19 @@ import {
   workforceNextStep,
   type PortalGrant,
 } from "@/domain/portal/identity";
-import { MemoryOtpService, MemoryPortalDirectory, MemorySmsSender } from "@/domain/portal/memoryAdapters";
+import {
+  MemoryOtpService,
+  MemoryPortalDirectory,
+  MemorySmsRouter,
+  MemorySmsSender,
+} from "@/domain/portal/memoryAdapters";
+import {
+  composeMessage,
+  looksLikeItLeaksDetail,
+  requiresBusinessAssociateAgreement,
+  SMS_ROUTING,
+  type MessagePurpose,
+} from "@/domain/portal/messaging";
 
 const T0 = "2026-08-20T09:00:00.000Z";
 const at = (seconds: number) => new Date(Date.parse(T0) + seconds * 1000).toISOString();
@@ -246,9 +258,94 @@ describe("MemoryOtpService", () => {
 
   it("does not report an SMS as delivered when nothing is connected", async () => {
     const { sms } = build();
-    const result = await sms.send({ to: "+17132319662", body: "x" });
+    const result = await sms.send(composeMessage("login_code_workforce", "+17132319662", { code: "1" }));
     expect(result.delivered).toBe(false);
     expect(result.providerId).toBeNull();
+  });
+
+  it("sends a caregiver's code from the number they already text with", async () => {
+    const { otp, sms } = build([grant({ id: "g1", phone: "+17132319662" })]);
+    await otp.request("+17132319662", T0);
+    expect(sms.outbox[0].purpose).toBe("login_code_workforce");
+    expect(sms.outbox[0].carrier).toBe("ghl");
+  });
+
+  it("sends a family member's code from theirs instead", async () => {
+    const { otp, sms } = build([
+      grant({ id: "g1", phone: "+17132319662", audience: "family", subjectPersonId: "p9" }),
+    ]);
+    await otp.request("+17132319662", T0);
+    expect(sms.outbox[0].purpose).toBe("login_code_family");
+    expect(sms.outbox[0].carrier).toBe("spruce");
+  });
+});
+
+// ------------------------------------------------------------ messaging --
+
+describe("SMS routing and templates", () => {
+  const ALL: MessagePurpose[] = Object.keys(SMS_ROUTING) as MessagePurpose[];
+
+  it("never puts clinical detail in a text", () => {
+    // §25: the text says something changed, the portal holds what.
+    for (const purpose of ALL) {
+      const msg = composeMessage(purpose, "+17132319662", {
+        firstName: "Susan",
+        clientFirstName: "Marcus",
+        code: "123456",
+        link: "https://joy.example/p/abc",
+      });
+      expect(looksLikeItLeaksDetail(msg.body)).toBe(false);
+    }
+  });
+
+  it("keeps the login code free of a name, a link and a reason", () => {
+    const msg = composeMessage("login_code_family", "+17132319662", {
+      firstName: "Susan",
+      clientFirstName: "Marcus",
+      code: "123456",
+      link: "https://joy.example/p/abc",
+    });
+    expect(msg.body).not.toContain("Susan");
+    expect(msg.body).not.toContain("Marcus");
+    expect(msg.body).not.toContain("http");
+    // The line that survives a caller pretending to be the office.
+    expect(msg.body).toContain("never ask you for it");
+  });
+
+  it("says a schedule changed without saying how", () => {
+    const msg = composeMessage("care_notification", "+17132319662", {
+      firstName: "Susan",
+      clientFirstName: "Marcus",
+      link: "https://joy.example/p/abc",
+    });
+    expect(msg.body).toContain("update about Marcus's care");
+    expect(msg.body).toContain("Open your Joy portal");
+  });
+
+  it("marks every client-facing purpose as needing a BAA", () => {
+    for (const purpose of ALL) {
+      const reachesClient = SMS_ROUTING[purpose] === "spruce";
+      expect(requiresBusinessAssociateAgreement(purpose)).toBe(reachesClient);
+    }
+  });
+
+  it("refuses to send rather than falling back to whichever number is configured", async () => {
+    const router = new MemorySmsRouter({ ghl: new MemorySmsSender("ghl") });
+    await expect(
+      router.deliver({ purpose: "care_notification", to: "+17132319662" }),
+    ).rejects.toThrow(/No sender registered for spruce/);
+  });
+
+  it("routes a candidate invitation to GHL and a family one to Spruce", async () => {
+    const ghl = new MemorySmsSender("ghl");
+    const spruce = new MemorySmsSender("spruce");
+    const router = new MemorySmsRouter({ ghl, spruce });
+
+    await router.deliver({ purpose: "candidate_invitation", to: "+17135550100" });
+    await router.deliver({ purpose: "family_invitation", to: "+17135550101" });
+
+    expect(ghl.outbox).toHaveLength(1);
+    expect(spruce.outbox).toHaveLength(1);
   });
 });
 

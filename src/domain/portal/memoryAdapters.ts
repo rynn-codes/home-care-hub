@@ -1,7 +1,16 @@
 import { evaluateRequest, evaluateVerification, expiryFor, OTP_POLICY, type OtpChallenge } from "@/domain/portal/otp";
 import type { E164 } from "@/domain/portal/phone";
 import type { PortalGrant, PortalIdentity } from "@/domain/portal/identity";
-import type { OtpRequestResult, OtpService, OtpVerifyResult, PortalDirectory, SmsSender } from "@/domain/portal/ports";
+import type { OtpRequestResult, OtpService, OtpVerifyResult, PortalDirectory, SmsRouter, SmsSender } from "@/domain/portal/ports";
+import {
+  composeMessage,
+  looksLikeItLeaksDetail,
+  SMS_ROUTING,
+  type MessageInputs,
+  type MessagePurpose,
+  type OutboundMessage,
+  type SmsCarrier,
+} from "@/domain/portal/messaging";
 
 /**
  * Honest fakes, so the portal can be built and tested before Twilio exists.
@@ -16,13 +25,52 @@ import type { OtpRequestResult, OtpService, OtpVerifyResult, PortalDirectory, Sm
 
 /** Records what would have been sent. Nothing leaves. */
 export class MemorySmsSender implements SmsSender {
-  readonly outbox: Array<{ to: E164; body: string; at: string }> = [];
+  readonly outbox: Array<OutboundMessage & { at: string }> = [];
 
-  async send(input: { to: E164; body: string }) {
-    this.outbox.push({ ...input, at: new Date().toISOString() });
+  constructor(readonly carrier: SmsCarrier = "transactional") {}
+
+  async send(message: OutboundMessage) {
+    this.outbox.push({ ...message, at: new Date().toISOString() });
     // providerId is null, not a plausible-looking fake id. A null here is a
     // developer noticing nothing is connected; a fake id is one not noticing.
     return { delivered: false, providerId: null };
+  }
+}
+
+/**
+ * Routes by purpose across a set of carriers.
+ *
+ * Refusing an unregistered carrier rather than silently falling back is the
+ * point: a Joy that quietly sent a family's care notification down whichever
+ * number happened to be configured would be exactly the failure the routing
+ * table exists to prevent.
+ */
+export class MemorySmsRouter implements SmsRouter {
+  constructor(private readonly senders: Partial<Record<SmsCarrier, SmsSender>>) {}
+
+  async deliver(input: { purpose: MessagePurpose; to: E164; inputs?: MessageInputs }) {
+    const carrier = SMS_ROUTING[input.purpose];
+    const sender = this.senders[carrier];
+
+    if (!sender) {
+      throw new Error(
+        `No sender registered for ${carrier}, which carries ${input.purpose}. ` +
+          `Register one rather than falling back — the routing table is a privacy decision.`,
+      );
+    }
+
+    const message = composeMessage(input.purpose, input.to, input.inputs);
+
+    // Belt and braces. Templates are fixed, but a future one could be careless.
+    if (looksLikeItLeaksDetail(message.body)) {
+      throw new Error(
+        `Refusing to send ${input.purpose}: the body names clinical detail. ` +
+          `Per §25 the text says something changed; the portal holds what.`,
+      );
+    }
+
+    const result = await sender.send(message);
+    return { ...result, carrier };
   }
 }
 
@@ -104,10 +152,13 @@ export class MemoryOtpService implements OtpService {
     });
 
     if (decision.deliver) {
-      await this.sms.send({
-        to: phone,
-        body: `${code} is your Joy Health code. It expires in 10 minutes.`,
-      });
+      // Which number the code comes from follows who they are, so it arrives
+      // from a thread they recognize. Someone holding both grants recognizes
+      // either, so workforce wins the tie by being the one they see daily.
+      const purpose: MessagePurpose = grants.some((g) => g.active && g.audience === "workforce")
+        ? "login_code_workforce"
+        : "login_code_family";
+      await this.sms.send(composeMessage(purpose, phone, { code }));
     }
 
     // challengeId is returned for an unknown number too — otherwise its absence
