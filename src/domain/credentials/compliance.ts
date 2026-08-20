@@ -119,7 +119,7 @@ export function evaluateRequirement(
       expiresAt: null,
       daysRemaining: null,
       blocksScheduling: requirement.blocksSchedulingWhenExpired,
-      action: `Request ${requirement.displayName.toLowerCase()}`,
+      action: `${requirement.displayName} is not on file — request it`,
     };
   }
 
@@ -135,7 +135,7 @@ export function evaluateRequirement(
       blocksScheduling: rejected && requirement.blocksSchedulingWhenExpired,
       action: rejected
         ? `${requirement.displayName} was rejected — a replacement is needed`
-        : `Verify ${requirement.displayName.toLowerCase()}`,
+        : `${requirement.displayName} needs verifying`,
     };
   }
 

@@ -1,3 +1,7 @@
+import { requirementApplies } from "@/domain/credentials/compliance";
+import type { CredentialRequirement } from "@/domain/documents/types";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
+
 /**
  * The hiring and onboarding pipeline.
  *
@@ -12,8 +16,9 @@
  * instead, which is exactly the gap finding F8 describes. Karynn confirmed on
  * 18 Aug that the roadmap was named by the brief but never written, so this is
  * the source of truth now rather than a stand-in. One thing remains an
- * ASSUMPTION and is marked below: which documents block a first shift. The
- * seven-day staleness threshold was confirmed.
+ * seven-day staleness threshold was confirmed. Which documents block a first
+ * shift is no longer decided here at all — it comes from Joy's credential
+ * requirements, so hiring and scheduling cannot disagree.
  */
 
 export type HiringStage =
@@ -120,31 +125,40 @@ export interface Applicant {
 }
 
 /**
- * ASSUMPTION, pending the hiring roadmap.
+ * Which documents stop a first shift — read from Joy's credential requirements
+ * rather than decided here.
  *
- * Which documents stop somebody walking into a client's home on day one,
- * versus which are chased in the first month. Getting this wrong in one
- * direction blocks hiring needlessly; in the other it sends somebody out
- * uncovered, which is the worse mistake — so the split errs towards blocking.
+ * This used to be three hard-coded arrays. §6 of the documents spec forbids
+ * that: requirements and their scheduling consequences must be configurable to
+ * Joy policy and jurisdiction. Worse, hiring's list and the Employees module's
+ * list were two separate opinions about the same question, which is exactly how
+ * a caregiver ends up cleared by one screen and blocked by another.
  *
- * Background check, TB test and the role's licence are the ones that are
- * genuinely unlawful to skip before client contact. CPR and the signed handbook
- * are conditions of employment. Immunisations and annual training are real
- * requirements that are normally completed in the first weeks, so they warn
- * rather than block.
+ * `blocksSchedulingWhenExpired` is the same flag scheduling reads. If a
+ * credential stops somebody taking a shift on day 200, it stops them taking one
+ * on day 1.
  */
-export const REQUIRED_BEFORE_FIRST_SHIFT = [
-  "background_check",
-  "tb_test",
-  "licence",
-  "cpr",
-  "handbook",
-] as const;
+export function documentsRequiredBeforeFirstShift(
+  requirements: readonly CredentialRequirement[],
+  role: string,
+  drives: boolean,
+): string[] {
+  return requirements
+    .filter((r) => requirementApplies(r, { employeeId: "", role, drives }))
+    .filter((r) => r.blocksSchedulingWhenExpired)
+    .map((r) => r.credentialType);
+}
 
-export const REQUIRED_WITHIN_FIRST_MONTH = ["immunizations", "annual_training"] as const;
-
-/** Driving adds two more, but only for somebody who will actually drive. */
-export const REQUIRED_TO_DRIVE = ["drivers_license", "auto_insurance"] as const;
+export function documentsDueSoonAfterHire(
+  requirements: readonly CredentialRequirement[],
+  role: string,
+  drives: boolean,
+): string[] {
+  return requirements
+    .filter((r) => requirementApplies(r, { employeeId: "", role, drives }))
+    .filter((r) => !r.blocksSchedulingWhenExpired)
+    .map((r) => r.credentialType);
+}
 
 export interface FirstShiftReadiness {
   ready: boolean;
@@ -154,15 +168,33 @@ export interface FirstShiftReadiness {
   missingSoon: string[];
 }
 
-export function firstShiftReadiness(applicant: Applicant): FirstShiftReadiness {
+/**
+ * `requirements` defaults to Joy's configured set so existing call sites keep
+ * working; pass a different set to evaluate against another policy.
+ */
+export function firstShiftReadiness(
+  applicant: Applicant,
+  requirements: readonly CredentialRequirement[] = seedCredentialRequirements,
+): FirstShiftReadiness {
   const have = new Set(Object.keys(applicant.documents));
-  const blocking = [
-    ...REQUIRED_BEFORE_FIRST_SHIFT,
-    ...(applicant.drives ? REQUIRED_TO_DRIVE : []),
-  ].filter((key) => !have.has(key));
-  const soon = REQUIRED_WITHIN_FIRST_MONTH.filter((key) => !have.has(key));
+  const role = roleFromApplication(applicant.roleApplied);
+
+  const blocking = documentsRequiredBeforeFirstShift(requirements, role, applicant.drives).filter(
+    (key) => !have.has(key),
+  );
+  const soon = documentsDueSoonAfterHire(requirements, role, applicant.drives).filter(
+    (key) => !have.has(key),
+  );
 
   return { ready: blocking.length === 0, missingBlocking: blocking, missingSoon: soon };
+}
+
+/** The role a requirement set is keyed on, from the advertised position. */
+export function roleFromApplication(roleApplied: string): string {
+  if (/LVN/i.test(roleApplied)) return "lvn";
+  if (/HHA/i.test(roleApplied)) return "hha";
+  if (/CNA|caregiver/i.test(roleApplied)) return "cna";
+  return "office";
 }
 
 export type TransitionCheck = { allowed: true; reason?: undefined } | { allowed: false; reason: string };

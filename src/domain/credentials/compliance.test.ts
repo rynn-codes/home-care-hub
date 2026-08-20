@@ -87,14 +87,14 @@ describe("evaluating one requirement", () => {
     const o = evaluateRequirement(requirement(), undefined, ASOF);
     expect(o.status).toBe("missing");
     expect(o.blocksScheduling).toBe(true);
-    expect(o.action).toMatch(/^Request/);
+    expect(o.action).toMatch(/is not on file/);
   });
 
   // §10. Extracted is not verified, and must not count as compliant.
   it("does not count an unverified credential as current", () => {
     const o = evaluateRequirement(requirement(), credential({ verificationStatus: "ai_extracted" }), ASOF);
     expect(o.status).toBe("pending_review");
-    expect(o.action).toMatch(/^Verify/);
+    expect(o.action).toMatch(/needs verifying/);
   });
 
   it("counts an unverified credential as current when verification is not required", () => {

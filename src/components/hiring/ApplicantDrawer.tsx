@@ -17,9 +17,9 @@ import {
   NO_FIT_LABELS,
   ONBOARDING_ORDER,
   ONBOARDING_STAGE_LABELS,
-  REQUIRED_BEFORE_FIRST_SHIFT,
-  REQUIRED_TO_DRIVE,
-  REQUIRED_WITHIN_FIRST_MONTH,
+  documentsDueSoonAfterHire,
+  documentsRequiredBeforeFirstShift,
+  roleFromApplication,
   canAdvanceHiring,
   canAdvanceOnboarding,
   canBecomeActiveEmployee,
@@ -29,6 +29,7 @@ import {
   type HireDetails,
   type NoFitReason,
 } from "@/domain/hiring/pipeline";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 
 /**
  * One applicant, and the moves available from where they are.
@@ -95,10 +96,17 @@ function ApplicantBody({
   const days = daysInStage(applicant, today);
   const stamp = () => today;
 
+  // Read from Joy's credential requirements, so hiring asks for exactly what
+  // scheduling will later insist on.
+  const role = roleFromApplication(applicant.roleApplied);
+  const blockingKeys = documentsRequiredBeforeFirstShift(
+    seedCredentialRequirements,
+    role,
+    applicant.drives,
+  );
   const allDocs = [
-    ...REQUIRED_BEFORE_FIRST_SHIFT,
-    ...(applicant.drives ? REQUIRED_TO_DRIVE : []),
-    ...REQUIRED_WITHIN_FIRST_MONTH,
+    ...blockingKeys,
+    ...documentsDueSoonAfterHire(seedCredentialRequirements, role, applicant.drives),
   ];
 
   const removeDoc = (key: string) => {
@@ -164,15 +172,13 @@ function ApplicantBody({
       <section className="mt-6">
         <h3 className="text-sm font-semibold">Documents</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          The first five stop a first shift. Immunisations and training are due but do not.
+          {blockingKeys.length} of these stop a first shift; the rest are due but do not.
         </p>
         <ul className="mt-3 divide-y divide-border rounded-xl border border-border">
           {allDocs.map((key) => {
             const record = applicant.documents[key];
             const have = Boolean(record);
-            const blocking = !REQUIRED_WITHIN_FIRST_MONTH.includes(
-              key as (typeof REQUIRED_WITHIN_FIRST_MONTH)[number],
-            );
+            const blocking = blockingKeys.includes(key);
             return (
               <li key={key} className="flex items-center justify-between gap-3 px-3 py-2.5">
                 <span className="flex items-center gap-2 text-sm">

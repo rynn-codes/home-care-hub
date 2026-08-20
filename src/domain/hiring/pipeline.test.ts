@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   HIRING_ORDER,
   toEmployee,
-  REQUIRED_BEFORE_FIRST_SHIFT,
+  documentsRequiredBeforeFirstShift,
   canAdvanceHiring,
   canAdvanceOnboarding,
   canBecomeActiveEmployee,
@@ -11,6 +11,7 @@ import {
   isStale,
   type Applicant,
 } from "@/domain/hiring/pipeline";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 
 const TODAY = "2026-08-18";
 
@@ -118,25 +119,33 @@ describe("the first-shift gate", () => {
       drives: false,
       track: "onboarding",
       onboardingStage: "field_orientation",
-      documents: docs(REQUIRED_BEFORE_FIRST_SHIFT),
+      documents: docs(documentsRequiredBeforeFirstShift(seedCredentialRequirements, "cna", false)),
     });
     expect(firstShiftReadiness(a).ready).toBe(true);
     expect(canAdvanceOnboarding(a, "first_shift").allowed).toBe(true);
   });
 
   it("requires them from somebody who will", () => {
-    const a = applicant({ drives: true, documents: docs(REQUIRED_BEFORE_FIRST_SHIFT) });
+    // Everything a non-driver needs, which is short of what a driver needs.
+    const a = applicant({ drives: true, documents: docs(documentsRequiredBeforeFirstShift(seedCredentialRequirements, "cna", false)) });
     const readiness = firstShiftReadiness(a);
     expect(readiness.ready).toBe(false);
     expect(readiness.missingBlocking).toContain("auto_insurance");
   });
 
-  // Immunisations and training are real but do not stop a first shift.
+  // A BEHAVIOUR CHANGE worth stating. Hiring used to block a first shift on the
+  // signed handbook; Joy's credential requirements mark the handbook as not
+  // blocking scheduling, and hiring now reads that same flag. So the handbook is
+  // chased rather than a barrier.
+  //
+  // The consistency is the point: two different answers to "does the handbook
+  // stop this person working" was the bug. If Karynn wants it to block, the fix
+  // is one flag in credentialRequirementsSeed, and it then blocks everywhere.
   it("separates what blocks a shift from what is merely due", () => {
-    const a = applicant({ drives: false, documents: docs(REQUIRED_BEFORE_FIRST_SHIFT) });
+    const a = applicant({ drives: false, documents: docs(documentsRequiredBeforeFirstShift(seedCredentialRequirements, "cna", false)) });
     const readiness = firstShiftReadiness(a);
     expect(readiness.ready).toBe(true);
-    expect(readiness.missingSoon).toEqual(["immunizations", "annual_training"]);
+    expect(readiness.missingSoon).toEqual(["handbook", "immunizations", "annual_training"]);
   });
 });
 

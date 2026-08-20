@@ -1,3 +1,8 @@
+import { useMemo } from "react";
+import { useDemo } from "@/context/DemoDataProvider";
+import { alertSummary, complianceAlerts } from "@/domain/credentials/alerts";
+import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
+import { seedEmployees } from "@/lib/employeesSeed";
 import { Link } from "react-router-dom";
 import { CountLink, HomePanel } from "@/components/home/HomePanel";
 import {
@@ -35,25 +40,51 @@ export function EmployeeTasks() {
 }
 
 /** Compliance state is carried by the words, not by colour alone. */
+/**
+ * Compliance — real, not seed.
+ *
+ * §12: confirmed credential data must not remain trapped in the employee
+ * profile. This reads the same `complianceAlerts` that Operations does, which
+ * reads the same `auditReadiness` the employee record does — §27's one rule
+ * engine, many views. A number here that disagreed with the Employees screen
+ * would be a bug, not a difference of emphasis.
+ */
 export function CompliancePanel() {
+  const { newHires } = useDemo();
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+  const alerts = useMemo(() => {
+    const hiredIds = new Set(newHires.map((e) => e.id));
+    const workforce = [
+      ...(newHires as unknown as typeof seedEmployees),
+      ...seedEmployees.filter((e) => !hiredIds.has(e.id)),
+    ];
+    return complianceAlerts(workforce, seedCredentialRequirements, today);
+  }, [newHires, today]);
+
   return (
     <HomePanel title="Compliance" action={{ label: "View all", to: "/operations" }}>
-      <ul className="divide-y divide-border">
-        {compliance.map((row) => (
-          <li key={row.label} className="flex items-center justify-between gap-3 py-2.5">
-            <span className="text-sm">{row.label}</span>
-            <span
-              className={
-                row.state === "current"
-                  ? "text-xs text-muted-foreground"
-                  : "text-xs font-medium text-foreground"
-              }
-            >
-              {row.status}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <p className="mb-2 text-xs text-muted-foreground">{alertSummary(alerts)}</p>
+      {alerts.length === 0 ? (
+        <p className="py-2 text-sm text-muted-foreground">
+          Every credential on file is in date.
+        </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {/* Four is the panel's worth. The rest are on Operations, which is
+              what the action link is for. */}
+          {alerts.slice(0, 4).map((alert) => (
+            <li key={alert.employeeId + alert.credentialType} className="py-2.5">
+              <Link
+                to={`/employees/${alert.employeeId}`}
+                className="text-sm underline-offset-4 hover:underline"
+              >
+                {alert.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </HomePanel>
   );
 }
