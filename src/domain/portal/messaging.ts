@@ -42,16 +42,22 @@ import type { E164 } from "@/domain/portal/phone";
  * 20 Aug — "All OTPs need to go through GHL", and "Care notification questions
  * will come from Spruce."
  *
- * Spruce is the office's number: where a human at Joy has a conversation with a
- * client. Tell a family their mother's Monday visit moved and some of them will
- * text back asking why. That reply has to land in front of an actual person at
- * Joy, so the message it answers must have come from the number a person is
- * watching. Sending it from a marketing platform routes a worried family into a
+ * Spruce is the office's number: where a human at Joy has a conversation with
+ * the people it already works with. Tell a family their mother's Monday visit
+ * moved and some of them will text back asking why. Tell a caregiver her
+ * Tuesday moved and she may well do the same. Either reply has to land in front
+ * of an actual person at Joy, so the message it answers must have come from the
+ * number a person is watching. Sending it from a marketing platform routes a
+ * worried family — or a caregiver who now has a childcare problem — into a
  * channel nobody reads.
  *
  * GHL carries everything a reply makes no sense to. A login code cannot be
  * replied to. Neither can a recruiting handoff — that conversation continues in
  * the thread the recruiter is already in, which is GHL's.
+ *
+ * Note that the line is not staff-versus-family. It is whether a conversation
+ * is already open. An operational message to an active caregiver belongs on the
+ * office number for the same reason one to a family does.
  *
  * The separation cuts the other way too: a client who gets automated traffic on
  * Spruce learns to skim the number the RN uses to tell them something urgent.
@@ -148,26 +154,28 @@ export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
   candidate_update: "ghl",
   family_invitation: "ghl",
   care_notification: "spruce",
-  shift_notification: "ghl",
+  shift_notification: "spruce",
 };
 
 /**
- * TWO ROWS ABOVE ARE INFERRED RATHER THAN INSTRUCTED. Both are one-line changes.
+ * ONE ROW ABOVE IS INFERRED RATHER THAN INSTRUCTED, and it is a one-line change.
  *
- * `family_invitation` is on GHL because it is a handoff, not a care message:
- * the family met Joy as a lead in GHL, and "here is your portal link" invites a
- * tap, not a reply. If Karynn would rather the first message a new family gets
- * come from the office number, move it to spruce.
+ * `family_invitation` is on GHL because it is a handoff rather than a care
+ * message: the family met Joy as a lead in GHL, and "here is your portal link"
+ * invites a tap, not a reply. If Karynn would rather the first message a new
+ * family gets come from the office number, move it to spruce.
  *
- * `shift_notification` is on GHL because it goes to staff, and the reply-test
- * was stated about families. But a caregiver whose Tuesday just moved may well
- * text back, and if caregivers reach the office through Spruce then this
- * belongs there by the same logic that put care_notification there.
+ * Everything else is her decision directly — all login codes on GHL, care and
+ * shift notifications on Spruce.
  */
 
 /**
- * True when a purpose is addressed to a client or their family — which is to
- * say, the purposes whose carrier must be covered by a BAA.
+ * True when a purpose carries client health information — which is to say, the
+ * purposes whose carrier must be covered by a BAA.
+ *
+ * `shift_notification` counts although it is addressed to staff rather than to
+ * a client: naming a client to a caregiver discloses that the client receives
+ * care. The recipient is not what makes something protected.
  *
  * `login_code_family` belongs here even though its body is six digits and
  * nothing else. The protected fact is not the content — it is that Joy Health,

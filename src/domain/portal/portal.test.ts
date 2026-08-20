@@ -328,9 +328,12 @@ describe("SMS routing and templates", () => {
     expect(SMS_ROUTING.login_code_family).toBe("ghl");
   });
 
-  it("sends the care notification from the number a person is watching", () => {
-    // A family that texts back "why did Monday move?" must reach the office.
+  it("sends every notification from the number a person is watching", () => {
+    // A family that texts back "why did Monday move?" must reach the office,
+    // and so must a caregiver whose Tuesday just moved. The line is not
+    // staff-versus-family — it is whether a conversation is already open.
     expect(SMS_ROUTING.care_notification).toBe("spruce");
+    expect(SMS_ROUTING.shift_notification).toBe("spruce");
   });
 
   it("marks the purposes that reach a client, whichever number carries them", () => {
@@ -338,6 +341,9 @@ describe("SMS routing and templates", () => {
     // and still need one.
     expect(requiresBusinessAssociateAgreement("login_code_family")).toBe(true);
     expect(requiresBusinessAssociateAgreement("care_notification")).toBe(true);
+    // Addressed to staff, but naming a client to a caregiver discloses that
+    // the client receives care.
+    expect(requiresBusinessAssociateAgreement("shift_notification")).toBe(true);
     expect(requiresBusinessAssociateAgreement("login_code_workforce")).toBe(false);
     expect(requiresBusinessAssociateAgreement("candidate_invitation")).toBe(false);
   });
