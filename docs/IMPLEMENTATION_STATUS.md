@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 16 August 2026 (Golden Demo path complete)
+**Last updated:** 20 August 2026 (employee and client portals, payroll)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -69,10 +69,31 @@ No second frontend was created and no framework was replaced, per section 3.
   screens, still reading in-memory mock data. They predate this work and have not
   been rebuilt to the Joy visual system.
 
+## Built since the Golden Demo
+
+- **Consents** — all 25 from the 26-page packet, grouped into five chapters,
+  with Agree / Decline / N/A and the consequences of each refusal stated. The
+  witness rule is enforced: only an RN or the owner may take a signature.
+- **Clients, Employees, Hiring** — real screens over the domain, with the
+  compliance clock and the hiring-to-onboarding transition.
+- **Documents and credentials** — schema, ports, the compliance engine, human
+  verification, renewals that supersede rather than overwrite, and the audit
+  packet projection.
+- **Employee and client portals** — phone OTP, the post-interview application
+  with autosave, candidate status, document upload, onboarding state, the
+  caregiver's home and schedule, clock in/out with §11's completion check,
+  charting with provenance, Moments, and the family portal. All under
+  `/portal`, outside the admin shell.
+- **Payroll** — hours from the clock, split per workweek, with exceptions.
+  Joy produces hours; Gusto produces wages. No pay rates are in the code.
+
 ## What does not exist
 
-- RN Assessment, Consents, Payroll, Hiring. Their routes render a screen stating
-  the module is unbuilt and what it will contain.
+- **Billing.** No sprint was ever written for it. It is the largest piece of
+  genuinely new ground left.
+- **The admin side of the portal.** No Moments approval queue, no view of
+  clock-out exceptions, no document-request UI, no portal grant management.
+  Everything the portals write is currently only visible in the portals.
 - AI conversation mode for intake. Manual mode is built first by design (§34);
   the AI path sits behind `AI_PHONE_INTAKE_ENABLED`, which is off.
 - A create service. The referral drawer adds to the in-memory queue and says so
@@ -98,6 +119,9 @@ supabase/migrations/0001_foundation.sql        identity, people, profiles, relat
 supabase/migrations/0002_audit_and_events.sql  audit, outbox, communications
 supabase/migrations/0003_rls.sql               grants, helper functions, policies
 supabase/migrations/0004_admissions.sql        admissions, referral fields, stage enums
+supabase/migrations/0005_documents_and_credentials.sql  documents, credentials, sensitivity
+supabase/migrations/0006_portal_access.sql     portal grants, is_staff(), portal read policies
+supabase/migrations/0007_visits_and_time.sql   the schedule, the clock, assignment-based access
 ```
 
 To verify locally:
@@ -108,9 +132,20 @@ psql -f supabase/migrations/0001_foundation.sql
 psql -f supabase/migrations/0002_audit_and_events.sql
 psql -f supabase/migrations/0003_rls.sql
 psql -f supabase/migrations/0004_admissions.sql
-psql -f supabase/tests/rls_test.sql         # 19 assertions
-psql -f supabase/tests/admissions_test.sql  # 10 assertions
+psql -f supabase/migrations/0005_documents_and_credentials.sql
+psql -f supabase/migrations/0006_portal_access.sql
+psql -f supabase/migrations/0007_visits_and_time.sql
+
+psql -f supabase/tests/rls_test.sql          # 19 assertions
+psql -f supabase/tests/admissions_test.sql   # 10
+psql -f supabase/tests/credentials_test.sql  # 17
+psql -f supabase/tests/portal_test.sql       # 16
+psql -f supabase/tests/visits_test.sql       # 18
 ```
+
+Every assertion runs under `set local role authenticated`. RLS is bypassed for
+the table owner, so a suite running as `postgres` passes while proving nothing.
+That mistake was made once here already — see `DOCUMENT_PIPELINE.md`.
 
 `local_shim.sql` is for local verification only and must never run against a
 Supabase project.
@@ -130,9 +165,8 @@ Supabase project.
    Roadmap, the Product Bible, the two-page Client Intake Form and the Joy
    nursing assessment. Hiring and Phone Intake should not be considered fully
    specified until those are read.
-5. **Consents cannot record a refusal.** The approved design captures only
-   "reviewed" per consent, with no Agree / Decline / N/A. Must be resolved
-   before Sprint 3, and the legal review of signature reuse booked.
+5. **The legal review of one-signature reuse has not been booked.** Karynn's to
+   arrange. Consents themselves now record Agree / Decline / N/A.
 6. **`supabase/functions/mcp/index.ts` is a generated file tracked in git.** It
    regenerates on install and produces surprise diffs. Either gitignore it and
    build on deploy, or own it deliberately.
@@ -153,12 +187,29 @@ Finish Sprint 0, then Sprint 1 in the order section 34 sets out.
       The list is PROVISIONAL: every field traces to the kickoff brief or the
       Phone Intake spec, so reconciliation should be additive, not a reshape
 
+## Open decisions for Karynn
+
+Recorded here so they are not only in a chat log.
+
+- **Open shifts in the employee portal.** `0007`'s read policy deliberately
+  hides unstaffed visits from caregivers. Offering them is a real feature and
+  should be a decision, not a side effect.
+- **The workweek boundary.** Joy computes overtime from a Monday start.
+  Gusto has its own setting and the two must match — a mismatch changes
+  overtime silently for anybody working a weekend.
+- **Family portal invitation.** Sent from GHL, which is inferred rather than
+  instructed. Every other SMS route is her explicit decision.
+- **Real pay rates.** The figures on the Employees screen came from the mockup
+  and are fiction. Payroll deliberately computes no wages because of this.
+- **Packet page 15** still prints her mobile number; she has ruled that only the
+  office number is used. Needs a reprint.
+- **Whether GoHighLevel will sign a BAA**, and whether its A2P 10DLC
+  registration covers authentication traffic. Both gate go-live.
+
 ## Test and build state
 
-As of the latest commit: `npm run build` passes, `npm test` passes with 71
-tests, and the database suites pass 29 assertions across `rls_test.sql` and
-`admissions_test.sql`. `npm run lint` reports 39 errors and 8 warnings — 22 are
-pre-existing in shadcn UI components and `tailwind.config.ts`, and 17 are
-`no-var` inside the generated `supabase/functions/mcp/index.ts` bundle. None are
-in hand-written code added here. Adding `supabase/functions/**` to eslint's
-ignores would return the count to 22 and keep the signal meaningful.
+As of the latest commit: `npm run build` passes and `npm test` passes with 577
+tests. The database suites pass 80 assertions across five files. `npm run lint`
+is unchanged from its long-standing baseline — every remaining problem is
+pre-existing, in shadcn UI components, `tailwind.config.ts`, or the generated
+`supabase/functions/mcp/index.ts` bundle. None are in hand-written code.
