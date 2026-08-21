@@ -11,7 +11,9 @@ import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedPayrollVisits, seedTimeEntries } from "@/lib/payrollSeed";
 import { seedIncidents } from "@/lib/incidentsSeed";
 import { seedCarePlans } from "@/lib/carePlanSeed";
+import { seedStartOfCare, seedSupervisoryVisits } from "@/lib/supervisionSeed";
 import { carePlanQueue } from "@/domain/carePlan/plan";
+import { supervisionQueue } from "@/domain/supervision/supervision";
 
 const TODAY = "2026-08-20";
 
@@ -21,7 +23,6 @@ function build(over: Partial<HomeSignalInput> = {}) {
     applicants: seedApplicants,
     workforce: seedEmployees,
     requirements: seedCredentialRequirements,
-    clients: [],
     billingTerms: seedBillingTerms,
     timeEntries: seedTimeEntries,
     payrollVisits: seedPayrollVisits,
@@ -32,11 +33,19 @@ function build(over: Partial<HomeSignalInput> = {}) {
     documentRequests: [],
     incidents: seedIncidents,
     carePlans: seedCarePlans,
+    supervisoryVisits: seedSupervisoryVisits,
     servedClients: [
       ...new Map(
         seedVisits
           .filter((v) => v.clientPersonId)
-          .map((v) => [v.clientPersonId!, { personId: v.clientPersonId!, name: v.clientName }]),
+          .map((v) => [
+            v.clientPersonId!,
+            {
+              personId: v.clientPersonId!,
+              name: v.clientName,
+              startOfCare: seedStartOfCare[v.clientPersonId!] ?? "",
+            },
+          ]),
       ).values(),
     ],
     nameFor: (id: string) => id,
@@ -102,6 +111,35 @@ describe("Home agrees with the modules", () => {
     // written down is a problem, and Home has to tell them apart.
     expect(signal("care-plans").urgent).toBe(true);
     expect(signal("care-plans").detail).toMatch(/no plan at all/);
+  });
+
+  it("counts the same supervisory visits the Supervision screen does", () => {
+    // This signal used to read an input the live wiring passed as an empty
+    // array, so it printed 0 whatever was true and linked to a screen that
+    // could not have done anything about it.
+    const served = [
+      ...new Map(
+        seedVisits
+          .filter((v) => v.clientPersonId)
+          .map((v) => [
+            v.clientPersonId!,
+            {
+              personId: v.clientPersonId!,
+              name: v.clientName,
+              startOfCare: seedStartOfCare[v.clientPersonId!] ?? "",
+            },
+          ]),
+      ).values(),
+    ].filter((c) => c.startOfCare);
+
+    const due = supervisionQueue({
+      clients: served,
+      visits: seedSupervisoryVisits,
+      today: TODAY,
+    }).filter((r) => r.needsYou);
+
+    expect(signal("supervision").value).toBe(String(due.length));
+    expect(due.length).toBeGreaterThan(0);
   });
 
   it("links every signal to the screen that computed it", () => {
@@ -188,6 +226,7 @@ describe("what counts as urgent", () => {
       payrollPeople: [],
       incidents: [],
       carePlans: [],
+      supervisoryVisits: [],
       servedClients: [],
     });
     expect(quiet.every((s) => !s.urgent)).toBe(true);

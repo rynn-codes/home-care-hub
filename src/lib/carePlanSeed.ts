@@ -77,6 +77,16 @@ const lian = plan({
   },
 });
 
+/**
+ * Lian's plan was reviewed on her June supervisory visit, so her review clock
+ * runs from then. Kept in step with `seedSupervisoryVisits` deliberately: the
+ * two records disagreeing — a plan saying nobody has looked at it since March
+ * and a supervisory visit in June saying somebody did — is precisely the state
+ * `completeSupervisoryVisit` exists to prevent, and a seed that demonstrates
+ * the bug is worse than no seed.
+ */
+const lianReviewed = reviewPlan({ plan: lian, byUserId: RN, at: "2026-06-11T15:20:00.000Z" });
+
 const edward = plan({
   id: "cp-edward-1",
   clientPersonId: "c-edward",
@@ -183,4 +193,4 @@ const marcus = submitForReview(
  * a real state Joy has to be able to show — the caregiver's screen says so
  * plainly instead of listing five tasks nobody agreed to.
  */
-export const seedCarePlans: CarePlan[] = [lian, edward, dolores, doloresV2, susan, marcus];
+export const seedCarePlans: CarePlan[] = [lianReviewed, edward, dolores, doloresV2, susan, marcus];

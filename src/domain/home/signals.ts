@@ -9,9 +9,9 @@ import type { Moment } from "@/domain/portal/moments";
 import type { Preference } from "@/domain/portal/preferences";
 import type { Invitation } from "@/domain/hiring/invitation";
 import type { RequestedDocument } from "@/domain/portal/familyPortal";
-import { clientCompliance, type ClientInput } from "@/domain/clients/roster";
 import { CLASSIFY_WITHIN_HOURS, incidentUrgency, type Incident } from "@/domain/incidents/incidents";
 import { carePlanQueue, type CarePlan } from "@/domain/carePlan/plan";
+import { supervisionQueue, type SupervisoryVisit } from "@/domain/supervision/supervision";
 
 /**
  * The figures on Home, computed from the same engines the modules use.
@@ -48,7 +48,6 @@ export interface HomeSignalInput {
   applicants: readonly Applicant[];
   workforce: Parameters<typeof complianceAlerts>[0];
   requirements: readonly CredentialRequirement[];
-  clients: readonly ClientInput[];
   billingTerms: readonly ClientBillingTerms[];
   timeEntries: readonly TimeEntry[];
   payrollVisits: readonly VisitStub[];
@@ -70,8 +69,12 @@ export interface HomeSignalInput {
   nameFor: (personId: string) => string;
   incidents: readonly Incident[];
   carePlans: readonly CarePlan[];
-  /** The clients Joy is actually serving, for the care-plan queue. */
-  servedClients: ReadonlyArray<{ personId: string; name: string }>;
+  supervisoryVisits: readonly SupervisoryVisit[];
+  /**
+   * The clients Joy is actually serving, for the care-plan and supervision
+   * queues. `startOfCare` is what the annual supervision clock runs from.
+   */
+  servedClients: ReadonlyArray<{ personId: string; name: string; startOfCare: string }>;
   /** Monday of the current week, for billing. */
   weekStart: string;
   payPeriod: { start: string; end: string };
@@ -152,18 +155,19 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
     }),
   );
 
-  // The annual supervisory visit the service agreement commits Joy to, read
-  // from the same compliance clock the client record shows.
-  const supervision = input.clients.filter((client) =>
-    clientCompliance(client, today).some(
-      // ComplianceState is ok / due_soon / overdue / missing. An earlier
-      // version compared against "current", which is not one of them — so the
-      // predicate was always true and every client counted as overdue. The
-      // type checker caught it; no test did, because the fixture list was
-      // empty.
-      (item) => item.key === "annual_supervision" && item.state !== "ok",
-    ),
-  ).length;
+  // The annual supervision the service agreement commits Joy to.
+  //
+  // This signal existed before the supervision module did, and read
+  // `clientCompliance` over an input the live wiring passed as an empty array —
+  // so it printed 0 whatever was true, and linked to a screen that could not
+  // have done anything about it. It now reads the same queue the Supervisory
+  // visits screen does. Overdue and due-soon only: a booked visit is on the
+  // calendar and is nobody's problem this morning.
+  const supervision = supervisionQueue({
+    clients: input.servedClients.filter((c) => c.startOfCare),
+    visits: input.supervisoryVisits,
+    today,
+  }).filter((row) => row.needsYou).length;
 
   return [
     {
@@ -260,7 +264,7 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
       key: "supervision",
       label: "Supervisory visits",
       value: String(supervision),
-      to: "/clients",
+      to: "/clients/supervision",
       urgent: supervision > 0,
       detail: supervision > 0 ? "Due or overdue" : "All current",
     },

@@ -303,3 +303,24 @@ describe("the care plan queue", () => {
     expect(rows[0].reason).toBe("review_overdue");
   });
 });
+
+describe("reviewing a plan that is already live", () => {
+  it("resets the review clock", () => {
+    // The annual review. An earlier version refused to review an active plan,
+    // so the clock counted up from activation forever and there was nowhere to
+    // record the supervisory visit that had actually happened.
+    const reviewed = reviewPlan({ plan: live(), byUserId: RN, at: "2027-07-01T10:00:00Z" });
+    expect(reviewed.state).toBe("active");
+    // Twelve months, not 365 days — 2028 has a leap day, and adding days would
+    // have put this on 30 June while the client record said 1 July.
+    expect(reviewDueOn(reviewed)).toBe("2028-07-01");
+    expect(reviewOverdue(reviewed, "2027-09-01")).toBe(false);
+  });
+
+  it("refuses a superseded plan, which describes care that already happened", () => {
+    const retired = { ...live(), state: "superseded" as const };
+    expect(reviewPlan({ plan: retired, byUserId: RN, at: "2027-07-01T10:00:00Z" }).reviewedAt).toBe(
+      retired.reviewedAt,
+    );
+  });
+});

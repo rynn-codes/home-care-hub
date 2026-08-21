@@ -1,5 +1,6 @@
 import type { AssessmentAnswers } from "@/domain/assessment/questions";
 import { VITAL_DEFAULTS } from "@/domain/assessment/questions";
+import { addMonths } from "@/domain/dates";
 
 /**
  * The care plan.
@@ -275,10 +276,19 @@ export function submitForReview(plan: CarePlan): CarePlan {
  * `byUserId` is recorded rather than assumed for the same reason the witness
  * rule exists on consents: if the plan is ever questioned, "who approved this"
  * has an answer, and it is a person rather than the system.
+ *
+ * This is used twice, and both uses are the same act. Before a plan goes live
+ * somebody has to sign off on it; once a year somebody has to look at a live
+ * plan again and say it still fits, which is what the supervisory visit is for.
+ * So reviewing an active plan is allowed and resets its review clock — an
+ * earlier version refused it, which meant the annual review had nowhere to be
+ * recorded and the clock counted up forever.
+ *
+ * A superseded plan is not reviewable. It describes care that already happened.
  */
 export function reviewPlan(input: { plan: CarePlan; byUserId: string; at: string }): CarePlan {
   const { plan } = input;
-  if (plan.state === "superseded" || plan.state === "active") return plan;
+  if (plan.state === "superseded") return plan;
   return { ...plan, reviewedByUserId: input.byUserId, reviewedAt: input.at };
 }
 
@@ -383,14 +393,15 @@ export function carePlanStateForFamily(
  * catch. Whether Joy's licence category requires it more often than annually is
  * for Karynn to confirm; changing it is one number.
  */
-export const REVIEW_EVERY_DAYS = 365;
+export const REVIEW_EVERY_MONTHS = 12;
 
 export function reviewDueOn(plan: CarePlan): string | null {
   const from = plan.reviewedAt ?? plan.effectiveFrom;
-  if (!from) return null;
-  const due = new Date(from);
-  due.setDate(due.getDate() + REVIEW_EVERY_DAYS);
-  return due.toISOString().slice(0, 10);
+  // Months rather than 365 days, and the shared helper rather than a third
+  // copy of the arithmetic. Adding 365 days lands a day early whenever the
+  // year it crosses contains a leap day, which would have shown two different
+  // due dates in Joy for what the agreement calls one annual obligation.
+  return from ? addMonths(from, REVIEW_EVERY_MONTHS) : null;
 }
 
 export function reviewOverdue(plan: CarePlan, today: string): boolean {

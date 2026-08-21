@@ -1,4 +1,5 @@
 import { CONSENTS, declineConsequences, type ConsentDecisions } from "@/domain/consents/registry";
+import { addMonths, daysBetween, toDateOnly } from "@/domain/dates";
 
 /**
  * The client record, assembled from what the admission produced.
@@ -137,31 +138,6 @@ export function ageOn(dateOfBirth: string | null | undefined, today: string): nu
     (now.getUTCMonth() === dob.getUTCMonth() && now.getUTCDate() < dob.getUTCDate());
   if (beforeBirthday) age -= 1;
   return age;
-}
-
-/** Accepts a date or a full timestamp; everything downstream works in days. */
-function toDateOnly(value: string): string {
-  return value.slice(0, 10);
-}
-
-function addMonths(iso: string, months: number): string | null {
-  const d = new Date(`${toDateOnly(iso)}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return null;
-  const day = d.getUTCDate();
-  d.setUTCDate(1);
-  d.setUTCMonth(d.getUTCMonth() + months);
-  // Clamp rather than roll over: a 31 January signature renews on 28 February,
-  // not on 3 March. Rolling forward would quietly grant extra days of validity.
-  const lastDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
-  d.setUTCDate(Math.min(day, lastDay));
-  return d.toISOString().slice(0, 10);
-}
-
-function daysBetween(fromIso: string, toIso: string): number {
-  const ms =
-    new Date(`${toDateOnly(toIso)}T00:00:00Z`).getTime() -
-    new Date(`${toDateOnly(fromIso)}T00:00:00Z`).getTime();
-  return Math.round(ms / 86_400_000);
 }
 
 function expiryItem(

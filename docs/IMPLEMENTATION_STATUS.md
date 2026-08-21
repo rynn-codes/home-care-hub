@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 21 August 2026 (incident follow-up, the care plan)
+**Last updated:** 21 August 2026 (incident follow-up, the care plan, supervisory visits)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -107,6 +107,16 @@ No second frontend was created and no framework was replaced, per section 3.
   every client, which meant a client whose care had never been planned looked
   exactly like one whose plan was current, on the caregiver's phone and on
   Home. Both now say so.
+- **Supervisory visits** — booking, recording and, crucially, resetting the
+  annual supervision clock the service agreement commits to. The client record
+  has counted that obligation down since the compliance engine was written and
+  could never stop it: with nothing to measure from but start of care, a client
+  supervised last month still read overdue and the RN who did the work had no
+  way to say so. Completing a visit can mark the care plan reviewed in the same
+  action, because it is the same trip — recording them separately means doing
+  one and forgetting the other. Home's supervision signal used to read an input
+  the live wiring passed as an empty array, so it printed 0 whatever was true;
+  it now reads the same queue the screen does.
 - **People** — business contacts, referral sources and partners, organised
   around who can send Joy work and who has gone quiet. Karynn's scope, 18 Aug:
   "our general contact list for ancillary people". Contacts can be added,
@@ -115,9 +125,6 @@ No second frontend was created and no framework was replaced, per section 3.
 
 ## What does not exist
 
-- **Supervisory visit scheduling.** The compliance clock tracks whether the
-  annual supervisory visit is due and the client record shows it; nothing books
-  one.
 - **Inviting a family mid-admission.** `canInviteFamily` implements §19's gate —
   assessment complete, Joy moving forward — and the client record satisfies both
   by construction. The admission review screen is where that gate is live and
@@ -244,7 +251,7 @@ Recorded here so they are not only in a chat log.
   point and need checking against the current Texas requirements for Joy's
   licence category. The screen says so in as many words, deliberately — a
   countdown with no provenance reads as though somebody checked.
-- **How often a care plan must be reviewed.** `REVIEW_EVERY_DAYS` is 365,
+- **How often a care plan must be reviewed.** `REVIEW_EVERY_MONTHS` is 12,
   matching the annual supervisory visit the service agreement commits to. If
   Joy's licence category requires it sooner, it is one number.
 - **Whether a Companion Care visit at Joy is strictly non-hands-on.**
@@ -258,7 +265,7 @@ Recorded here so they are not only in a chat log.
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 48 tests, about a minute
+npm run test:e2e          # 53 tests, about a minute
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -306,8 +313,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 748 tests, `npm run test:e2e`
-passes 48, and the database suites pass 103 assertions across six files.
+which it did not before — `npm test` passes with 761 tests, `npm run test:e2e`
+passes 53, and the database suites pass 103 assertions across six files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them
