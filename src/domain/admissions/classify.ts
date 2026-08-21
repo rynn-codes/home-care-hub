@@ -68,3 +68,30 @@ export function classifyAdmission(admission: ClassifiableAdmission): WorkQueueGr
       return "waiting";
   }
 }
+
+/**
+ * Has Joy decided to move forward with this admission?
+ *
+ * §19's gate for sending a family their portal link, and the reason it is a
+ * function rather than a condition inside a screen: the same question is asked
+ * on the admission review and on the client record, and two copies of it would
+ * eventually answer differently.
+ *
+ * Moving forward means the record has advanced PAST the assessment and is still
+ * live. Not "the assessment is complete" — a completed assessment sitting in the
+ * assessment stage is Joy still thinking. And an admission on hold has not been
+ * declined, but it is not moving either; sending a portal link to a family in
+ * that state tells them their father's care is further along than it is, which
+ * is precisely what §19's gate exists to prevent.
+ */
+export function admissionIsMovingForward(input: {
+  stage: AdmissionStage;
+  status: AdmissionStatus;
+}): boolean {
+  if (input.status !== "active") return false;
+  return (
+    input.stage === "pre_onboarding" ||
+    input.stage === "ready_for_admission" ||
+    input.stage === "admitted"
+  );
+}

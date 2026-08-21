@@ -205,30 +205,23 @@ describe("the visit task list", () => {
     expect(tasks.map((t) => t.label)).toContain("Bathing");
   });
 
-  it("does not put hands-on care on a companion visit", () => {
-    // A required task the caregiver is not there to do cannot be answered
-    // honestly, and §11 blocks clock-out until it is — which teaches people to
-    // tick boxes.
-    const tasks = tasksForVisit({
-      plans: [live()],
-      clientPersonId: "c-1",
-      service: "Companion Care",
-      date: "2026-08-15",
-    });
-    expect(tasks.map((t) => t.label)).not.toContain("Bathing");
-    expect(tasks.map((t) => t.label)).toContain("Light housekeeping");
-  });
-
-  it("gives an unrecognised service the whole plan", () => {
-    // The safe direction to be wrong in: a caregiver shown a task that does not
-    // apply can record "not needed today". One never shown it can do nothing.
-    const tasks = tasksForVisit({
-      plans: [live()],
-      clientPersonId: "c-1",
-      service: "Respite",
-      date: "2026-08-15",
-    });
-    expect(tasks).toHaveLength(6);
+  it("does not filter by the service label on the visit", () => {
+    // Karynn, 21 August: "We don't separate care. All of our clients get
+    // personal care services, companion care, light housekeeping." The label is
+    // a billing and scheduling distinction, not a description of what the
+    // caregiver does when she gets there — and an earlier version of this file
+    // used it to hide a client's bathing task from the person who came to do
+    // it.
+    for (const service of ["Personal Care", "Companion Care", "Live-In", "Respite"]) {
+      const tasks = tasksForVisit({
+        plans: [live()],
+        clientPersonId: "c-1",
+        service,
+        date: "2026-08-15",
+      });
+      expect(tasks.map((t) => t.label), service).toContain("Bathing");
+      expect(tasks, service).toHaveLength(6);
+    }
   });
 
   it("is empty when no plan is in effect, rather than improvised", () => {

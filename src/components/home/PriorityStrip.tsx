@@ -16,7 +16,12 @@ export function PriorityStrip() {
 
   return (
     <nav aria-label="Today's priorities" className="mb-6">
-      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7">
+      {/* Three rows of three rather than seven across with two orphans. The
+          count grew from six to nine as Home stopped reading hardcoded numbers
+          and started reading the modules; a grid pinned to the old count leaves
+          the last two on a line of their own, which reads as though they matter
+          less. */}
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
         {signals.map((item) => (
           <li key={item.key}>
             <Link

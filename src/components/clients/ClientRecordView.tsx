@@ -357,8 +357,10 @@ export function ClientRecordView({ client, onBack }: { client: ClientRecord; onB
           {/* Both §19 gates are satisfied by construction here: a client
               record only exists once somebody has been assessed and admitted.
               The interesting case — inviting a family *during* admission, when
-              those gates are live — belongs on the admission review screen, and
-              `canInviteFamily` is what it will call. */}
+              those gates are live — is now on the admission review screen,
+              calling `canInviteFamily` with `admissionIsMovingForward`. This
+              card stays because a family invited late, or one whose invitation
+              lapsed, is still handled from the client record. */}
           <FamilyPortalCard
             clientName={client.preferredName || client.name}
             clientPersonId={client.personId}

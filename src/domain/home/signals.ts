@@ -277,12 +277,32 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
  * Named rather than counted. "Three things need you" is a number; "open shifts
  * and payroll need you" is a morning somebody can start.
  */
+/**
+ * How many get named before the sentence stops being a sentence.
+ *
+ * The signals are already in priority order, so the first three are the three
+ * worth saying out loud. Naming all nine produces a list nobody reads to the
+ * end, which is the same failure as printing a bare count — and this line
+ * started as the fix for exactly that.
+ */
+const NAMED_IN_HEADLINE = 3;
+
 export function homeHeadline(signals: readonly HomeSignal[]): string {
   const urgent = signals.filter((s) => s.urgent);
   if (urgent.length === 0) return "Nothing needs you this morning.";
 
-  const names = urgent.map((s) => s.label.toLowerCase());
-  if (names.length === 1) return `${names[0]} needs you.`;
-  if (names.length === 2) return `${names[0]} and ${names[1]} need you.`;
-  return `${names.slice(0, -1).join(", ")} and ${names.at(-1)} need you.`;
+  const names = urgent.slice(0, NAMED_IN_HEADLINE).map((s) => s.label.toLowerCase());
+  const rest = urgent.length - names.length;
+
+  const list =
+    names.length === 1
+      ? names[0]
+      : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+
+  if (rest === 0) {
+    return names.length === 1 ? `${list} needs you.` : `${list} need you.`;
+  }
+  // "and four other things" rather than "and 4 more" — the second reads as a
+  // notification badge, which is what Home is meant not to be.
+  return `${list} need you, and ${rest} other thing${rest === 1 ? "" : "s"}.`;
 }

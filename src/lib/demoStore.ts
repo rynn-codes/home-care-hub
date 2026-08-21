@@ -1,4 +1,5 @@
 import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from "@/lib/admissionsSeed";
+import { seedAssessments, seedConsentSessions, seedIntakes } from "@/lib/admissionProgressSeed";
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
 import type { UserRole } from "@/domain/consents/witness";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
@@ -156,12 +157,15 @@ function initial(): DemoState {
   return {
     admissions: seedAdmissions,
     people: seedPeople,
-    intakes: {},
+    // The intake and assessment each seeded admission's stage implies. Empty
+    // maps meant the board said "assessment completed Aug 12" and the review
+    // screen for the same record said nobody had been out yet.
+    intakes: seedIntakes,
     currentUser: { name: "Karynn Verrett", role: "ceo_admin" },
     assignments: {},
     newHires: [],
-    assessments: {},
-    consentSessions: {},
+    assessments: seedAssessments,
+    consentSessions: seedConsentSessions,
     preOnboarding: {},
     scheduleEvents: [],
     communications: [],

@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDemo } from "@/context/DemoDataProvider";
 import { checkAdmission, startOfCareRestrictions } from "@/domain/admissions/readiness";
+import { admissionIsMovingForward } from "@/domain/admissions/classify";
+import { FamilyPortalCard } from "@/components/clients/FamilyPortalCard";
+import type { Invitation } from "@/domain/hiring/invitation";
 import { canCompleteAssessment } from "@/domain/assessment/questions";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +36,7 @@ export default function AdmissionReview() {
   const consent = consentSessions[id];
   const pre = preOnboarding[id];
   const [approver, setApprover] = useState("Karynn Verrett");
+  const [familyInvitation, setFamilyInvitation] = useState<Invitation | null>(null);
   const [startDate, setStartDate] = useState(
     new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
   );
@@ -49,6 +53,25 @@ export default function AdmissionReview() {
       }),
     [id, intakes, assessments, consent, pre],
   );
+
+  // §19's gate, live on the screen where the admission actually is. The client
+  // record has carried this card for a while, but a client record only exists
+  // after activation — and §19's whole point is that the family gets the portal
+  // DURING the admission, so a daughter can upload the medication list and
+  // watch the start-of-care date settle rather than ringing to ask.
+  const movingForward = admissionIsMovingForward({
+    stage: admission?.stage ?? "new_referral",
+    status: admission?.status ?? "active",
+  });
+
+  // The caller from phone intake. §19's link goes to the responsible party, and
+  // that is the person Joy has already been speaking to — asking for the number
+  // again when it is sitting in the intake is how it gets typed in wrong.
+  const intakeAnswers = (intakes[id]?.answers ?? {}) as Record<string, unknown>;
+  const callerName =
+    typeof intakeAnswers.caller_name === "string" ? intakeAnswers.caller_name : null;
+  const callerPhone =
+    typeof intakeAnswers.caller_phone === "string" ? intakeAnswers.caller_phone : null;
 
   const restrictions = useMemo(
     () => startOfCareRestrictions(consent?.decisions ?? {}),
@@ -167,6 +190,22 @@ export default function AdmissionReview() {
               </Button>
             </div>
           </section>
+
+          {/* §19. Offered as soon as the gate opens rather than after
+              activation — a family whose father starts on Monday has documents
+              to send and a date to watch this week, not next. */}
+          <div className="mt-5">
+            <FamilyPortalCard
+              clientName={admission.name}
+              clientPersonId={admission.id}
+              responsibleParty={callerName}
+              responsiblePartyPhone={callerPhone}
+              assessmentComplete={canCompleteAssessment(assessments[id]?.answers ?? {})}
+              movingForward={movingForward}
+              existing={familyInvitation}
+              onInvite={setFamilyInvitation}
+            />
+          </div>
 
           <section className="mt-5 rounded-2xl border border-border bg-surface p-7">
             <h2 className="text-lg font-semibold tracking-tight">

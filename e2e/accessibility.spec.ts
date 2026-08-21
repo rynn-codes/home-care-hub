@@ -26,7 +26,37 @@ import { expect, signInAsStaff, signInToPortal, test } from "./support";
 const PROJECT_REF = process.env.VITE_SUPABASE_PROJECT_ID ?? "xembwxgilrsjeybuwxwt";
 const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
+/**
+ * Wait for the page to stop moving before measuring it.
+ *
+ * `AppShell` wraps every admin screen in `animate-fade-in`, and axe computes
+ * contrast from the colours actually on screen — so a scan that starts during
+ * the fade measures the blend, not the design. That is how this suite reported
+ * muted-foreground at 4.2:1 when the settled value is 5.38:1: a real-looking
+ * failure with no defect behind it, on seven screens at once.
+ *
+ * It is a timing bug and it cuts both ways. A page that faded in a little
+ * faster would have passed the same scan, so the suite was never measuring what
+ * it claimed to. Waiting for every animation to finish makes the result depend
+ * on the stylesheet rather than on how busy the machine is.
+ *
+ * Deliberately waiting rather than disabling animations: this tests the page a
+ * person actually gets, and an animation that never finishes is itself worth
+ * failing on.
+ */
+async function settle(page: import("@playwright/test").Page) {
+  await page.waitForFunction(
+    () =>
+      document
+        .getAnimations()
+        .every((a) => a.playState === "finished" || a.playState === "idle"),
+    undefined,
+    { timeout: 5_000 },
+  );
+}
+
 async function scan(page: import("@playwright/test").Page) {
+  await settle(page);
   return new AxeBuilder({ page }).withTags(WCAG).analyze();
 }
 

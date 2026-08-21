@@ -118,6 +118,11 @@ No second frontend was created and no framework was replaced, per section 3.
   one and forgetting the other. Home's supervision signal used to read an input
   the live wiring passed as an empty array, so it printed 0 whatever was true;
   it now reads the same queue the screen does.
+- **Inviting a family mid-admission** — §19's gate is now live on the admission
+  review screen, which is the one point in the process where it can do any good:
+  the client record only exists after activation, and by then the family has
+  missed the week they had documents to send and a start date to watch. The
+  number comes from the intake rather than being asked for twice.
 - **People** — business contacts, referral sources and partners, organised
   around who can send Joy work and who has gone quiet. Karynn's scope, 18 Aug:
   "our general contact list for ancillary people". Contacts can be added,
@@ -126,10 +131,6 @@ No second frontend was created and no framework was replaced, per section 3.
 
 ## What does not exist
 
-- **Inviting a family mid-admission.** `canInviteFamily` implements §19's gate —
-  assessment complete, Joy moving forward — and the client record satisfies both
-  by construction. The admission review screen is where that gate is live and
-  where the button should also appear.
 - AI conversation mode for intake. Manual mode is built first by design (§34);
   the AI path sits behind `AI_PHONE_INTAKE_ENABLED`, which is off.
 - A create service. The referral drawer adds to the in-memory queue and says so
@@ -258,18 +259,18 @@ Recorded here so they are not only in a chat log.
 - **How often a care plan must be reviewed.** `REVIEW_EVERY_MONTHS` is 12,
   matching the annual supervisory visit the service agreement commits to. If
   Joy's licence category requires it sooner, it is one number.
-- **Whether a Companion Care visit at Joy is strictly non-hands-on.**
-  `SERVICE_TASK_CATEGORIES` decides which parts of a care plan appear on a
-  caregiver's task list for a given service line. It matters because a required
-  task the caregiver is not there to do cannot be answered honestly, and §11
-  blocks clock-out until it is — which teaches people to tick boxes. The
-  service agreement names the lines but does not list tasks per line, so this
-  is drawn from what the names mean rather than from a document.
+- **What changes for a respite or post-surgical visit.** Answered in part on
+  21 August: "We don't separate care. All of our clients get personal care
+  services, companion care, light housekeeping. The only time we distinguish
+  care is if it is respite, post-surgical." `SERVICE_TASK_CATEGORIES` is
+  therefore empty — every visit gets the whole care plan — and the remaining
+  question is only what those two lines do differently. Until somebody says,
+  they get the whole plan too.
 
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 53 tests, about a minute
+npm run test:e2e          # 56 tests, about a minute
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -305,6 +306,14 @@ failures the first time it ran, all fixed:
   rewired them to the real engines. A screen reader announces the value with no
   idea what it labels.
 
+One correction to how this suite runs. `AppShell` fades every admin screen in,
+and axe computes contrast from the colours actually on screen — so a scan that
+started during the fade measured the blend and reported muted-foreground at
+4.2:1 when the settled value is 5.38:1. Seven screens failed at once with no
+defect behind any of them. It cut both ways: a page that faded a little faster
+passed the same scan, so the suite was never measuring what it claimed to. It
+now waits for every animation to finish first.
+
 Automated checks catch perhaps a third of what matters — they do not know
 whether a label makes sense. This is a floor, not a pass mark.
 
@@ -317,8 +326,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 761 tests, `npm run test:e2e`
-passes 53, and the database suites pass 138 assertions across seven files.
+which it did not before — `npm test` passes with 773 tests, `npm run test:e2e`
+passes 56, and the database suites pass 138 assertions across seven files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

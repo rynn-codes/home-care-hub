@@ -255,6 +255,21 @@ describe("homeHeadline", () => {
     expect(homeHeadline([s("A", true), s("B", true), s("C", true)])).toBe("a, b and c need you.");
   });
 
+  it("stops naming things before the sentence stops being one", () => {
+    // Home carried six signals when this was written and carries nine now.
+    // Listing all nine is a list nobody reads to the end, which is the same
+    // failure as the bare count this line was written to replace.
+    const many = ["Incidents", "Care plans", "Open shifts", "Payroll", "Billing"].map((l) =>
+      s(l, true),
+    );
+    expect(homeHeadline(many)).toBe(
+      "incidents, care plans and open shifts need you, and 2 other things.",
+    );
+    expect(homeHeadline(many.slice(0, 4))).toBe(
+      "incidents, care plans and open shifts need you, and 1 other thing.",
+    );
+  });
+
   it("says so plainly when nothing does", () => {
     expect(homeHeadline([s("Payroll", false)])).toBe("Nothing needs you this morning.");
   });

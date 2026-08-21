@@ -5,8 +5,10 @@ import {
   canTransition,
   checkTransition,
   nextStage,
+  type AdmissionStage,
+  type AdmissionStatus,
 } from "@/domain/admissions/stages";
-import { classifyAdmission } from "@/domain/admissions/classify";
+import { admissionIsMovingForward, classifyAdmission } from "@/domain/admissions/classify";
 import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
 import { findDuplicates, normalizePhone, scoreCandidate } from "@/domain/admissions/duplicateCheck";
 
@@ -217,5 +219,30 @@ describe("duplicate check", () => {
       [weaker, marcus],
     );
     expect(result.best?.candidate.personId).toBe("p1");
+  });
+});
+
+describe("whether Joy has decided to move forward", () => {
+  // §19's gate on sending a family their portal link.
+  const at = (stage: AdmissionStage, status: AdmissionStatus = "active") => ({ stage, status });
+
+  it("says no while the assessment is still the current stage", () => {
+    // A completed assessment sitting in the assessment stage is Joy thinking.
+    expect(admissionIsMovingForward(at("assessment"))).toBe(false);
+    expect(admissionIsMovingForward(at("phone_intake"))).toBe(false);
+    expect(admissionIsMovingForward(at("new_referral"))).toBe(false);
+  });
+
+  it("says yes once the record has advanced past it", () => {
+    expect(admissionIsMovingForward(at("pre_onboarding"))).toBe(true);
+    expect(admissionIsMovingForward(at("ready_for_admission"))).toBe(true);
+    expect(admissionIsMovingForward(at("admitted"))).toBe(true);
+  });
+
+  it("says no for an admission on hold or closed", () => {
+    // On hold is not declined, but it is not moving either — and a portal link
+    // would tell a family their father's care is further along than it is.
+    expect(admissionIsMovingForward(at("pre_onboarding", "on_hold"))).toBe(false);
+    expect(admissionIsMovingForward(at("ready_for_admission", "closed"))).toBe(false);
   });
 });

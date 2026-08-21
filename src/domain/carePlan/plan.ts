@@ -412,29 +412,27 @@ export function reviewOverdue(plan: CarePlan, today: string): boolean {
 // ------------------------------------------------------- the visit view --
 
 /**
- * Which categories of task each service line covers.
+ * Which categories of task a service line covers.
  *
- * Held as data for the same reason the incident notification windows are: this
- * is Joy's definition of its own services, not a fact about the world, and the
- * one thing it must not be is a branch buried in a function.
+ * KARYNN, 21 AUGUST: "We don't separate care. All of our clients get personal
+ * care services, companion care, light housekeeping. The only time we
+ * distinguish care is if it is respite, post-surgical."
  *
- * The problem it solves is concrete. A companion-care visit that lists
- * "Bathing" as a required task cannot be closed honestly — §11 will not let the
- * caregiver clock out until she answers it, and the honest answer is "that is
- * not what I am here for". Two visits later she is ticking boxes, which is
- * exactly the habit that makes a task list worthless.
+ * So this is empty, and that is the answer rather than a gap. An earlier
+ * version of this file assumed a Companion Care visit was strictly non-hands-on
+ * and filtered personal care off the caregiver's list for those shifts. At Joy
+ * that is simply wrong: the service label on a visit is a billing and
+ * scheduling distinction, not a description of what the caregiver does when she
+ * gets there. Filtering by it would have hidden a client's bathing task from
+ * the person who came to do it.
  *
- * FOR KARYNN TO CONFIRM: whether a Companion Care visit at Joy is strictly
- * non-hands-on. The service agreement distinguishes the lines but does not list
- * tasks per line, so this is a starting point drawn from what the names mean
- * rather than from a document. Any service not listed here gets the whole plan,
- * which is the safe direction to be wrong in — a caregiver seeing a task that
- * does not apply can record "not needed today"; a caregiver never shown a task
- * cannot do anything at all.
+ * STILL OPEN, and narrower than it was: what actually changes for a respite or
+ * post-surgical visit. Those are the two Joy does distinguish, and until
+ * somebody says how, they get the whole plan like everything else — which is
+ * the safe direction to be wrong in. A caregiver shown a task that does not
+ * apply records "not needed today"; one never shown it can do nothing.
  */
-export const SERVICE_TASK_CATEGORIES: Record<string, readonly TaskCategory[]> = {
-  "Companion Care": ["activity", "household"],
-};
+export const SERVICE_TASK_CATEGORIES: Record<string, readonly TaskCategory[]> = {};
 
 /**
  * The tasks for one visit, from the plan that was in effect on its date.
