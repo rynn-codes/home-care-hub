@@ -328,8 +328,18 @@ Recorded here so they are not only in a chat log.
   repository — they belong in the database.
 - **Real pay rates.** The figures on the Employees screen came from the mockup
   and are fiction. Payroll deliberately computes no wages because of this.
-- **Packet page 15** still prints her mobile number; she has ruled that only the
-  office number is used. Needs a reprint.
+- **The consents packet needs a reprint, for two corrections now.** Neither is a
+  decision — both are known errors in a document clients are still signing.
+  1. **Page 15** prints Karynn's mobile number. She has ruled that only the
+     office number is used.
+  2. **The invoicing clause** says "due to billing in arrears". Karynn,
+     21 August: "We bill in advance... In arrears is incorrect." The clause also
+     says "invoice every week in advance", so the fix is deleting the wrong
+     sentence rather than rewriting the paragraph.
+
+  The second one has teeth: a family arguing about a week Joy has not delivered
+  yet is holding a signed page that appears to support them. The Billing screen
+  says the packet is wrong until the reprint happens.
 - **Whether GoHighLevel will sign a BAA**, and whether its A2P 10DLC
   registration covers authentication traffic. Both gate go-live.
 - **The incident notification windows.** `NOTIFICATION_POLICY` in

@@ -49,7 +49,7 @@ Sizes are relative: **S** a day or less, **M** a few days, **L** a week or more.
 
 | § | Requirement | Today | Gap | Size |
 | --- | --- | --- | --- | --- |
-| 7.1 | Bill the upcoming care week | `buildInvoice` already does | **Resolves the contradiction flagged on the Billing screen**: the packet says both "every week in advance" and "billing in arrears"; J-05 settles it as advance. Update that screen note | S |
+| 7.1 | Bill the upcoming care week | `buildInvoice` already does | **Settled by Karynn directly, 21 August**: "We bill in advance... In arrears is incorrect." The packet's arrears sentence is a document error on the reprint list, not an ambiguity. The Billing screen now says the packet is wrong rather than that it contradicts itself | Done |
 | 7.2 | Billing run with snapshot and exception detection | Invoices computed per week on demand, no run | Add `billing_runs`; detect the seven listed exceptions before drafting | L |
 | 7.2 | No Stripe call before approval | No approval step | Gate collection on `approved` | S |
 | 7.3 | Approved invoices immutable, corrections via credit/adjustment/void | Write-off only; `issued_invoices` is updatable by billing | Add adjustments and void/reissue; remove the blanket update policy | M |

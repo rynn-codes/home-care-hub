@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACH_CONVENIENCE_FEE,
   LATE_FEE,
+  PACKET_CONTRADICTION,
   ageing,
   buildInvoice,
   reconcile,
@@ -225,6 +226,48 @@ describe("ageing", () => {
       lateFeeDue: 0,
       suspensionPermitted: false,
     });
+  });
+});
+
+describe("Joy bills in advance", () => {
+  // Karynn, 21 August: "We bill in advance. Make sure that is noted. In arrears
+  // is incorrect."
+  //
+  // A comment can be edited away by somebody reading the packet's wrong
+  // sentence and helpfully "correcting" the code. A failing test cannot, and
+  // this is the direction the whole billing model rests on: the reconciliation
+  // below only makes sense because the money arrives before the care does.
+
+  it("dates the invoice from the start of the week being billed, not its end", () => {
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [day("2026-08-17", "v1")],
+      weekStart: "2026-08-17",
+    });
+
+    // Due days after the week STARTS. Arrears billing would date it from the
+    // week's end, which is a week later and a different business.
+    expect(invoice.weekStart).toBe("2026-08-17");
+    expect(invoice.dueOn < "2026-08-23").toBe(true);
+  });
+
+  it("bills a week whose care has not happened yet", () => {
+    // The defining property. An arrears invoice for a future week would be
+    // empty; this one is not, because it bills what is scheduled.
+    const invoice = buildInvoice({
+      terms: terms(),
+      visits: [day("2026-09-14", "v9")],
+      weekStart: "2026-09-14",
+    });
+    expect(invoice.lines.length).toBeGreaterThan(0);
+    expect(invoice.total).toBeGreaterThan(0);
+  });
+
+  it("says the packet is wrong rather than that it is ambiguous", () => {
+    // Ambiguous invites a judgement call at the desk. Wrong tells somebody
+    // which sentence to ignore.
+    expect(PACKET_CONTRADICTION).toContain("Joy bills in advance");
+    expect(PACKET_CONTRADICTION).toContain("incorrect");
   });
 });
 

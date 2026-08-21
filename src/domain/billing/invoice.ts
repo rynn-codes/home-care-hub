@@ -59,21 +59,29 @@ import { HOLIDAY_LABELS, holidayOn, type HolidayKey } from "@/domain/billing/hol
  */
 
 /**
- * The packet's wording, and the decision that settles it.
+ * JOY BILLS IN ADVANCE. The packet's arrears sentence is a mistake.
  *
- * The invoicing clause says both things at once. Joy's own answer was already
- * "in advance", and the Admissions/Billing/Payroll/Portal/Stripe specification
- * (v1.0, evidence J-05) confirms it: Joy invoices the upcoming care week.
+ * Karynn, 21 August: "We bill in advance. Make sure that is noted. In arrears is
+ * incorrect." That is the business owner correcting her own document, not an
+ * inference from it, and it settles a question that has been open since Billing
+ * was built. The specification agrees independently — evidence J-05, Joy
+ * invoices the upcoming care week — but her sentence is the authority.
  *
- * The note stays on the Billing screen because the CLIENT-FACING document is
- * still wrong. A family reading their signed agreement finds a sentence saying
- * they are billed in arrears, and the first time that matters is an argument
- * about a week nobody delivered yet.
+ * The note stays on the Billing screen, and it now says the packet is WRONG
+ * rather than that it is ambiguous. Those are different things to tell somebody.
+ * Ambiguous invites a judgement call at the desk; wrong tells them which
+ * sentence to ignore and that a corrected packet is coming.
+ *
+ * IT STAYS UNTIL THE REPRINT because the client-facing document is still out
+ * there. A family reading their signed agreement finds a sentence saying they
+ * are billed in arrears, and the first time that matters is an argument about a
+ * week nobody has delivered yet — with the family holding a signed page that
+ * appears to support them.
  */
 export const PACKET_CONTRADICTION =
-  'The invoicing clause says both "invoice every week in advance" and "due to billing in arrears". ' +
-  "Joy bills the upcoming care week — settled, and now confirmed by the billing specification. " +
-  "The packet wording still needs correcting before the next one is printed.";
+  'Joy bills in advance. The agreement also carries the sentence "due to billing in arrears", ' +
+  "which is incorrect and is on the list for the next printing. Where the two disagree, in " +
+  "advance is right — Karynn, 21 August.";
 
 /** From the signed agreement. */
 export const OVERTIME_AFTER_HOURS = 40;

@@ -10,9 +10,12 @@ recorded, so nobody asks twice.
 
 ### 1. Weekly invoice cutoff, service period, approval time, charge date — BLOCKING
 
-Not answered. J-05 settles that Joy bills the *upcoming* care week; it does not
-say which day the run happens, how long the office has to approve, or when the
-card is charged.
+**Direction answered.** Karynn, 21 August: "We bill in advance. Make sure that is
+noted. In arrears is incorrect." J-05 says the same. The packet's arrears
+sentence is a known error and is on the reprint list.
+
+What is still open is the calendar, not the direction: which day the run
+generates, how long the office has to approve, and when the card is charged.
 
 Joy's workweek already starts Monday (payroll computes overtime from it, and
 Gusto's setting must match). The packet says payment is due within one calendar
