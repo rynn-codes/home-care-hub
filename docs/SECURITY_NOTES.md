@@ -305,6 +305,28 @@ payroll and billing read. Three rules.
 
 Verified in `verified_units_test.sql`.
 
+`0016` adds the invoice lifecycle. Three rules.
+
+- **Nothing is collected on an invoice nobody approved and issued** (§7.2 step
+  7). `payment_after_invoice` refuses money against a draft, a pending or a
+  merely-approved invoice. This closed a hole 0016 itself opened: making
+  `issued_on` nullable for drafts turned 0013's `received_on < issued_on` check
+  into NULL, which is not true, so the branch never fired.
+- **After approval, the content is frozen and moves only along the lifecycle's
+  edges.** A trigger, not a policy — the Phase 0 proposal suggested narrowing
+  the update policy to draft/pending, but approving, issuing and writing off
+  are themselves updates, so the literal policy would have broken the flow it
+  protected. Corrections after approval are append-only adjustments (no UPDATE
+  or DELETE grant), each with a reason and a name.
+- **Invoice lines are readable by the owner and billing only.** A line says
+  what an hour costs a family, which is a rate, and payroll does not read
+  rates — the same boundary `billing_accounts_test.sql` proves for
+  `rate_plan_versions`. Payroll keeps its 0013 read on the invoice and its
+  total. There is deliberately no column on a line for a wage, a diagnosis or
+  a chart detail: what is not there cannot leak (§12).
+
+Verified in `invoice_approval_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -324,7 +346,7 @@ Verified in `verified_units_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0015
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0016
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -335,4 +357,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0015`: 236 assertions across eleven files.
+As of `0016`: 260 assertions across twelve files.

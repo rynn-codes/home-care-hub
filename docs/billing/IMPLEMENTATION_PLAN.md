@@ -53,7 +53,21 @@ No Stripe. No portal. The ledger and the authorisation model.
      a reason. The flat refusal left Karynn's own case — the caregiver worked and
      the app recorded nothing — permanently blocking payroll with nowhere to
      record the decision that would unblock it.
-3. `0016` invoice approval, lines, adjustments, immutability trigger.
+3. ~~`0016` invoice approval, lines, adjustments, immutability trigger.~~
+   **Done.** The full §7.2 lifecycle: draft → pending_approval → approved →
+   issued → processing/settled/disputed/uncollectible/written_off, moved only
+   along whitelisted edges by a trigger. Approval requires lines that exist and
+   sum to the total, with an approver's name; after approval the financial
+   content is frozen and corrections are append-only adjustments with reasons
+   (§7.3). Lines carry the client rate, so payroll cannot read them — the same
+   boundary as rate_plan_versions. Two departures from the Phase 0 proposal,
+   both because the literal reading broke the flow it served: the update-policy
+   narrowing became a trigger (approving, issuing and writing off are all
+   updates), and 0013's one-invoice-per-week unique index became partial
+   (excluding written_off) because it made §7.3's void-and-reissue impossible.
+   Closing a real hole: with `issued_on` now nullable for drafts, 0013's
+   payment-date check went NULL and waved a payment onto a draft through —
+   `payment_after_invoice` now refuses money on anything unissued outright.
 4. Billing runs: generate the upcoming week's drafts from a snapshot, detect the
    seven §7.2 exceptions before drafting.
 5. Audit the financial actions — approval, adjustment, void, write-off, external

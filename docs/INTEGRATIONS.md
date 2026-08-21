@@ -301,9 +301,9 @@ Four layers, each catching what the others structurally cannot:
 
 ```sh
 npm run typecheck     # was not being run at all; found 28 errors the first time
-npm test              # 949 unit tests
+npm test              # 963 unit tests
 npm run test:e2e      # 77 browser tests — every screen renders, console quiet
-psql -f supabase/tests/…   # 236 policy assertions, as `authenticated`
+psql -f supabase/tests/…   # 260 policy assertions, as `authenticated`
 ```
 
 `npm run build` runs the type check first, so "the build passes" means what

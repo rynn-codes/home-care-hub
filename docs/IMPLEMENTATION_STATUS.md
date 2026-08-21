@@ -241,6 +241,7 @@ supabase/migrations/0012_audit_trail_and_outbox_worker.sql     audit attribution
 supabase/migrations/0013_invoices_and_payments.sql             issued invoices, payments, balances
 supabase/migrations/0014_billing_accounts.sql                  payers, rate versions, authority to charge
 supabase/migrations/0015_verified_service_units.sql            the one approved fact both ledgers read
+supabase/migrations/0016_invoice_approval.sql                  the invoice lifecycle, lines, adjustments
 ```
 
 To verify locally:
@@ -262,6 +263,7 @@ psql -f supabase/migrations/0012_audit_trail_and_outbox_worker.sql
 psql -f supabase/migrations/0013_invoices_and_payments.sql
 psql -f supabase/migrations/0014_billing_accounts.sql
 psql -f supabase/migrations/0015_verified_service_units.sql
+psql -f supabase/migrations/0016_invoice_approval.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -274,6 +276,7 @@ psql -f supabase/tests/outbox_test.sql       # 24
 psql -f supabase/tests/receivables_test.sql  # 18
 psql -f supabase/tests/billing_accounts_test.sql # 16
 psql -f supabase/tests/verified_units_test.sql   # 27
+psql -f supabase/tests/invoice_approval_test.sql # 24
 ```
 
 Each suite is self-contained and can be run alone against a fresh database.
@@ -400,6 +403,20 @@ Recorded here so they are not only in a chat log.
   than refused outright — the flat refusal left Karynn's own case, the caregiver
   who worked while the app recorded nothing, blocking payroll forever with
   nowhere to record the decision that would clear it.
+- **Invoice approval** (Phase 1, step 3). §7.2's lifecycle is now the
+  database's: draft → pending approval → approved → issued, and from there to
+  processing, settled, disputed, uncollectible or written off — along
+  whitelisted edges only, no jumps. Approving needs lines that exist and sum to
+  the total and a name against the decision; an invoice with no lines is a bare
+  number nobody can check. After approval the financial content is frozen and
+  every correction is an append-only adjustment with a reason a family could be
+  shown (§7.3). Money against anything unissued is refused outright — §7.2 step
+  7, and it closed a real hole this migration itself opened (a nullable issue
+  date made 0013's payment-date check pass vacuously). The one-invoice-per-week
+  index now excludes written-off invoices, which is what makes void-and-reissue
+  possible at all. Lines carry what an hour costs a family, which is a rate, so
+  payroll reads invoices but not lines. `src/domain/billing/approval.ts` mirrors
+  the lifecycle for screens; the database wins where they disagree.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–
