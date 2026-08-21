@@ -29,6 +29,13 @@ import {
 
 const RN = "u-karynn";
 
+/** A date n days ago, so the demo's end dates always mean something. */
+function shortlyBefore(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
 function plan(input: {
   id: string;
   clientPersonId: string;
@@ -144,6 +151,21 @@ const doloresV2: CarePlan = {
   equipment: [...doloresRevision.equipment, "Walker"],
 };
 
+/**
+ * Dolores is post-surgical, and her care was agreed to a date that has passed.
+ *
+ * Karynn, 21 August: respite and post-surgical care is timed — "will be out of
+ * the home in a month or after they recover". The failure worth demonstrating
+ * is not the end date; it is care that quietly runs past one. The visits keep
+ * being scheduled and the invoices keep going out, and nobody has asked the
+ * family whether they still want it.
+ */
+const doloresTimed: CarePlan = {
+  ...dolores,
+  services: ["Post-surgical"],
+  expectedEnd: { kind: "fixed", endsOn: shortlyBefore(9) },
+};
+
 const susan = plan({
   id: "cp-susan-1",
   clientPersonId: "c-susan",
@@ -193,4 +215,11 @@ const marcus = submitForReview(
  * a real state Joy has to be able to show — the caregiver's screen says so
  * plainly instead of listing five tasks nobody agreed to.
  */
-export const seedCarePlans: CarePlan[] = [lianReviewed, edward, dolores, doloresV2, susan, marcus];
+export const seedCarePlans: CarePlan[] = [
+  lianReviewed,
+  edward,
+  doloresTimed,
+  doloresV2,
+  susan,
+  marcus,
+];

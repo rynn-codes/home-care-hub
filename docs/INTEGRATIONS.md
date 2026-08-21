@@ -238,9 +238,15 @@ completed assessment because the audit write failed is worse. Alert on it — th
 result is currently dropped at every call site, because there are no call sites
 yet.
 
-**Still yours:** calling it. The store, the redaction and the actor rules are
-tested; nothing in Joy invokes the writer. `AUDITED_ACTIONS` lists the eleven
-actions §27 asks for and is the checklist.
+**Now called.** Seven consequential actions record who did them — taking a
+referral, completing intake, capturing a signature, approving an admission,
+starting care, assigning a shift, hiring. They go through `recordAudit` in
+`src/lib/demoAudit.ts`, which wraps the writer; swapping the in-memory store for
+`SupabaseAuditStore` is one line there and no call site moves.
+
+**Still yours:** deciding what to do when a write fails. `recordAudit` returns
+the failure and the provider logs it. Losing an audit entry silently is how a
+trail becomes untrustworthy without anybody noticing — alert on it.
 
 ### `DomainEventStore` — the outbox
 `src/domain/events/types.ts` · today: **`SupabaseDomainEventStore` is written**,
@@ -295,8 +301,8 @@ Four layers, each catching what the others structurally cannot:
 
 ```sh
 npm run typecheck     # was not being run at all; found 28 errors the first time
-npm test              # 871 unit tests
-npm run test:e2e      # 75 browser tests — every screen renders, console quiet
+npm test              # 885 unit tests
+npm run test:e2e      # 77 browser tests — every screen renders, console quiet
 psql -f supabase/tests/…   # 193 policy assertions, as `authenticated`
 ```
 

@@ -387,8 +387,29 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     section: "What care looks like",
     question: "How long do we expect this to run?",
     kind: "choice",
-    options: opts("Until services are no longer needed", "Fixed end date"),
+    options: opts(
+      "Until services are no longer needed",
+      "Fixed end date",
+      // Karynn, 21 August, on respite and post-surgical care: "They usually are
+      // for care that is timed. Meaning, services will have a quicker
+      // expiration date. Will be out of the home in a month or after they
+      // recover." Recovery is a real third answer and it is not a date — a
+      // post-surgical client leaves when they are better, which nobody can put
+      // in a calendar at the kitchen table. Forcing it into "fixed end date"
+      // produces a date somebody invented and everybody later treats as agreed.
+      "Until they have recovered",
+    ),
     fills: ["agreement_services"],
+    required: true,
+  },
+  {
+    id: "duration_end_date",
+    section: "What care looks like",
+    question: "What date does it run to?",
+    kind: "text",
+    helper: "The date the family expects care to stop. It can be extended.",
+    fills: ["agreement_services"],
+    showIf: (a) => a.duration === "Fixed end date",
     required: true,
   },
   {

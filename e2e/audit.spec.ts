@@ -38,16 +38,35 @@ test.describe("audit", () => {
     await expect(page.locator("main")).toContainText("Emergency preparedness");
   });
 
-  test("does not claim the audit trail is held just because an adapter exists", async ({
-    page,
-  }) => {
-    // 0012 gave it an append-only table, a policy that stops a session signing
-    // somebody else's name, and a tested Postgres adapter. None of that is a
-    // trail: no migrations are applied and nothing calls the writer. This is the
-    // line somebody would rely on without checking, so it has to say so.
+  test("records who did something, and says it in words", async ({ page }) => {
+    // The writer and its rules existed and were tested for weeks, and nothing
+    // in Joy ever called them. Eleven consequential actions — approving an
+    // admission among them — left no record of who did them.
+    const log = watchForErrors(page);
+
+    await page.goto("/operations/audit");
+    await expect(page.locator("main")).toContainText("Nothing yet");
+
+    await page.goto("/admissions/adm-robert/review");
+    await page.getByRole("button", { name: "Mark payment set up" }).click();
+    await page.getByRole("button", { name: "Approve plan of care" }).click();
+    await page.getByRole("button", { name: "Approve admission" }).click();
+
+    await page.goto("/operations/audit");
+    const trail = page.locator("section").filter({ hasText: "The trail, this session" });
+    await expect(trail).toContainText("Karynn Verrett");
+    await expect(trail).toContainText("approved the admission");
+    await expect(trail).toContainText("adm-robert");
+    expect(log.errors).toEqual([]);
+  });
+
+  test("still does not claim the trail is held, because nothing persists it", async ({ page }) => {
+    // A trail in a browser is a real trail for a demo and not one a surveyor
+    // could be shown. This is the line somebody would rely on without checking,
+    // so the difference stays on the screen.
     await page.goto("/operations/audit");
     await expect(page.locator("main")).toContainText("not been applied");
-    await expect(page.locator("main")).toContainText("not yet called");
+    await expect(page.locator("main")).toContainText(/nothing is persisted/i);
   });
 
   test("the yearly report says what was missed, not just what happened", async ({ page }) => {

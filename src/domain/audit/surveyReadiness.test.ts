@@ -30,6 +30,7 @@ const served = [
 function build(over: Partial<SurveyReadinessInput> = {}) {
   return surveyReadiness({
     today: TODAY,
+    auditEntryCount: 0,
     workforce: seedEmployees,
     requirements: seedCredentialRequirements,
     incidents: seedIncidents,
@@ -71,16 +72,21 @@ describe("audit readiness agrees with the modules", () => {
 });
 
 describe("what it refuses to claim", () => {
-  it("does not call the audit trail ready just because an adapter exists", () => {
-    // 0012 gave it an append-only table, a policy that stops a session signing
-    // somebody else's name, and a tested Postgres adapter. None of that is a
-    // trail: no migrations are applied and nothing calls the writer. This is
-    // the line somebody would rely on without checking, so it stays amber and
-    // says exactly what is missing.
-    const line = build().lines.find((l) => l.key === "audit_trail")!;
+  it("does not call the audit trail ready just because entries are being written", () => {
+    // The writer is called now and the trail fills up as somebody works. It is
+    // still in a browser: nothing is persisted until the migrations reach a
+    // project. This is the line somebody would rely on without checking, so it
+    // stays amber and says which half is missing.
+    const line = build({ auditEntryCount: 12 }).lines.find((l) => l.key === "audit_trail")!;
     expect(line.state).toBe("not_held");
+    expect(line.answer).toContain("12 entries recorded");
+    expect(line.answer).toContain("Nothing is persisted");
     expect(line.gaps.some((g) => /not been applied/.test(g))).toBe(true);
-    expect(line.gaps.some((g) => /not yet called/.test(g))).toBe(true);
+  });
+
+  it("tells an empty trail apart from a trail nothing writes to", () => {
+    const line = build().lines.find((l) => l.key === "audit_trail")!;
+    expect(line.answer).toContain("Nothing recorded yet this session");
   });
 
   it("names what a surveyor asks about that Joy holds nothing on", () => {

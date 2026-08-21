@@ -39,8 +39,11 @@ test.describe("care plans", () => {
     await page.goto("/clients/care-plans");
 
     const card = page.locator("main li").filter({ hasText: "Dolores Vance" }).first();
-    await expect(card).toContainText("A change is waiting for you");
+    // Her headline is "running past its end date" — timed care outranks a
+    // waiting revision, and both are true of her at once. What this test is
+    // about is the revision flow, which is unchanged.
     await expect(card).toContainText("version 1");
+    await expect(card.getByRole("button", { name: "Read the change" })).toBeVisible();
 
     // Reading the change shows the revision, labelled as one.
     await card.getByRole("button", { name: "Read the change" }).click();
@@ -54,6 +57,21 @@ test.describe("care plans", () => {
     await card.getByRole("button", { name: "Put version 2 live" }).click();
     await expect(card).toContainText("version 2");
     await expect(card).toContainText("Current");
+  });
+
+  test("flags care that has run past the date the family agreed to", async ({ page }) => {
+    // Karynn, 21 August: respite and post-surgical care is timed — "will be out
+    // of the home in a month or after they recover". Timed care that quietly
+    // continues is money and consent both: the visits keep being scheduled and
+    // nobody has asked the family whether they still want them.
+    const log = watchForErrors(page);
+    await page.goto("/clients/care-plans");
+
+    const card = page.locator("main li").filter({ hasText: "Dolores Vance" }).first();
+    await expect(card).toContainText("Running past its end date");
+    await expect(card).toContainText(/care was agreed to \d{4}-\d{2}-\d{2} and is still running/);
+    await expect(card).toContainText("nobody wrote that down");
+    expect(log.errors).toEqual([]);
   });
 
   test("a caregiver whose client has no plan is told so, not given invented tasks", async ({

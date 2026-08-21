@@ -71,6 +71,8 @@ export const UNCOVERED: readonly string[] = [
 
 export interface SurveyReadinessInput {
   today: string;
+  /** How many entries are on the trail. Zero means nothing calls the writer. */
+  auditEntryCount: number;
   workforce: Parameters<typeof complianceAlerts>[0];
   requirements: readonly CredentialRequirement[];
   incidents: readonly Incident[];
@@ -199,20 +201,19 @@ export function surveyReadiness(input: SurveyReadinessInput): SurveyReadiness {
     {
       key: "audit_trail",
       question: "Show me who changed this record, and when.",
-      // Still `not_held`, and the wording moved rather than the state. The
-      // table, the policies and the adapter now exist and are tested; what does
-      // not exist is a Supabase project with the migrations applied and the
-      // writer called at Joy's write points. Turning this green on the strength
-      // of an adapter would be the worst line on the screen — it is the one
-      // somebody would rely on without checking.
+      // The writer is now called at Joy's consequential write points, so the
+      // trail exists — but it is written to an in-memory store that lives in
+      // the browser, because no migrations have been applied to any project.
+      // That is a real trail for the demo and not one a surveyor could be shown,
+      // and the difference is worth keeping on the screen: this is the line
+      // somebody would otherwise rely on without checking.
       state: "not_held",
       answer:
-        "The trail is append-only in the schema and the adapter is written and tested, but no migrations have been applied and nothing calls the writer yet.",
+        input.auditEntryCount > 0
+          ? `${input.auditEntryCount} ${input.auditEntryCount === 1 ? "entry" : "entries"} recorded this session, in the browser. Nothing is persisted — the migrations have not been applied to a Supabase project.`
+          : "Nothing recorded yet this session. Consequential actions write to the trail as they happen; nothing is persisted until the migrations are applied.",
       to: "/settings",
-      gaps: [
-        "Migrations 0001–0012 have not been applied to the Supabase project",
-        "The audit writer is not yet called at Joy's write points",
-      ],
+      gaps: ["Migrations 0001–0013 have not been applied to the Supabase project"],
     },
   ];
 

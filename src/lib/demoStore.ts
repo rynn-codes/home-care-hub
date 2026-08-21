@@ -5,6 +5,7 @@ import type { UserRole } from "@/domain/consents/witness";
 import type { RnLicence } from "@/domain/clinical/registeredNurse";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
 import type { Contact } from "@/domain/people/contacts";
+import type { StoredAuditEntry } from "@/lib/demoAudit";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -161,6 +162,14 @@ export interface DemoState {
   contactEdits: Record<string, Partial<Contact>>;
   /** Contacts removed from the list. Seeded ones cannot be deleted outright. */
   deletedContactIds: string[];
+  /**
+   * Who did what, newest first.
+   *
+   * Written only through `recordAudit`, never appended to directly — the
+   * writer's rules (actor validation, redaction) are the point, and a direct
+   * push skips all of them.
+   */
+  auditEntries: StoredAuditEntry[];
 }
 
 function initial(): DemoState {
@@ -189,6 +198,7 @@ function initial(): DemoState {
     contacts: [],
     contactEdits: {},
     deletedContactIds: [],
+    auditEntries: [],
   };
 }
 

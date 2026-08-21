@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   loadDemoState,
   newId,
@@ -16,6 +16,17 @@ import {
 import type { SeedAdmission } from "@/lib/admissionsSeed";
 import type { Contact } from "@/domain/people/contacts";
 import { seedContacts } from "@/lib/peopleSeed";
+import { recordAudit } from "@/lib/demoAudit";
+import type { AuditRecord } from "@/domain/audit/audit";
+
+/**
+ * The demo's organization id.
+ *
+ * One constant rather than a literal at each call site: every audit entry
+ * carries it, and a typo would put a record in an organization that does not
+ * exist — invisible until somebody queried the trail and found it short.
+ */
+const DEMO_ORG = "org-joy-health";
 
 interface DemoContextValue extends DemoState {
   addReferral: (admission: SeedAdmission, person: DemoState["people"][number]) => void;
@@ -56,6 +67,53 @@ const DemoContext = createContext<DemoContextValue | null>(null);
 
 export function DemoDataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(() => loadDemoState());
+
+  // Read at call time, not closed over. The audited callbacks are memoised with
+  // an empty dependency list so they stay stable across renders; capturing the
+  // user at mount would attribute every action for the rest of the session to
+  // whoever was signed in first.
+  const currentUserRef = useRef(state.currentUser);
+  currentUserRef.current = state.currentUser;
+
+  /**
+   * Record who did something, and put it on the trail.
+   *
+   * Every audited action calls this rather than appending an entry itself. The
+   * writer inside `recordAudit` refuses a misattributed actor, redacts before
+   * anything is stored, and returns a failure rather than throwing into the
+   * caller — a component that pushed an entry straight onto state would skip
+   * all three.
+   *
+   * `currentUserRef` rather than `state.currentUser`: these callbacks are
+   * memoised with an empty dependency list so they stay stable, and closing
+   * over the user at mount would attribute every action for the rest of the
+   * session to whoever was signed in first.
+   */
+  const audit = useCallback(
+    (entry: Omit<AuditRecord, "organizationId" | "actor">) => {
+      const user = currentUserRef.current;
+      void recordAudit(
+        {
+          ...entry,
+          organizationId: DEMO_ORG,
+          actor: { type: "user", userId: user.name },
+        },
+        new Date().toISOString(),
+      ).then((result) => {
+        if (!("entry" in result)) {
+          // Surfaced rather than swallowed. Losing an entry is a real problem
+          // and the writer's contract is that the caller decides what to do
+          // about it; deciding to ignore it silently is what makes a trail
+          // untrustworthy without anybody noticing.
+          console.error("Audit entry could not be written:", result.error);
+          return;
+        }
+        setState((s) => ({ ...s, auditEntries: [result.entry, ...s.auditEntries] }));
+      });
+    },
+    [],
+  );
+
 
   useEffect(() => {
     saveDemoState(state);
@@ -130,6 +188,13 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   );
 
   const addReferral = useCallback<DemoContextValue["addReferral"]>((admission, person) => {
+    audit({
+      action: "referral.created",
+      entityType: "admission",
+      entityId: admission.id,
+      after: { name: admission.name, service: admission.service },
+    });
+
     setState((s) => ({
       ...s,
       admissions: [admission, ...s.admissions],
@@ -146,7 +211,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         ...s.domainEvents,
       ],
     }));
-  }, []);
+  }, [audit]);
 
   const saveIntake = useCallback<DemoContextValue["saveIntake"]>((admissionId, patch) => {
     setState((s) => {
@@ -165,6 +230,13 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const completeIntake = useCallback<DemoContextValue["completeIntake"]>((admissionId) => {
+    audit({
+      action: "intake.corrected",
+      entityType: "admission",
+      entityId: admissionId,
+      metadata: { note: "Phone intake completed" },
+    });
+
     setState((s) => {
       const intake = s.intakes[admissionId];
       if (!intake) return s;
@@ -201,7 +273,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         ],
       };
     });
-  }, []);
+  }, [audit]);
 
   const saveAssessment = useCallback<DemoContextValue["saveAssessment"]>((admissionId, patch) => {
     setState((s) => {
@@ -216,6 +288,28 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const saveConsents = useCallback<DemoContextValue["saveConsents"]>((admissionId, patch) => {
+    // Only the signature itself, not every keystroke of the review. The trail is
+    // a record of consequential acts; auditing each Agree/Decline toggle as it
+    // is clicked would bury the one entry that matters under two hundred that
+    // do not.
+    //
+    // The signature data is not passed and would be redacted if it were —
+    // `signature` and `initials` are on the writer's redaction list. An audit
+    // entry records that a thing happened and by whom; it is not a second copy
+    // of the signed document.
+    if (patch.signedAt) {
+      audit({
+        action: "signature.captured",
+        entityType: "consent_session",
+        entityId: admissionId,
+        after: {
+          signerName: patch.signerName ?? null,
+          witnessName: patch.witnessName ?? null,
+          witnessRole: patch.witnessRole ?? null,
+        },
+      });
+    }
+
     setState((s) => {
       const existing = s.consentSessions[admissionId] ?? {
         admissionId,
@@ -264,7 +358,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         domainEvents,
       };
     });
-  }, []);
+  }, [audit]);
 
   const savePreOnboarding = useCallback<DemoContextValue["savePreOnboarding"]>((admissionId, patch) => {
     setState((s) => {
@@ -282,6 +376,17 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const approveAdmission = useCallback<DemoContextValue["approveAdmission"]>((admissionId, approvedBy) => {
+    // §26 keeps admissions at "prepare summary" authority: Joy assembles the
+    // picture and a human admits. The approver's name is already on the record;
+    // this puts the act itself on the trail, which is a different question —
+    // "who decided" versus "who was named as deciding".
+    audit({
+      action: "admission.approved",
+      entityType: "admission",
+      entityId: admissionId,
+      after: { approvedBy },
+    });
+
     setState((s) => {
       const existing = s.preOnboarding[admissionId];
       if (!existing) return s;
@@ -315,9 +420,16 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         ],
       };
     });
-  }, []);
+  }, [audit]);
 
   const activateClient = useCallback<DemoContextValue["activateClient"]>((admissionId, startDate) => {
+    audit({
+      action: "client.activated",
+      entityType: "admission",
+      entityId: admissionId,
+      after: { startOfCare: startDate },
+    });
+
     setState((s) => {
       const admission = s.admissions.find((a) => a.id === admissionId);
       if (!admission) return s;
@@ -374,7 +486,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         ],
       };
     });
-  }, []);
+  }, [audit]);
 
   const scheduleAssessment = useCallback<DemoContextValue["scheduleAssessment"]>((input) => {
     setState((s) => {
@@ -459,6 +571,13 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const assignShift = useCallback<DemoContextValue["assignShift"]>((visitId, caregiverName) => {
+    audit({
+      action: "schedule.changed",
+      entityType: "visit",
+      entityId: visitId,
+      after: { caregiverName },
+    });
+
     setState((s) => ({
       ...s,
       assignments: { ...s.assignments, [visitId]: caregiverName },
@@ -474,9 +593,16 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         ...s.domainEvents,
       ],
     }));
-  }, []);
+  }, [audit]);
 
   const hireEmployee = useCallback<DemoContextValue["hireEmployee"]>((employee) => {
+    audit({
+      action: "employee.hired",
+      entityType: "employee",
+      entityId: employee.id,
+      after: { name: employee.name },
+    });
+
     setState((s) => ({
       ...s,
       // Replace rather than append, so completing onboarding twice cannot
@@ -494,7 +620,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         ...s.domainEvents,
       ],
     }));
-  }, []);
+  }, [audit]);
 
   const setCurrentUser = useCallback<DemoContextValue["setCurrentUser"]>((user) => {
     setState((s) => ({ ...s, currentUser: user }));

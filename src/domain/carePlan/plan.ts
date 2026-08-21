@@ -1,6 +1,6 @@
 import type { AssessmentAnswers } from "@/domain/assessment/questions";
 import { VITAL_DEFAULTS } from "@/domain/assessment/questions";
-import { addMonths } from "@/domain/dates";
+import { addMonths, daysBetween } from "@/domain/dates";
 
 /**
  * The care plan.
@@ -70,6 +70,35 @@ export interface VitalThreshold {
   value: string;
 }
 
+/**
+ * When the care is expected to stop.
+ *
+ * KARYNN, 21 AUGUST, on respite and post-surgical care: "Respite and post
+ * surgical all follow the same care plan. They usually are for care that is
+ * timed. Meaning, services will have a quicker expiration date. Will be out of
+ * the home in a month or after they recover."
+ *
+ * The assessment has asked "how long do we expect this to run?" since it was
+ * written, and the answer went nowhere — `carePlanFromAssessment` dropped it.
+ * That is the same class of defect as §11's incident question going into a
+ * chart line and no further: the RN asks, the family answers, and nothing in
+ * Joy remembers.
+ *
+ * Three shapes, because two would force a lie. "Until they have recovered" is a
+ * real answer and it is not a date; making somebody pick one at the kitchen
+ * table produces a date nobody agreed to that everybody later treats as agreed.
+ */
+export type ExpectedEnd =
+  | { kind: "ongoing" }
+  | { kind: "fixed"; endsOn: string }
+  | { kind: "until_recovered" };
+
+export const EXPECTED_END_LABELS: Record<ExpectedEnd["kind"], string> = {
+  ongoing: "Until services are no longer needed",
+  fixed: "Fixed end date",
+  until_recovered: "Until they have recovered",
+};
+
 export interface CarePlan {
   id: string;
   clientPersonId: string;
@@ -93,6 +122,8 @@ export interface CarePlan {
 
   /** Which services this plan's tasks apply to. From the agreement. */
   services: readonly string[];
+  /** How long the care is expected to run. From the assessment's `duration`. */
+  expectedEnd: ExpectedEnd;
 
   authoredByUserId: string;
   createdAt: string;
@@ -156,6 +187,24 @@ export function taskId(label: string): string {
 }
 
 /**
+ * Read the duration answer, without inventing a date it does not carry.
+ *
+ * A "fixed end date" with no date is `ongoing`, deliberately. The alternative
+ * — defaulting to a month out, say — puts a date on the plan that nobody chose
+ * and that will read as agreed the first time somebody prints it.
+ */
+export function expectedEndFrom(answers: AssessmentAnswers): ExpectedEnd {
+  const duration = String(answers.duration ?? "");
+  const endsOn = String(answers.duration_end_date ?? "").slice(0, 10);
+
+  if (/recover/i.test(duration)) return { kind: "until_recovered" };
+  if (/fixed/i.test(duration) && /^\d{4}-\d{2}-\d{2}$/.test(endsOn)) {
+    return { kind: "fixed", endsOn };
+  }
+  return { kind: "ongoing" };
+}
+
+/**
  * Build the first draft from what the RN answered.
  *
  * This is "enter once, reuse everywhere" doing the work it was for: the nurse
@@ -213,6 +262,7 @@ export function carePlanFromAssessment(input: {
     supplies: choices(answers, "supplies"),
     emergencyPlan: text(answers, "blood_sugar"),
     services: choices(answers, "services"),
+    expectedEnd: expectedEndFrom(answers),
     authoredByUserId: input.authoredByUserId,
     createdAt: input.at,
     effectiveFrom: null,
@@ -468,8 +518,36 @@ export function tasksForVisit(input: {
  * tell you it was happening — the caregiver's phone showed five invented tasks
  * and looked exactly like a client whose plan was current.
  */
+/**
+ * Care that has run past the date the family agreed it would stop.
+ *
+ * This is what Karynn's answer actually asks for. Respite and post-surgical
+ * care is timed — a month, or until they recover — and timed care that quietly
+ * continues is the failure mode: the visits keep being scheduled, the invoices
+ * keep going out, and nobody has asked the family whether they still want it.
+ * Joy either bills for care nobody re-agreed to, or works past an end date and
+ * argues about it afterwards.
+ *
+ * `until_recovered` never expires here on purpose. Recovery is a clinical
+ * judgement and the supervisory visit is where somebody makes it; a countdown
+ * against an invented recovery date would be worse than no countdown.
+ */
+export const ENDING_SOON_DAYS = 14;
+
+export function careEndsWithin(plan: CarePlan, today: string): number | null {
+  if (plan.expectedEnd.kind !== "fixed") return null;
+  return daysBetween(today, plan.expectedEnd.endsOn);
+}
+
+export function carePastItsEnd(plan: CarePlan, today: string): boolean {
+  const days = careEndsWithin(plan, today);
+  return plan.state === "active" && days !== null && days < 0;
+}
+
 export type CarePlanQueueReason =
   | "no_plan"
+  | "past_end_date"
+  | "ending_soon"
   | "review_overdue"
   | "first_plan_waiting"
   | "revision_waiting"
@@ -478,6 +556,8 @@ export type CarePlanQueueReason =
 
 export const QUEUE_REASON_LABELS: Record<CarePlanQueueReason, string> = {
   no_plan: "No care plan",
+  past_end_date: "Running past its end date",
+  ending_soon: "Care is due to end",
   review_overdue: "Overdue for review",
   // Told apart from a revision on purpose. "A change is waiting" about somebody
   // whose care has not started yet is wrong in a way that costs time: it reads
@@ -502,7 +582,9 @@ export interface CarePlanQueueRow {
 
 const REASON_ORDER: CarePlanQueueReason[] = [
   "no_plan",
+  "past_end_date",
   "review_overdue",
+  "ending_soon",
   "first_plan_waiting",
   "revision_waiting",
   "draft_unfinished",
@@ -521,17 +603,25 @@ export function carePlanQueue(input: {
     const pending =
       mine.find((p) => p.state === "in_review") ?? mine.find((p) => p.state === "draft") ?? null;
 
+    const endsIn = active ? careEndsWithin(active, input.today) : null;
+
     const reason: CarePlanQueueReason = !active
       ? pending
         ? "first_plan_waiting"
         : "no_plan"
-      : reviewOverdue(active, input.today)
-        ? "review_overdue"
-        : pending?.state === "in_review"
-          ? "revision_waiting"
-          : pending?.state === "draft"
-            ? "draft_unfinished"
-            : "current";
+      : // Ahead of everything except having no plan at all. Care running past
+        // the date the family agreed it would stop is money and consent both.
+        carePastItsEnd(active, input.today)
+        ? "past_end_date"
+        : reviewOverdue(active, input.today)
+          ? "review_overdue"
+          : pending?.state === "in_review"
+            ? "revision_waiting"
+            : pending?.state === "draft"
+              ? "draft_unfinished"
+              : endsIn !== null && endsIn <= ENDING_SOON_DAYS
+                ? "ending_soon"
+                : "current";
 
     return {
       clientPersonId: client.personId,

@@ -15,6 +15,8 @@ import { seedCarePlans } from "@/lib/carePlanSeed";
 import { seedStartOfCare, seedSupervisoryVisits } from "@/lib/supervisionSeed";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { seedClients } from "@/lib/clientsSeed";
+import { useDemo } from "@/context/DemoDataProvider";
+import { auditPhrase } from "@/lib/demoAudit";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,6 +40,7 @@ const MARK: Record<ReadinessLine["state"], { icon: typeof Check; tone: string }>
 };
 
 export default function Audit() {
+  const { auditEntries } = useDemo();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const servedClients = useMemo(
@@ -62,6 +65,7 @@ export default function Audit() {
     () =>
       surveyReadiness({
         today,
+        auditEntryCount: auditEntries.length,
         workforce: seedEmployees,
         requirements: seedCredentialRequirements,
         incidents: seedIncidents,
@@ -70,7 +74,7 @@ export default function Audit() {
         supervisoryVisits: seedSupervisoryVisits,
         clients: seedClients,
       }),
-    [today, servedClients],
+    [today, servedClients, auditEntries.length],
   );
 
   return (
@@ -119,7 +123,36 @@ export default function Audit() {
         })}
       </ul>
 
-      <section className="mt-8 rounded-2xl border border-border bg-surface-muted p-5">
+      <section className="mt-8 rounded-2xl border border-border bg-surface p-5">
+        <h2 className="text-sm font-semibold">The trail, this session</h2>
+        <p className="mt-1 max-w-prose text-sm text-muted-foreground">
+          Consequential actions record who did them as they happen. In the browser only — nothing
+          is persisted until the migrations reach a project, which is why the line above stays
+          amber.
+        </p>
+
+        {auditEntries.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Nothing yet. Approve an admission, take a signature or assign a shift and it appears
+            here.
+          </p>
+        ) : (
+          <ul className="mt-4 divide-y divide-border">
+            {auditEntries.slice(0, 12).map((entry) => (
+              <li key={entry.id} className="flex flex-wrap items-baseline gap-x-2 py-2 text-sm">
+                <span className="font-medium">{entry.actorUserId}</span>
+                <span>{auditPhrase(entry)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {entry.entityType}
+                  {entry.entityId ? ` · ${entry.entityId}` : ""} · {entry.at.slice(0, 16).replace("T", " ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface-muted p-5">
         <h2 className="text-sm font-semibold">What is not on this page</h2>
         <p className="mt-1 max-w-prose text-sm text-muted-foreground">
           Texas licenses home and community support services agencies against a longer list than

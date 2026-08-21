@@ -147,6 +147,23 @@ No second frontend was created and no framework was replaced, per section 3.
   never billed is not money anybody owes. Partial payments are expected,
   overpayment is a credit rather than a negative debt, and a payment cannot be
   edited after it is recorded — see `SECURITY_NOTES.md`.
+- **The audit trail, called** — the writer and its rules existed and were tested
+  for weeks, and nothing in Joy ever invoked them. Seven consequential actions
+  now do: taking a referral, completing intake, capturing a signature, approving
+  an admission, starting care, assigning a shift and hiring. Everything goes
+  through `createAuditWriter` rather than appending directly, so the actor
+  validation and the redaction apply — a signature or an SSN in an entry is
+  refused by the same code path that writes it. The Audit screen shows the trail
+  and still says the line is amber, because it lives in a browser until the
+  migrations reach a project.
+- **Timed care** — Karynn, 21 August: "Respite and post surgical all follow the
+  same care plan. They usually are for care that is timed... Will be out of the
+  home in a month or after they recover." The assessment has asked how long care
+  should run since it was written and the answer went nowhere; the care plan now
+  carries it. "Until they have recovered" is a third option rather than a date,
+  because forcing a date at the kitchen table produces one nobody agreed to that
+  everybody later treats as agreed. Care running past its end date outranks
+  everything on the Care plans queue except having no plan at all.
 - **The audit trail and the outbox, in Postgres** — both were ports with
   in-memory implementations only, which meant every audit entry Joy wrote was
   discarded on the next page load. `SupabaseAuditStore` and
@@ -190,9 +207,10 @@ No second frontend was created and no framework was replaced, per section 3.
 - Any real persistence for the existing screens. `DataProvider` is still
   `useState` over `mockData.ts`. Reports no longer reads it; Documents and SOPs
   still do.
-- **Any call site for the audit writer.** The store, the redaction and the
-  actor rules are tested; nothing in Joy invokes it. `AUDITED_ACTIONS` lists the
-  eleven actions §27 asks for and is the checklist.
+- **A persisted audit trail.** The writer is called and the entries are real;
+  they live in the browser until the migrations reach a Supabase project.
+  Payroll approval and the two integration actions in `AUDITED_ACTIONS` have no
+  call site yet because the flows they belong to are not built.
 - A scheduled runner for the outbox. `processDue` is a pure function and nothing
   calls it on a timer, so events would accumulate as `pending` — no message
   fails and no error appears, the queue just grows.
@@ -323,30 +341,31 @@ Recorded here so they are not only in a chat log.
 - **How often a care plan must be reviewed.** `REVIEW_EVERY_MONTHS` is 12,
   matching the annual supervisory visit the service agreement commits to. If
   Joy's licence category requires it sooner, it is one number.
-- **Which incidents need an RN visit.** Karynn, 21 August: "depending on what it
-  is, an RN visit needs to be made within 24 hours." The 24 hours is hers; which
-  kinds is not, so `RN_VISIT_KINDS` is a conservative starting point — anything
-  where a person might be hurt and nobody clinical has looked, plus anything
-  classified serious whatever its kind. Property damage and a behavioural note
-  are not on it.
 - **The assessment's payer question.** `payer_source` still offers Medicare,
   Medicaid, third-party payor and grant programme. Joy is all private pay, so
   those options are either dead or transcribed from a paper form that predates
   the decision. Left alone rather than edited, because rewriting a transcribed
   document on inference is how a packet stops matching what a client signed —
   worth checking against the paper form.
-- **What changes for a respite or post-surgical visit.** Answered in part on
-  21 August: "We don't separate care. All of our clients get personal care
-  services, companion care, light housekeeping. The only time we distinguish
-  care is if it is respite, post-surgical." `SERVICE_TASK_CATEGORIES` is
-  therefore empty — every visit gets the whole care plan — and the remaining
-  question is only what those two lines do differently. Until somebody says,
-  they get the whole plan too.
+- **The Stripe specification is not in this repository.** Karynn, 21 August:
+  "The client was supposed to be able to pay their balance through Stripe... Go
+  back and look at the original MD file." Every vendored spec and the consents
+  packet were searched: zero occurrences. The only "Stripe" in the codebase is a
+  decorative Connect button in the static Settings mockup. The missing file is
+  most likely the **Joy Product Bible v1.0 Builder Edition**, already listed in
+  `docs/specs/README.md` as named-but-not-supplied. Needed before the payment
+  flow is built to a specification rather than to an inference.
+
+  What the packet *does* give, and what a payment port can be grounded in: card,
+  debit and ACH; a 2.9% convenience fee on cards and $5 on ACH; payment due
+  within one calendar day; a $100 late fee after the third day. The 2.9% is
+  Stripe's standard card rate, which is corroboration rather than a
+  specification.
 
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 75 tests, about two minutes
+npm run test:e2e          # 77 tests, about two minutes
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -402,8 +421,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 871 tests, `npm run test:e2e`
-passes 75, and the database suites pass 193 assertions across nine files.
+which it did not before — `npm test` passes with 885 tests, `npm run test:e2e`
+passes 77, and the database suites pass 193 assertions across nine files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

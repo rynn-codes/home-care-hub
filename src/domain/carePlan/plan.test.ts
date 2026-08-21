@@ -4,6 +4,9 @@ import {
   activePlan,
   canActivate,
   carePlanQueue,
+  careEndsWithin,
+  carePastItsEnd,
+  expectedEndFrom,
   carePlanFromAssessment,
   carePlanStateForFamily,
   planGaps,
@@ -315,5 +318,85 @@ describe("reviewing a plan that is already live", () => {
     expect(reviewPlan({ plan: retired, byUserId: RN, at: "2027-07-01T10:00:00Z" }).reviewedAt).toBe(
       retired.reviewedAt,
     );
+  });
+});
+
+describe("timed care", () => {
+  // Karynn, 21 August: "Respite and post surgical all follow the same care
+  // plan. They usually are for care that is timed... Will be out of the home in
+  // a month or after they recover."
+
+  it("carries the RN's duration answer instead of dropping it", () => {
+    // The assessment has asked "how long do we expect this to run?" since it was
+    // written, and the answer went nowhere. Same defect as §11's incident
+    // question landing in a chart line and no further.
+    expect(expectedEndFrom({ duration: "Fixed end date", duration_end_date: "2026-09-30" })).toEqual(
+      { kind: "fixed", endsOn: "2026-09-30" },
+    );
+    expect(expectedEndFrom({ duration: "Until they have recovered" })).toEqual({
+      kind: "until_recovered",
+    });
+    expect(expectedEndFrom({ duration: "Until services are no longer needed" })).toEqual({
+      kind: "ongoing",
+    });
+  });
+
+  it("does not invent a date for a fixed end that has none", () => {
+    // Defaulting to a month out puts a date on the plan nobody chose, and it
+    // will read as agreed the first time somebody prints it.
+    expect(expectedEndFrom({ duration: "Fixed end date" })).toEqual({ kind: "ongoing" });
+    expect(expectedEndFrom({ duration: "Fixed end date", duration_end_date: "soon" })).toEqual({
+      kind: "ongoing",
+    });
+  });
+
+  it("flags care that has run past the date the family agreed to", () => {
+    // The visits keep being scheduled and the invoices keep going out, and
+    // nobody has asked the family whether they still want it.
+    const timed = { ...live(), expectedEnd: { kind: "fixed" as const, endsOn: "2026-08-01" } };
+    expect(carePastItsEnd(timed, "2026-08-21")).toBe(true);
+    expect(careEndsWithin(timed, "2026-08-21")).toBe(-20);
+
+    const rows = carePlanQueue({
+      clients: [{ personId: "c-1", name: "Dolores Vance" }],
+      plans: [timed],
+      today: "2026-08-21",
+    });
+    expect(rows[0].reason).toBe("past_end_date");
+    expect(rows[0].needsYou).toBe(true);
+  });
+
+  it("gives warning before the end rather than after", () => {
+    const soon = { ...live(), expectedEnd: { kind: "fixed" as const, endsOn: "2026-08-28" } };
+    const rows = carePlanQueue({
+      clients: [{ personId: "c-1", name: "Dolores Vance" }],
+      plans: [soon],
+      today: "2026-08-21",
+    });
+    expect(rows[0].reason).toBe("ending_soon");
+  });
+
+  it("never expires care that runs until somebody recovers", () => {
+    // Recovery is a clinical judgement and the supervisory visit is where
+    // somebody makes it. A countdown against an invented recovery date would be
+    // worse than no countdown.
+    const recovering = { ...live(), expectedEnd: { kind: "until_recovered" as const } };
+    expect(careEndsWithin(recovering, "2030-01-01")).toBeNull();
+    expect(carePastItsEnd(recovering, "2030-01-01")).toBe(false);
+  });
+
+  it("ranks running past an end date above an overdue review", () => {
+    // Money and consent both, against a paperwork task.
+    const both = {
+      ...live(),
+      reviewedAt: "2024-01-01T00:00:00Z",
+      expectedEnd: { kind: "fixed" as const, endsOn: "2026-08-01" },
+    };
+    const rows = carePlanQueue({
+      clients: [{ personId: "c-1", name: "Dolores Vance" }],
+      plans: [both],
+      today: "2026-08-21",
+    });
+    expect(rows[0].reason).toBe("past_end_date");
   });
 });

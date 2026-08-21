@@ -170,11 +170,15 @@ export const OFFICE_ALWAYS_TOLD: NotificationRule = {
  * list that only tracked the call would show a fall as fully handled when
  * nobody had seen the person since.
  *
- * FLAGGED FOR KARYNN, same as the notification windows. She said "depending on
- * what it is" and did not say which, so this is a conservative starting point:
- * anything where a person might be hurt and nobody clinical has looked.
- * Property damage and a behavioural note are not on it; anything classified
- * `serious` is, whatever its kind.
+ * CONFIRMED BY KARYNN, 21 August: anything where harm is possible. That is this
+ * list — falls, injuries, medication errors, a client who could not be found,
+ * an allegation, a death — plus anything classified `serious` whatever its
+ * kind. Property damage and a behavioural note do not send a nurse out.
+ *
+ * It was a guess when it was written and it is now her decision, which is worth
+ * recording as a change of status rather than leaving the old hedge in place: a
+ * comment saying "flagged for confirmation" long after it was confirmed sends
+ * somebody to ask a question that has already been answered.
  */
 export const RN_VISIT_KINDS: readonly IncidentKind[] = [
   "fall",

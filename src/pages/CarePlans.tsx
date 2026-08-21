@@ -172,6 +172,9 @@ function QueueCard({
           <p className="mt-0.5 text-xs text-muted-foreground">
             {QUEUE_REASON_LABELS[row.reason]}
             {row.active && ` · version ${row.active.version}`}
+            {row.active?.expectedEnd.kind === "fixed" &&
+              ` · care to ${row.active.expectedEnd.endsOn}`}
+            {row.active?.expectedEnd.kind === "until_recovered" && " · until recovered"}
             {row.active && reviewDueOn(row.active) && ` · review due ${reviewDueOn(row.active)}`}
           </p>
         </div>
@@ -182,6 +185,17 @@ function QueueCard({
           </Button>
         )}
       </div>
+
+      {row.reason === "past_end_date" && row.active?.expectedEnd.kind === "fixed" && (
+        // Timed care that quietly continues is money and consent both: the
+        // visits are still being scheduled and nobody has asked the family
+        // whether they still want them.
+        <p className="mt-3 text-sm text-muted-foreground">
+          {row.clientName}&rsquo;s care was agreed to {row.active.expectedEnd.endsOn} and is still
+          running. Either the family has extended it and nobody wrote that down, or it should have
+          finished.
+        </p>
+      )}
 
       {row.reason === "no_plan" && (
         // Said plainly, because this is a client receiving care that nobody has
