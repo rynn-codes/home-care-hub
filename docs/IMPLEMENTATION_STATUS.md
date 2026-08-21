@@ -4,7 +4,7 @@ Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
 **Last updated:** 21 August 2026 (incidents, care plans, supervisory visits, the audit
-home, migrations 0010 and 0011)
+home, migrations 0010–0012)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -118,6 +118,15 @@ No second frontend was created and no framework was replaced, per section 3.
   one and forgetting the other. Home's supervision signal used to read an input
   the live wiring passed as an empty array, so it printed 0 whatever was true;
   it now reads the same queue the screen does.
+- **The audit trail and the outbox, in Postgres** — both were ports with
+  in-memory implementations only, which meant every audit entry Joy wrote was
+  discarded on the next page load. `SupabaseAuditStore` and
+  `SupabaseDomainEventStore` are written and tested against the contract. Three
+  defects surfaced doing it: an authenticated session could write an audit entry
+  in somebody else's name, `domain_events` had no column for the backoff
+  `markFailed` has always taken, and there was no way to claim work atomically —
+  two workers in the same minute would have sent the same text twice. See
+  `SECURITY_NOTES.md`.
 - **Audit** — Karynn, 21 August: "Is there a home for the audit portion?" There
   was not. Joy could build an audit packet for one employee, from inside that
   employee's record, so the thing an agency needs on the morning a surveyor
@@ -151,10 +160,12 @@ No second frontend was created and no framework was replaced, per section 3.
   in its confirmation; nothing is written to a database yet.
 - Any real persistence for the existing screens. `DataProvider` is still
   `useState` over `mockData.ts`.
-- A Postgres implementation of `DomainEventStore` and `AuditStore`. Both are
-  ports today with in-memory implementations only.
-- A scheduled runner for the outbox. `processOutbox` is a pure function and
-  nothing calls it on a timer, so events would accumulate unprocessed.
+- **Any call site for the audit writer.** The store, the redaction and the
+  actor rules are tested; nothing in Joy invokes it. `AUDITED_ACTIONS` lists the
+  eleven actions §27 asks for and is the checklist.
+- A scheduled runner for the outbox. `processDue` is a pure function and nothing
+  calls it on a timer, so events would accumulate as `pending` — no message
+  fails and no error appears, the queue just grows.
 - The live Spruce, OpenAI, GHL and Gusto adapters.
 - Offline draft and resume for field assessment.
 - `docs/ARCHITECTURE.md`. (`INTEGRATIONS.md` now exists — every port, what it
@@ -178,6 +189,7 @@ supabase/migrations/0008_charting_and_moments.sql  charts, Moments, preferences,
 supabase/migrations/0009_grant_revocation.sql      withdrawing portal access, attributably
 supabase/migrations/0010_care_plans_incidents_supervision.sql  care plans, incidents, supervisory visits
 supabase/migrations/0011_rn_licence_and_rn_visits.sql          RN licences, the 24-hour RN visit, the yearly register
+supabase/migrations/0012_audit_trail_and_outbox_worker.sql     audit attribution, the retry column, atomic claim
 ```
 
 To verify locally:
@@ -195,6 +207,7 @@ psql -f supabase/migrations/0008_charting_and_moments.sql
 psql -f supabase/migrations/0009_grant_revocation.sql
 psql -f supabase/migrations/0010_care_plans_incidents_supervision.sql
 psql -f supabase/migrations/0011_rn_licence_and_rn_visits.sql
+psql -f supabase/migrations/0012_audit_trail_and_outbox_worker.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -203,6 +216,7 @@ psql -f supabase/tests/portal_test.sql       # 20
 psql -f supabase/tests/visits_test.sql       # 18
 psql -f supabase/tests/charting_test.sql     # 19
 psql -f supabase/tests/care_test.sql         # 48
+psql -f supabase/tests/outbox_test.sql       # 24
 ```
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
@@ -220,9 +234,10 @@ Supabase project.
 2. **Existing screens still read mock data.** Clients, Employees, Scheduling and
    Billing must move onto the real schema, which means mapping the old separate
    `Client` and `Employee` records onto one `people` row each.
-3. **The outbox has no runner and no Postgres store.** The worker logic exists
-   and is tested, but nothing invokes it on a schedule and it has no database
-   implementation, so `domain_events` would still accumulate unprocessed.
+3. **The outbox has no runner.** The worker logic, the Postgres store and the
+   claim function all exist and are tested; nothing invokes `processDue` on a
+   schedule, so `domain_events` would accumulate as `pending`. The failure is
+   silent, which is what makes it a blocker rather than a nuisance.
 4. **Four approved specs are missing from the repository** — the Hiring Screen
    Roadmap, the Product Bible, the two-page Client Intake Form and the Joy
    nursing assessment. Hiring and Phone Intake should not be considered fully
@@ -348,8 +363,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 816 tests, `npm run test:e2e`
-passes 66, and the database suites pass 151 assertions across seven files.
+which it did not before — `npm test` passes with 829 tests, `npm run test:e2e`
+passes 66, and the database suites pass 175 assertions across eight files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

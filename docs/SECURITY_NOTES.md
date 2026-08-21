@@ -208,6 +208,33 @@ the table. Without it the view would run as its owner and become a way around
 row level security — a family would read every incident in the agency through
 it. `care_test.sql` asserts a family reads none.
 
+`0012` makes the audit trail worth relying on and the outbox safe to run twice.
+
+- **A session writes in its own name.** The insert policy on `audit_entries` was
+  organization-only, so an authenticated caregiver could have written an entry
+  saying the owner approved an admission. It now requires
+  `actor_type = 'user'` and `actor_user_id = current_app_user().id`. A session
+  also cannot claim to be `system` or `ai` — attributing a human action to the
+  machine is the more useful lie of the two, and this is the boundary that has
+  to refuse it. Non-user actors come from the service role, where the
+  attribution is the deployment's to guarantee.
+- **The trail cannot be edited, and the refusal is at the grant.**
+  `authenticated` has select and insert and nothing else, so an update is
+  refused outright rather than silently matching zero rows. That distinction
+  matters: a missing policy makes a bug look like it worked.
+- **`claim_domain_events` is a function, not a query.** `for update skip locked`
+  in one statement is the only thing that stops two workers claiming the same
+  event and sending the same text message twice, and it cannot be expressed from
+  the client. Neither it nor `finish_domain_event` is granted to
+  `authenticated`: a browser tab that claims an event and is then closed has
+  silently swallowed it.
+- **Attempts are counted at claim time.** An event that crashes the worker hard
+  enough that `finish_domain_event` never runs would otherwise keep its count at
+  zero and retry forever.
+
+Verified in `outbox_test.sql`, including a second worker in the same minute
+claiming nothing.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -227,7 +254,7 @@ it. `care_test.sql` asserts a family reads none.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0011
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0012
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -237,4 +264,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0011`: 151 assertions across seven files.
+As of `0012`: 175 assertions across eight files.

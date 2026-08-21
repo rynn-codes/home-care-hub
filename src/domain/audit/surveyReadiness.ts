@@ -199,14 +199,20 @@ export function surveyReadiness(input: SurveyReadinessInput): SurveyReadiness {
     {
       key: "audit_trail",
       question: "Show me who changed this record, and when.",
-      // Honest: the writer and its rules exist and are tested, and nothing
-      // persists what it writes. Calling that ready would be the worst line on
-      // the screen.
+      // Still `not_held`, and the wording moved rather than the state. The
+      // table, the policies and the adapter now exist and are tested; what does
+      // not exist is a Supabase project with the migrations applied and the
+      // writer called at Joy's write points. Turning this green on the strength
+      // of an adapter would be the worst line on the screen — it is the one
+      // somebody would rely on without checking.
       state: "not_held",
       answer:
-        "Joy records who did what in code, but there is no database behind it yet — the audit store is an in-memory port.",
+        "The trail is append-only in the schema and the adapter is written and tested, but no migrations have been applied and nothing calls the writer yet.",
       to: "/settings",
-      gaps: ["No Postgres implementation of AuditStore"],
+      gaps: [
+        "Migrations 0001–0012 have not been applied to the Supabase project",
+        "The audit writer is not yet called at Joy's write points",
+      ],
     },
   ];
 

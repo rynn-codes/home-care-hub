@@ -38,10 +38,16 @@ test.describe("audit", () => {
     await expect(page.locator("main")).toContainText("Emergency preparedness");
   });
 
-  test("does not claim the audit trail is held", async ({ page }) => {
-    // The writer and its rules exist and are tested; the store is in memory.
+  test("does not claim the audit trail is held just because an adapter exists", async ({
+    page,
+  }) => {
+    // 0012 gave it an append-only table, a policy that stops a session signing
+    // somebody else's name, and a tested Postgres adapter. None of that is a
+    // trail: no migrations are applied and nothing calls the writer. This is the
+    // line somebody would rely on without checking, so it has to say so.
     await page.goto("/operations/audit");
-    await expect(page.locator("main")).toContainText("in-memory port");
+    await expect(page.locator("main")).toContainText("not been applied");
+    await expect(page.locator("main")).toContainText("not yet called");
   });
 
   test("the yearly report says what was missed, not just what happened", async ({ page }) => {

@@ -46,7 +46,7 @@ psql -f supabase/migrations/0001_foundation.sql   # …through 0009
 psql -f supabase/tests/rls_test.sql          # then the other four suites
 ```
 
-151 assertions across seven suites. **Every one runs under `set local role
+175 assertions across eight suites. **Every one runs under `set local role
 authenticated`** — RLS is bypassed for the table owner, so a suite running as
 `postgres` passes while proving nothing. That mistake was made once here
 already.
@@ -208,6 +208,70 @@ somebody can work is the bug it exists to prevent.
 
 ---
 
+### `AuditStore` — who did what
+`src/domain/audit/audit.ts` · today: **`SupabaseAuditStore` is written**, in
+`src/infrastructure/supabase/auditStore.ts`
+
+Pass the client and wire the writer:
+
+```ts
+const audit = createAuditWriter(new SupabaseAuditStore(supabase));
+```
+
+Three things about this one are load-bearing.
+
+**It is append-only, at the grant.** `authenticated` has select and insert on
+`audit_entries` and nothing else, so an update or delete is refused outright
+rather than silently matching zero rows. Do not add those grants for a "cleanup"
+job. A trail the application can edit is not evidence of anything.
+
+**A session writes only in its own name.** `0012` replaced the org-only insert
+policy: an authenticated session must set `actor_type = 'user'` and
+`actor_user_id` to itself. Before that, a caregiver could have written an entry
+saying the owner approved an admission. Non-user actors — the worker, AI drafting
+— come from the service role, which bypasses row level security; their
+attribution is your deployment's to guarantee.
+
+**The writer never throws into the caller.** A failed audit write returns
+`{ ok: false }` so it can be alerted on. Losing an entry is bad; rolling back a
+completed assessment because the audit write failed is worse. Alert on it — that
+result is currently dropped at every call site, because there are no call sites
+yet.
+
+**Still yours:** calling it. The store, the redaction and the actor rules are
+tested; nothing in Joy invokes the writer. `AUDITED_ACTIONS` lists the eleven
+actions §27 asks for and is the checklist.
+
+### `DomainEventStore` — the outbox
+`src/domain/events/types.ts` · today: **`SupabaseDomainEventStore` is written**,
+in `src/infrastructure/supabase/eventStore.ts`
+
+Two of its four methods call database functions rather than running queries, and
+that is deliberate:
+
+- `claimDue` → `claim_domain_events`, which selects and marks processing in one
+  statement with `for update skip locked`. It cannot be done from the client.
+  Two workers in the same minute would otherwise read the same pending rows and
+  both send the same text message; the window between a read and an update is
+  exactly where the duplicate lives.
+- `markProcessed` / `markFailed` → `finish_domain_event`. Application sessions
+  have insert and select on `domain_events` and nothing else: a browser tab that
+  claims an event and is then closed has silently swallowed it.
+
+Neither function is granted to `authenticated`. **The worker connects with the
+service role.**
+
+Attempts are incremented at claim time, not on failure — an event that crashes
+the worker hard enough that `markFailed` never runs would otherwise keep its
+count at zero and retry forever.
+
+**Still yours: scheduling it.** `processDue` is a function and nothing calls it
+on a timer. pg_cron, a scheduled Edge Function, whatever you prefer. State the
+consequence when you decide, because it is not obvious from the code: unscheduled,
+events accumulate as `pending` and nothing goes out. No message fails, no error
+appears — the queue just grows, and the first symptom is a family who never got
+an invitation nobody knows was never sent.
+
 ## Not ports, still yours
 
 - **GoHighLevel inbound.** §2 gives GHL recruiting up to the in-person
@@ -231,9 +295,9 @@ Four layers, each catching what the others structurally cannot:
 
 ```sh
 npm run typecheck     # was not being run at all; found 28 errors the first time
-npm test              # 648 unit tests
-npm run test:e2e      # 25 browser tests — every screen renders, console quiet
-psql -f supabase/tests/…   # 103 policy assertions, as `authenticated`
+npm test              # 829 unit tests
+npm run test:e2e      # 66 browser tests — every screen renders, console quiet
+psql -f supabase/tests/…   # 175 policy assertions, as `authenticated`
 ```
 
 `npm run build` runs the type check first, so "the build passes" means what
