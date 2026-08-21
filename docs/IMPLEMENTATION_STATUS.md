@@ -240,6 +240,7 @@ supabase/migrations/0011_rn_licence_and_rn_visits.sql          RN licences, the 
 supabase/migrations/0012_audit_trail_and_outbox_worker.sql     audit attribution, the retry column, atomic claim
 supabase/migrations/0013_invoices_and_payments.sql             issued invoices, payments, balances
 supabase/migrations/0014_billing_accounts.sql                  payers, rate versions, authority to charge
+supabase/migrations/0015_verified_service_units.sql            the one approved fact both ledgers read
 ```
 
 To verify locally:
@@ -260,6 +261,7 @@ psql -f supabase/migrations/0011_rn_licence_and_rn_visits.sql
 psql -f supabase/migrations/0012_audit_trail_and_outbox_worker.sql
 psql -f supabase/migrations/0013_invoices_and_payments.sql
 psql -f supabase/migrations/0014_billing_accounts.sql
+psql -f supabase/migrations/0015_verified_service_units.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -271,7 +273,12 @@ psql -f supabase/tests/care_test.sql         # 48
 psql -f supabase/tests/outbox_test.sql       # 24
 psql -f supabase/tests/receivables_test.sql  # 18
 psql -f supabase/tests/billing_accounts_test.sql # 16
+psql -f supabase/tests/verified_units_test.sql   # 27
 ```
+
+Each suite is self-contained and can be run alone against a fresh database.
+`credentials_test.sql` was not — it borrowed its two helpers from `rls_test.sql`,
+so it passed in a sweep and failed on its own. Fixed rather than documented.
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
 the table owner, so a suite running as `postgres` passes while proving nothing.
@@ -368,6 +375,31 @@ Recorded here so they are not only in a chat log.
   rewritten once an invoice has cited one. An account cannot be *ready* to charge
   automatically without recorded authority: a saved card is not permission, and
   that is enforced by a check constraint rather than only by a form.
+- **Verified service units** (Phase 1, step 2). Billing and payroll each looked
+  at raw visits and time entries and drew their own conclusion, which §3.1.5 of
+  the specification forbids — the two ledgers share verified service facts and
+  never infer one another's result. There is now one record per visit carrying
+  two approved figures, payable and billable, separate on purpose because the
+  cases where they diverge are the ones that cost money or trust. Neither figure
+  can be set without a name and a time against it; a verified unit is superseded
+  rather than edited; one live unit per visit.
+
+  `payrollRun` and `buildInvoice` both take the units as **optional** input, the
+  same incremental shape as the rate version. With no unit they behave exactly as
+  they did — every screen in Joy passes none today. With one, the approved figure
+  wins, and a visit still part-way through review blocks the run and the invoice
+  instead of being quietly paid or billed at the scheduled length.
+
+  Writing it turned up three things the migration had wrong. `superseded_by` had
+  to become a deferred foreign key, because recording a correction was otherwise
+  impossible: the correction cannot be inserted while the original is live and
+  the original cannot name a successor that does not exist. The unit needed
+  `served_on`, because overtime is decided per workweek and a visit nobody
+  clocked would otherwise land in whichever week somebody reviewed it. And
+  approving an unclocked visit is now allowed **with a written reason** rather
+  than refused outright — the flat refusal left Karynn's own case, the caregiver
+  who worked while the app recorded nothing, blocking payroll forever with
+  nowhere to record the decision that would clear it.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–

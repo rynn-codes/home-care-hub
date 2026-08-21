@@ -28,8 +28,31 @@ No Stripe. No portal. The ledger and the authorisation model.
    the invoice. `ClientBillingTerms` still exists and still works — the migration
    off it is incremental rather than a flag day, because every screen reading it
    would otherwise have to move at once.
-2. `0015` verified service units. Wire `payrollRun` and `buildInvoice` to read
-   one approved fact each.
+2. ~~`0015` verified service units. Wire `payrollRun` and `buildInvoice` to read
+   one approved fact each.~~ **Done.** One record per visit carrying two approved
+   figures — payable and billable — neither set without a name and a time
+   against it, and the record not editable once verified. Two views, each
+   carrying only its own ledger's column, so a payroll query cannot reach a
+   billing fact by accident. `payrollRun` and `buildInvoice` both take the units
+   as optional input: absent, they behave exactly as before; present, the
+   approved figure wins and a visit still under review blocks rather than being
+   guessed at.
+
+   Three things changed under this that were not in the plan, each because
+   writing it made them visible:
+
+   - `superseded_by` is a **deferred** foreign key. A correction writes two rows
+     and there is no order that works without it — the correction cannot be
+     inserted while the original is live, and the original cannot be marked
+     superseded before the correction exists. Recording a correction was
+     impossible as first written.
+   - The unit carries `served_on`. Payroll places hours in a workweek, which is
+     where overtime is decided; without a date, a visit nobody clocked landed in
+     whichever week somebody reviewed it.
+   - `verifyRefusals` no longer refuses an unclocked visit outright, it requires
+     a reason. The flat refusal left Karynn's own case — the caregiver worked and
+     the app recorded nothing — permanently blocking payroll with nowhere to
+     record the decision that would unblock it.
 3. `0016` invoice approval, lines, adjustments, immutability trigger.
 4. Billing runs: generate the upcoming week's drafts from a snapshot, detect the
    seven §7.2 exceptions before drafting.

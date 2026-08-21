@@ -9,13 +9,27 @@
 -- credential history survives a renewal, and requirements are per-organization
 -- data rather than hard-coded.
 --
--- Run after the shim, all migrations, and with the helpers from rls_test.sql.
+-- Run after the shim and all migrations. It used to borrow `assert` and `act_as`
+-- from rls_test.sql, which meant it passed in a sweep and failed on its own —
+-- so it defines them itself now, like every other suite here.
 --
 -- Every assertion runs as `authenticated`, the role PostgREST actually connects
 -- as. Run as the table owner instead and RLS is bypassed entirely — the whole
 -- file passes while proving nothing, which is worse than having no tests.
 
 \set ON_ERROR_STOP on
+set client_min_messages to notice;
+
+create or replace function assert(condition boolean, description text)
+returns void language plpgsql as $$
+begin
+  if condition is not true then raise exception 'FAILED: %', description; end if;
+  raise notice '  ok  %', description;
+end; $$;
+
+create or replace function act_as(auth_id uuid)
+returns void language plpgsql as $$
+begin perform set_config('request.jwt.claim.sub', auth_id::text, true); end; $$;
 
 -- ---------------------------------------------------------------------------
 -- Fixture

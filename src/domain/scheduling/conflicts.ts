@@ -22,6 +22,12 @@ export interface Visit {
   service: string;
   /** Null when the shift is open — unassigned and needing coverage. */
   caregiverName: string | null;
+  /**
+   * The assigned caregiver's person id. Optional for the same reason
+   * `clientPersonId` is: the older demo seeds carry names only. A verified
+   * service unit needs the id, because a name is not who payroll pays.
+   */
+  caregiverPersonId?: string | null;
   startsAt: string;
   endsAt: string;
   /** rn_assessment visits are the RN's, not a caregiver's. */

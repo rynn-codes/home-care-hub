@@ -282,6 +282,29 @@ whether a rate exists to report readiness; it does not need the number.
 
 Verified in `billing_accounts_test.sql`.
 
+`0015` adds the verified service unit — one approved fact per visit, which both
+payroll and billing read. Three rules.
+
+- **Neither approved figure exists without a name and a time against it.** A
+  check constraint. A number that appears with nobody's name on it is a number
+  everybody downstream assumes somebody checked.
+- **A verified unit is superseded, never edited.** The same trigger rule as
+  charts, care plan tasks, payments and rates. Payroll may have paid on the
+  figure and an invoice may have gone out from it; the correction is a new row
+  that the old one points at. `superseded_by` is a deferred foreign key so both
+  rows of a correction can be written in one transaction — the guarantee is
+  unchanged at commit.
+- **Payroll's view has never heard of billing.** Two views, `security_invoker`
+  on: `payable_service_units` carries no client and no billable figure,
+  `billable_service_units` carries no caregiver and no payable figure. §6.3
+  forbids a client rate on a timecard and an employee wage on an invoice, and
+  the surest way to keep that true is that the wrong column is not there to
+  select. A caregiver reads nothing in this table at all — what Joy approved to
+  pay her is a payroll conversation, and what it bills for her visit is J-06's
+  business, not hers.
+
+Verified in `verified_units_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -301,14 +324,15 @@ Verified in `billing_accounts_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0014
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0015
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
-`rls_test.sql` defines `assert()` and `act_as()`; `portal_test.sql`,
-`visits_test.sql` and `care_test.sql` define their own so they run standalone. **Every assertion
+Every suite defines its own `assert()` and `act_as()` and runs standalone
+against a fresh database — `credentials_test.sql` used to borrow them from
+`rls_test.sql`, which meant it passed in a sweep and failed alone. **Every assertion
 must run under `set local role authenticated`** — RLS is bypassed for the table
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0014`: 209 assertions across ten files.
+As of `0015`: 236 assertions across eleven files.

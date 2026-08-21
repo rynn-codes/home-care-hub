@@ -1,6 +1,7 @@
 import type { Visit } from "@/domain/scheduling/conflicts";
 import { hoursOf } from "@/domain/scheduling/conflicts";
 import { HOLIDAY_LABELS, holidayOn, type HolidayKey } from "@/domain/billing/holidays";
+import { billableHours, type VerifiedServiceUnit } from "@/domain/service/verifiedUnit";
 
 /**
  * Billing — what a client owes, from the terms they signed.
@@ -202,7 +203,17 @@ function addDays(date: string, days: number): string {
  * would be double-charging a family for the same hour, and the agreement
  * describes one rate of one and a half, not a stacking one.
  */
-export function splitHours(visits: readonly Visit[]): {
+export function splitHours(
+  visits: readonly Visit[],
+  /**
+   * How long each visit was, for billing.
+   *
+   * Defaults to the scheduled length, which is what Joy invoiced from before
+   * there was an approved fact to read. Pass a resolver and the approved
+   * billable figure prices the invoice instead — see `buildInvoice`.
+   */
+  hoursFor: (visit: Visit) => number = hoursOf,
+): {
   standard: number;
   overtime: number;
   holidays: Array<{ key: HolidayKey; hours: number }>;
@@ -211,7 +222,7 @@ export function splitHours(visits: readonly Visit[]): {
   let ordinary = 0;
 
   for (const visit of visits) {
-    const hours = hoursOf(visit);
+    const hours = hoursFor(visit);
     const holiday = holidayOn(visit.startsAt);
     if (holiday) {
       byHoliday.set(holiday, money((byHoliday.get(holiday) ?? 0) + hours));
@@ -244,6 +255,16 @@ export function buildInvoice(input: {
    * shape being migrated away from.
    */
   rateVersion?: { id: string; hourlyRate: number } | null;
+  /**
+   * The approved facts for this week's visits, where they exist.
+   *
+   * Optional for the same reason `rateVersion` is: absent, this prices from the
+   * scheduled hours exactly as before. Where a unit exists it wins — §3.1.5
+   * forbids billing inferring its own answer from raw visit data when the
+   * office has already approved one. A visit still under review blocks the
+   * invoice rather than being billed at the scheduled length.
+   */
+  units?: readonly VerifiedServiceUnit[];
 }): Invoice {
   const { terms, weekStart } = input;
   const weekEnd = addDays(weekStart, 6);
@@ -258,7 +279,44 @@ export function buildInvoice(input: {
       v.startsAt.slice(0, 10) <= weekEnd,
   );
 
-  const split = splitHours(mine);
+  const live = new Map<string, VerifiedServiceUnit>();
+  for (const unit of input.units ?? []) {
+    if (unit.state === "superseded") continue;
+    live.set(unit.visitId, unit);
+  }
+
+  // A visit somebody started reviewing and has not finished. Billing it at the
+  // scheduled length would send a family an invoice for hours Joy itself has
+  // not agreed — and the review exists precisely because something about the
+  // visit was not straightforward.
+  const underReview = mine.filter((v) => live.get(v.id)?.state === "proposed");
+  if (underReview.length > 0) {
+    return {
+      clientPersonId: terms.clientPersonId,
+      clientName: terms.clientName,
+      ratePlanVersionId,
+      weekStart,
+      weekEnd,
+      lines: [],
+      subtotal: null,
+      depositApplied: 0,
+      convenienceFee: 0,
+      lateFee: 0,
+      total: null,
+      dueOn: addDays(weekStart, PAYMENT_DUE_DAYS),
+      state: "cannot_bill",
+      blockedReason:
+        underReview.length === 1
+          ? "One visit this week is still under review. Approve its hours before invoicing."
+          : `${underReview.length} visits this week are still under review. Approve their hours before invoicing.`,
+    };
+  }
+
+  const split = splitHours(mine, (visit) => {
+    const unit = live.get(visit.id);
+    const approved = unit ? billableHours(unit) : null;
+    return approved ?? hoursOf(visit);
+  });
   const lines: InvoiceLine[] = [];
 
   const line = (kind: LineKind, description: string, hours: number, multiplier: number) => {

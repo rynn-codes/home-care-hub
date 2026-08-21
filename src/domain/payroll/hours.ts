@@ -36,6 +36,11 @@
  * than guessed at; see the constant.
  */
 
+import {
+  payableHours,
+  type VerifiedServiceUnit,
+} from "@/domain/service/verifiedUnit";
+
 /** Karynn confirmed 40 hours and 1.5×. */
 export const OVERTIME_AFTER_HOURS = 40;
 export const OVERTIME_MULTIPLIER = 1.5;
@@ -85,7 +90,9 @@ export type PayrollExceptionKind =
   /** A visit happened with no time entry against it. */
   | "visit_without_time"
   /** Longer than a plausible shift. Usually a forgotten clock-out. */
-  | "implausible_length";
+  | "implausible_length"
+  /** Somebody opened a review of this visit and has not finished it. */
+  | "awaiting_verification";
 
 export interface PayrollException {
   kind: PayrollExceptionKind;
@@ -142,6 +149,31 @@ export function entryHours(entry: TimeEntry): number {
 /** Longer than this and somebody forgot to clock out. */
 export const IMPLAUSIBLE_SHIFT_HOURS = 16;
 
+// ------------------------------------------------- the approved fact --
+
+/**
+ * The live verified unit for each visit, by visit id.
+ *
+ * Superseded units are dropped. They are history — the record of what Joy
+ * approved before a correction — and paying from one would pay the figure that
+ * was corrected.
+ */
+export function liveUnitsByVisit(
+  units: readonly VerifiedServiceUnit[],
+): Map<string, VerifiedServiceUnit> {
+  const live = new Map<string, VerifiedServiceUnit>();
+  for (const unit of units) {
+    if (unit.state === "superseded") continue;
+    live.set(unit.visitId, unit);
+  }
+  return live;
+}
+
+/** Approved payable hours, or null when nothing has been approved. */
+function approvedHoursFor(unit: VerifiedServiceUnit | undefined): number | null {
+  return unit ? payableHours(unit) : null;
+}
+
 // -------------------------------------------------------------- totals --
 
 /**
@@ -155,12 +187,26 @@ export const IMPLAUSIBLE_SHIFT_HOURS = 16;
 export function weeklyTotals(
   entries: readonly TimeEntry[],
   startsOn = WORKWEEK_STARTS_ON,
+  units: readonly VerifiedServiceUnit[] = [],
 ): WorkweekTotals[] {
   const byWeek = new Map<string, number>();
+  const live = liveUnitsByVisit(units);
 
   for (const entry of entries) {
     const week = workweekStart(entry.clockedInAt, startsOn);
-    byWeek.set(week, (byWeek.get(week) ?? 0) + entryHours(entry));
+    const approved = approvedHoursFor(live.get(entry.visitId));
+    byWeek.set(week, (byWeek.get(week) ?? 0) + (approved ?? entryHours(entry)));
+  }
+
+  // A visit nobody clocked, which somebody has since looked at and approved a
+  // figure for. Karynn's "let her out, record the gap" case, and the reason
+  // this loop exists: without it the approval is recorded and then not paid.
+  for (const unit of live.values()) {
+    const approved = approvedHoursFor(unit);
+    if (approved === null) continue;
+    if (entries.some((e) => e.visitId === unit.visitId)) continue;
+    const week = workweekStart(`${unit.servedOn}T12:00:00`, startsOn);
+    byWeek.set(week, (byWeek.get(week) ?? 0) + approved);
   }
 
   return [...byWeek.entries()]
@@ -200,9 +246,11 @@ export function findExceptions(input: {
   entries: readonly TimeEntry[];
   visits: readonly VisitStub[];
   period: PayPeriod;
+  units?: readonly VerifiedServiceUnit[];
 }): PayrollException[] {
   const { entries, visits, period } = input;
   const exceptions: PayrollException[] = [];
+  const live = liveUnitsByVisit(input.units ?? []);
 
   for (const entry of entries) {
     if (!entry.clockedOutAt) {
@@ -227,6 +275,20 @@ export function findExceptions(input: {
       });
     }
 
+    // Somebody started reviewing this visit and stopped. Paying the raw clock
+    // over the top of an unfinished review is the drift the verified unit
+    // exists to prevent — and unlike a missing review, this one is visible, so
+    // it is a task rather than a silent fallback.
+    if (live.get(entry.visitId)?.state === "proposed") {
+      exceptions.push({
+        kind: "awaiting_verification",
+        entryId: entry.id,
+        visitId: entry.visitId,
+        detail: "This visit is part-way through review. Approve the hours before payroll goes out.",
+        blocking: true,
+      });
+    }
+
     if (entry.exceptionReason) {
       exceptions.push({
         kind: "documentation_gap",
@@ -245,6 +307,22 @@ export function findExceptions(input: {
     if (visit.status === "cancelled") continue;
     if (dateOnly(visit.startsAt) < period.start || dateOnly(visit.startsAt) > period.end) continue;
     if (clocked.has(visit.id)) continue;
+
+    const unit = live.get(visit.id);
+    // Nobody clocked it, and somebody has since looked at it and approved a
+    // figure. That is the whole point of the record — the gap was found, a
+    // person decided, and it is no longer outstanding.
+    if (unit?.state === "verified") continue;
+    if (unit?.state === "proposed") {
+      exceptions.push({
+        kind: "awaiting_verification",
+        entryId: null,
+        visitId: visit.id,
+        detail: `The visit on ${dateOnly(visit.startsAt)} is under review. Approve the hours before payroll goes out.`,
+        blocking: true,
+      });
+      continue;
+    }
 
     exceptions.push({
       kind: "visit_without_time",
@@ -269,14 +347,32 @@ export function caregiverHours(input: {
   visits: readonly VisitStub[];
   period: PayPeriod;
   startsOn?: number;
+  /**
+   * The approved facts, where they exist.
+   *
+   * Optional, and absent everywhere until the review screen is built — with no
+   * unit for a visit this behaves exactly as it did before, paying from the
+   * clock. Where a unit exists it wins: §3.1.5 says the two ledgers share
+   * verified service facts and never infer one another's result, and payroll
+   * re-deriving hours the office already approved is precisely that.
+   */
+  units?: readonly VerifiedServiceUnit[];
 }): CaregiverHours {
   const { caregiverPersonId, caregiverName, entries, visits, period } = input;
 
   const mine = entries.filter((e) => e.caregiverPersonId === caregiverPersonId);
   const myVisits = visits.filter((v) => v.caregiverPersonId === caregiverPersonId);
+  const myUnits = (input.units ?? []).filter(
+    (u) => u.caregiverPersonId === caregiverPersonId,
+  );
 
-  const weeks = weeklyTotals(mine, input.startsOn);
-  const exceptions = findExceptions({ entries: mine, visits: myVisits, period });
+  const weeks = weeklyTotals(mine, input.startsOn, myUnits);
+  const exceptions = findExceptions({
+    entries: mine,
+    visits: myVisits,
+    period,
+    units: myUnits,
+  });
 
   const sum = (pick: (w: WorkweekTotals) => number) =>
     Math.round(weeks.reduce((total, w) => total + pick(w), 0) * 100) / 100;
@@ -309,6 +405,8 @@ export function payrollRun(input: {
   entries: readonly TimeEntry[];
   visits: readonly VisitStub[];
   startsOn?: number;
+  /** See `caregiverHours`. Absent means "pay from the clock", as before. */
+  units?: readonly VerifiedServiceUnit[];
 }): PayrollRun {
   const caregivers = input.people
     .map((p) =>
@@ -319,6 +417,7 @@ export function payrollRun(input: {
         visits: input.visits,
         period: input.period,
         startsOn: input.startsOn,
+        units: input.units,
       }),
     )
     // Somebody with no hours and no exceptions is not on this payroll.

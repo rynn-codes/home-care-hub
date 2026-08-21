@@ -41,6 +41,9 @@ const EXCEPTION_TONE: Record<PayrollException["kind"], string> = {
   open_entry: "text-destructive",
   visit_without_time: "text-destructive",
   implausible_length: "text-destructive",
+  // An unfinished review blocks, but it is Joy's own work outstanding rather
+  // than something wrong with the caregiver's timesheet.
+  awaiting_verification: "text-[hsl(var(--warning))]",
   documentation_gap: "text-[hsl(var(--warning))]",
 };
 
