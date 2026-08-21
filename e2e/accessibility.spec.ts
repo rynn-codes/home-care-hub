@@ -81,6 +81,7 @@ test.describe("the admin app", () => {
     ["/people", "People"],
     ["/payroll", "Payroll"],
     ["/billing", "Billing"],
+    ["/reports", "Reports"],
   ] as Array<[string, string]>) {
     test(`${name} meets WCAG 2.1 AA`, async ({ page }) => {
       await signInAsStaff(page, PROJECT_REF);

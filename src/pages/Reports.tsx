@@ -1,98 +1,322 @@
-import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Cell, XAxis, YAxis } from "recharts";
-import { useData } from "@/context/DataProvider";
-import { Download } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { AlertCircle, Download, FileText } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+  PERIOD_LABELS,
+  resolvePeriod,
+  type ReportPeriod,
+} from "@/domain/reports/period";
+import {
+  REPORT_LABELS,
+  authBurnReport,
+  caregiverUtilization,
+  hoursByService,
+  netMarginByClient,
+  revenueByMonth,
+  unbillableHours,
+  type ReportKey,
+  type ReportResult,
+} from "@/domain/reports/reports";
+import { csvFilename, reportToCsv } from "@/domain/reports/csv";
+import { seedVisits } from "@/lib/schedulingSeed";
+import { seedBillingTerms } from "@/lib/billingSeed";
+import { seedPayrollPeople, seedTimeEntries } from "@/lib/payrollSeed";
+import { seedAuthorizations } from "@/lib/authorizationsSeed";
+import { cn } from "@/lib/utils";
 
-export default function Reports() {
-  const { employees, clients, shifts } = useData();
+/**
+ * Reports.
+ *
+ * The six Karynn asked for, each computed from the engine that owns the data —
+ * `buildInvoice`'s terms, the payroll clock, the schedule, the authorisations.
+ * Nothing here has its own copy of anything, so a figure on this page that
+ * disagreed with Billing or Payroll would be a bug in one of those rather than
+ * a difference of emphasis.
+ *
+ * The page this replaced had four charts reading `mockData.ts`: hours by
+ * caregiver, revenue by client, visit compliance and a hardcoded overtime
+ * trend. They looked like reports and were illustrations. That is a worse
+ * failure on a reports page than anywhere else in the app, because a reports
+ * page is where somebody goes specifically to be told a number they will act
+ * on.
+ *
+ * Three of the six cannot be computed today, and each says exactly which input
+ * is missing rather than showing a plausible figure. Net margin in particular
+ * returns nothing: it is the single most decision-shaped number here, somebody
+ * prices a contract off it, and Joy has neither client rates nor pay rates.
+ */
 
-  const hoursData = employees.slice(0, 8).map((e) => ({ name: e.name.split(" ")[0], hours: e.hoursThisWeek }));
-  const revenueData = clients.slice(0, 7).map((c, i) => ({ name: c.name.split(" ")[0], revenue: 800 + ((i * 200) % 1800) }));
-  const compliance = [
-    { name: "On time", value: shifts.filter((s) => s.status === "completed").length },
-    { name: "Missed", value: shifts.filter((s) => s.status === "missed").length },
-    { name: "Cancelled", value: shifts.filter((s) => s.status === "cancelled").length },
-  ];
-  const colors = ["hsl(var(--success))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
+const ORDER: ReportKey[] = [
+  "revenue_by_month",
+  "hours_by_service",
+  "caregiver_utilization",
+  "auth_burn",
+  "net_margin",
+  "unbillable",
+];
+
+const PERIODS: ReportPeriod[] = ["week", "month", "last_month", "quarter"];
+
+function Bar({
+  label,
+  value,
+  max,
+  unit,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  unit: string;
+}) {
+  const pct = max > 0 ? Math.max((value / max) * 100, value > 0 ? 2 : 0) : 0;
+  const shown = unit === "$" ? `$${Math.round(value).toLocaleString()}` : `${value}${unit}`;
+
+  return (
+    <li className="flex items-center gap-3">
+      <span className="w-32 shrink-0 truncate text-right text-sm text-muted-foreground">
+        {label}
+      </span>
+      <span className="flex h-6 flex-1 items-center gap-2">
+        <span
+          className="h-6 rounded-md bg-primary/85"
+          style={{ width: `${pct}%` }}
+          aria-hidden="true"
+        />
+        <span className="shrink-0 text-sm font-medium tabular-nums">{shown}</span>
+      </span>
+    </li>
+  );
+}
+
+function ReportBody({ report }: { report: ReportResult }) {
+  if (report.state === "needs_input") {
+    return (
+      <div className="rounded-xl border border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)] p-4">
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <AlertCircle className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
+          Joy cannot produce this yet
+        </p>
+        <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+          {report.missing?.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  if (report.state === "empty") {
+    return (
+      <p className="rounded-xl border border-border bg-surface-muted p-6 text-center text-sm text-muted-foreground">
+        Nothing in this period.
+      </p>
+    );
+  }
+
+  const max = report.chart
+    ? Math.max(...report.rows.map((r) => Number(r[report.chart!.valueKey]) || 0), 0)
+    : 0;
 
   return (
     <>
-      <PageHeader title="Reports" description="Operational and financial insights." actions={<Button variant="outline"><Download className="h-4 w-4 mr-1.5" />Export</Button>} />
-      {/* The one report on this page that is real, so it is named and linked
-          rather than left to be found. Everything below it is illustrative —
-          the figures come from mockData, and saying so is cheaper than a
-          surveyor discovering it. */}
-      <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
-        <h3 className="font-semibold">Yearly incident report</h3>
-        <p className="mt-1 max-w-prose text-sm text-muted-foreground">
-          Every incident reported in the year, and whether Joy did what it said it would do each
-          time. Computed from the incidents themselves — there is no separate register to keep.
-        </p>
-        <Button className="mt-4" asChild>
-          <Link to="/operations/incidents/annual">Open the report</Link>
-        </Button>
+      {report.chart && (
+        <ul className="mb-6 space-y-2">
+          {report.rows.map((row) => (
+            <Bar
+              key={String(row[report.chart!.labelKey])}
+              label={String(row[report.chart!.labelKey])}
+              value={Number(row[report.chart!.valueKey]) || 0}
+              max={max}
+              unit={report.chart!.unit}
+            />
+          ))}
+        </ul>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border">
+              {report.columns.map((c) => (
+                <th
+                  key={c.key}
+                  scope="col"
+                  className={cn(
+                    "px-2 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
+                    c.numeric ? "text-right" : "text-left",
+                  )}
+                >
+                  {c.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {report.rows.map((row, i) => (
+              <tr key={i} className="border-b border-border last:border-b-0">
+                {report.columns.map((c) => (
+                  <td
+                    key={c.key}
+                    className={cn(
+                      "px-2 py-2",
+                      c.numeric ? "text-right tabular-nums" : "text-left",
+                    )}
+                  >
+                    {row[c.key]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+    </>
+  );
+}
 
-      <p className="mb-4 text-xs text-muted-foreground">
-        The charts below are illustrative. They read the demo mock data, not the schedule, the
-        payroll clock or the invoices.
-      </p>
+export default function Reports() {
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const [period, setPeriod] = useState<ReportPeriod>("month");
+  const [selected, setSelected] = useState<ReportKey>("revenue_by_month");
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="p-5">
-          <h3 className="font-semibold mb-4">Hours by Caregiver</h3>
-          <ChartContainer config={{ hours: { label: "Hours", color: "hsl(var(--primary))" } }} className="h-64">
-            <BarChart data={hoursData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="name" fontSize={12} />
-              <YAxis fontSize={12} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </Card>
-        <Card className="p-5">
-          <h3 className="font-semibold mb-4">Revenue by Client</h3>
-          <ChartContainer config={{ revenue: { label: "Revenue", color: "hsl(var(--success))" } }} className="h-64">
-            <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="name" fontSize={12} />
-              <YAxis fontSize={12} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line type="monotone" dataKey="revenue" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 4 }} />
-            </LineChart>
-          </ChartContainer>
-        </Card>
-        <Card className="p-5">
-          <h3 className="font-semibold mb-4">Visit Compliance</h3>
-          <ChartContainer config={{}} className="h-64">
-            <PieChart>
-              <Pie data={compliance} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                {compliance.map((_, i) => <Cell key={i} fill={colors[i]} />)}
-              </Pie>
-              <ChartTooltip content={<ChartTooltipContent />} />
-            </PieChart>
-          </ChartContainer>
-        </Card>
-        <Card className="p-5">
-          <h3 className="font-semibold mb-4">Overtime Trends</h3>
-          <ChartContainer config={{ ot: { label: "OT hrs", color: "hsl(var(--warning))" } }} className="h-64">
-            <BarChart data={[
-              { week: "W1", ot: 18 }, { week: "W2", ot: 22 }, { week: "W3", ot: 14 },
-              { week: "W4", ot: 27 }, { week: "W5", ot: 19 }, { week: "W6", ot: 11 },
-            ]}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="week" fontSize={12} />
-              <YAxis fontSize={12} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="ot" fill="hsl(var(--warning))" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </Card>
+  const range = useMemo(() => resolvePeriod(period, today), [period, today]);
+
+  const nameFor = useMemo(() => {
+    const byId = new Map(seedPayrollPeople.map((p) => [p.personId, p.name]));
+    return (personId: string) => byId.get(personId) ?? personId;
+  }, []);
+
+  const reports = useMemo<Record<ReportKey, ReportResult>>(
+    () => ({
+      revenue_by_month: revenueByMonth({ visits: seedVisits, terms: seedBillingTerms, range }),
+      hours_by_service: hoursByService({ visits: seedVisits, range }),
+      caregiver_utilization: caregiverUtilization({
+        visits: seedVisits,
+        entries: seedTimeEntries,
+        nameFor,
+        range,
+      }),
+      auth_burn: authBurnReport({
+        authorizations: seedAuthorizations,
+        visits: seedVisits,
+        today,
+      }),
+      net_margin: netMarginByClient({
+        terms: seedBillingTerms,
+        // Empty on purpose. The figures on the Employees screen came from the
+        // mockup and are fiction; Payroll computes hours rather than wages for
+        // the same reason.
+        payRates: new Map(),
+        visits: seedVisits,
+        range,
+      }),
+      unbillable: unbillableHours({ visits: seedVisits, terms: seedBillingTerms, range }),
+    }),
+    [range, today, nameFor],
+  );
+
+  const report = reports[selected];
+
+  function exportCsv() {
+    const blob = new Blob([reportToCsv(report)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = csvFilename(report, today);
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${report.title} exported`);
+  }
+
+  return (
+    <>
+      <PageHeader
+        title="Reports"
+        description="Financial and operational analytics, computed from the same engines the screens read."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            {PERIODS.map((p) => (
+              <Button
+                key={p}
+                size="sm"
+                variant={p === period ? "default" : "outline"}
+                onClick={() => setPeriod(p)}
+              >
+                {PERIOD_LABELS[p]}
+              </Button>
+            ))}
+          </div>
+        }
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
+        <nav aria-label="Reports">
+          <ul className="space-y-2">
+            {ORDER.map((key) => {
+              const r = reports[key];
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(key)}
+                    aria-current={key === selected ? "true" : undefined}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-3 text-left text-sm transition-colors",
+                      key === selected
+                        ? "border-primary bg-[hsl(var(--primary-soft))] font-medium text-[hsl(var(--accent-foreground))]"
+                        : "border-border bg-surface hover:bg-surface-muted",
+                    )}
+                  >
+                    <span>{REPORT_LABELS[key]}</span>
+                    {r.state === "needs_input" && (
+                      <AlertCircle
+                        className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--warning))]"
+                        aria-label="Cannot be produced yet"
+                      />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="mt-6 rounded-xl border border-border bg-surface p-4">
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              Yearly incident report
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Every incident in the year, and whether Joy met each obligation.
+            </p>
+            <Button size="sm" variant="outline" className="mt-3" asChild>
+              <Link to="/operations/incidents/annual">Open</Link>
+            </Button>
+          </div>
+        </nav>
+
+        <section className="rounded-2xl border border-border bg-surface p-6">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">{report.title}</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">{report.subtitle}</p>
+            </div>
+            <Button size="sm" variant="outline" onClick={exportCsv}>
+              <Download className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Export CSV
+            </Button>
+          </div>
+
+          <ReportBody report={report} />
+
+          {report.note && report.state === "computed" && (
+            <p className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">
+              {report.note}
+            </p>
+          )}
+        </section>
       </div>
     </>
   );

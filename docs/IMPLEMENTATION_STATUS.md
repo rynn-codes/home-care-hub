@@ -4,7 +4,7 @@ Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
 **Last updated:** 21 August 2026 (incidents, care plans, supervisory visits, the audit
-home, migrations 0010–0012)
+home, Reports, migrations 0010–0012)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -118,6 +118,25 @@ No second frontend was created and no framework was replaced, per section 3.
   one and forgetting the other. Home's supervision signal used to read an input
   the live wiring passed as an empty array, so it printed 0 whatever was true;
   it now reads the same queue the screen does.
+- **Reports** — the six Karynn asked for on 21 August: revenue by month, hours
+  by service, caregiver utilisation, authorisation burn rate, net margin by
+  client, unbillable hours. Each computes from the engine that owns the data, so
+  a figure here that disagreed with Billing or Payroll would be a bug rather than
+  a difference of emphasis. Period selector and CSV export on every one.
+
+  **Three of the six cannot be computed and say so.** Revenue and net margin
+  need client rates; net margin also needs pay rates, which do not exist in this
+  repository on purpose. Each names its missing input and shows nothing else.
+  The page this replaced had four charts reading `mockData.ts` — hours by
+  caregiver, revenue by client, visit compliance, a hardcoded overtime trend —
+  and they were indistinguishable from real ones, which is a worse failure on a
+  reports page than anywhere else.
+- **Payer authorisations** — Medicaid, LTC insurance and VA have been named on
+  the client roster since it was written, one record even saying "authorization
+  through Dec 2026", and nothing modelled the units behind them. Burn rate
+  compares units used against period elapsed and projects when they run out —
+  the only thing that catches an over-delivery while there is still time to ask
+  for more, rather than when the denial arrives six weeks later.
 - **The audit trail and the outbox, in Postgres** — both were ports with
   in-memory implementations only, which meant every audit entry Joy wrote was
   discarded on the next page load. `SupabaseAuditStore` and
@@ -159,7 +178,8 @@ No second frontend was created and no framework was replaced, per section 3.
 - A create service. The referral drawer adds to the in-memory queue and says so
   in its confirmation; nothing is written to a database yet.
 - Any real persistence for the existing screens. `DataProvider` is still
-  `useState` over `mockData.ts`.
+  `useState` over `mockData.ts`. Reports no longer reads it; Documents and SOPs
+  still do.
 - **Any call site for the audit writer.** The store, the redaction and the
   actor rules are tested; nothing in Joy invokes it. `AUDITED_ACTIONS` lists the
   eleven actions §27 asks for and is the checklist.
@@ -307,7 +327,7 @@ Recorded here so they are not only in a chat log.
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 66 tests, about ninety seconds
+npm run test:e2e          # 73 tests, about two minutes
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -363,8 +383,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 829 tests, `npm run test:e2e`
-passes 66, and the database suites pass 175 assertions across eight files.
+which it did not before — `npm test` passes with 853 tests, `npm run test:e2e`
+passes 73, and the database suites pass 175 assertions across eight files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them
