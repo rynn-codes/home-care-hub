@@ -136,6 +136,43 @@ screen remembering not to render them.
 Verified in `portal_test.sql`, `visits_test.sql` and `charting_test.sql`, all
 running as `authenticated`.
 
+`0010` adds the care plan, incidents and supervisory visits, and puts four more
+rules below the application:
+
+- **One active care plan per client.** A unique partial index. `replacePlan`
+  retires the old version and activates the new one in a single function so this
+  cannot break, and that guarantee should not depend on everybody remembering to
+  call it. Two active plans means a caregiver's phone follows whichever loaded
+  first.
+- **A live plan's tasks are frozen.** A trigger, the same reasoning as the
+  confirmed-chart rule one level up: visits have been charted against those
+  tasks, and a task edited or deleted today rewrites what somebody was asked to
+  do last Tuesday. A change makes a new version.
+- **An incident cannot be closed while somebody still has to be told.** A
+  trigger, because a row-level check cannot see another table. This is the rule
+  whose clock belongs to somebody outside the office, which makes it the one
+  most worth enforcing here.
+- **The caregiver's narrative is not the office's to edit.** A trigger refuses
+  changes to the narrative, who reported it, and when. Findings and
+  classification are the office's to write; her account of what happened is not.
+
+Two access decisions worth stating. A portal user reads only the **active** care
+plan for a person they may already read — a superseded plan describes care that
+already happened and a draft describes care nobody has agreed to, and showing
+either to a caregiver is how she follows the wrong list. And **a family reads no
+incidents**: §24 keeps internal records off the family portal, and a family
+finds out because a person rings them inside the notification window, which is
+what `incident_notifications` exists to make sure happens. A daughter reading
+"medication error, significant" on a phone at eleven at night, with nobody to
+ask, is a worse way to be told.
+
+Supervisory visits are staff-only with no portal access at all. One records how
+a named caregiver performed in somebody's home; it is a personnel record as much
+as a clinical one, and neither the caregiver observed nor the client's family is
+its audience.
+
+Verified in `care_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -155,14 +192,14 @@ running as `authenticated`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0007
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0010
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
-`rls_test.sql` defines `assert()` and `act_as()`; `portal_test.sql` and
-`visits_test.sql` define their own so they run standalone. **Every assertion
+`rls_test.sql` defines `assert()` and `act_as()`; `portal_test.sql`,
+`visits_test.sql` and `care_test.sql` define their own so they run standalone. **Every assertion
 must run under `set local role authenticated`** — RLS is bypassed for the table
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0009`: 103 assertions across six files.
+As of `0010`: 138 assertions across seven files.

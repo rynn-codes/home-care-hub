@@ -3,7 +3,8 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 21 August 2026 (incident follow-up, the care plan, supervisory visits)
+**Last updated:** 21 August 2026 (incident follow-up, the care plan, supervisory visits,
+migration 0010)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -160,6 +161,7 @@ supabase/migrations/0006_portal_access.sql     portal grants, is_staff(), portal
 supabase/migrations/0007_visits_and_time.sql   the schedule, the clock, assignment-based access
 supabase/migrations/0008_charting_and_moments.sql  charts, Moments, preferences, document requests
 supabase/migrations/0009_grant_revocation.sql      withdrawing portal access, attributably
+supabase/migrations/0010_care_plans_incidents_supervision.sql  care plans, incidents, supervisory visits
 ```
 
 To verify locally:
@@ -175,6 +177,7 @@ psql -f supabase/migrations/0006_portal_access.sql
 psql -f supabase/migrations/0007_visits_and_time.sql
 psql -f supabase/migrations/0008_charting_and_moments.sql
 psql -f supabase/migrations/0009_grant_revocation.sql
+psql -f supabase/migrations/0010_care_plans_incidents_supervision.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -182,6 +185,7 @@ psql -f supabase/tests/credentials_test.sql  # 17
 psql -f supabase/tests/portal_test.sql       # 20
 psql -f supabase/tests/visits_test.sql       # 18
 psql -f supabase/tests/charting_test.sql     # 19
+psql -f supabase/tests/care_test.sql         # 35
 ```
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
@@ -314,7 +318,7 @@ whether a label makes sense. This is a floor, not a pass mark.
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
 which it did not before — `npm test` passes with 761 tests, `npm run test:e2e`
-passes 53, and the database suites pass 103 assertions across six files.
+passes 53, and the database suites pass 138 assertions across seven files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

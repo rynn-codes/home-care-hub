@@ -46,7 +46,7 @@ psql -f supabase/migrations/0001_foundation.sql   # …through 0009
 psql -f supabase/tests/rls_test.sql          # then the other four suites
 ```
 
-103 assertions across six suites. **Every one runs under `set local role
+138 assertions across seven suites. **Every one runs under `set local role
 authenticated`** — RLS is bypassed for the table owner, so a suite running as
 `postgres` passes while proving nothing. That mistake was made once here
 already.
