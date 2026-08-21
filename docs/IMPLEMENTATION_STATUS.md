@@ -431,6 +431,16 @@ Recorded here so they are not only in a chat log.
   exceptions as rows, and gives accounts a hold that requires a reason. The
   billing specification itself is vendored at
   `docs/specs/Joy_Health_Billing_Stripe_Integration_Spec.md`.
+- **Financial actions on the audit trail, and the cheque on the desk** (Phase
+  1, steps 5 and 6 — Phase 1 of the billing plan is complete). Ten financial
+  audit entries share the one writer every audited action uses, so actor
+  refusals and redaction apply unchanged; the builders have no parameter for a
+  service description, a diagnosis or a wage, and a test trips if one grows
+  one. §7.4 rung 6 is live: the Billing screen's Outstanding section records
+  an external payment — amount, date, method, reference, recorder — refuses
+  through `paymentRefusals` in the domain's words, writes the audit entry the
+  moment it lands, and the outstanding-invoices report reads the same merged
+  list so the two screens cannot disagree.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–

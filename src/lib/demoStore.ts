@@ -6,6 +6,7 @@ import type { RnLicence } from "@/domain/clinical/registeredNurse";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
 import type { Contact } from "@/domain/people/contacts";
 import type { StoredAuditEntry } from "@/lib/demoAudit";
+import type { Payment } from "@/domain/billing/receivables";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -146,6 +147,12 @@ export interface DemoState {
    * Karynn has already handed over stay put and anything typed in survives a
    * refresh.
    */
+  /**
+   * Payments recorded through the app — §7.4 rung 6, the cheque on the desk.
+   * Merged with `seedPayments` wherever a balance is computed, so the
+   * Billing screen and the outstanding-invoices report read one list.
+   */
+  recordedPayments: Payment[];
   contacts: Contact[];
   /**
    * Changes to contacts, by id.
@@ -195,6 +202,7 @@ function initial(): DemoState {
     scheduleEvents: [],
     communications: [],
     domainEvents: [],
+    recordedPayments: [],
     contacts: [],
     contactEdits: {},
     deletedContactIds: [],

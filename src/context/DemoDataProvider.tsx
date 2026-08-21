@@ -18,6 +18,9 @@ import type { Contact } from "@/domain/people/contacts";
 import { seedContacts } from "@/lib/peopleSeed";
 import { recordAudit } from "@/lib/demoAudit";
 import type { AuditRecord } from "@/domain/audit/audit";
+import { paymentRefusals, type Payment, type PaymentRefusal } from "@/domain/billing/receivables";
+import { externalPaymentRecorded } from "@/domain/billing/financialAudit";
+import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 
 /**
  * The demo's organization id.
@@ -58,6 +61,12 @@ interface DemoContextValue extends DemoState {
   newHires: DemoState["newHires"];
   hireEmployee: (employee: DemoState["newHires"][number]) => void;
   assignShift: (visitId: string, caregiverName: string) => void;
+  /**
+   * §7.4 rung 6 — record money that arrived outside Stripe: the cheque, the
+   * cash, the bank transfer. Returns the refusals instead of recording when
+   * something is wrong, so the form can say why in the domain's words.
+   */
+  recordExternalPayment: (payment: Payment) => PaymentRefusal[];
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
   reset: () => void;
@@ -74,6 +83,11 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   // whoever was signed in first.
   const currentUserRef = useRef(state.currentUser);
   currentUserRef.current = state.currentUser;
+  // Same pattern for the whole state, for callbacks that need to read more
+  // than they change — recording a payment must see payments recorded a
+  // moment ago without being rebuilt on every keystroke of state.
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   /**
    * Record who did something, and put it on the trail.
@@ -595,6 +609,48 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     }));
   }, [audit]);
 
+  const recordExternalPayment = useCallback<DemoContextValue["recordExternalPayment"]>(
+    (payment) => {
+      // The same checks the receivables engine applies everywhere else. The
+      // caller shows the refusals; nothing is recorded on a refusal.
+      const state = stateRef.current;
+      const all = [...seedPayments, ...state.recordedPayments];
+      const invoice = seedIssuedInvoices.find((i) => i.id === payment.invoiceId);
+      const refusals = paymentRefusals({
+        invoice,
+        payments: all.filter((p) => p.invoiceId === payment.invoiceId),
+        amount: payment.amount,
+        receivedOn: payment.receivedOn,
+        asOf: new Date().toISOString().slice(0, 10),
+      });
+      if (refusals.length > 0) return refusals;
+
+      const remaining = invoice
+        ? invoice.total -
+          all
+            .filter((p) => p.invoiceId === payment.invoiceId)
+            .reduce((t, p) => t + p.amount, 0) -
+          payment.amount
+        : 0;
+
+      audit(
+        externalPaymentRecorded({
+          paymentId: payment.id,
+          invoiceId: payment.invoiceId,
+          amount: payment.amount,
+          method: payment.method,
+          receivedOn: payment.receivedOn,
+          reference: payment.reference,
+          balanceAfter: Math.round(remaining * 100) / 100,
+        }),
+      );
+
+      setState((s) => ({ ...s, recordedPayments: [payment, ...s.recordedPayments] }));
+      return [];
+    },
+    [audit],
+  );
+
   const hireEmployee = useCallback<DemoContextValue["hireEmployee"]>((employee) => {
     audit({
       action: "employee.hired",
@@ -643,6 +699,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       newHires: state.newHires,
       hireEmployee,
       assignShift,
+      recordExternalPayment,
       currentUser: state.currentUser,
       setCurrentUser,
       saveAssessment,
@@ -654,7 +711,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, setCurrentUser, reset],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

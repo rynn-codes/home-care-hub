@@ -132,6 +132,16 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "payroll.approved": "approved payroll",
   "integration.retried": "retried an integration",
   "integration.failed": "recorded an integration failure",
+  "invoice.submitted": "sent an invoice for approval",
+  "invoice.approved": "approved an invoice",
+  "invoice.issued": "sent an invoice",
+  "invoice.adjusted": "adjusted an invoice",
+  "invoice.written_off": "wrote an invoice off",
+  "payment.recorded_external": "recorded a payment",
+  "account.payer_changed": "changed who pays",
+  "account.hold_placed": "paused billing on an account",
+  "account.hold_lifted": "resumed billing on an account",
+  "billing_run.created": "ran the week's billing",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {

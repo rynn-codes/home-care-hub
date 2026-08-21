@@ -45,6 +45,19 @@ export const AUDITED_ACTIONS = [
   "integration.failed",
   "referral.created",
   "admission.stage_changed",
+  // The financial actions — §7 and §13 of the billing specification. Every
+  // change to what a family owes carries a name; see billing/financialAudit.ts
+  // for the builders that shape these entries.
+  "invoice.submitted",
+  "invoice.approved",
+  "invoice.issued",
+  "invoice.adjusted",
+  "invoice.written_off",
+  "payment.recorded_external",
+  "account.payer_changed",
+  "account.hold_placed",
+  "account.hold_lifted",
+  "billing_run.created",
 ] as const;
 
 export class AuditError extends Error {}

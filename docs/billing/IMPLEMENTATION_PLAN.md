@@ -84,12 +84,24 @@ No Stripe. No portal. The ledger and the authorisation model.
    `billing_run_id` on invoices. Runs are append-only. The spec itself is now
    vendored at `docs/specs/Joy_Health_Billing_Stripe_Integration_Spec.md`.
    Numbering: Stripe mapping moves to 0018, widened grants to 0019.
-5. Audit the financial actions — approval, adjustment, void, write-off, external
-   payment, payer change. The writer is already called at seven non-financial
-   actions; this extends the same path.
-6. Record an external payment (§7.4 rung 6). It is the only rung that works
-   without Stripe, and it means Joy can take a cheque before any of this is
-   connected.
+5. ~~Audit the financial actions.~~ **Done.**
+   `src/domain/billing/financialAudit.ts` shapes the ten financial entries —
+   submit, approve, issue, adjust, write off, external payment, payer change,
+   hold placed/lifted, run created — for the same writer every audited action
+   uses, so the actor refusals and redaction apply unchanged. What an entry
+   carries is figures, dates, ids and reasons; there is structurally no
+   parameter for a service description, a diagnosis or a wage, and a test
+   trips if one is added. The vocabulary is in `AUDITED_ACTIONS` and
+   `AUDIT_PHRASES`, so the Audit screen reads "recorded a payment" rather than
+   dot-notation. Approval and adjustment builders are the contract for when
+   those screens land; the external-payment entry is live today.
+6. ~~Record an external payment (§7.4 rung 6).~~ **Done.** The Billing screen
+   has an Outstanding section reading the same `invoiceBalance` engine as the
+   report, and a Record-a-payment dialog: amount, date received, method,
+   reference — the spec's own list, recorded by whoever is signed in. Refusals
+   come from `paymentRefusals`, in the domain's words; the trail gets its
+   entry the moment the payment lands. Joy can take a cheque before anything
+   is connected.
 
 **Done when:** a week's invoices can be drafted, reviewed, approved, and
 corrected only by adjustment; payroll and billing read the same verified unit

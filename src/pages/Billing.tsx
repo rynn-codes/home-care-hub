@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AlertCircle, Check, Info } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,10 @@ import {
   type Invoice,
 } from "@/domain/billing/invoice";
 import { seedBillingTerms, seedPaidWeeks } from "@/lib/billingSeed";
+import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
+import { invoiceBalance, BALANCE_LABELS, type InvoiceBalance } from "@/domain/billing/receivables";
+import { RecordPaymentDialog } from "@/components/billing/RecordPaymentDialog";
+import { useDemo } from "@/context/DemoDataProvider";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { cn } from "@/lib/utils";
 
@@ -135,6 +139,20 @@ function InvoiceCard({ invoice, paid }: { invoice: Invoice; paid: boolean }) {
 
 export default function Billing() {
   const weekStart = useMemo(monday, []);
+  const { recordedPayments } = useDemo();
+  const [payingBalance, setPayingBalance] = useState<InvoiceBalance | null>(null);
+
+  // Issued invoices and every payment against them — the seeds plus anything
+  // recorded through the app. One list, so this screen and the outstanding
+  // report cannot disagree about who owes what.
+  const openBalances = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const allPayments = [...seedPayments, ...recordedPayments];
+    return seedIssuedInvoices
+      .map((invoice) => invoiceBalance({ invoice, payments: allPayments, asOf: today }))
+      .filter((b) => b.balance > 0 && b.state !== "written_off")
+      .sort((a, b) => b.daysOverdue - a.daysOverdue);
+  }, [recordedPayments]);
 
   const invoices = useMemo(
     () =>
@@ -192,6 +210,52 @@ export default function Billing() {
           />
         ))}
       </ul>
+
+      <section className="mt-8 rounded-2xl border border-border bg-surface p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold">Outstanding</h2>
+          <p className="text-xs text-muted-foreground">
+            Money owed on invoices already sent. A cheque or a bank transfer is recorded here —
+            the trail gets an entry the moment it lands.
+          </p>
+        </div>
+
+        {openBalances.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">Nothing is outstanding.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-border">
+            {openBalances.map((b) => (
+              <li
+                key={b.invoice.id}
+                className="flex flex-wrap items-center justify-between gap-3 py-3"
+              >
+                <div>
+                  <p className="text-sm font-medium">{b.invoice.clientName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Week of {b.invoice.weekStart} · {BALANCE_LABELS[b.state]}
+                    {b.daysOverdue > 0 && ` · ${b.daysOverdue} days overdue`}
+                    {b.paid > 0 && ` · ${money(b.paid)} received`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold tabular-nums">{money(b.balance)}</span>
+                  <Button size="sm" variant="outline" onClick={() => setPayingBalance(b)}>
+                    Record a payment
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <RecordPaymentDialog
+        balance={payingBalance}
+        open={payingBalance !== null}
+        onOpenChange={(open) => {
+          if (!open) setPayingBalance(null);
+        }}
+      />
 
       <div className="mt-8 rounded-2xl border border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)] p-4">
         <p className="flex items-start gap-2 text-sm">
