@@ -22,6 +22,26 @@ Where a module spec and the kickoff brief conflict, the brief wins on structure
 and data, the module spec wins on UI detail and behaviour. Document any mismatch
 rather than silently picking a side — section 2 and section 50.
 
+## Governing but not yet vendored
+
+**Joy Health Admissions, Billing, Payroll, Client Portal, and Stripe
+Integration — coding specification v1.0, 21 August 2026.** Supplied in
+conversation rather than as a file. It governs Billing, payment collection, the
+client finance area and the Stripe adapter, and it supersedes earlier guesses
+about all four.
+
+Its Section 20 deliverables are complete and live in `docs/billing/` plus
+`docs/DECISIONS/0002-stripe-integration.md`. **The spec itself should be dropped
+into this directory** — every other source of truth here is vendored precisely so
+nobody has to hunt for an upload, and the Phase 0 documents summarise it rather
+than replacing it.
+
+Note on its own provenance: Section 2.1 says the original uploaded sources
+behind its evidence table (J-01 to J-11) are not present in that workspace
+either, and preserves the citations rather than presenting them as fresh
+approvals. Two of those sources — the Product Bible and the Hiring Roadmap — are
+still missing here as well.
+
 ## Still missing
 
 Named as source of truth but not supplied. Any module depending on one of these
@@ -38,7 +58,10 @@ is under-specified until it arrives:
   what the assessment must *produce*; the nursing assessment would define how the
   RN captures it. The assessment is modelled from the packet's requirements in
   the meantime.
-- Joy Product Bible v1.0 Builder Edition
+- Joy Product Bible v1.0 Builder Edition — cited as J-01 by the billing
+  specification for "Billing & Payments is Phase 1" and the Tap to Pay fallback
+  ladder. Those two decisions are therefore usable; the rest of the Bible is not
+  available.
 
 The visual designs these specs describe are vendored alongside them in
 `docs/mockups/`, with a note on where the two disagree.

@@ -58,9 +58,22 @@ import { HOLIDAY_LABELS, holidayOn, type HolidayKey } from "@/domain/billing/hol
  * family would be told they owed nothing.
  */
 
+/**
+ * The packet's wording, and the decision that settles it.
+ *
+ * The invoicing clause says both things at once. Joy's own answer was already
+ * "in advance", and the Admissions/Billing/Payroll/Portal/Stripe specification
+ * (v1.0, evidence J-05) confirms it: Joy invoices the upcoming care week.
+ *
+ * The note stays on the Billing screen because the CLIENT-FACING document is
+ * still wrong. A family reading their signed agreement finds a sentence saying
+ * they are billed in arrears, and the first time that matters is an argument
+ * about a week nobody delivered yet.
+ */
 export const PACKET_CONTRADICTION =
   'The invoicing clause says both "invoice every week in advance" and "due to billing in arrears". ' +
-  "Joy bills in advance. The wording needs correcting before the next packet is printed.";
+  "Joy bills the upcoming care week — settled, and now confirmed by the billing specification. " +
+  "The packet wording still needs correcting before the next one is printed.";
 
 /** From the signed agreement. */
 export const OVERTIME_AFTER_HOURS = 40;

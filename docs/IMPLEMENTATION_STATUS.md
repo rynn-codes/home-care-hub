@@ -347,20 +347,21 @@ Recorded here so they are not only in a chat log.
   the decision. Left alone rather than edited, because rewriting a transcribed
   document on inference is how a packet stops matching what a client signed —
   worth checking against the paper form.
-- **The Stripe specification is not in this repository.** Karynn, 21 August:
-  "The client was supposed to be able to pay their balance through Stripe... Go
-  back and look at the original MD file." Every vendored spec and the consents
-  packet were searched: zero occurrences. The only "Stripe" in the codebase is a
-  decorative Connect button in the static Settings mockup. The missing file is
-  most likely the **Joy Product Bible v1.0 Builder Edition**, already listed in
-  `docs/specs/README.md` as named-but-not-supplied. Needed before the payment
-  flow is built to a specification rather than to an inference.
+- **The billing and Stripe specification has arrived** (v1.0, 21 August) and
+  Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
+  existing-system map, the gap table against §4–13, proposed migrations 0014–
+  0018, the implementation plan, and Section 18's open decisions; the Stripe ADR
+  is `docs/DECISIONS/0002-stripe-integration.md`.
 
-  What the packet *does* give, and what a payment port can be grounded in: card,
-  debit and ACH; a 2.9% convenience fee on cards and $5 on ACH; payment due
-  within one calendar day; a $100 late fee after the third day. The 2.9% is
-  Stripe's standard card rate, which is corroboration rather than a
-  specification.
+  **Four decisions block the first real invoice** — the weekly cutoff and charge
+  date, the quantity the upcoming week is billed from, the authorisation
+  language for off-session charges, and the retry cadence. All four are Karynn's,
+  and all four are in `docs/billing/OPEN_DECISIONS.md` with what is already
+  answered marked as answered.
+
+  **Everything Stripe blocks on a server layer.** §8.1 forbids privileged Stripe
+  calls from a browser and the app currently talks to Supabase directly from the
+  client.
 
 ## Browser tests
 
