@@ -89,6 +89,16 @@ export interface BillingAccount {
   /** Dollars of deposit Joy holds against this account. */
   depositRemaining: number;
   paymentMethod: PaymentMethod | null;
+
+  /**
+   * §7.2's "account hold": billing deliberately paused — a bereavement, a
+   * dispute being worked out, a family conversation in progress. Distinct from
+   * `status`, which says whether Joy COULD bill; a hold says Joy is choosing
+   * not to, and the reason is required so the pause explains itself when
+   * somebody finds it three weeks later.
+   */
+  onHold: boolean;
+  holdReason: string | null;
 }
 
 /** Which clients this account pays for. Many-to-many; see the note above. */

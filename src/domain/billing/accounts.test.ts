@@ -29,6 +29,8 @@ function account(over: Partial<BillingAccount> = {}): BillingAccount {
     authorizationDocumentId: "doc-agreement-1",
     depositRemaining: 0,
     paymentMethod: "card",
+    onHold: false,
+    holdReason: null,
     ...over,
   };
 }
@@ -112,6 +114,8 @@ describe("what stops an account billing", () => {
           collectionMethod: "send_invoice",
           authorizationStatus: "not_captured",
           paymentMethod: null,
+    onHold: false,
+    holdReason: null,
           termsDays: 1,
         }),
         clients: LINKS,

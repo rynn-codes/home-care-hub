@@ -327,6 +327,15 @@ Verified in `verified_units_test.sql`.
 
 Verified in `invoice_approval_test.sql`.
 
+`0017` adds the billing run's record. Runs and their exceptions are append-only
+(SELECT and INSERT, nothing else): a run is a fact about what Joy did on a
+date. They are readable by the owner and billing only — a run names who was
+NOT billed and why (payer gaps, holds, credit balances), which is not
+scheduling information, and a caregiver reads none of it. The account hold
+requires a reason while held and refuses a stale reason once lifted.
+
+Verified in `billing_runs_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -346,7 +355,7 @@ Verified in `invoice_approval_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0016
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0017
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -357,4 +366,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0016`: 260 assertions across twelve files.
+As of `0017`: 269 assertions across thirteen files.

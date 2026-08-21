@@ -68,8 +68,22 @@ No Stripe. No portal. The ledger and the authorisation model.
    Closing a real hole: with `issued_on` now nullable for drafts, 0013's
    payment-date check went NULL and waved a payment onto a draft through —
    `payment_after_invoice` now refuses money on anything unissued outright.
-4. Billing runs: generate the upcoming week's drafts from a snapshot, detect the
-   seven §7.2 exceptions before drafting.
+4. ~~Billing runs: generate the upcoming week's drafts from a snapshot, detect
+   the seven §7.2 exceptions before drafting.~~ **Done.**
+   `src/domain/billing/run.ts` runs §7.2 steps 1–4 in order: snapshot (FNV over
+   a canonical string — the question is "did anything change", not
+   cryptography), detect, then draft only where nothing blocks. One blocked
+   client does not hold up the week; the run names who was skipped and why. All
+   seven exception kinds exist verbatim, including `authorization_limit`, which
+   never fires for Joy — all private pay, LTC reimburses the client — and says
+   so in `AUTHORIZATION_LIMIT_NOTE` rather than being quietly dropped from the
+   contract. `unapproved_schedule_change` fires where it actually happens:
+   `runIsStale` compares the snapshot at approval time, not at drafting time.
+   0017 records the run, its exceptions as rows (so "how often is a rate
+   missing" is a GROUP BY), the account hold with a required reason, and
+   `billing_run_id` on invoices. Runs are append-only. The spec itself is now
+   vendored at `docs/specs/Joy_Health_Billing_Stripe_Integration_Spec.md`.
+   Numbering: Stripe mapping moves to 0018, widened grants to 0019.
 5. Audit the financial actions — approval, adjustment, void, write-off, external
    payment, payer change. The writer is already called at seven non-financial
    actions; this extends the same path.

@@ -59,6 +59,8 @@ function account(
     authorizationDocumentId: null,
     depositRemaining: 0,
     paymentMethod: null,
+    onHold: false,
+    holdReason: null,
     ...over,
   };
 }

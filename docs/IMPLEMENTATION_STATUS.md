@@ -242,6 +242,7 @@ supabase/migrations/0013_invoices_and_payments.sql             issued invoices, 
 supabase/migrations/0014_billing_accounts.sql                  payers, rate versions, authority to charge
 supabase/migrations/0015_verified_service_units.sql            the one approved fact both ledgers read
 supabase/migrations/0016_invoice_approval.sql                  the invoice lifecycle, lines, adjustments
+supabase/migrations/0017_billing_runs.sql                      the weekly run's record, the account hold
 ```
 
 To verify locally:
@@ -264,6 +265,7 @@ psql -f supabase/migrations/0013_invoices_and_payments.sql
 psql -f supabase/migrations/0014_billing_accounts.sql
 psql -f supabase/migrations/0015_verified_service_units.sql
 psql -f supabase/migrations/0016_invoice_approval.sql
+psql -f supabase/migrations/0017_billing_runs.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -277,6 +279,7 @@ psql -f supabase/tests/receivables_test.sql  # 18
 psql -f supabase/tests/billing_accounts_test.sql # 16
 psql -f supabase/tests/verified_units_test.sql   # 27
 psql -f supabase/tests/invoice_approval_test.sql # 24
+psql -f supabase/tests/billing_runs_test.sql     # 9
 ```
 
 Each suite is self-contained and can be run alone against a fresh database.
@@ -417,6 +420,17 @@ Recorded here so they are not only in a chat log.
   possible at all. Lines carry what an hour costs a family, which is a rate, so
   payroll reads invoices but not lines. `src/domain/billing/approval.ts` mirrors
   the lifecycle for screens; the database wins where they disagree.
+- **Billing runs** (Phase 1, step 4). §7.2 steps 1–4 in the spec's order:
+  snapshot, detect the seven exceptions verbatim, then draft only where nothing
+  blocks. A missing rate, an overlapping visit, an unready payer or a held
+  account blocks that client's draft — and only that client's; a credit is a
+  task for the reviewer, not a blocked family. `authorization_limit` exists and
+  never fires, with the private-pay reason on the record. The schedule changing
+  after drafting is caught by comparing snapshots at approval (`runIsStale`),
+  which is when it actually matters. 0017 records runs append-only, keeps
+  exceptions as rows, and gives accounts a hold that requires a reason. The
+  billing specification itself is vendored at
+  `docs/specs/Joy_Health_Billing_Stripe_Integration_Spec.md`.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–
