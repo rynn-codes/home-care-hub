@@ -1,25 +1,25 @@
 import type { Visit } from "@/domain/scheduling/conflicts";
 import { isBillable, type ClientBillingTerms } from "@/domain/billing/invoice";
 import { entryHours, workweekStart, type TimeEntry } from "@/domain/payroll/hours";
-import {
-  PAYER_LABELS,
-  authorizationBurn,
-  sortBurn,
-  type Authorization,
-  type AuthorizationBurn,
-} from "@/domain/authorizations/authorization";
 import { inRange, monthsIn, type DateRange } from "@/domain/reports/period";
 
 /**
  * The six reports Karynn asked for, computed from the engines that already
  * exist rather than from a reporting table.
  *
- * THE RULE THAT SHAPES THIS FILE. Three of the six need an input Joy does not
- * have — client rates, pay rates, and payer authorisations — and every one of
- * those is a number somebody would act on. A margin of 47% invented from a
- * mockup, printed next to four figures that are real, is worse than a blank
- * page: it is indistinguishable from a computed one, and somebody will price a
- * contract off it.
+ * THERE ARE FIVE, NOT SIX. The design carried an authorisation burn rate and it
+ * has been removed rather than left empty — Karynn, 21 August: "We are all
+ * private pay. We allow long term care insurance, but only for them to reimburse
+ * the client once they have paid us. We don't need anything regarding
+ * authorizations." A report about units a payer approved is meaningless when no
+ * payer approves anything: the client pays Joy, and their insurer reimburses
+ * them afterwards, which is a transaction Joy is not part of.
+ *
+ * THE RULE THAT SHAPES THIS FILE. Two of the five need an input Joy does not
+ * have — client rates and pay rates — and both are numbers somebody would act
+ * on. A margin of 47% invented from a mockup, printed next to three figures that
+ * are real, is worse than a blank page: it is indistinguishable from a computed
+ * one, and somebody will price a contract off it.
  *
  * So a report is either COMPUTED from real data or it says exactly what it is
  * missing and shows nothing else. `ReportResult.state` is what the screen reads
@@ -35,7 +35,6 @@ export type ReportKey =
   | "revenue_by_month"
   | "hours_by_service"
   | "caregiver_utilization"
-  | "auth_burn"
   | "net_margin"
   | "unbillable";
 
@@ -43,7 +42,6 @@ export const REPORT_LABELS: Record<ReportKey, string> = {
   revenue_by_month: "Revenue by month",
   hours_by_service: "Hours by service",
   caregiver_utilization: "Caregiver utilisation",
-  auth_burn: "Authorisation burn rate",
   net_margin: "Net margin by client",
   unbillable: "Unbillable hours",
 };
@@ -334,72 +332,6 @@ export function caregiverUtilization(input: {
     chart: { labelKey: "caregiver", valueKey: "worked", unit: "h" },
     note:
       "Measured against the schedule, not against a capacity target — Joy holds no availability or contracted hours, so a percentage of “full time” would be a percentage of a number nobody entered.",
-  };
-}
-
-// ------------------------------------------------------------- auth burn --
-
-export function authBurnReport(input: {
-  authorizations: readonly Authorization[];
-  visits: readonly Visit[];
-  today: string;
-}): ReportResult {
-  if (input.authorizations.length === 0) {
-    return {
-      key: "auth_burn",
-      title: REPORT_LABELS.auth_burn,
-      subtitle: "How fast each client is using their authorised units",
-      state: "needs_input",
-      columns: [],
-      rows: [],
-      missing: [
-        "No payer authorisations are on file.",
-        "The client roster names Medicaid STAR+PLUS, LTC insurance and VA Community Care as payers, and one record says “authorization through Dec 2026” — but the units behind those were never recorded, so there is nothing to burn.",
-        "A private-pay client needs no authorisation. Every other payer does.",
-      ],
-    };
-  }
-
-  const burns: AuthorizationBurn[] = sortBurn(
-    input.authorizations.map((authorization) =>
-      authorizationBurn({ authorization, visits: input.visits, today: input.today }),
-    ),
-  );
-
-  const rows = burns.map((b) => ({
-    client: b.authorization.clientName,
-    payer: PAYER_LABELS[b.authorization.payer],
-    used: `${Math.round(b.fractionUsed * 100)}%`,
-    elapsed: `${Math.round(b.fractionElapsed * 100)}%`,
-    remaining: b.unitsRemaining,
-    runsOut: b.projectedExhaustionOn ?? "—",
-    advice: b.advice,
-  }));
-
-  const atRisk = burns.filter(
-    (b) => b.state === "will_run_out" || b.state === "exhausted" || b.state === "burning_fast",
-  ).length;
-
-  return {
-    key: "auth_burn",
-    title: REPORT_LABELS.auth_burn,
-    subtitle:
-      atRisk === 0
-        ? "Every authorisation is tracking with its period"
-        : `${atRisk} of ${burns.length} need attention`,
-    state: "computed",
-    columns: [
-      { key: "client", label: "Client" },
-      { key: "payer", label: "Payer" },
-      { key: "used", label: "Units used", numeric: true },
-      { key: "elapsed", label: "Period elapsed", numeric: true },
-      { key: "remaining", label: "Units left", numeric: true },
-      { key: "runsOut", label: "Runs out" },
-      { key: "advice", label: "What it means" },
-    ],
-    rows,
-    note:
-      "The comparison that matters is units used against period elapsed. Half the units at the halfway point is fine; half the units a quarter of the way in means Joy either stops or works for nothing.",
   };
 }
 

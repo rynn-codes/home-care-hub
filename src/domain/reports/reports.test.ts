@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  authBurnReport,
   caregiverUtilization,
   hoursByService,
   netMarginByClient,
@@ -12,7 +11,6 @@ import { monthsIn, resolvePeriod, weekStart } from "@/domain/reports/period";
 import type { Visit } from "@/domain/scheduling/conflicts";
 import type { ClientBillingTerms } from "@/domain/billing/invoice";
 import type { TimeEntry } from "@/domain/payroll/hours";
-import type { Authorization } from "@/domain/authorizations/authorization";
 
 const TODAY = "2026-08-21";
 const RANGE = { start: "2026-08-01", end: TODAY, label: "August" };
@@ -269,43 +267,6 @@ describe("unbillable hours", () => {
   it("says so plainly when there is nothing", () => {
     const report = unbillableHours({ visits: [visit()], terms: [PRICED], range: RANGE });
     expect(report.subtitle).toContain("Nothing unbillable");
-  });
-});
-
-describe("authorisation burn", () => {
-  const auth: Authorization = {
-    id: "auth-1",
-    clientPersonId: "c-1",
-    clientName: "Marcus Bell",
-    payer: "medicaid",
-    authorizationNumber: "STAR-0001",
-    unitsAuthorized: 400,
-    minutesPerUnit: 15,
-    startsOn: "2026-08-01",
-    endsOn: "2026-10-31",
-    service: "Personal attendant services",
-  };
-
-  it("says what is missing when no authorisations exist at all", () => {
-    const report = authBurnReport({ authorizations: [], visits: [], today: TODAY });
-    expect(report.state).toBe("needs_input");
-    expect(report.missing!.join(" ")).toMatch(/private-pay client needs no authorisation/i);
-  });
-
-  it("compares units used against period elapsed", () => {
-    // Four hours a day since the 1st: 16 units a day, well ahead of a period
-    // that has barely started.
-    const visits = Array.from({ length: 20 }, (_, i) =>
-      visit({
-        id: `v${i}`,
-        startsAt: `2026-08-${String(i + 1).padStart(2, "0")}T09:00:00`,
-        endsAt: `2026-08-${String(i + 1).padStart(2, "0")}T13:00:00`,
-      }),
-    );
-    const report = authBurnReport({ authorizations: [auth], visits, today: TODAY });
-    expect(report.state).toBe("computed");
-    expect(report.rows[0].used).toBe("80%");
-    expect(String(report.rows[0].advice)).toMatch(/run out|Ask for more/i);
   });
 });
 

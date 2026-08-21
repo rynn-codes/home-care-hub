@@ -118,25 +118,27 @@ No second frontend was created and no framework was replaced, per section 3.
   one and forgetting the other. Home's supervision signal used to read an input
   the live wiring passed as an empty array, so it printed 0 whatever was true;
   it now reads the same queue the screen does.
-- **Reports** — the six Karynn asked for on 21 August: revenue by month, hours
-  by service, caregiver utilisation, authorisation burn rate, net margin by
-  client, unbillable hours. Each computes from the engine that owns the data, so
-  a figure here that disagreed with Billing or Payroll would be a bug rather than
-  a difference of emphasis. Period selector and CSV export on every one.
+- **Reports** — five of the six Karynn's design showed: revenue by month, hours
+  by service, caregiver utilisation, net margin by client, unbillable hours.
+  Each computes from the engine that owns the data, so a figure here that
+  disagreed with Billing or Payroll would be a bug rather than a difference of
+  emphasis. Period selector and CSV export on every one.
 
-  **Three of the six cannot be computed and say so.** Revenue and net margin
-  need client rates; net margin also needs pay rates, which do not exist in this
+  **Two of the five cannot be computed and say so.** Revenue and net margin need
+  client rates; net margin also needs pay rates, which do not exist in this
   repository on purpose. Each names its missing input and shows nothing else.
   The page this replaced had four charts reading `mockData.ts` — hours by
   caregiver, revenue by client, visit compliance, a hardcoded overtime trend —
   and they were indistinguishable from real ones, which is a worse failure on a
   reports page than anywhere else.
-- **Payer authorisations** — Medicaid, LTC insurance and VA have been named on
-  the client roster since it was written, one record even saying "authorization
-  through Dec 2026", and nothing modelled the units behind them. Burn rate
-  compares units used against period elapsed and projects when they run out —
-  the only thing that catches an over-delivery while there is still time to ask
-  for more, rather than when the denial arrives six weeks later.
+
+  The sixth, an authorisation burn rate, was built and then removed. Karynn,
+  21 August: "We are all private pay. We allow long term care insurance, but only
+  for them to reimburse the client once they have paid us. We don't need anything
+  regarding authorizations." A policy reimburses the client after the client has
+  paid Joy; there are no authorised units and no payer to bill. An e2e test
+  asserts the report is absent so it does not return with the next design that
+  shows six slots.
 - **The audit trail and the outbox, in Postgres** — both were ports with
   in-memory implementations only, which meant every audit entry Joy wrote was
   discarded on the next page load. `SupabaseAuditStore` and
@@ -316,6 +318,12 @@ Recorded here so they are not only in a chat log.
   where a person might be hurt and nobody clinical has looked, plus anything
   classified serious whatever its kind. Property damage and a behavioural note
   are not on it.
+- **The assessment's payer question.** `payer_source` still offers Medicare,
+  Medicaid, third-party payor and grant programme. Joy is all private pay, so
+  those options are either dead or transcribed from a paper form that predates
+  the decision. Left alone rather than edited, because rewriting a transcribed
+  document on inference is how a packet stops matching what a client signed —
+  worth checking against the paper form.
 - **What changes for a respite or post-surgical visit.** Answered in part on
   21 August: "We don't separate care. All of our clients get personal care
   services, companion care, light housekeeping. The only time we distinguish
@@ -383,7 +391,7 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 853 tests, `npm run test:e2e`
+which it did not before — `npm test` passes with 851 tests, `npm run test:e2e`
 passes 73, and the database suites pass 175 assertions across eight files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all

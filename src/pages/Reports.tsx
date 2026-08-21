@@ -11,7 +11,6 @@ import {
 } from "@/domain/reports/period";
 import {
   REPORT_LABELS,
-  authBurnReport,
   caregiverUtilization,
   hoursByService,
   netMarginByClient,
@@ -24,7 +23,6 @@ import { csvFilename, reportToCsv } from "@/domain/reports/csv";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedTimeEntries } from "@/lib/payrollSeed";
-import { seedAuthorizations } from "@/lib/authorizationsSeed";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,17 +41,23 @@ import { cn } from "@/lib/utils";
  * page is where somebody goes specifically to be told a number they will act
  * on.
  *
- * Three of the six cannot be computed today, and each says exactly which input
+ * Two of the five cannot be computed today, and each says exactly which input
  * is missing rather than showing a plausible figure. Net margin in particular
  * returns nothing: it is the single most decision-shaped number here, somebody
  * prices a contract off it, and Joy has neither client rates nor pay rates.
+ *
+ * FIVE, NOT SIX. The design had an authorisation burn rate and Karynn retired it
+ * on 21 August: "We are all private pay. We allow long term care insurance, but
+ * only for them to reimburse the client once they have paid us." A policy
+ * reimburses the client after the client has paid Joy, so there are no
+ * authorised units and no payer to bill. The slot is left empty rather than
+ * filled with something nobody asked for.
  */
 
 const ORDER: ReportKey[] = [
   "revenue_by_month",
   "hours_by_service",
   "caregiver_utilization",
-  "auth_burn",
   "net_margin",
   "unbillable",
 ];
@@ -198,11 +202,6 @@ export default function Reports() {
         entries: seedTimeEntries,
         nameFor,
         range,
-      }),
-      auth_burn: authBurnReport({
-        authorizations: seedAuthorizations,
-        visits: seedVisits,
-        today,
       }),
       net_margin: netMarginByClient({
         terms: seedBillingTerms,

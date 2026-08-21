@@ -19,6 +19,23 @@ import type { ClientInput } from "@/domain/clients/roster";
  * Clients admitted through the demo appear alongside these; nothing here is
  * duplicated when that happens, because admission adds a client profile to the
  * existing person rather than creating a second record (§10).
+ *
+ * EVERY CLIENT IS PRIVATE PAY. Karynn, 21 August: "We are all private pay. We
+ * allow long term care insurance, but only for them to reimburse the client
+ * once they have paid us. We don't need anything regarding authorizations."
+ *
+ * This file used to carry Medicaid STAR+PLUS, VA Community Care, Medicare and
+ * LTC Insurance as payers, with one record reading "authorization through Dec
+ * 2026". None of that was true of Joy, and it was invented here rather than
+ * given — which is exactly how a seed stops being a demo and starts being a
+ * wrong answer somebody builds on. It cost an authorisation module and a burn
+ * rate report before anybody said so.
+ *
+ * A long-term care policy reimburses the CLIENT, after the client has paid Joy.
+ * Joy invoices the client either way and is not a party to the claim. What that
+ * client needs from Joy is documentation good enough to submit — which is a
+ * different feature from billing an insurer, and not one that has been asked
+ * for yet.
  */
 export const seedClients: ClientInput[] = [
   {
@@ -59,8 +76,8 @@ export const seedClients: ClientInput[] = [
     address: "908 Kingsland Blvd, Katy, TX 77450",
     location: "Katy",
     status: "active",
-    payer: "Medicaid · STAR+PLUS",
-    payerLine: "Authorization through Dec 2026",
+    payer: "Private Pay",
+    payerLine: "Weekly invoicing · ACH",
     services: ["Personal Care"],
     caregiver: "Bedjine Cupidon",
     coordinator: "John Segura",
@@ -86,8 +103,11 @@ export const seedClients: ClientInput[] = [
     address: "1140 Yale St, Houston, TX 77008",
     location: "Houston · Heights",
     status: "active",
-    payer: "LTC Insurance",
-    payerLine: "Monthly reimbursement",
+    payer: "Private Pay",
+    // The long-term care policy reimburses HER, after she has paid Joy. Joy is
+    // not a party to it and never bills the insurer — see the note at the top
+    // of this file.
+    payerLine: "Weekly invoicing · claims LTC reimbursement herself",
     services: ["Personal Care", "Respite"],
     caregiver: "Heather Gonzales",
     coordinator: "Kelsey Westley",
@@ -117,8 +137,8 @@ export const seedClients: ClientInput[] = [
     address: "2203 Austin Pkwy, Sugar Land, TX 77479",
     location: "Sugar Land",
     status: "on_hold",
-    payer: "VA Community Care",
-    payerLine: "Referral pending renewal",
+    payer: "Private Pay",
+    payerLine: "Weekly invoicing · card on file",
     services: ["Personal Care"],
     caregiver: null,
     coordinator: "John Segura",
@@ -168,8 +188,8 @@ export const seedClients: ClientInput[] = [
     address: "5401 Bissonnet St, Bellaire, TX 77401",
     location: "Houston · Bellaire",
     status: "discharged",
-    payer: "Medicare",
-    payerLine: "Transitioned to hospice care",
+    payer: "Private Pay",
+    payerLine: "Closed on transition to hospice care",
     services: ["Personal Care"],
     caregiver: null,
     coordinator: "John Segura",

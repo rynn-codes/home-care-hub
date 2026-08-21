@@ -16,15 +16,19 @@ import type { ClientRecord } from "@/domain/clients/roster";
  * authorization at sixty.
  */
 
+/**
+ * Karynn, 21 August: "We are all private pay."
+ *
+ * This map used to colour-code Medicaid STAR+PLUS, LTC Insurance, VA Community
+ * Care and Medicare. None of them are payers Joy bills, so they are gone rather
+ * than left as dead keys — a UI that has a colour ready for Medicaid is a UI
+ * quietly asserting that Joy takes Medicaid.
+ *
+ * Anything unrecognised falls through to the muted pill below, which is the
+ * right behaviour if a payer type is ever added deliberately.
+ */
 const PAYER_TONE: Record<string, string> = {
   "Private Pay": "text-primary bg-primary-soft",
-  // #0E9384 measured 3.61:1 on its own background — a pill is small text, so
-  // it needs 4.5:1. Darkened to #0B7268, which is 5.51:1 and still reads teal.
-  // The amber pair beside it already passes at 5.2:1 and is left alone.
-  "Medicaid · STAR+PLUS": "text-[#0B7268] bg-[#ECFDF7]",
-  "LTC Insurance": "text-[#B54708] bg-[#FFFAEB]",
-  "VA Community Care": "text-muted-foreground bg-surface-muted",
-  Medicare: "text-muted-foreground bg-surface-muted",
 };
 
 const STATUS_DOT: Record<string, string> = {
