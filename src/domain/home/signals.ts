@@ -10,6 +10,7 @@ import type { Preference } from "@/domain/portal/preferences";
 import type { Invitation } from "@/domain/hiring/invitation";
 import type { RequestedDocument } from "@/domain/portal/familyPortal";
 import { clientCompliance, type ClientInput } from "@/domain/clients/roster";
+import { CLASSIFY_WITHIN_HOURS, incidentUrgency, type Incident } from "@/domain/incidents/incidents";
 
 /**
  * The figures on Home, computed from the same engines the modules use.
@@ -66,6 +67,7 @@ export interface HomeSignalInput {
   invitations: readonly Invitation[];
   documentRequests: readonly RequestedDocument[];
   nameFor: (personId: string) => string;
+  incidents: readonly Incident[];
   /** Monday of the current week, for billing. */
   weekStart: string;
   payPeriod: { start: string; end: string };
@@ -112,6 +114,17 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
       ageing({ dueOn: i.dueOn, paid: false, total: i.total, asOf: today }).daysOverdue > 0,
   ).length;
 
+  // An incident past a notification deadline is the most urgent thing Joy can
+  // show, because the clock belongs to somebody outside the office.
+  const openIncidents = input.incidents.filter((i) => i.state !== "closed");
+  const lateIncidents = openIncidents.filter((i) => {
+    const u = incidentUrgency(i, `${today}T23:59:59Z`);
+    // The same threshold the Incidents screen reads, not a copy of the
+    // number. A second literal here is how Home starts disagreeing with the
+    // module it links to.
+    return u.overdue.length > 0 || (u.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS;
+  }).length;
+
   const portal = queueCounts(
     buildPortalQueue({
       moments: input.moments,
@@ -139,6 +152,19 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
   ).length;
 
   return [
+    {
+      key: "incidents",
+      label: "Incidents",
+      value: String(openIncidents.length),
+      to: "/operations/incidents",
+      urgent: lateIncidents > 0,
+      detail:
+        lateIncidents > 0
+          ? `${lateIncidents} past a deadline`
+          : openIncidents.length > 0
+            ? "Open, nothing overdue"
+            : "Nothing open",
+    },
     {
       key: "open-shifts",
       label: "Open shifts",

@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 20 August 2026 (employee and client portals, payroll)
+**Last updated:** 21 August 2026 (incident follow-up)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -86,6 +86,17 @@ No second frontend was created and no framework was replaced, per section 3.
   `/portal`, outside the admin shell.
 - **Payroll** — hours from the clock, split per workweek, with exceptions.
   Joy produces hours; Gusto produces wages. No pay rates are in the code.
+- **Billing** — invoices built from the signed service agreement's own terms,
+  ageing, and a refusal to invoice a client who has no rate rather than sending
+  a zero. The agreement's internal contradiction — it says both "invoice every
+  week in advance" and "due to billing in arrears" — is shown on the screen
+  rather than silently resolved.
+- **Incidents** — everything a caregiver reports at clock-out, classified,
+  with the notification deadlines Joy owes running from when it was *reported*
+  rather than from when the office got round to looking at it. An incident
+  cannot be closed while somebody still has to be told, and cannot be closed
+  with no findings. See the open decision below: the windows themselves are
+  Joy's policy held as data, not a legal citation.
 - **People** — business contacts, referral sources and partners, organised
   around who can send Joy work and who has gone quiet. Karynn's scope, 18 Aug:
   "our general contact list for ancillary people". Contacts can be added,
@@ -94,8 +105,13 @@ No second frontend was created and no framework was replaced, per section 3.
 
 ## What does not exist
 
-- **Billing.** No sprint was ever written for it. It is the largest piece of
-  genuinely new ground left.
+- **The care plan.** The largest remaining gap, and the one other things lean
+  on: the assessment, several consents and the family portal all reference a
+  care plan, and none of them can point at one. Visit task lists are improvised
+  in the meantime.
+- **Supervisory visit scheduling.** The compliance clock tracks whether the
+  annual supervisory visit is due and the client record shows it; nothing books
+  one.
 - **Inviting a family mid-admission.** `canInviteFamily` implements §19's gate —
   assessment complete, Joy moving forward — and the client record satisfies both
   by construction. The admission review screen is where that gate is live and
@@ -216,11 +232,17 @@ Recorded here so they are not only in a chat log.
   office number is used. Needs a reprint.
 - **Whether GoHighLevel will sign a BAA**, and whether its A2P 10DLC
   registration covers authentication traffic. Both gate go-live.
+- **The incident notification windows.** `NOTIFICATION_POLICY` in
+  `src/domain/incidents/incidents.ts` says who has to be told about what and
+  how quickly. The workflow around it is right; the windows are a starting
+  point and need checking against the current Texas requirements for Joy's
+  licence category. The screen says so in as many words, deliberately — a
+  countdown with no provenance reads as though somebody checked.
 
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 36 tests, about a minute
+npm run test:e2e          # 43 tests, about a minute
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -268,8 +290,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 648 tests, `npm run test:e2e`
-passes 36, and the database suites pass 103 assertions across six files.
+which it did not before — `npm test` passes with 721 tests, `npm run test:e2e`
+passes 43, and the database suites pass 103 assertions across six files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

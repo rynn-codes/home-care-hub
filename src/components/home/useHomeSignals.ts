@@ -8,6 +8,7 @@ import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedPayrollVisits, seedTimeEntries } from "@/lib/payrollSeed";
 import { seedMoments, seedPreferences, seedRequestedDocuments } from "@/lib/familyPortalSeed";
+import { seedIncidents } from "@/lib/incidentsSeed";
 
 /**
  * One place Home assembles its inputs.
@@ -51,6 +52,7 @@ export function useHomeSignals(): HomeSignal[] {
       preferences: seedPreferences,
       invitations: [],
       documentRequests: seedRequestedDocuments,
+      incidents: seedIncidents,
       nameFor: (id) => id.replace(/^p-/, "").replace(/^\w/, (c) => c.toUpperCase()),
       weekStart: monday.toISOString().slice(0, 10),
       payPeriod: { start: periodStart.toISOString().slice(0, 10), end: today },

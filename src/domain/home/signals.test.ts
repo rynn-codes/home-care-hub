@@ -9,6 +9,7 @@ import { seedVisits } from "@/lib/schedulingSeed";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedPayrollVisits, seedTimeEntries } from "@/lib/payrollSeed";
+import { seedIncidents } from "@/lib/incidentsSeed";
 
 const TODAY = "2026-08-20";
 
@@ -27,6 +28,7 @@ function build(over: Partial<HomeSignalInput> = {}) {
     preferences: [],
     invitations: [],
     documentRequests: [],
+    incidents: seedIncidents,
     nameFor: (id: string) => id,
     weekStart: "2026-08-17",
     payPeriod: { start: "2026-08-07", end: TODAY },
@@ -64,6 +66,11 @@ describe("Home agrees with the modules", () => {
       visits: seedPayrollVisits,
     });
     expect(signal("payroll").value).toBe(run.ready ? "Ready" : String(run.blockedBy.length));
+  });
+
+  it("counts the same open incidents the Incidents screen does", () => {
+    const open = seedIncidents.filter((i) => i.state !== "closed");
+    expect(signal("incidents").value).toBe(String(open.length));
   });
 
   it("links every signal to the screen that computed it", () => {
@@ -122,6 +129,23 @@ describe("what counts as urgent", () => {
     expect(build({ timeEntries: [] }).find((s) => s.key === "portal")?.value).toBe("0");
   });
 
+  it("marks incidents urgent when a deadline has passed, not when one is merely open", () => {
+    // The seed's second incident has a notification already overdue, which is
+    // the whole reason the signal exists: that clock belongs to somebody
+    // outside the office and nobody in it is watching it.
+    expect(signal("incidents").urgent).toBe(true);
+
+    const handled = build({
+      incidents: seedIncidents.map((i) => ({
+        ...i,
+        state: "closed" as const,
+      })),
+    });
+    const quiet = handled.find((s) => s.key === "incidents")!;
+    expect(quiet.urgent).toBe(false);
+    expect(quiet.detail).toBe("Nothing open");
+  });
+
   it("says everything is fine when it is", () => {
     const quiet = build({
       visits: [],
@@ -131,6 +155,7 @@ describe("what counts as urgent", () => {
       timeEntries: [],
       payrollVisits: [],
       payrollPeople: [],
+      incidents: [],
     });
     expect(quiet.every((s) => !s.urgent)).toBe(true);
   });

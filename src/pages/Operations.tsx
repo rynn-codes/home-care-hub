@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, FolderOpen, Heart, TriangleAlert, UserPlus } from "lucide-react";
+import { BookOpen, FolderOpen, Heart, ShieldAlert, TriangleAlert, UserPlus } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDemo } from "@/context/DemoDataProvider";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ import { seedEmployees } from "@/lib/employeesSeed";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { firstShiftReadiness, isStale } from "@/domain/hiring/pipeline";
 import { buildPortalQueue, portalQueueSummary } from "@/domain/portal/officeQueue";
+import { incidentUrgency, sortIncidents } from "@/domain/incidents/incidents";
+import { seedIncidents } from "@/lib/incidentsSeed";
 import { seedMoments, seedPreferences, seedRequestedDocuments } from "@/lib/familyPortalSeed";
 import { seedTimeEntries } from "@/lib/payrollSeed";
 
@@ -97,6 +99,22 @@ export default function Operations() {
       }),
     [today],
   );
+
+  // Incidents come first on this screen because they are the only thing here
+  // with a clock somebody else is holding.
+  const nowIso = useMemo(() => new Date().toISOString(), []);
+  const incidentsOpen = seedIncidents.filter((i) => i.state !== "closed").length;
+  const incidentsLate = seedIncidents.filter((i) => {
+    const u = incidentUrgency(i, nowIso);
+    return i.state !== "closed" && (u.overdue.length > 0 || (u.unclassifiedFor ?? 0) >= 2);
+  }).length;
+  const incidentsWorst = useMemo(() => {
+    const [worst] = sortIncidents(
+      seedIncidents.filter((i) => i.state !== "closed"),
+      nowIso,
+    );
+    return worst ? `${worst.clientName} — ${incidentUrgency(worst, nowIso).headline}` : null;
+  }, [nowIso]);
 
   return (
     <>
@@ -190,6 +208,33 @@ export default function Operations() {
             </p>
           </Link>
         </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="mb-4 text-sm font-semibold">Incidents</h2>
+        <Link
+          to="/operations/incidents"
+          className="block rounded-2xl border border-border bg-surface p-5 transition-colors hover:bg-surface-muted"
+        >
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <ShieldAlert
+              className={cn(
+                "h-4 w-4",
+                incidentsLate > 0 ? "text-destructive" : "text-muted-foreground",
+              )}
+              aria-hidden="true"
+            />
+            {incidentsOpen === 0
+              ? "No open incidents"
+              : `${incidentsOpen} open ${incidentsOpen === 1 ? "incident" : "incidents"}`}
+            {incidentsLate > 0 && (
+              <span className="text-destructive">· {incidentsLate} past a deadline</span>
+            )}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {incidentsWorst ?? "Everything reported has been dealt with."}
+          </p>
+        </Link>
       </section>
 
       <section className="mb-8">
