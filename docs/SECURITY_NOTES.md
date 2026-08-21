@@ -235,6 +235,32 @@ it. `care_test.sql` asserts a family reads none.
 Verified in `outbox_test.sql`, including a second worker in the same minute
 claiming nothing.
 
+`0013` adds issued invoices and payments, and the rules on them are about money
+rather than health information.
+
+- **A payment cannot be edited or deleted.** No update or delete grant, the same
+  reasoning as the audit trail: a payment is a statement that money arrived, and
+  there is no version of changing it afterwards that is not either a mistake or
+  a cover-up. A payment keyed wrongly is corrected by recording the correction,
+  which leaves both facts on the record.
+- **A payment cannot arrive before the invoice was sent.** A trigger. Almost
+  always somebody keying it against the wrong invoice, and worth catching
+  because the money then sits on a week that is already settled while the week
+  actually owed keeps ageing.
+- **A write-off carries a name and a reason.** A balance that disappears from
+  the report the moment somebody gives up on it is a balance nobody can later
+  ask why Joy gave up on.
+- **The balance is a function, not a column.** A cached balance and a payments
+  table are two records of the same fact, and the day they disagree is the day
+  somebody chases a family who has already paid.
+- **Money is not everybody's business.** Read is limited to the owner, billing
+  and payroll. A scheduler does not need to know what a family owes, and a
+  caregiver certainly does not — arriving at somebody's house knowing they are
+  three invoices behind changes the visit. A family cannot see their own balance
+  either; that is a decision worth revisiting rather than a default.
+
+Verified in `receivables_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -254,7 +280,7 @@ claiming nothing.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0012
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0013
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -264,4 +290,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0012`: 175 assertions across eight files.
+As of `0013`: 193 assertions across nine files.

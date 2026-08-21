@@ -1,5 +1,12 @@
 import type { Visit } from "@/domain/scheduling/conflicts";
 import { isBillable, type ClientBillingTerms } from "@/domain/billing/invoice";
+import {
+  BUCKET_LABELS,
+  receivables,
+  receivablesHeadline,
+  type IssuedInvoice,
+  type Payment,
+} from "@/domain/billing/receivables";
 import { entryHours, workweekStart, type TimeEntry } from "@/domain/payroll/hours";
 import { inRange, monthsIn, type DateRange } from "@/domain/reports/period";
 
@@ -7,17 +14,15 @@ import { inRange, monthsIn, type DateRange } from "@/domain/reports/period";
  * The six reports Karynn asked for, computed from the engines that already
  * exist rather than from a reporting table.
  *
- * THERE ARE FIVE, NOT SIX. The design carried an authorisation burn rate and it
- * has been removed rather than left empty — Karynn, 21 August: "We are all
- * private pay. We allow long term care insurance, but only for them to reimburse
- * the client once they have paid us. We don't need anything regarding
- * authorizations." A report about units a payer approved is meaningless when no
- * payer approves anything: the client pays Joy, and their insurer reimburses
- * them afterwards, which is a transaction Joy is not part of.
+ * THE SIXTH SLOT. The design carried an authorisation burn rate, which Karynn
+ * retired on 21 August — "We are all private pay... We don't need anything
+ * regarding authorizations" — and it now holds outstanding invoices, which she
+ * asked for in its place. That is the right report for an agency with no payers:
+ * every dollar owed is a family, and nothing arrives on its own.
  *
- * THE RULE THAT SHAPES THIS FILE. Two of the five need an input Joy does not
+ * THE RULE THAT SHAPES THIS FILE. Two of the six need an input Joy does not
  * have — client rates and pay rates — and both are numbers somebody would act
- * on. A margin of 47% invented from a mockup, printed next to three figures that
+ * on. A margin of 47% invented from a mockup, printed next to four figures that
  * are real, is worse than a blank page: it is indistinguishable from a computed
  * one, and somebody will price a contract off it.
  *
@@ -36,7 +41,8 @@ export type ReportKey =
   | "hours_by_service"
   | "caregiver_utilization"
   | "net_margin"
-  | "unbillable";
+  | "unbillable"
+  | "outstanding";
 
 export const REPORT_LABELS: Record<ReportKey, string> = {
   revenue_by_month: "Revenue by month",
@@ -44,6 +50,7 @@ export const REPORT_LABELS: Record<ReportKey, string> = {
   caregiver_utilization: "Caregiver utilisation",
   net_margin: "Net margin by client",
   unbillable: "Unbillable hours",
+  outstanding: "Outstanding invoices",
 };
 
 export type ReportState = "computed" | "needs_input" | "empty";
@@ -53,6 +60,15 @@ export interface ReportColumn {
   label: string;
   /** Right-aligned and tabular. */
   numeric?: boolean;
+  /**
+   * Rendered as currency.
+   *
+   * A column of money printed as a bare `1840` next to a bar chart reading
+   * "$1,840" is the sort of inconsistency that makes somebody check whether the
+   * two are the same figure — and on a financial screen, doubt about whether
+   * you are reading dollars is the whole problem.
+   */
+  money?: boolean;
 }
 
 export interface ReportResult {
@@ -191,7 +207,7 @@ export function revenueByMonth(input: {
     columns: [
       { key: "month", label: "Month" },
       { key: "hours", label: "Hours", numeric: true },
-      { key: "revenue", label: "Revenue", numeric: true },
+      { key: "revenue", label: "Revenue", numeric: true, money: true },
       { key: "unpricedHours", label: "Unpriced hours", numeric: true },
     ],
     rows,
@@ -429,8 +445,8 @@ export function netMarginByClient(input: {
     columns: [
       { key: "client", label: "Client" },
       { key: "hours", label: "Hours", numeric: true },
-      { key: "revenue", label: "Revenue", numeric: true },
-      { key: "cost", label: "Direct cost", numeric: true },
+      { key: "revenue", label: "Revenue", numeric: true, money: true },
+      { key: "cost", label: "Direct cost", numeric: true, money: true },
       { key: "margin", label: "Margin %", numeric: true },
     ],
     rows,
@@ -515,5 +531,86 @@ export function unbillableHours(input: {
     chart: { labelKey: "reason", valueKey: "hours", unit: "h" },
     note:
       "Grouped by reason rather than by client, because the fixes differ: an unpriced client is a phone call, an unstaffed shift is scheduling, and a non-billable event is working as intended.",
+  };
+}
+
+// ----------------------------------------------------------- receivables --
+
+/**
+ * Who owes Joy money, and how long they have owed it.
+ *
+ * Karynn, 21 August: Joy is all private pay. That is exactly why this is the
+ * report that matters. There is no payer to chase and no remittance advice
+ * arriving on its own — every dollar is a family, and the only thing between a
+ * late payment and a bad debt is somebody noticing.
+ *
+ * Only ISSUED invoices count. An invoice Joy computed and never sent is not a
+ * debt; a report that counted unsent weeks would turn every quiet Friday into an
+ * accounts problem.
+ *
+ * There is no period selector effect here on purpose. "Who owes us money" is a
+ * question about now, not about a window — filtering to last month would hide
+ * the ninety-day debt, which is the only one that really matters.
+ */
+export function outstandingInvoices(input: {
+  invoices: readonly IssuedInvoice[];
+  payments: readonly Payment[];
+  asOf: string;
+}): ReportResult {
+  const r = receivables(input);
+
+  if (input.invoices.length === 0) {
+    return {
+      key: "outstanding",
+      title: REPORT_LABELS.outstanding,
+      subtitle: "Money owed to Joy",
+      state: "needs_input",
+      columns: [],
+      rows: [],
+      missing: [
+        "No invoices have been issued yet.",
+        "Billing computes each week's invoice on demand; an invoice becomes a debt when it is sent, and nothing has recorded a send.",
+        "Recording payments against issued invoices is what makes this report work — see `receivables.ts`.",
+      ],
+    };
+  }
+
+  const rows = r.clients.map((c) => ({
+    client: c.clientName,
+    outstanding: c.outstanding,
+    invoices: c.invoiceCount,
+    oldest: c.oldestDaysOverdue > 0 ? `${c.oldestDaysOverdue} days` : "Not yet due",
+    bucket: BUCKET_LABELS[c.worstBucket],
+    lastPaid: c.lastPaymentOn ?? "Never",
+  }));
+
+  const credits = r.clients.filter((c) => c.credit > 0);
+
+  return {
+    key: "outstanding",
+    title: REPORT_LABELS.outstanding,
+    subtitle: receivablesHeadline(r),
+    state: rows.length === 0 ? "empty" : "computed",
+    columns: [
+      { key: "client", label: "Client" },
+      { key: "outstanding", label: "Outstanding", numeric: true, money: true },
+      { key: "invoices", label: "Invoices", numeric: true },
+      { key: "oldest", label: "Oldest" },
+      { key: "bucket", label: "Ageing" },
+      { key: "lastPaid", label: "Last payment" },
+    ],
+    rows,
+    chart: { labelKey: "client", valueKey: "outstanding", unit: "$" },
+    note: [
+      "Only invoices Joy has actually sent. A computed week nobody was billed for is not a debt.",
+      credits.length > 0
+        ? `Joy is holding $${r.totalCredit.toLocaleString()} of credit for ${credits.map((c) => c.clientName).join(", ")} — money owed back, not netted off against anybody's arrears.`
+        : "",
+      r.writtenOff.length > 0
+        ? `${r.writtenOff.length} written off and still on the record, because the pattern of write-offs is worth being able to see.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
   };
 }

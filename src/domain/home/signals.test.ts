@@ -13,6 +13,7 @@ import { seedIncidents } from "@/lib/incidentsSeed";
 import { seedCarePlans } from "@/lib/carePlanSeed";
 import { seedStartOfCare, seedSupervisoryVisits } from "@/lib/supervisionSeed";
 import { carePlanQueue } from "@/domain/carePlan/plan";
+import { classifyIncident, incidentFromVisit } from "@/domain/incidents/incidents";
 import { supervisionQueue } from "@/domain/supervision/supervision";
 
 const TODAY = "2026-08-20";
@@ -199,16 +200,32 @@ describe("what counts as urgent", () => {
   });
 
   it("marks incidents urgent when a deadline has passed, not when one is merely open", () => {
-    // The seed's second incident has a notification already overdue, which is
-    // the whole reason the signal exists: that clock belongs to somebody
-    // outside the office and nobody in it is watching it.
-    expect(signal("incidents").urgent).toBe(true);
+    // Built against TODAY rather than read from the seed. `seedIncidents` is
+    // relative to the real clock so the demo always looks live, and this test
+    // pins TODAY — so it passed in the evening and failed the next morning when
+    // the real time crossed the fixture's date. A test whose result depends on
+    // when it runs is worse than no test: it teaches people to re-run the suite
+    // until it goes green.
+    const overdue = classifyIncident({
+      incident: incidentFromVisit({
+        id: "late",
+        visitId: "v1",
+        clientPersonId: "c-1",
+        clientName: "Marcus Bell",
+        reportedByPersonId: "p1",
+        reportedByName: "Jamisha",
+        narrative: "He stumbled in the hallway.",
+        at: `${TODAY}T02:00:00Z`,
+      }),
+      kind: "fall",
+      severity: "significant",
+      byUserId: "u-karynn",
+    });
+
+    expect(build({ incidents: [overdue] }).find((s) => s.key === "incidents")!.urgent).toBe(true);
 
     const handled = build({
-      incidents: seedIncidents.map((i) => ({
-        ...i,
-        state: "closed" as const,
-      })),
+      incidents: [{ ...overdue, state: "closed" as const }],
     });
     const quiet = handled.find((s) => s.key === "incidents")!;
     expect(quiet.urgent).toBe(false);

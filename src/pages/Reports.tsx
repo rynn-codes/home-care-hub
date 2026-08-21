@@ -15,6 +15,7 @@ import {
   hoursByService,
   netMarginByClient,
   revenueByMonth,
+  outstandingInvoices,
   unbillableHours,
   type ReportKey,
   type ReportResult,
@@ -23,6 +24,7 @@ import { csvFilename, reportToCsv } from "@/domain/reports/csv";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedTimeEntries } from "@/lib/payrollSeed";
+import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 import { cn } from "@/lib/utils";
 
 /**
@@ -46,12 +48,12 @@ import { cn } from "@/lib/utils";
  * returns nothing: it is the single most decision-shaped number here, somebody
  * prices a contract off it, and Joy has neither client rates nor pay rates.
  *
- * FIVE, NOT SIX. The design had an authorisation burn rate and Karynn retired it
- * on 21 August: "We are all private pay. We allow long term care insurance, but
- * only for them to reimburse the client once they have paid us." A policy
- * reimburses the client after the client has paid Joy, so there are no
- * authorised units and no payer to bill. The slot is left empty rather than
- * filled with something nobody asked for.
+ * THE SIXTH SLOT. The design had an authorisation burn rate; Karynn retired it
+ * on 21 August — a policy reimburses the client after the client has paid Joy,
+ * so there are no authorised units and no payer to bill — and asked for
+ * outstanding invoices in its place. For an agency with no payers that is the
+ * report that matters: every dollar owed is a family, and nothing arrives on its
+ * own.
  */
 
 const ORDER: ReportKey[] = [
@@ -60,6 +62,7 @@ const ORDER: ReportKey[] = [
   "caregiver_utilization",
   "net_margin",
   "unbillable",
+  "outstanding",
 ];
 
 const PERIODS: ReportPeriod[] = ["week", "month", "last_month", "quarter"];
@@ -169,7 +172,12 @@ function ReportBody({ report }: { report: ReportResult }) {
                       c.numeric ? "text-right tabular-nums" : "text-left",
                     )}
                   >
-                    {row[c.key]}
+                    {c.money
+                      ? `$${Number(row[c.key]).toLocaleString(undefined, {
+                          minimumFractionDigits: Number.isInteger(Number(row[c.key])) ? 0 : 2,
+                          maximumFractionDigits: 2,
+                        })}`
+                      : row[c.key]}
                   </td>
                 ))}
               </tr>
@@ -213,6 +221,14 @@ export default function Reports() {
         range,
       }),
       unbillable: unbillableHours({ visits: seedVisits, terms: seedBillingTerms, range }),
+      // Deliberately not filtered by the period. "Who owes us money" is a
+      // question about now — narrowing it to last month would hide the
+      // ninety-day debt, which is the only one that really matters.
+      outstanding: outstandingInvoices({
+        invoices: seedIssuedInvoices,
+        payments: seedPayments,
+        asOf: today,
+      }),
     }),
     [range, today, nameFor],
   );

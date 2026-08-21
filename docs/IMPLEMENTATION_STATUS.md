@@ -118,8 +118,8 @@ No second frontend was created and no framework was replaced, per section 3.
   one and forgetting the other. Home's supervision signal used to read an input
   the live wiring passed as an empty array, so it printed 0 whatever was true;
   it now reads the same queue the screen does.
-- **Reports** — five of the six Karynn's design showed: revenue by month, hours
-  by service, caregiver utilisation, net margin by client, unbillable hours.
+- **Reports** — six: revenue by month, hours by service, caregiver utilisation,
+  net margin by client, unbillable hours, and outstanding invoices.
   Each computes from the engine that owns the data, so a figure here that
   disagreed with Billing or Payroll would be a bug rather than a difference of
   emphasis. Period selector and CSV export on every one.
@@ -132,13 +132,21 @@ No second frontend was created and no framework was replaced, per section 3.
   and they were indistinguishable from real ones, which is a worse failure on a
   reports page than anywhere else.
 
-  The sixth, an authorisation burn rate, was built and then removed. Karynn,
-  21 August: "We are all private pay. We allow long term care insurance, but only
-  for them to reimburse the client once they have paid us. We don't need anything
-  regarding authorizations." A policy reimburses the client after the client has
-  paid Joy; there are no authorised units and no payer to bill. An e2e test
-  asserts the report is absent so it does not return with the next design that
-  shows six slots.
+  The sixth slot held an authorisation burn rate, which Karynn retired on
+  21 August — "We are all private pay... We don't need anything regarding
+  authorizations" — and now holds **outstanding invoices**, which she asked for
+  in its place. That is the right report for an agency with no payers: there is
+  no remittance advice arriving on its own, every dollar owed is a family, and
+  the only thing between a late payment and a bad debt is somebody noticing. An
+  e2e test asserts the authorisation report is absent so it does not return with
+  the next design that shows one.
+- **Issued invoices and payments** — the model outstanding invoices needed.
+  `buildInvoice` computes a week on demand and has no identity, so nothing could
+  record that an invoice was sent or that $400 arrived against it in two
+  payments. An invoice becomes a debt when it is ISSUED; a week Joy computed and
+  never billed is not money anybody owes. Partial payments are expected,
+  overpayment is a credit rather than a negative debt, and a payment cannot be
+  edited after it is recorded — see `SECURITY_NOTES.md`.
 - **The audit trail and the outbox, in Postgres** — both were ports with
   in-memory implementations only, which meant every audit entry Joy wrote was
   discarded on the next page load. `SupabaseAuditStore` and
@@ -212,6 +220,7 @@ supabase/migrations/0009_grant_revocation.sql      withdrawing portal access, at
 supabase/migrations/0010_care_plans_incidents_supervision.sql  care plans, incidents, supervisory visits
 supabase/migrations/0011_rn_licence_and_rn_visits.sql          RN licences, the 24-hour RN visit, the yearly register
 supabase/migrations/0012_audit_trail_and_outbox_worker.sql     audit attribution, the retry column, atomic claim
+supabase/migrations/0013_invoices_and_payments.sql             issued invoices, payments, balances
 ```
 
 To verify locally:
@@ -230,6 +239,7 @@ psql -f supabase/migrations/0009_grant_revocation.sql
 psql -f supabase/migrations/0010_care_plans_incidents_supervision.sql
 psql -f supabase/migrations/0011_rn_licence_and_rn_visits.sql
 psql -f supabase/migrations/0012_audit_trail_and_outbox_worker.sql
+psql -f supabase/migrations/0013_invoices_and_payments.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -239,6 +249,7 @@ psql -f supabase/tests/visits_test.sql       # 18
 psql -f supabase/tests/charting_test.sql     # 19
 psql -f supabase/tests/care_test.sql         # 48
 psql -f supabase/tests/outbox_test.sql       # 24
+psql -f supabase/tests/receivables_test.sql  # 18
 ```
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
@@ -335,7 +346,7 @@ Recorded here so they are not only in a chat log.
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 73 tests, about two minutes
+npm run test:e2e          # 75 tests, about two minutes
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -391,8 +402,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 851 tests, `npm run test:e2e`
-passes 73, and the database suites pass 175 assertions across eight files.
+which it did not before — `npm test` passes with 871 tests, `npm run test:e2e`
+passes 75, and the database suites pass 193 assertions across nine files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

@@ -19,7 +19,7 @@ test.describe("reports", () => {
     await page.goto("/reports");
   });
 
-  test("has the five reports and the period selector", async ({ page }) => {
+  test("has the six reports and the period selector", async ({ page }) => {
     const log = watchForErrors(page);
     const nav = page.getByRole("navigation", { name: "Reports" });
 
@@ -29,6 +29,7 @@ test.describe("reports", () => {
       "Caregiver utilisation",
       "Net margin by client",
       "Unbillable hours",
+      "Outstanding invoices",
     ]) {
       await expect(nav.getByRole("button", { name: new RegExp(`^${name}`) })).toBeVisible();
     }
@@ -78,6 +79,35 @@ test.describe("reports", () => {
     // description of what the caregiver does.
     await expect(page.locator("main")).toContainText("does not separate care");
     expect(log.errors).toEqual([]);
+  });
+
+  test("outstanding invoices name the oldest debt, not just the total", async ({ page }) => {
+    // Joy is all private pay: every dollar owed is a family, and nothing
+    // arrives on its own. The total alone is the number that gets glanced at
+    // and forgotten; the age is the one that gets acted on.
+    const log = watchForErrors(page);
+    await page
+      .getByRole("navigation", { name: "Reports" })
+      .getByRole("button", { name: /^Outstanding/ })
+      .click();
+
+    await expect(page.locator("main")).toContainText(/outstanding/i);
+    await expect(page.locator("main")).toContainText(/oldest by \d+ days/);
+    await expect(page.locator("main")).toContainText("Over 90 days");
+    // An invoice Joy computed and never sent is not a debt.
+    await expect(page.locator("main")).toContainText("actually sent");
+    expect(log.errors).toEqual([]);
+  });
+
+  test("keeps a credit separate from money owed", async ({ page }) => {
+    // A family who paid twice is owed money BY Joy. Netting it off against
+    // somebody else's arrears is how it never gets returned.
+    await page
+      .getByRole("navigation", { name: "Reports" })
+      .getByRole("button", { name: /^Outstanding/ })
+      .click();
+    await expect(page.locator("main")).toContainText(/credit Joy is holding/);
+    await expect(page.locator("main")).toContainText(/money owed back, not netted off/);
   });
 
   test("changing the period changes the answer", async ({ page }) => {
