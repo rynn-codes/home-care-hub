@@ -3,7 +3,7 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 21 August 2026 (incident follow-up)
+**Last updated:** 21 August 2026 (incident follow-up, the care plan)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -97,6 +97,16 @@ No second frontend was created and no framework was replaced, per section 3.
   cannot be closed while somebody still has to be told, and cannot be closed
   with no findings. See the open decision below: the windows themselves are
   Joy's policy held as data, not a legal citation.
+- **Care plans** — the module the assessment, the consents, the caregiver's
+  visit screen and the family portal were all leaning on and none of them could
+  point at. Built from the RN's own assessment answers rather than typed a
+  second time; versioned rather than edited, so a visit charted last month still
+  reads against the plan that was in effect that day; and it invents nothing —
+  where an answer is missing the plan carries the gap and refuses to go live.
+  `tasksForVisit` now reads it. It used to return five hardcoded task labels for
+  every client, which meant a client whose care had never been planned looked
+  exactly like one whose plan was current, on the caregiver's phone and on
+  Home. Both now say so.
 - **People** — business contacts, referral sources and partners, organised
   around who can send Joy work and who has gone quiet. Karynn's scope, 18 Aug:
   "our general contact list for ancillary people". Contacts can be added,
@@ -105,10 +115,6 @@ No second frontend was created and no framework was replaced, per section 3.
 
 ## What does not exist
 
-- **The care plan.** The largest remaining gap, and the one other things lean
-  on: the assessment, several consents and the family portal all reference a
-  care plan, and none of them can point at one. Visit task lists are improvised
-  in the meantime.
 - **Supervisory visit scheduling.** The compliance clock tracks whether the
   annual supervisory visit is due and the client record shows it; nothing books
   one.
@@ -238,11 +244,21 @@ Recorded here so they are not only in a chat log.
   point and need checking against the current Texas requirements for Joy's
   licence category. The screen says so in as many words, deliberately — a
   countdown with no provenance reads as though somebody checked.
+- **How often a care plan must be reviewed.** `REVIEW_EVERY_DAYS` is 365,
+  matching the annual supervisory visit the service agreement commits to. If
+  Joy's licence category requires it sooner, it is one number.
+- **Whether a Companion Care visit at Joy is strictly non-hands-on.**
+  `SERVICE_TASK_CATEGORIES` decides which parts of a care plan appear on a
+  caregiver's task list for a given service line. It matters because a required
+  task the caregiver is not there to do cannot be answered honestly, and §11
+  blocks clock-out until it is — which teaches people to tick boxes. The
+  service agreement names the lines but does not list tasks per line, so this
+  is drawn from what the names mean rather than from a document.
 
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 43 tests, about a minute
+npm run test:e2e          # 48 tests, about a minute
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -290,8 +306,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 721 tests, `npm run test:e2e`
-passes 43, and the database suites pass 103 assertions across six files.
+which it did not before — `npm test` passes with 748 tests, `npm run test:e2e`
+passes 48, and the database suites pass 103 assertions across six files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

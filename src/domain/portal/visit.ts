@@ -1,4 +1,3 @@
-import type { Visit } from "@/domain/scheduling/conflicts";
 
 /**
  * A visit in progress — §10, §11, and §29's step 8.
@@ -221,16 +220,9 @@ export function elapsed(clock: VisitClock, asOf: Date): string | null {
   return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;
 }
 
-/** The care plan's tasks for a visit. Demo shape until the care plan is wired. */
-export function tasksForVisit(visit: Visit): CareTask[] {
-  const base: CareTask[] = [
-    { id: "bathing", label: "Bathing assistance", required: true },
-    { id: "dressing", label: "Dressing", required: true },
-    { id: "meal", label: "Meal preparation", required: true },
-    { id: "medication", label: "Medication reminder", required: true },
-    { id: "housekeeping", label: "Light housekeeping", required: false },
-  ];
-  return visit.service === "Companion Care"
-    ? base.filter((t) => t.id !== "bathing" && t.id !== "medication")
-    : base;
-}
+/**
+ * `tasksForVisit` used to live here and returned five hardcoded task labels.
+ * It now lives in `@/domain/carePlan/plan` and reads the plan that was in
+ * effect on the visit's date, so the caregiver's list, the family's care-plan
+ * row and the RN's document are the same thing rather than three copies.
+ */

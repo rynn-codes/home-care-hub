@@ -13,6 +13,8 @@ import {
 import { momentsTimeline } from "@/domain/portal/moments";
 import { seedAdmissionProgress, seedMoments } from "@/lib/familyPortalSeed";
 import { seedVisits } from "@/lib/schedulingSeed";
+import { seedCarePlans } from "@/lib/carePlanSeed";
+import { carePlanStateForFamily } from "@/domain/carePlan/plan";
 import type { StatusState } from "@/domain/portal/candidateStatus";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +44,23 @@ export default function FamilyHome() {
   const subjectName = grant?.subjectName ?? "your family member";
   const preAdmission = grant?.state === "pre_admission";
 
-  const progress = seedAdmissionProgress;
+  // The care-plan row is read from the plan itself rather than from the seed's
+  // hardcoded string. Same defect Home's priority strip had: two places holding
+  // the same fact means one of them is eventually wrong, and here the wrong one
+  // is on a daughter's phone.
+  const progress = useMemo(
+    () => ({
+      ...seedAdmissionProgress,
+      carePlanState: carePlanStateForFamily(
+        grant?.subjectPersonId
+          ? seedCarePlans.find(
+              (p) => p.clientPersonId === grant.subjectPersonId && p.state !== "superseded",
+            ) ?? null
+          : null,
+      ),
+    }),
+    [grant?.subjectPersonId],
+  );
   const next = familyNext(progress, subjectName);
 
   // Demo wiring: the busiest client on the board stands in for this family's

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PortalFrame } from "@/components/portal/PortalFrame";
 import { seedVisits } from "@/lib/schedulingSeed";
+import { seedCarePlans } from "@/lib/carePlanSeed";
+import { tasksForVisit } from "@/domain/carePlan/plan";
 import { timeRange } from "@/domain/portal/employeeHome";
 import {
   TASK_OUTCOME_LABELS,
@@ -18,7 +20,6 @@ import {
   failClockIn,
   newVisitRecord,
   requestClockIn,
-  tasksForVisit,
   type TaskOutcome,
 } from "@/domain/portal/visit";
 import type { ChartDraft, ConfirmedChart } from "@/domain/portal/charting";
@@ -60,7 +61,21 @@ export default function VisitScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const visit = useMemo(() => seedVisits.find((v) => v.id === id), [id]);
-  const tasks = useMemo(() => (visit ? tasksForVisit(visit) : []), [visit]);
+  // From the care plan that was in effect on this visit's date, not from a
+  // list this screen makes up. A client with no active plan gets no task list
+  // and is told why, which is the honest state and the one that gets fixed.
+  const tasks = useMemo(
+    () =>
+      visit?.clientPersonId
+        ? tasksForVisit({
+            plans: seedCarePlans,
+            clientPersonId: visit.clientPersonId,
+            service: visit.service,
+            date: visit.startsAt.slice(0, 10),
+          })
+        : [],
+    [visit],
+  );
 
   const { grant } = usePortalSession();
   const [record, setRecord] = useState(() => newVisitRecord(id ?? ""));
@@ -87,6 +102,7 @@ export default function VisitScreen() {
     );
   }
 
+  const isCareVisit = !visit.eventType;
   const check = completionCheck(record, tasks);
   const ready = canClockOut(record, tasks);
 
@@ -232,9 +248,28 @@ export default function VisitScreen() {
             </p>
           </div>
 
-          <p className="mt-8 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Today's care
-          </p>
+          {/* A field orientation or an RN assessment is not care delivered to a
+              client, so it has no plan and no task list — and telling somebody
+              shadowing a shift that "there is no care plan for this visit" is
+              both wrong and slightly alarming. */}
+          {isCareVisit && (
+            <p className="mt-8 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Today's care
+            </p>
+          )}
+          {isCareVisit && tasks.length === 0 && (
+            // Not a rendering nicety. The previous version of this screen made
+            // up five tasks for every visit, so a client whose care had never
+            // been planned looked exactly like one whose care had. Saying so
+            // costs the caregiver nothing — she still charts the visit — and it
+            // is the only way the office ever finds out.
+            <p className="mt-2 rounded-2xl border border-border bg-surface p-4 text-sm text-muted-foreground">
+              There is no care plan for this visit yet, so there is no task list.
+              Give the care you normally would, write it up below, and the office
+              will sort the plan out.
+            </p>
+          )}
+
           <ul className="mt-2 space-y-3">
             {tasks.map((task) => (
               <li key={task.id} className="rounded-2xl border border-border bg-surface p-4">

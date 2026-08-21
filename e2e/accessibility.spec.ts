@@ -44,6 +44,7 @@ test.describe("the admin app", () => {
     ["/operations/portal", "Portal activity"],
     ["/operations/incidents", "Incidents"],
     ["/clients", "Clients"],
+    ["/clients/care-plans", "Care plans"],
     ["/people", "People"],
     ["/payroll", "Payroll"],
     ["/billing", "Billing"],

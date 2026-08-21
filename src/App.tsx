@@ -18,6 +18,7 @@ import Assessment from "./pages/Assessment";
 import AdmissionReview from "./pages/AdmissionReview";
 import People from "./pages/People";
 import Clients from "./pages/Clients";
+import CarePlans from "./pages/CarePlans";
 import Employees from "./pages/Employees";
 import Scheduling from "./pages/Scheduling";
 import Billing from "./pages/Billing";
@@ -107,6 +108,7 @@ const App = () => (
               {/* Clients, Employees and People are siblings — see the note in
                   AppSidebar. The client record is a nested route so a link to
                   one person survives a refresh and can be sent to somebody. */}
+              <Route path="/clients/care-plans" element={<CarePlans />} />
               <Route path="/clients" element={<Clients />} />
               <Route path="/clients/:id" element={<Clients />} />
               <Route path="/employees" element={<Employees />} />

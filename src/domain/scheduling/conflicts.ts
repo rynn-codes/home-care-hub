@@ -13,6 +13,12 @@
 export interface Visit {
   id: string;
   clientName: string;
+  /**
+   * The client's person id, used to find the care plan this visit is worked
+   * under. Optional only because the older demo seeds predate the care plan;
+   * a visit without one shows no task list rather than an improvised one.
+   */
+  clientPersonId?: string;
   service: string;
   /** Null when the shift is open — unassigned and needing coverage. */
   caregiverName: string | null;

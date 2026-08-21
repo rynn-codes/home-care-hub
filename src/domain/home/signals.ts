@@ -11,6 +11,7 @@ import type { Invitation } from "@/domain/hiring/invitation";
 import type { RequestedDocument } from "@/domain/portal/familyPortal";
 import { clientCompliance, type ClientInput } from "@/domain/clients/roster";
 import { CLASSIFY_WITHIN_HOURS, incidentUrgency, type Incident } from "@/domain/incidents/incidents";
+import { carePlanQueue, type CarePlan } from "@/domain/carePlan/plan";
 
 /**
  * The figures on Home, computed from the same engines the modules use.
@@ -68,6 +69,9 @@ export interface HomeSignalInput {
   documentRequests: readonly RequestedDocument[];
   nameFor: (personId: string) => string;
   incidents: readonly Incident[];
+  carePlans: readonly CarePlan[];
+  /** The clients Joy is actually serving, for the care-plan queue. */
+  servedClients: ReadonlyArray<{ personId: string; name: string }>;
   /** Monday of the current week, for billing. */
   weekStart: string;
   payPeriod: { start: string; end: string };
@@ -125,6 +129,16 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
     return u.overdue.length > 0 || (u.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS;
   }).length;
 
+  // A client receiving care under no written plan. There was no screen in Joy
+  // that could tell you this was happening until the care plan module existed.
+  const planRows = carePlanQueue({
+    clients: input.servedClients,
+    plans: input.carePlans,
+    today,
+  });
+  const unplanned = planRows.filter((r) => r.reason === "no_plan").length;
+  const planQueue = planRows.filter((r) => r.needsYou).length;
+
   const portal = queueCounts(
     buildPortalQueue({
       moments: input.moments,
@@ -164,6 +178,21 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
           : openIncidents.length > 0
             ? "Open, nothing overdue"
             : "Nothing open",
+    },
+    {
+      key: "care-plans",
+      label: "Care plans",
+      value: String(planQueue),
+      to: "/clients/care-plans",
+      // Only an unwritten plan is urgent. A revision waiting a day is work;
+      // somebody being cared for with nothing written down is a problem.
+      urgent: unplanned > 0,
+      detail:
+        unplanned > 0
+          ? `${unplanned} with no plan at all`
+          : planQueue > 0
+            ? "Waiting on a review"
+            : "All current",
     },
     {
       key: "open-shifts",

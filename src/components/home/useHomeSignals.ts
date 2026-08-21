@@ -9,6 +9,7 @@ import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedPayrollVisits, seedTimeEntries } from "@/lib/payrollSeed";
 import { seedMoments, seedPreferences, seedRequestedDocuments } from "@/lib/familyPortalSeed";
 import { seedIncidents } from "@/lib/incidentsSeed";
+import { seedCarePlans } from "@/lib/carePlanSeed";
 
 /**
  * One place Home assembles its inputs.
@@ -40,6 +41,17 @@ export function useHomeSignals(): HomeSignal[] {
 
     return homeSignals({
       visits: seedVisits,
+      carePlans: seedCarePlans,
+      // Who Joy is actually serving, taken from the schedule — the same
+      // derivation the Care plans screen uses, so the two agree by
+      // construction rather than by both being maintained.
+      servedClients: [
+        ...new Map(
+          seedVisits
+            .filter((v) => v.clientPersonId)
+            .map((v) => [v.clientPersonId!, { personId: v.clientPersonId!, name: v.clientName }]),
+        ).values(),
+      ],
       applicants: seedApplicants,
       workforce,
       requirements: seedCredentialRequirements,

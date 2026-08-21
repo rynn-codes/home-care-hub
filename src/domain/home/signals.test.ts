@@ -10,6 +10,8 @@ import { seedApplicants } from "@/lib/hiringSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedPayrollVisits, seedTimeEntries } from "@/lib/payrollSeed";
 import { seedIncidents } from "@/lib/incidentsSeed";
+import { seedCarePlans } from "@/lib/carePlanSeed";
+import { carePlanQueue } from "@/domain/carePlan/plan";
 
 const TODAY = "2026-08-20";
 
@@ -29,6 +31,14 @@ function build(over: Partial<HomeSignalInput> = {}) {
     invitations: [],
     documentRequests: [],
     incidents: seedIncidents,
+    carePlans: seedCarePlans,
+    servedClients: [
+      ...new Map(
+        seedVisits
+          .filter((v) => v.clientPersonId)
+          .map((v) => [v.clientPersonId!, { personId: v.clientPersonId!, name: v.clientName }]),
+      ).values(),
+    ],
     nameFor: (id: string) => id,
     weekStart: "2026-08-17",
     payPeriod: { start: "2026-08-07", end: TODAY },
@@ -71,6 +81,27 @@ describe("Home agrees with the modules", () => {
   it("counts the same open incidents the Incidents screen does", () => {
     const open = seedIncidents.filter((i) => i.state !== "closed");
     expect(signal("incidents").value).toBe(String(open.length));
+  });
+
+  it("counts the same care-plan work the Care plans screen does", () => {
+    const served = [
+      ...new Map(
+        seedVisits
+          .filter((v) => v.clientPersonId)
+          .map((v) => [v.clientPersonId!, { personId: v.clientPersonId!, name: v.clientName }]),
+      ).values(),
+    ];
+    const needing = carePlanQueue({ clients: served, plans: seedCarePlans, today: TODAY }).filter(
+      (r) => r.needsYou,
+    );
+    expect(signal("care-plans").value).toBe(String(needing.length));
+  });
+
+  it("is only urgent about care plans when somebody has none", () => {
+    // A revision waiting a day is work. Somebody being cared for with nothing
+    // written down is a problem, and Home has to tell them apart.
+    expect(signal("care-plans").urgent).toBe(true);
+    expect(signal("care-plans").detail).toMatch(/no plan at all/);
   });
 
   it("links every signal to the screen that computed it", () => {
@@ -156,6 +187,8 @@ describe("what counts as urgent", () => {
       payrollVisits: [],
       payrollPeople: [],
       incidents: [],
+      carePlans: [],
+      servedClients: [],
     });
     expect(quiet.every((s) => !s.urgent)).toBe(true);
   });
