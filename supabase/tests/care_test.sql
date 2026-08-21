@@ -59,10 +59,30 @@ auth_sched as (insert into auth.users (id, email) values (gen_random_uuid(), 'sc
 auth_cg as (insert into auth.users (id, email) values (gen_random_uuid(), 'cg@x.com') returning id),
 auth_other as (insert into auth.users (id, email) values (gen_random_uuid(), 'oth@x.com') returning id),
 auth_dau as (insert into auth.users (id, email) values (gen_random_uuid(), 'dau@x.com') returning id),
+-- Karynn holds a current RN licence. 0011 checks the licence rather than the
+-- role, and this fixture caught the change: with the title alone she could not
+-- record a supervisory visit, which is right — a clinical manager whose licence
+-- lapsed still has the title.
 u_rn as (
-  insert into users (organization_id, auth_user_id, first_name, last_name, email, role, status)
-  select org.id, auth_rn.id, 'Karynn', 'V', 'rn@x.com', 'rn_clinical', 'active'
+  insert into users (
+    organization_id, auth_user_id, first_name, last_name, email, role, status,
+    rn_licence_number, rn_licence_state, rn_licence_expires
+  )
+  select org.id, auth_rn.id, 'Karynn', 'V', 'rn@x.com', 'rn_clinical', 'active',
+         'RN-TEST-1', 'TX', current_date + 200
   from org, auth_rn returning id
+),
+-- A second nurse whose licence lapsed last month. The case a role check cannot
+-- see at all.
+auth_lapsed as (insert into auth.users (id, email) values (gen_random_uuid(), 'lapsed@x.com') returning id),
+u_lapsed as (
+  insert into users (
+    organization_id, auth_user_id, first_name, last_name, email, role, status,
+    rn_licence_number, rn_licence_state, rn_licence_expires
+  )
+  select org.id, auth_lapsed.id, 'Nadia', 'P', 'lapsed@x.com', 'rn_clinical', 'active',
+         'RN-TEST-2', 'TX', current_date - 30
+  from org, auth_lapsed returning id
 ),
 u_sched as (
   insert into users (organization_id, auth_user_id, first_name, last_name, email, role, status)
@@ -176,14 +196,15 @@ select org.id as org_id, other_org.id as other_org_id,
        client_a.id as client_a, client_b.id as client_b,
        caregiver.id as caregiver, other_caregiver.id as other_caregiver, daughter.id as daughter,
        auth_rn.id as auth_rn, auth_sched.id as auth_sched, auth_cg.id as auth_cg,
+       auth_lapsed.id as auth_lapsed,
        auth_other.id as auth_other, auth_dau.id as auth_dau,
-       u_rn.id as u_rn, u_sched.id as u_sched, u_cg.id as u_cg,
+       u_rn.id as u_rn, u_sched.id as u_sched, u_cg.id as u_cg, u_lapsed.id as u_lapsed,
        plan_live.id as plan_live, plan_draft.id as plan_draft, plan_other.id as plan_other,
        task_live.id as task_live, inc.id as inc, inc_other.id as inc_other,
        notif_rn.id as notif_rn, notif_rp.id as notif_rp, sv.id as sv
 from org, other_org, client_a, client_b, caregiver, other_caregiver, daughter,
-     auth_rn, auth_sched, auth_cg, auth_other, auth_dau,
-     u_rn, u_sched, u_cg, u_other, u_dau, g_cg, g_other, g_dau,
+     auth_rn, auth_sched, auth_cg, auth_other, auth_dau, auth_lapsed,
+     u_rn, u_sched, u_cg, u_other, u_dau, u_lapsed, g_cg, g_other, g_dau,
      v_assigned, plan_live, plan_draft, plan_other, task_live,
      inc, inc_other, notif_rn, notif_rp, sv;
 
@@ -459,6 +480,122 @@ begin
   perform act_as(f.auth_dau);
   select count(*) into visible from supervisory_visits where id = f.sv;
   perform assert(visible = 0, 'nor does the family');
+
+  -- ================================ Karynn's rules, 21 August (0011) ==== --
+
+  raise notice 'The office is told about every incident, from the report itself';
+  perform act_as(f.auth_cg);
+  insert into incidents (organization_id, client_person_id, reported_by_person_id, narrative)
+  values (f.org_id, f.client_a, f.caregiver, 'She would not get out of bed this morning.')
+  returning id into new_id;
+
+  perform act_as(f.auth_rn);
+  select count(*) into visible
+  from incident_notifications
+  where incident_id = new_id and party = 'administrator';
+  perform assert(
+    visible = 1,
+    'a caregiver reporting an incident creates the office notification she could not write herself'
+  );
+
+  raise notice 'A registered nurse, not a job title';
+  begin
+    -- Nadia is `rn_clinical` and her licence lapsed last month. A role check
+    -- cannot see the difference; this is the whole reason 0011 exists.
+    update supervisory_visits
+    set completed_at = now(), completed_by_user_id = f.u_lapsed, findings = 'Looked in.'
+    where id = f.sv;
+    perform assert(false, 'a nurse with a lapsed licence cannot record a supervisory visit');
+  exception when check_violation then
+    perform assert(true, 'a nurse with a lapsed licence cannot record a supervisory visit');
+  end;
+
+  perform assert(user_is_rn(f.u_rn), 'Karynn holds a current licence');
+  perform assert(not user_is_rn(f.u_lapsed), 'Nadia does not, despite the title');
+  perform assert(not user_is_rn(f.u_sched), 'and a scheduler never did');
+
+  raise notice 'A licence is a number, a state and an expiry, or it is nothing';
+  -- Checked as the owner, deliberately. This is a CHECK constraint, not a
+  -- policy: it applies to everybody, and running it under `authenticated` would
+  -- have proved nothing — the users update policy filters the row out, the
+  -- statement matches nothing, and the absence of an exception reads as a pass.
+  -- That trap has already cost this repository one wrong assertion.
+  execute 'set local role postgres';
+  begin
+    update users set rn_licence_number = 'RN-9' where id = f.u_sched;
+    perform assert(false, 'a licence number with no expiry was refused');
+  exception when check_violation then
+    perform assert(true, 'a licence number with no expiry was refused');
+  end;
+  execute 'set local role authenticated';
+
+  raise notice 'An RN visit, which is not the same as ringing an RN';
+  update incidents
+  set kind = 'fall', severity = 'significant', state = 'under_review',
+      classified_by_user_id = f.u_rn, classified_at = now(),
+      rn_visit_due_by = now() + interval '18 hours'
+  where id = new_id;
+
+  begin
+    update incidents set rn_visit_done_at = now(), rn_visit_by_user_id = f.u_lapsed,
+                         rn_visit_findings = 'Seen.'
+    where id = new_id;
+    perform assert(false, 'a lapsed nurse cannot record the visit either');
+  exception when check_violation then
+    perform assert(true, 'a lapsed nurse cannot record the visit either');
+  end;
+
+  begin
+    update incidents set rn_visit_done_at = now(), rn_visit_by_user_id = f.u_rn,
+                         rn_visit_findings = '   '
+    where id = new_id;
+    perform assert(false, 'a visit with no findings was refused');
+  exception when check_violation then
+    perform assert(true, 'a visit with no findings was refused');
+  end;
+
+  update incident_notifications set done_at = now(), done_by_user_id = f.u_rn
+  where incident_id = new_id;
+
+  begin
+    update incidents
+    set state = 'closed', findings = 'Reviewed.', closed_by_user_id = f.u_rn, closed_at = now()
+    where id = new_id;
+    perform assert(false, 'closing while a nurse still has to see the client was refused');
+  exception when check_violation then
+    perform assert(true, 'closing while a nurse still has to see the client was refused');
+  end;
+
+  update incidents set rn_visit_done_at = now(), rn_visit_by_user_id = f.u_rn,
+                       rn_visit_findings = 'Seen at home. Walking normally.'
+  where id = new_id;
+
+  update incidents
+  set state = 'closed', findings = 'Reviewed.', closed_by_user_id = f.u_rn, closed_at = now()
+  where id = new_id;
+  perform assert(
+    (select state from incidents where id = new_id) = 'closed',
+    'and it closes once she has been'
+  );
+
+  raise notice 'The yearly register is the incidents, not a copy of them';
+  select count(*) into visible
+  from annual_incident_log
+  where id = new_id and year = extract(year from now())::int;
+  perform assert(visible = 1, 'the incident appears in the register for the year it was reported');
+
+  perform assert(
+    (select rn_visit_required from annual_incident_log where id = new_id),
+    'the register records that a visit was required'
+  );
+
+  raise notice 'And the register obeys the same row level security the table does';
+  perform act_as(f.auth_dau);
+  select count(*) into visible from annual_incident_log where id = new_id;
+  perform assert(
+    visible = 0,
+    'a family reads no incidents through the view either — security_invoker, not a way around RLS'
+  );
 
   raise notice 'ALL CARE PLAN, INCIDENT AND SUPERVISION ASSERTIONS PASSED';
 end;

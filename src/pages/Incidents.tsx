@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AlertTriangle, Check, Clock, ShieldAlert } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,15 @@ import {
   closeRefusals,
   incidentUrgency,
   recordNotification,
+  recordRnVisit,
   sortIncidents,
   type Incident,
   type IncidentKind,
   type IncidentSeverity,
 } from "@/domain/incidents/incidents";
 import { seedIncidents } from "@/lib/incidentsSeed";
+import { isRegisteredNurse, rnRefusal } from "@/domain/clinical/registeredNurse";
+import { useDemo } from "@/context/DemoDataProvider";
 import { cn } from "@/lib/utils";
 
 /**
@@ -55,9 +59,11 @@ const ADMIN = "u-karynn";
 
 function IncidentCard({
   incident,
+  isRn,
   onChange,
 }: {
   incident: Incident;
+  isRn: boolean;
   onChange: (next: Incident) => void;
 }) {
   const now = new Date().toISOString();
@@ -69,17 +75,25 @@ function IncidentCard({
   // was, and a distracted tap on Classify records that decision as theirs.
   const [severity, setSeverity] = useState<IncidentSeverity | null>(incident.severity ?? null);
   const [findings, setFindings] = useState(incident.findings ?? "");
+  const [visitFindings, setVisitFindings] = useState("");
 
   const late =
-    urgency.overdue.length > 0 || (urgency.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS;
+    urgency.rnVisitOverdue ||
+    urgency.overdue.length > 0 ||
+    (urgency.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS;
   const refusals = closeRefusals({ ...incident, findings: findings.trim() || null });
 
   return (
     <li
       className={cn(
         "rounded-2xl border bg-surface p-5",
+        // Not `opacity-70`. Dimming the card dims its text too, and a closed
+        // incident's narrative and findings dropped to 3.03:1 — the part of the
+        // record somebody actually reads back later became the least legible
+        // thing on the screen. A quieter background says "done" without making
+        // it harder to read.
         incident.state === "closed"
-          ? "border-border opacity-70"
+          ? "border-border bg-surface-muted"
           : late
             ? "border-destructive/40"
             : "border-border",
@@ -236,6 +250,87 @@ function IncidentCard({
         </div>
       )}
 
+      {/* ----------------------------------------------------- RN visit -- */}
+      {incident.rnVisit && (
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            RN visit
+          </p>
+
+          {incident.rnVisit.doneAt ? (
+            <p className="mt-2 flex flex-wrap items-baseline gap-2 text-sm">
+              <Check
+                className="h-3.5 w-3.5 shrink-0 translate-y-0.5 text-[hsl(var(--success))]"
+                aria-hidden="true"
+              />
+              <span>{incident.rnVisit.findings}</span>
+              <span className="text-xs text-muted-foreground">
+                Seen {incident.rnVisit.doneAt.slice(0, 16).replace("T", " ")}
+              </span>
+            </p>
+          ) : (
+            <>
+              <p
+                className={cn(
+                  "mt-2 text-sm",
+                  Date.parse(incident.rnVisit.dueBy) < Date.parse(now)
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+                )}
+              >
+                {/* A phone call to the RN is not a nurse looking at the client.
+                    Without this, an incident with every notification ticked
+                    reads as handled by somebody who never saw the person. */}
+                An RN has to see {incident.clientName.split(" ")[0]} by{" "}
+                {incident.rnVisit.dueBy.slice(0, 16).replace("T", " ")}.
+              </p>
+
+              <label
+                htmlFor={`rn-visit-${incident.id}`}
+                className="mt-3 block text-xs font-medium"
+              >
+                What did the nurse find?
+              </label>
+              <Textarea
+                id={`rn-visit-${incident.id}`}
+                rows={2}
+                className="mt-1"
+                value={visitFindings}
+                onChange={(e) => setVisitFindings(e.target.value)}
+                placeholder="What she saw when she got there."
+                disabled={!isRn}
+              />
+
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <Button
+                  size="sm"
+                  disabled={!isRn || !visitFindings.trim()}
+                  onClick={() => {
+                    onChange(
+                      recordRnVisit({
+                        incident,
+                        findings: visitFindings,
+                        byUserId: ADMIN,
+                        isRn,
+                        at: new Date().toISOString(),
+                      }),
+                    );
+                    toast.success("RN visit recorded");
+                  }}
+                >
+                  Record the visit
+                </Button>
+                {!isRn && (
+                  <p className="text-xs text-muted-foreground">
+                    An RN visit is recorded by a registered nurse.
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {/* --------------------------------------------------------- close -- */}
       {incident.state === "under_review" && (
         <div className="mt-4 space-y-2 border-t border-border pt-4">
@@ -284,14 +379,22 @@ function IncidentCard({
 }
 
 export default function Incidents() {
+  const { currentUser } = useDemo();
   const [incidents, setIncidents] = useState<Incident[]>(seedIncidents);
   const now = useMemo(() => new Date().toISOString(), []);
+  const isRn = isRegisteredNurse(currentUser, now);
 
   const ordered = sortIncidents(incidents, now);
   const open = incidents.filter((i) => i.state !== "closed").length;
   const late = incidents.filter((i) => {
     const u = incidentUrgency(i, now);
-    return i.state !== "closed" && (u.overdue.length > 0 || (u.unclassifiedFor ?? 0) >= 2);
+    return (
+      i.state !== "closed" &&
+      (u.rnVisitOverdue ||
+        u.overdue.length > 0 ||
+        // The exported threshold, not a second copy of the number.
+        (u.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS)
+    );
   }).length;
 
   return (
@@ -299,6 +402,11 @@ export default function Incidents() {
       <PageHeader
         title="Incidents"
         description="Everything a caregiver reported at clock-out, and who still has to be told."
+        actions={
+          <Button variant="outline" asChild>
+            <Link to="/operations/incidents/annual">Yearly report</Link>
+          </Button>
+        }
       />
 
       <p className="mb-6 text-sm text-muted-foreground">
@@ -311,6 +419,7 @@ export default function Incidents() {
           <IncidentCard
             key={incident.id}
             incident={incident}
+            isRn={isRn}
             onChange={(next) =>
               setIncidents((all) => all.map((i) => (i.id === next.id ? next : i)))
             }

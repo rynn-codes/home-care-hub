@@ -173,6 +173,41 @@ its audience.
 
 Verified in `care_test.sql`.
 
+`0011` changes a model rather than adding a rule. Karynn, 21 August:
+"supervisory visits can only be done by an RN." That looks like a one-word
+narrowing of the role check and is not — narrowing it to `rn_clinical` would
+have locked her out of the task she personally does, because her user row says
+`ceo_admin`. She is the owner AND the nurse, and `user_role` cannot say both.
+
+So `users` now carries an RN licence — number, state and expiry, all three or
+none — and every rule that asks "is this person a nurse" calls `user_is_rn()`,
+which compares the expiry against today. `user_role` describes a job at Joy; an
+RN licence is issued to a person by the Texas Board of Nursing and it lapses.
+The case that proves the difference is a clinical manager whose licence expired
+last month: same title, must stop doing supervisory visits today. A role check
+cannot see that at all, and `care_test.sql` asserts it.
+
+Three more rules land below the application:
+
+- **A caregiver's incident report creates the office's obligation.** A trigger,
+  and the one legitimate `security definer` in this migration: she may not write
+  notification rows — who the office told and when is the office's record — but
+  her report is exactly what must create the obligation. Running as the invoker
+  made her insert fail with an RLS violation, which would have meant a caregiver
+  simply could not report an incident.
+- **An incident cannot close while a nurse still has to see the client.** Folded
+  into the existing pending-notifications trigger rather than added beside it,
+  so the two conditions cannot be checked in different orders and give different
+  reasons for the same refusal.
+- **An RN visit is recorded by an RN**, by licence, same as a supervisory visit.
+
+The yearly incident register is a **view**, not a table, and
+`security_invoker = on` is what makes that safe: the reader's own permissions
+apply, so 0010's incidents policies govern the register exactly as they govern
+the table. Without it the view would run as its owner and become a way around
+row level security — a family would read every incident in the agency through
+it. `care_test.sql` asserts a family reads none.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -192,7 +227,7 @@ Verified in `care_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0010
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0011
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -202,4 +237,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0010`: 138 assertions across seven files.
+As of `0011`: 151 assertions across seven files.

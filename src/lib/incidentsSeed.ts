@@ -1,4 +1,11 @@
-import { classifyIncident, incidentFromVisit, recordNotification, type Incident } from "@/domain/incidents/incidents";
+import {
+  classifyIncident,
+  closeIncident,
+  incidentFromVisit,
+  recordNotification,
+  recordRnVisit,
+  type Incident,
+} from "@/domain/incidents/incidents";
 
 /**
  * Incidents for the demo.
@@ -69,4 +76,60 @@ const nearlyDone = recordNotification({
   at: hoursAgo(28),
 });
 
-export const seedIncidents: Incident[] = [untouched, overdue, nearlyDone];
+/**
+ * A fall from two days ago where the RN visit was made.
+ *
+ * Karynn, 21 August: "depending on what it is, an RN visit needs to be made
+ * within 24 hours." Without one of these in the seed the yearly report would
+ * show nothing but misses, and a screen that can only display failure
+ * demonstrates as little as one that can only display success.
+ */
+const handledProperly = recordRnVisit({
+  incident: (() => {
+    let incident = classifyIncident({
+      incident: incidentFromVisit({
+        id: "inc-4",
+        visitId: "v1",
+        clientPersonId: "c-lian",
+        clientName: "Lian Huang",
+        reportedByPersonId: "p-chanel",
+        reportedByName: "Chanel P.",
+        narrative:
+          "She lost her balance coming out of the bathroom and caught herself on the grab bar. " +
+          "She did not go down. I stayed with her until she was settled.",
+        at: hoursAgo(50),
+      }),
+      kind: "fall",
+      severity: "minor",
+      byUserId: "u-karynn",
+    });
+    for (const n of incident.notifications) {
+      incident = recordNotification({
+        incident,
+        party: n.party,
+        note: "Called",
+        byUserId: "u-karynn",
+        at: hoursAgo(49),
+      });
+    }
+    return incident;
+  })(),
+  findings: "Seen at home the same afternoon. No injury, walking normally, grab bar checked.",
+  byUserId: "u-karynn",
+  isRn: true,
+  at: hoursAgo(46),
+});
+
+export const seedIncidents: Incident[] = [
+  untouched,
+  overdue,
+  nearlyDone,
+  closeIncident({
+    incident: {
+      ...handledProperly,
+      findings: "No injury. The bathroom mat has been replaced with a non-slip one.",
+    },
+    byUserId: "u-karynn",
+    at: hoursAgo(44),
+  }),
+];

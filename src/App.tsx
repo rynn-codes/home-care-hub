@@ -11,7 +11,9 @@ import Dashboard from "./pages/Dashboard";
 import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
 import PortalActivity from "./pages/PortalActivity";
+import Audit from "./pages/Audit";
 import Incidents from "./pages/Incidents";
+import IncidentReport from "./pages/IncidentReport";
 import Admissions from "./pages/Admissions";
 import PhoneIntake from "./pages/PhoneIntake";
 import Assessment from "./pages/Assessment";
@@ -99,7 +101,9 @@ const App = () => (
               <Route path="/operations" element={<Operations />} />
               <Route path="/operations/hiring" element={<Hiring />} />
               <Route path="/operations/portal" element={<PortalActivity />} />
+              <Route path="/operations/audit" element={<Audit />} />
               <Route path="/operations/incidents" element={<Incidents />} />
+              <Route path="/operations/incidents/annual" element={<IncidentReport />} />
 
               <Route path="/admissions" element={<Admissions />} />
               <Route path="/admissions/:id/intake" element={<PhoneIntake />} />

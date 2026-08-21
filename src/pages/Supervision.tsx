@@ -20,6 +20,8 @@ import { activePlan, reviewDueOn, type CarePlan } from "@/domain/carePlan/plan";
 import { seedCarePlans } from "@/lib/carePlanSeed";
 import { seedStartOfCare, seedSupervisoryVisits } from "@/lib/supervisionSeed";
 import { seedVisits } from "@/lib/schedulingSeed";
+import { isRegisteredNurse, rnRefusal } from "@/domain/clinical/registeredNurse";
+import { useDemo } from "@/context/DemoDataProvider";
 import { cn } from "@/lib/utils";
 
 const RN = "u-karynn";
@@ -42,11 +44,13 @@ function clientsOnTheSchedule() {
 function Row({
   status,
   plan,
+  isRn,
   onBook,
   onComplete,
 }: {
   status: SupervisionStatus;
   plan: CarePlan | null;
+  isRn: boolean;
   onBook: (visit: SupervisoryVisit) => void;
   onComplete: (visit: SupervisoryVisit, plan: CarePlan | null) => void;
 }) {
@@ -55,7 +59,7 @@ function Row({
   const [planReviewed, setPlanReviewed] = useState(true);
 
   const booked = status.booked;
-  const refusals = booked ? completionRefusals(booked, findings) : [];
+  const refusals = booked ? completionRefusals(booked, findings, isRn) : [];
 
   return (
     <li
@@ -179,6 +183,7 @@ function Row({
                   carePlanReviewed: planReviewed,
                   plan,
                   byUserId: RN,
+                  isRn,
                   at: new Date().toISOString(),
                 });
                 onComplete(out.visit, out.plan);
@@ -202,11 +207,15 @@ function Row({
 }
 
 export default function Supervision() {
+  const { currentUser } = useDemo();
   const [visits, setVisits] = useState<SupervisoryVisit[]>(seedSupervisoryVisits);
   const [plans, setPlans] = useState<CarePlan[]>(seedCarePlans);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const clients = useMemo(clientsOnTheSchedule, []);
 
+  // Karynn, 21 August: "Supervisory visits can only be done by an RN." A
+  // licence rather than a role — she is the owner and the nurse both.
+  const isRn = isRegisteredNurse(currentUser, today);
   const rows = supervisionQueue({ clients, visits, today });
   const overdue = rows.filter((r) => r.daysRemaining < 0 && !r.booked).length;
 
@@ -225,12 +234,22 @@ export default function Supervision() {
         {rows.filter((r) => r.booked).length} booked
       </p>
 
+      {!isRn && (
+        // Said once at the top rather than repeated on every card, and said to
+        // the person rather than about them: a blocked screen that does not
+        // explain itself gets worked around.
+        <p className="mb-6 rounded-2xl border border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)] p-4 text-sm">
+          {rnRefusal(currentUser, today)} You can still book visits and see what is due.
+        </p>
+      )}
+
       <ul className="space-y-4">
         {rows.map((row) => (
           <Row
             key={row.clientPersonId}
             status={row}
             plan={activePlan(plans, row.clientPersonId)}
+            isRn={isRn}
             onBook={(visit) => setVisits((all) => [...all, visit])}
             onComplete={(visit, plan) => {
               setVisits((all) => all.map((v) => (v.id === visit.id ? visit : v)));

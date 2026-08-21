@@ -135,6 +135,63 @@ export const NOTIFICATION_POLICY: Record<IncidentKind, NotificationRule[]> = {
 /** Kinds Joy treats as serious regardless of what anybody selects. */
 export const ALWAYS_SERIOUS: readonly IncidentKind[] = ["allegation", "death", "missing_client"];
 
+/**
+ * The office is told about every incident, before anybody classifies it.
+ *
+ * KARYNN, 21 AUGUST: "Incidents are important and myself/admin/operational
+ * staff needs to know about an incident report."
+ *
+ * Note where this sits. It is NOT a row in `NOTIFICATION_POLICY`, because that
+ * table is keyed on kind and a kind is something the office decides *later* —
+ * so a policy row could not fire until somebody had already looked. That was a
+ * real hole: an incident reported at ten at night and unclassified until
+ * morning carried zero notifications and therefore nobody's name, which is the
+ * exact situation her sentence is about.
+ *
+ * So this obligation is created by the report itself. It is the one thing that
+ * does not wait for a judgement, because knowing is what makes the judgement
+ * possible.
+ */
+export const OFFICE_ALWAYS_TOLD: NotificationRule = {
+  party: "administrator",
+  withinHours: 1,
+  because: "Karynn's rule: the office hears about every incident, before anybody classifies it.",
+};
+
+/**
+ * Kinds where an RN has to lay eyes on the client.
+ *
+ * KARYNN, 21 AUGUST: "depending on what it is, an RN visit needs to be made
+ * within 24 hours."
+ *
+ * A notification and a visit are different obligations and this is the
+ * distinction that was missing: telling the RN by phone at eleven at night is
+ * not the same as somebody going out to look at the client, and an incident
+ * list that only tracked the call would show a fall as fully handled when
+ * nobody had seen the person since.
+ *
+ * FLAGGED FOR KARYNN, same as the notification windows. She said "depending on
+ * what it is" and did not say which, so this is a conservative starting point:
+ * anything where a person might be hurt and nobody clinical has looked.
+ * Property damage and a behavioural note are not on it; anything classified
+ * `serious` is, whatever its kind.
+ */
+export const RN_VISIT_KINDS: readonly IncidentKind[] = [
+  "fall",
+  "injury",
+  "medication_error",
+  "missing_client",
+  "allegation",
+  "death",
+];
+
+/** Her number, and the only one she gave. */
+export const RN_VISIT_WITHIN_HOURS = 24;
+
+export function rnVisitRequired(kind: IncidentKind, severity: IncidentSeverity): boolean {
+  return severity === "serious" || RN_VISIT_KINDS.includes(kind);
+}
+
 export type IncidentState = "reported" | "under_review" | "closed";
 
 export interface Notification {
@@ -144,6 +201,21 @@ export interface Notification {
   doneByUserId: string | null;
   /** How it was done — a call, a message, a form. */
   note: string | null;
+}
+
+/**
+ * An RN going out to see the client, which is not the same as ringing one.
+ *
+ * `doneByUserId` is checked against an RN licence rather than a role — see
+ * `domain/clinical/registeredNurse.ts` for why the two are not the same
+ * question.
+ */
+export interface RnVisit {
+  dueBy: string;
+  doneAt: string | null;
+  doneByUserId: string | null;
+  /** What the nurse found when she got there. Required to record the visit. */
+  findings: string | null;
 }
 
 export interface Incident {
@@ -163,6 +235,8 @@ export interface Incident {
   severity: IncidentSeverity | null;
   state: IncidentState;
   notifications: Notification[];
+  /** Null until classified, and null after if this kind does not need one. */
+  rnVisit: RnVisit | null;
 
   /** What the office found, once somebody has looked. */
   findings: string | null;
@@ -207,7 +281,18 @@ export function incidentFromVisit(input: {
     kind: null,
     severity: null,
     state: "reported",
-    notifications: [],
+    // The office is on the hook from the moment this exists, not from whenever
+    // somebody gets round to classifying it.
+    notifications: [
+      {
+        party: OFFICE_ALWAYS_TOLD.party,
+        dueBy: addHours(input.at, OFFICE_ALWAYS_TOLD.withinHours),
+        doneAt: null,
+        doneByUserId: null,
+        note: null,
+      },
+    ],
+    rnVisit: null,
     findings: null,
     actionTaken: null,
     closedAt: null,
@@ -239,19 +324,88 @@ export function classifyIncident(input: {
   }
 
   const severity = ALWAYS_SERIOUS.includes(input.kind) ? "serious" : input.severity;
+  const { reportedAt } = input.incident;
+
+  // Merged, not replaced. The administrator notification was created when the
+  // incident was reported and may already have been done — rebuilding the list
+  // from the policy would silently un-tell the office, and the record would
+  // then say nobody had rung Karynn about a fall somebody had rung her about.
+  const existing = new Map(input.incident.notifications.map((n) => [n.party, n]));
+
+  const fromPolicy = [OFFICE_ALWAYS_TOLD, ...NOTIFICATION_POLICY[input.kind]];
+  const notifications: Notification[] = [];
+
+  for (const rule of fromPolicy) {
+    const dueBy = addHours(reportedAt, rule.withinHours);
+    const already = existing.get(rule.party);
+    existing.delete(rule.party);
+
+    notifications.push(
+      already
+        ? // Keep whichever deadline is sooner. Classification can make an
+          // obligation more urgent; it must never buy anybody more time.
+          { ...already, dueBy: already.dueBy < dueBy ? already.dueBy : dueBy }
+        : { party: rule.party, dueBy, doneAt: null, doneByUserId: null, note: null },
+    );
+  }
+  // Anything already recorded that the policy does not mention stays. Somebody
+  // rang them; the record keeps that.
+  notifications.push(...existing.values());
 
   return {
     ...input.incident,
     kind: input.kind,
     severity,
     state: "under_review",
-    notifications: NOTIFICATION_POLICY[input.kind].map((rule) => ({
-      party: rule.party,
-      dueBy: addHours(input.incident.reportedAt, rule.withinHours),
-      doneAt: null,
-      doneByUserId: null,
-      note: null,
-    })),
+    notifications,
+    rnVisit: rnVisitRequired(input.kind, severity)
+      ? {
+          // From when it was reported, like every other clock here — an
+          // incident nobody classified until Monday does not get a fresh
+          // 24 hours on Monday.
+          dueBy: addHours(reportedAt, RN_VISIT_WITHIN_HOURS),
+          doneAt: null,
+          doneByUserId: null,
+          findings: null,
+        }
+      : null,
+  };
+}
+
+/**
+ * Record that a nurse went out and what she found.
+ *
+ * `isRn` is passed in rather than looked up, so this function stays pure and so
+ * the check has one home: `isRegisteredNurse` in domain/clinical. Karynn's rule
+ * is about a licence, not a job title, and this is the second place that
+ * matters after supervisory visits.
+ */
+export function recordRnVisit(input: {
+  incident: Incident;
+  findings: string;
+  byUserId: string | null;
+  isRn: boolean;
+  at: string;
+}): Incident {
+  if (!input.incident.rnVisit) {
+    throw new Error("This incident does not require an RN visit.");
+  }
+  if (!input.byUserId) throw new Error("Recording an RN visit needs the nurse who made it.");
+  if (!input.isRn) {
+    throw new Error("An RN visit has to be recorded by a registered nurse.");
+  }
+  if (!input.findings.trim()) {
+    throw new Error("Write down what you found. A visit with no findings is a date in a file.");
+  }
+
+  return {
+    ...input.incident,
+    rnVisit: {
+      ...input.incident.rnVisit,
+      doneAt: input.at,
+      doneByUserId: input.byUserId,
+      findings: input.findings.trim(),
+    },
   };
 }
 
@@ -276,11 +430,17 @@ export function recordNotification(input: {
 
 // ------------------------------------------------------------- closing --
 
-export type CloseRefusal = "not_classified" | "notifications_outstanding" | "no_findings";
+export type CloseRefusal =
+  | "not_classified"
+  | "notifications_outstanding"
+  | "rn_visit_outstanding"
+  | "no_findings";
 
 export const CLOSE_MESSAGES: Record<CloseRefusal, string> = {
   not_classified: "Classify it first — the notifications depend on what kind it is.",
   notifications_outstanding: "Somebody still has to be told. Record that before closing.",
+  rn_visit_outstanding:
+    "An RN still has to see the client. Record that visit before closing this.",
   no_findings: "Write down what you found. A closed incident with no findings is a gap in the file.",
 };
 
@@ -289,6 +449,10 @@ export function closeRefusals(incident: Incident): CloseRefusal[] {
 
   if (!incident.kind) refusals.push("not_classified");
   if (incident.notifications.some((n) => !n.doneAt)) refusals.push("notifications_outstanding");
+  // A phone call to the RN is not a nurse looking at the client. Closing on the
+  // call alone is how a fall gets filed as handled by somebody who never saw
+  // the person it happened to.
+  if (incident.rnVisit && !incident.rnVisit.doneAt) refusals.push("rn_visit_outstanding");
   if (!incident.findings?.trim()) refusals.push("no_findings");
 
   return refusals;
@@ -331,6 +495,8 @@ export interface IncidentUrgency {
   dueSoon: Notification[];
   /** Nobody has classified this yet, and it was reported a while ago. */
   unclassifiedFor: number | null;
+  /** An RN was due to see the client and has not. */
+  rnVisitOverdue: boolean;
   headline: string;
 }
 
@@ -352,22 +518,31 @@ export function incidentUrgency(incident: Incident, asOf: string): IncidentUrgen
     ? null
     : Math.floor((now - Date.parse(incident.reportedAt)) / 3_600_000);
 
+  const rnVisitPending = Boolean(incident.rnVisit && !incident.rnVisit.doneAt);
+  const rnVisitOverdue =
+    rnVisitPending && Date.parse(incident.rnVisit!.dueBy) < now && incident.state !== "closed";
+
   const headline = (() => {
     if (incident.state === "closed") return "Closed";
     if (unclassifiedHours !== null && unclassifiedHours >= CLASSIFY_WITHIN_HOURS) {
       return `Reported ${unclassifiedHours} hours ago and nobody has looked at it`;
     }
     if (!incident.kind) return "Waiting to be classified";
+    // Ahead of an overdue phone call. A nurse who has not seen the client is a
+    // worse state than a call not yet made, and it is the one that gets lost
+    // behind a list of ticked notifications.
+    if (rnVisitOverdue) return "An RN should have seen the client by now";
     if (overdue.length > 0) {
       const [worst] = overdue;
       return `${NOTIFY_LABELS[worst.party]} should have been told by now`;
     }
     if (dueSoon.length > 0) return `${NOTIFY_LABELS[dueSoon[0].party]} needs telling within the hour`;
+    if (rnVisitPending) return "An RN still has to see the client";
     if (pending.length > 0) return `${pending.length} still to notify`;
     return "Everyone has been told — ready to close";
   })();
 
-  return { overdue, dueSoon, unclassifiedFor: unclassifiedHours, headline };
+  return { overdue, dueSoon, unclassifiedFor: unclassifiedHours, rnVisitOverdue, headline };
 }
 
 /** Sort for the office queue: the most overdue thing first. */
@@ -375,12 +550,20 @@ export function sortIncidents(incidents: readonly Incident[], asOf: string): Inc
   const weight = (incident: Incident) => {
     if (incident.state === "closed") return 3;
     const urgency = incidentUrgency(incident, asOf);
-    if (urgency.overdue.length > 0) return 0;
-    if (!incident.kind) return 1;
-    return 2;
+    // A client no nurse has seen outranks a call nobody made.
+    if (urgency.rnVisitOverdue) return 0;
+    if (urgency.overdue.length > 0) return 1;
+    if (!incident.kind) return 2;
+    return 3;
   };
 
   return incidents
     .slice()
-    .sort((a, b) => weight(a) - weight(b) || a.reportedAt.localeCompare(b.reportedAt));
+    .sort(
+      (a, b) =>
+        weight(a) - weight(b) ||
+        // Closed rows sort together at the end; among them, and among equals
+        // anywhere, the oldest report comes first.
+        a.reportedAt.localeCompare(b.reportedAt),
+    );
 }

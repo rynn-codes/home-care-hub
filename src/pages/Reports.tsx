@@ -5,6 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Cell, XAxis, YAxis } from "recharts";
 import { useData } from "@/context/DataProvider";
 import { Download } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Reports() {
   const { employees, clients, shifts } = useData();
@@ -21,6 +22,26 @@ export default function Reports() {
   return (
     <>
       <PageHeader title="Reports" description="Operational and financial insights." actions={<Button variant="outline"><Download className="h-4 w-4 mr-1.5" />Export</Button>} />
+      {/* The one report on this page that is real, so it is named and linked
+          rather than left to be found. Everything below it is illustrative —
+          the figures come from mockData, and saying so is cheaper than a
+          surveyor discovering it. */}
+      <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
+        <h3 className="font-semibold">Yearly incident report</h3>
+        <p className="mt-1 max-w-prose text-sm text-muted-foreground">
+          Every incident reported in the year, and whether Joy did what it said it would do each
+          time. Computed from the incidents themselves — there is no separate register to keep.
+        </p>
+        <Button className="mt-4" asChild>
+          <Link to="/operations/incidents/annual">Open the report</Link>
+        </Button>
+      </div>
+
+      <p className="mb-4 text-xs text-muted-foreground">
+        The charts below are illustrative. They read the demo mock data, not the schedule, the
+        payroll clock or the invoices.
+      </p>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-5">
           <h3 className="font-semibold mb-4">Hours by Caregiver</h3>

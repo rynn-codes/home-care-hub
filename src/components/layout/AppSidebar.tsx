@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Home, Compass, ClipboardList, Users, UserCog, UserPlus, Contact, CalendarDays,
-  Receipt, Wallet, BarChart3, FolderOpen, BookOpen, Settings, ShieldAlert, HeartPulse, CalendarCheck,
+  Receipt, Wallet, BarChart3, FolderOpen, BookOpen, Settings, ShieldAlert, HeartPulse, CalendarCheck, ClipboardCheck,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import {
@@ -48,6 +48,7 @@ const nav: NavItem[] = [
     children: [
       { title: "Hiring", url: "/operations/hiring", icon: UserPlus },
       { title: "Incidents", url: "/operations/incidents", icon: ShieldAlert },
+      { title: "Audit", url: "/operations/audit", icon: ClipboardCheck },
       { title: "Documents", url: "/documents", icon: FolderOpen },
       { title: "SOPs", url: "/sops", icon: BookOpen },
     ],

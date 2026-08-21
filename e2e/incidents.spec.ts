@@ -80,6 +80,14 @@ test.describe("incidents", () => {
       await outstanding.first().click();
       await expect(outstanding).toHaveCount(remaining - 1);
     }
+
+    // Still not closeable. A medication error needs an RN to see the client —
+    // Karynn, 21 August — and every call being made is not that.
+    await expect(close).toBeDisabled();
+    await expect(card).toContainText("An RN still has to see the client");
+
+    await card.getByLabel("What did the nurse find?").fill("Seen at home. Alert, no ill effects.");
+    await card.getByRole("button", { name: "Record the visit" }).click();
     await expect(close).toBeEnabled();
 
     await close.click();

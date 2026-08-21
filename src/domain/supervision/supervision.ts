@@ -152,20 +152,35 @@ export function bookSupervisoryVisit(input: {
   };
 }
 
-export type CompletionRefusal = "no_findings" | "already_done";
+export type CompletionRefusal = "not_an_rn" | "no_findings" | "already_done";
 
 export const COMPLETION_MESSAGES: Record<CompletionRefusal, string> = {
+  not_an_rn: "A supervisory visit has to be carried out and recorded by a registered nurse.",
   no_findings:
     "Write down what you saw. A supervisory visit with no findings is a date in a file and nothing else.",
   already_done: "This visit has already been recorded.",
 };
 
+/**
+ * `isRn` is passed in rather than derived from a role.
+ *
+ * KARYNN, 21 AUGUST: "Supervisory visits can only be done by an RN."
+ *
+ * This was `rn_clinical` or `ceo_admin`, copied from the consent witness rule
+ * where she had said an RN *or* the owner. Narrowing it to the `rn_clinical`
+ * role would have locked her out of the one task she personally does, because
+ * her user record says `ceo_admin` — she is the owner and the nurse, and
+ * `user_role` cannot say both. So the question is whether the person holds a
+ * current RN licence, which `domain/clinical/registeredNurse.ts` answers.
+ */
 export function completionRefusals(
   visit: SupervisoryVisit,
   findings: string,
+  isRn: boolean,
 ): CompletionRefusal[] {
   const refusals: CompletionRefusal[] = [];
   if (visit.completedAt) refusals.push("already_done");
+  if (!isRn) refusals.push("not_an_rn");
   if (!findings.trim()) refusals.push("no_findings");
   return refusals;
 }
@@ -186,9 +201,11 @@ export function completeSupervisoryVisit(input: {
   carePlanReviewed: boolean;
   plan: CarePlan | null;
   byUserId: string;
+  /** Whether the person recording it holds a current RN licence. */
+  isRn: boolean;
   at: string;
 }): { visit: SupervisoryVisit; plan: CarePlan | null } {
-  if (completionRefusals(input.visit, input.findings).length > 0) {
+  if (completionRefusals(input.visit, input.findings, input.isRn).length > 0) {
     return { visit: input.visit, plan: input.plan };
   }
 

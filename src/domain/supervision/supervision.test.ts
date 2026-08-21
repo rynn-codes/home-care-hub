@@ -15,9 +15,12 @@ import {
   reviewPlan,
   type CarePlan,
 } from "@/domain/carePlan/plan";
+import { isRegisteredNurse } from "@/domain/clinical/registeredNurse";
 
 const RN = "u-karynn";
 const TODAY = "2026-08-21";
+
+const KARYNN_LICENCE = { number: "RN-000000", state: "TX", expiresOn: "2027-04-30" };
 
 function status(over: Partial<Parameters<typeof supervisionStatus>[0]> = {}) {
   return supervisionStatus({
@@ -127,13 +130,14 @@ describe("recording one", () => {
   });
 
   it("will not be recorded with nothing written down", () => {
-    expect(completionRefusals(booked, "  ")).toEqual(["no_findings"]);
+    expect(completionRefusals(booked, "  ", true)).toEqual(["no_findings"]);
     const out = completeSupervisoryVisit({
       visit: booked,
       findings: "",
       carePlanReviewed: false,
       plan: null,
       byUserId: RN,
+      isRn: true,
       at: "2026-08-21T15:00:00Z",
     });
     expect(out.visit.completedAt).toBeNull();
@@ -152,6 +156,7 @@ describe("recording one", () => {
       carePlanReviewed: true,
       plan,
       byUserId: RN,
+      isRn: true,
       at: "2026-08-21T15:00:00Z",
     });
 
@@ -168,6 +173,7 @@ describe("recording one", () => {
       carePlanReviewed: true,
       plan: null,
       byUserId: RN,
+      isRn: true,
       at: "2026-08-21T15:00:00Z",
     });
     expect(out.visit.carePlanReviewed).toBe(false);
@@ -183,6 +189,7 @@ describe("recording one", () => {
       carePlanReviewed: false,
       plan: null,
       byUserId: RN,
+      isRn: true,
       at: "2026-08-21T15:00:00Z",
     });
     expect(out.visit.completedAt).toBe("2026-08-21T15:00:00Z");
@@ -196,9 +203,10 @@ describe("recording one", () => {
       carePlanReviewed: false,
       plan: null,
       byUserId: RN,
+      isRn: true,
       at: "2026-08-21T15:00:00Z",
     }).visit;
-    expect(completionRefusals(done, "Second write-up.")).toEqual(["already_done"]);
+    expect(completionRefusals(done, "Second write-up.", true)).toEqual(["already_done"]);
   });
 });
 
@@ -216,5 +224,43 @@ describe("the demo seeds agree with each other", () => {
       expect(plan, `${visit.clientName} has no active plan to have reviewed`).not.toBeNull();
       expect(plan!.reviewedAt?.slice(0, 10)).toBe(visit.completedAt.slice(0, 10));
     }
+  });
+});
+
+describe("only a registered nurse", () => {
+  // Karynn, 21 August: "Supervisory visits can only be done by an RN."
+  const booked = bookSupervisoryVisit({
+    id: "sv9",
+    clientPersonId: "c-1",
+    clientName: "Dolores Vance",
+    scheduledFor: "2026-08-21",
+    assignedToUserId: RN,
+  });
+
+  it("refuses somebody who is not one, and says which gate is closed", () => {
+    expect(completionRefusals(booked, "Watched a transfer.", false)).toEqual(["not_an_rn"]);
+  });
+
+  it("does not record the visit when they try anyway", () => {
+    const out = completeSupervisoryVisit({
+      visit: booked,
+      findings: "Watched a transfer.",
+      carePlanReviewed: false,
+      plan: null,
+      byUserId: "u-scheduler",
+      isRn: false,
+      at: "2026-08-21T15:00:00Z",
+    });
+    expect(out.visit.completedAt).toBeNull();
+  });
+
+  it("asks about a licence rather than a job title", () => {
+    // The reason this is a boolean and not a role: Karynn's user record says
+    // ceo_admin and she is the nurse. A role check would have locked her out of
+    // the one task she personally does.
+    expect(isRegisteredNurse({ role: "ceo_admin", rnLicence: KARYNN_LICENCE }, "2026-08-21")).toBe(
+      true,
+    );
+    expect(isRegisteredNurse({ role: "rn_clinical" }, "2026-08-21")).toBe(false);
   });
 });

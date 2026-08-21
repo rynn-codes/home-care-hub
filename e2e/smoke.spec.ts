@@ -21,6 +21,8 @@ const ADMIN_ROUTES: Array<[string, string]> = [
   ["/operations/hiring", "Hiring"],
   ["/operations/portal", "Portal activity"],
   ["/operations/incidents", "Incidents"],
+  ["/operations/incidents/annual", "Yearly incident report"],
+  ["/operations/audit", "Audit"],
   ["/admissions", "Admissions"],
   ["/clients", "Clients"],
   ["/clients/care-plans", "Care plans"],

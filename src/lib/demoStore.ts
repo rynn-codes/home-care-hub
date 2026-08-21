@@ -2,6 +2,7 @@ import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from 
 import { seedAssessments, seedConsentSessions, seedIntakes } from "@/lib/admissionProgressSeed";
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
 import type { UserRole } from "@/domain/consents/witness";
+import type { RnLicence } from "@/domain/clinical/registeredNurse";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
 import type { Contact } from "@/domain/people/contacts";
 
@@ -110,6 +111,15 @@ export interface DemoPreOnboarding {
 export interface DemoUser {
   name: string;
   role: UserRole;
+  /**
+   * The RN licence, if this person holds one.
+   *
+   * Separate from `role` on purpose. Karynn is the owner AND the registered
+   * nurse, and `user_role` can only say one of those — which is why narrowing
+   * the supervisory-visit rule to the `rn_clinical` role would have locked her
+   * out of the task she personally does. See domain/clinical/registeredNurse.
+   */
+  rnLicence?: RnLicence | null;
 }
 
 export interface DemoState {
@@ -161,7 +171,13 @@ function initial(): DemoState {
     // maps meant the board said "assessment completed Aug 12" and the review
     // screen for the same record said nobody had been out yet.
     intakes: seedIntakes,
-    currentUser: { name: "Karynn Verrett", role: "ceo_admin" },
+    currentUser: {
+      name: "Karynn Verrett",
+      role: "ceo_admin",
+      // Placeholder number: the real licence number is Karynn's to enter, and a
+      // made-up one in a committed file would look like a record.
+      rnLicence: { number: "RN-PENDING", state: "TX", expiresOn: "2027-04-30" },
+    },
     assignments: {},
     newHires: [],
     assessments: seedAssessments,

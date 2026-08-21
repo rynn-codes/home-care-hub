@@ -129,7 +129,9 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
     // The same threshold the Incidents screen reads, not a copy of the
     // number. A second literal here is how Home starts disagreeing with the
     // module it links to.
-    return u.overdue.length > 0 || (u.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS;
+    return (
+      u.rnVisitOverdue || u.overdue.length > 0 || (u.unclassifiedFor ?? 0) >= CLASSIFY_WITHIN_HOURS
+    );
   }).length;
 
   // A client receiving care under no written plan. There was no screen in Joy

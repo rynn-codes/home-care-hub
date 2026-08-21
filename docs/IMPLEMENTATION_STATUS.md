@@ -3,8 +3,8 @@
 Required by section 3 of the Codex Engineering Kickoff. Update this with every
 meaningful change; it is the first thing a new engineer or agent should read.
 
-**Last updated:** 21 August 2026 (incident follow-up, the care plan, supervisory visits,
-migration 0010)
+**Last updated:** 21 August 2026 (incidents, care plans, supervisory visits, the audit
+home, migrations 0010 and 0011)
 **Branch:** `claude/joy-health-dashboard-1hx2n9`
 
 ---
@@ -118,6 +118,20 @@ No second frontend was created and no framework was replaced, per section 3.
   one and forgetting the other. Home's supervision signal used to read an input
   the live wiring passed as an empty array, so it printed 0 whatever was true;
   it now reads the same queue the screen does.
+- **Audit** — Karynn, 21 August: "Is there a home for the audit portion?" There
+  was not. Joy could build an audit packet for one employee, from inside that
+  employee's record, so the thing an agency needs on the morning a surveyor
+  arrives — one answer to "show me your files" — did not exist. `/operations/audit`
+  is that, written as the questions somebody with a clipboard actually asks,
+  each paired with what Joy can produce. It also names what it does NOT cover,
+  because a screen of green lines is how somebody concludes they are ready when
+  they are not.
+- **The yearly incident report** — Karynn, 21 August. Computed from the
+  incidents themselves rather than kept as a register, so it cannot drift from
+  what it describes, and keyed on when each incident was *reported* rather than
+  closed. Each line carries whether the obligations were met: a register that
+  lists what happened without saying whether Joy did what it said lets an agency
+  look diligent through a bad year.
 - **Inviting a family mid-admission** — §19's gate is now live on the admission
   review screen, which is the one point in the process where it can do any good:
   the client record only exists after activation, and by then the family has
@@ -163,6 +177,7 @@ supabase/migrations/0007_visits_and_time.sql   the schedule, the clock, assignme
 supabase/migrations/0008_charting_and_moments.sql  charts, Moments, preferences, document requests
 supabase/migrations/0009_grant_revocation.sql      withdrawing portal access, attributably
 supabase/migrations/0010_care_plans_incidents_supervision.sql  care plans, incidents, supervisory visits
+supabase/migrations/0011_rn_licence_and_rn_visits.sql          RN licences, the 24-hour RN visit, the yearly register
 ```
 
 To verify locally:
@@ -179,6 +194,7 @@ psql -f supabase/migrations/0007_visits_and_time.sql
 psql -f supabase/migrations/0008_charting_and_moments.sql
 psql -f supabase/migrations/0009_grant_revocation.sql
 psql -f supabase/migrations/0010_care_plans_incidents_supervision.sql
+psql -f supabase/migrations/0011_rn_licence_and_rn_visits.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -186,7 +202,7 @@ psql -f supabase/tests/credentials_test.sql  # 17
 psql -f supabase/tests/portal_test.sql       # 20
 psql -f supabase/tests/visits_test.sql       # 18
 psql -f supabase/tests/charting_test.sql     # 19
-psql -f supabase/tests/care_test.sql         # 35
+psql -f supabase/tests/care_test.sql         # 48
 ```
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
@@ -259,6 +275,12 @@ Recorded here so they are not only in a chat log.
 - **How often a care plan must be reviewed.** `REVIEW_EVERY_MONTHS` is 12,
   matching the annual supervisory visit the service agreement commits to. If
   Joy's licence category requires it sooner, it is one number.
+- **Which incidents need an RN visit.** Karynn, 21 August: "depending on what it
+  is, an RN visit needs to be made within 24 hours." The 24 hours is hers; which
+  kinds is not, so `RN_VISIT_KINDS` is a conservative starting point — anything
+  where a person might be hurt and nobody clinical has looked, plus anything
+  classified serious whatever its kind. Property damage and a behavioural note
+  are not on it.
 - **What changes for a respite or post-surgical visit.** Answered in part on
   21 August: "We don't separate care. All of our clients get personal care
   services, companion care, light housekeeping. The only time we distinguish
@@ -270,7 +292,7 @@ Recorded here so they are not only in a chat log.
 ## Browser tests
 
 ```sh
-npm run test:e2e          # 56 tests, about a minute
+npm run test:e2e          # 66 tests, about ninety seconds
 npm run test:e2e:ui       # the Playwright inspector
 ```
 
@@ -326,8 +348,8 @@ whether a label makes sense. This is a floor, not a pass mark.
 ## Test and build state
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
-which it did not before — `npm test` passes with 773 tests, `npm run test:e2e`
-passes 56, and the database suites pass 138 assertions across seven files.
+which it did not before — `npm test` passes with 816 tests, `npm run test:e2e`
+passes 66, and the database suites pass 151 assertions across seven files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them
