@@ -261,6 +261,27 @@ rather than health information.
 
 Verified in `receivables_test.sql`.
 
+`0014` adds billing accounts and rate history. Two rules are worth naming.
+
+- **An account cannot be ready to charge automatically without recorded
+  authority.** A check constraint, not just a form. Charging a saved card
+  off-session on the strength of the card existing is what gets an agency in
+  front of a regulator, and it is easy to do by accident because the card is
+  right there. `authorization_status` records the fact separately from the
+  payment method, because a saved card is not permission.
+- **A rate somebody invoiced against cannot be rewritten.** A trigger, the same
+  rule as confirmed charts, live care plan tasks and recorded payments: a record
+  somebody acted on is not editable. Closing a version with an end date is
+  allowed — that is how a change is recorded rather than a rewrite of what the
+  old rate was. An exclusion constraint refuses two versions covering the same
+  day, because otherwise an invoice's price depends on which row the query read
+  first.
+
+Rates are readable by the owner and billing only. Admissions needs to know
+whether a rate exists to report readiness; it does not need the number.
+
+Verified in `billing_accounts_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -280,7 +301,7 @@ Verified in `receivables_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0013
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0014
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -290,4 +311,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0013`: 193 assertions across nine files.
+As of `0014`: 209 assertions across ten files.

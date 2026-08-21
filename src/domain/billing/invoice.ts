@@ -159,6 +159,15 @@ export type InvoiceState = "cannot_bill" | "draft" | "sent" | "paid" | "overdue"
 export interface Invoice {
   clientPersonId: string;
   clientName: string;
+  /**
+   * Which rate this was priced from — §6.2's `rate_plan_version_id`.
+   *
+   * Null when the invoice could not be priced, and null for a caller still
+   * passing a bare rate rather than a version. Without it, "why was I charged
+   * this" has no answer once the rate changes: the invoice says an amount and
+   * nothing says which agreement produced it.
+   */
+  ratePlanVersionId: string | null;
   weekStart: string;
   weekEnd: string;
   lines: InvoiceLine[];
@@ -226,10 +235,20 @@ export function buildInvoice(input: {
   visits: readonly Visit[];
   weekStart: string;
   applyDeposit?: boolean;
+  /**
+   * The rate in effect for this week, when the caller has one.
+   *
+   * Optional so existing callers keep working while Phase 1 lands. When it is
+   * given it WINS over `terms.hourlyRate` and the invoice records which version
+   * priced it. The version is the direction of travel; `terms.hourlyRate` is the
+   * shape being migrated away from.
+   */
+  rateVersion?: { id: string; hourlyRate: number } | null;
 }): Invoice {
   const { terms, weekStart } = input;
   const weekEnd = addDays(weekStart, 6);
-  const rate = terms.hourlyRate;
+  const rate = input.rateVersion ? input.rateVersion.hourlyRate : terms.hourlyRate;
+  const ratePlanVersionId = input.rateVersion?.id ?? null;
 
   const mine = input.visits.filter(
     (v) =>
@@ -265,6 +284,7 @@ export function buildInvoice(input: {
     return {
       clientPersonId: terms.clientPersonId,
       clientName: terms.clientName,
+      ratePlanVersionId: null,
       weekStart,
       weekEnd,
       lines,
@@ -304,6 +324,7 @@ export function buildInvoice(input: {
   return {
     clientPersonId: terms.clientPersonId,
     clientName: terms.clientName,
+    ratePlanVersionId,
     weekStart,
     weekEnd,
     lines,

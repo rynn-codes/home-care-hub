@@ -398,3 +398,57 @@ describe("an invoice for nothing", () => {
     expect(late.lateFeeDue).toBe(LATE_FEE);
   });
 });
+
+describe("pricing from a rate version", () => {
+  // §6.2. Without the version id on the invoice, "why was I charged this" has no
+  // answer once the rate changes: the invoice says an amount and nothing says
+  // which agreement produced it.
+
+  it("records which version priced it", () => {
+    const invoice = buildInvoice({
+      terms: terms({ hourlyRate: 30 }),
+      visits: [day(WEEK, "v1")],
+      weekStart: WEEK,
+      rateVersion: { id: "rate-7", hourlyRate: 34 },
+    });
+    expect(invoice.ratePlanVersionId).toBe("rate-7");
+  });
+
+  it("lets the version win over the rate carried on the terms", () => {
+    // The version is the direction of travel; `terms.hourlyRate` is the shape
+    // being migrated away from. A week priced from a stale copy of the rate is
+    // the exact drift versioning exists to stop.
+    const invoice = buildInvoice({
+      terms: terms({ hourlyRate: 30 }),
+      visits: [day(WEEK, "v1")],
+      weekStart: WEEK,
+      rateVersion: { id: "rate-7", hourlyRate: 34 },
+    });
+    expect(invoice.lines[0].rate).toBe(34);
+    expect(invoice.subtotal).toBe(8 * 34);
+  });
+
+  it("carries no version when it could not be priced", () => {
+    // A `cannot_bill` invoice was priced from nothing, and saying it came from
+    // a version would be a lie somebody could cite.
+    const invoice = buildInvoice({
+      terms: terms({ hourlyRate: null }),
+      visits: [day(WEEK, "v1")],
+      weekStart: WEEK,
+    });
+    expect(invoice.state).toBe("cannot_bill");
+    expect(invoice.ratePlanVersionId).toBeNull();
+  });
+
+  it("still works for a caller that has not migrated", () => {
+    // Phase 1 lands in steps. An existing caller passing a bare rate keeps
+    // working and simply records no version.
+    const invoice = buildInvoice({
+      terms: terms({ hourlyRate: 30 }),
+      visits: [day(WEEK, "v1")],
+      weekStart: WEEK,
+    });
+    expect(invoice.subtotal).toBe(240);
+    expect(invoice.ratePlanVersionId).toBeNull();
+  });
+});

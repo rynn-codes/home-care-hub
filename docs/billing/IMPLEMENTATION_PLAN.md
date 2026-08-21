@@ -21,8 +21,13 @@ favour); and invoice mutability.
 
 No Stripe. No portal. The ledger and the authorisation model.
 
-1. `0014` billing accounts, the client join, rate plan versions. Migrate
-   `ClientBillingTerms` onto it.
+1. ~~`0014` billing accounts, the client join, rate plan versions.~~ **Done.**
+   Accounts keyed on the payer, one payer able to pay for several clients, rates
+   versioned with a no-overlap exclusion constraint and a trigger refusing
+   rewrites. `buildInvoice` accepts a rate version and records which one priced
+   the invoice. `ClientBillingTerms` still exists and still works — the migration
+   off it is incremental rather than a flag day, because every screen reading it
+   would otherwise have to move at once.
 2. `0015` verified service units. Wire `payrollRun` and `buildInvoice` to read
    one approved fact each.
 3. `0016` invoice approval, lines, adjustments, immutability trigger.

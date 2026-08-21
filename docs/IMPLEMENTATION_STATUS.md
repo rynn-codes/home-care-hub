@@ -239,6 +239,7 @@ supabase/migrations/0010_care_plans_incidents_supervision.sql  care plans, incid
 supabase/migrations/0011_rn_licence_and_rn_visits.sql          RN licences, the 24-hour RN visit, the yearly register
 supabase/migrations/0012_audit_trail_and_outbox_worker.sql     audit attribution, the retry column, atomic claim
 supabase/migrations/0013_invoices_and_payments.sql             issued invoices, payments, balances
+supabase/migrations/0014_billing_accounts.sql                  payers, rate versions, authority to charge
 ```
 
 To verify locally:
@@ -258,6 +259,7 @@ psql -f supabase/migrations/0010_care_plans_incidents_supervision.sql
 psql -f supabase/migrations/0011_rn_licence_and_rn_visits.sql
 psql -f supabase/migrations/0012_audit_trail_and_outbox_worker.sql
 psql -f supabase/migrations/0013_invoices_and_payments.sql
+psql -f supabase/migrations/0014_billing_accounts.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -268,6 +270,7 @@ psql -f supabase/tests/charting_test.sql     # 19
 psql -f supabase/tests/care_test.sql         # 48
 psql -f supabase/tests/outbox_test.sql       # 24
 psql -f supabase/tests/receivables_test.sql  # 18
+psql -f supabase/tests/billing_accounts_test.sql # 16
 ```
 
 Every assertion runs under `set local role authenticated`. RLS is bypassed for
@@ -357,6 +360,14 @@ Recorded here so they are not only in a chat log.
   the decision. Left alone rather than edited, because rewriting a transcribed
   document on inference is how a packet stops matching what a client signed —
   worth checking against the paper form.
+- **Billing accounts** (Phase 1, step 1 of the billing specification). Everything
+  financial was keyed on the client, so a daughter paying for both her parents
+  had no representation at all — two rate records, two unrelated invoices, and
+  once Stripe were connected, two Customers and two saved cards. Accounts are now
+  keyed on the payer. Rates are versioned, cannot overlap, and cannot be
+  rewritten once an invoice has cited one. An account cannot be *ready* to charge
+  automatically without recorded authority: a saved card is not permission, and
+  that is enforced by a check constraint rather than only by a form.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–
@@ -433,7 +444,7 @@ whether a label makes sense. This is a floor, not a pass mark.
 
 As of the latest commit: `npm run build` passes — and now type-checks first,
 which it did not before — `npm test` passes with 885 tests, `npm run test:e2e`
-passes 77, and the database suites pass 193 assertions across nine files.
+passes 77, and the database suites pass 209 assertions across ten files.
 
 `npm run typecheck` is a script in its own right. It was not being run at all
 before, and turned up 28 accumulated errors the first time it was, four of them

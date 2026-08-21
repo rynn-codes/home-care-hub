@@ -46,7 +46,7 @@ psql -f supabase/migrations/0001_foundation.sql   # …through 0009
 psql -f supabase/tests/rls_test.sql          # then the other four suites
 ```
 
-193 assertions across nine suites. **Every one runs under `set local role
+209 assertions across ten suites. **Every one runs under `set local role
 authenticated`** — RLS is bypassed for the table owner, so a suite running as
 `postgres` passes while proving nothing. That mistake was made once here
 already.
@@ -301,9 +301,9 @@ Four layers, each catching what the others structurally cannot:
 
 ```sh
 npm run typecheck     # was not being run at all; found 28 errors the first time
-npm test              # 885 unit tests
+npm test              # 914 unit tests
 npm run test:e2e      # 77 browser tests — every screen renders, console quiet
-psql -f supabase/tests/…   # 193 policy assertions, as `authenticated`
+psql -f supabase/tests/…   # 209 policy assertions, as `authenticated`
 ```
 
 `npm run build` runs the type check first, so "the build passes" means what

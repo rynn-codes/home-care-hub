@@ -36,7 +36,8 @@ partially built the entry says which half exists.
 
 | Concern | Where | State |
 | --- | --- | --- |
-| Rate | `ClientBillingTerms` in `src/domain/billing/invoice.ts` | Built but **keyed on client**, not on a payer. One `hourlyRate`, nullable. No versioning. §6.2 wants a `BillingAccount` on the legal payer and a versioned rate plan. |
+| Rate | `src/domain/billing/accounts.ts`, `rate_plan_versions` (0014) | **Built.** Versioned, no-overlap enforced, rewrites refused. `ClientBillingTerms` still exists and still works; the migration off it is incremental rather than a flag day. |
+| Billing account | `src/domain/billing/accounts.ts`, `billing_accounts` (0014) | **Built.** Keyed on the payer, one payer able to pay for several clients, authority to charge recorded separately from the payment method. |
 | Invoice calculation | `buildInvoice` | Built and good: splits standard/holiday/overtime, applies deposit and convenience fee, refuses to bill a client with no rate rather than sending a zero. |
 | Weekly, in advance | `buildInvoice` | Built. **Resolves a contradiction previously flagged**: the signed packet says both "invoice every week in advance" and "due to billing in arrears". J-05 settles it — Joy invoices the upcoming care week. |
 | Ageing / late fee / suspension | `ageing()` | Built. `suspensionPermitted` reports that the agreement allows suspension and never acts. Matches §12's rule that payment failure must not automatically terminate care. |
@@ -73,7 +74,7 @@ partially built the entry says which half exists.
 | --- | --- | --- |
 | Users and roles | `users` (0001), `user_role` enum | Built: nine roles matching §5's list. |
 | RN licence | `users.rn_licence_*` (0011) | Built. A licence, not a job title — the owner is also the nurse. |
-| Row level security | 0003 and every migration since | Built and tested: 193 assertions across nine suites, all under `set local role authenticated`. |
+| Row level security | 0003 and every migration since | Built and tested: 209 assertions across ten suites, all under `set local role authenticated`. |
 | Outbox | `domain_events` (0002, 0012), `src/domain/events/` | Built including atomic claim, backoff and abandonment. **No scheduled runner.** |
 | Communications | `communication_events` (0002), `SmsRouter` | Built. Spruce/GHL routing by purpose, every row Karynn's decision. Matches J-10's "Spruce is the notification channel". |
 | Audit trail | `audit_entries` (0002, 0012), `src/domain/audit/audit.ts`, `src/lib/demoAudit.ts` | Built and **now called** at seven consequential actions. Append-only at the grant; a session can only write in its own name. Entries live in the browser until migrations are applied. |
