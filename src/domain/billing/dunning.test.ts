@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DUNNING, dunningStepsRemaining } from "@/domain/billing/dunning";
+import { DUNNING, PAYMENT_GATE, dunningStepsRemaining, unpaidAtTheGate } from "@/domain/billing/dunning";
 
 describe("the dunning rhythm — Karynn, 22 August", () => {
   it("retries once, the next day, the same method", () => {
@@ -30,5 +30,32 @@ describe("the dunning rhythm — Karynn, 22 August", () => {
     expect(
       dunningStepsRemaining({ chargeFailed: false, retriesUsed: 0, emailSent: false, textSent: false }),
     ).toEqual(["reminder_email", "reminder_text", "office_call"]);
+  });
+});
+
+describe("the Sunday gate and the deposit backstop", () => {
+  it("payment is due Sunday, before the shifts", () => {
+    expect(PAYMENT_GATE.dueByWeekday).toBe(0);
+  });
+
+  it("tells the office, and never acts", () => {
+    // "If they don't pay by Sunday, the day before the shift, then services
+    // stop" — Karynn's rule. §18.12's rule too: never as an automated
+    // consequence. The function returns words for a person, not a cancellation.
+    const covered = unpaidAtTheGate({
+      clientName: "Evelyn Carter",
+      balance: 360,
+      depositRemaining: 360,
+    });
+    expect(covered.depositCovers).toBe(true);
+    expect(covered.detail).toContain("your call");
+
+    const exposed = unpaidAtTheGate({
+      clientName: "Evelyn Carter",
+      balance: 500,
+      depositRemaining: 360,
+    });
+    expect(exposed.depositCovers).toBe(false);
+    expect(exposed.detail).toContain("does not cover");
   });
 });

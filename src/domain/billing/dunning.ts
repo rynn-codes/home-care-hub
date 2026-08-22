@@ -38,6 +38,53 @@ export const DUNNING = {
   thenItIsAPhoneCall: true,
 } as const;
 
+/**
+ * The gate, and the backstop. Karynn, 22 August, asked about writing off bad
+ * debt: "We technically don't lose bc we charge a one week deposit. If they
+ * don't pay by Sunday, the day before the shift, then services stop."
+ *
+ * Two rules in one sentence:
+ *
+ *   THE GATE. The invoice goes out Saturday; payment is due by SUNDAY, before
+ *   the care week's shifts begin. Unpaid by Sunday night, services stop — not
+ *   as an automated cancellation (§18.12: payment failure must never be an
+ *   accidental automated consequence, and Joy holds to that), but as a
+ *   decision the system puts in front of the office loudly enough that making
+ *   it is one click and missing it is hard.
+ *
+ *   THE BACKSTOP. The one-week deposit (the packet's own term: "applied to
+ *   the first weeks of service") means an unpaid week is covered — Joy stops
+ *   the service before it is ever two weeks exposed. This is why a true
+ *   write-off is rare by design: the ladder is stop, then apply the deposit,
+ *   not chase, then absorb.
+ */
+export const PAYMENT_GATE = {
+  /** 0 = Sunday. Due the day before the care week's shifts. */
+  dueByWeekday: 0,
+  /** What unpaid-by-Sunday means. A recommendation to a person, never an act. */
+  consequence: "services stop, and the deposit covers what was delivered",
+} as const;
+
+/**
+ * The Sunday question, for the work queue: this family has not paid and the
+ * shifts start tomorrow. Returns what the office should be told — it never
+ * cancels anything itself.
+ */
+export function unpaidAtTheGate(input: {
+  clientName: string;
+  balance: number;
+  depositRemaining: number;
+}): { headline: string; detail: string; depositCovers: boolean } {
+  const depositCovers = input.depositRemaining >= input.balance;
+  return {
+    headline: `${input.clientName} has not paid for the week starting tomorrow.`,
+    detail: depositCovers
+      ? `$${input.balance.toFixed(2)} outstanding; the deposit ($${input.depositRemaining.toFixed(2)}) covers it. Stopping services is your call — the packet permits it, and Joy will not make it for you.`
+      : `$${input.balance.toFixed(2)} outstanding and the deposit ($${input.depositRemaining.toFixed(2)}) does not cover it. Stopping services limits the exposure; the decision is yours.`,
+    depositCovers,
+  };
+}
+
 export type DunningStep =
   | "automatic_retry"
   | "reminder_email"

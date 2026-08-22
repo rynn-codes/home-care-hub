@@ -93,13 +93,19 @@ method automatically.
 *Still open:* who approves a service hold. Not blocking — Joy will not
 automate suspension either way.
 
-### 6. Refund, credit, void, write-off, dispute, overpayment authority — PARTLY ANSWERED
+### 6. Refund, credit, void, write-off, dispute, overpayment authority — ANSWERED IN SUBSTANCE
 
-§5 gives the owner refund/void/write-off authority per policy. Joy's model
-already requires a reason on a write-off and keeps the row visible.
+Asked who may give up on a debt, Karynn answered with the reason it barely
+arises: "We technically don't lose bc we charge a one week deposit. If they
+don't pay by Sunday, the day before the shift, then services stop."
 
-*Needed:* whether billing staff may write off, or only the owner; and any
-threshold above which the owner must approve.
+So Joy's model is stop-then-apply-the-deposit, not chase-then-absorb: payment
+is due Sunday before the care week, non-payment stops services (a human
+decision the system surfaces loudly — §18.12 keeps it from ever being
+automated), and the deposit covers the exposure. A true write-off is rare by
+design. Held as `PAYMENT_GATE` and `unpaidAtTheGate`
+(domain/billing/dunning.ts). The existing rule stands for the rare case: a
+write-off requires a reason and carries a name, whoever does it.
 
 ### 7. Whether Stripe-hosted or Joy-rendered invoices are the legal record
 
@@ -163,7 +169,7 @@ gate already exists — so this is a confirmation, not a design question.
 | 3 | Collection methods | Answered — all private pay |
 | 4 | Off-session authorisation | **Blocking**, legal |
 | 5 | Retry cadence | Answered — retry next day, email Wed, text Thu |
-| 6 | Refund and write-off authority | Partly answered |
+| 6 | Refund and write-off authority | Answered in substance — Sunday gate + deposit backstop |
 | 7 | Legal record of the invoice | Recommendation made |
 | 8 | Tap to Pay | Recommend deferring |
 | 9 | Split payers | Answered — yes, it happens; built in 0019 |

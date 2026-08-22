@@ -487,6 +487,12 @@ Recorded here so they are not only in a chat log.
   the care surface and keeps the finance one, as a per-action filter rather
   than a revocation, so the final invoices are visible and payable without a
   phone call to ask what is owed.
+- **The Sunday gate** (22 August). Asked about write-off authority, Karynn
+  answered with the policy that makes it moot: payment is due Sunday before
+  the care week, non-payment stops services, and the one-week deposit covers
+  what was delivered — stop-then-apply-the-deposit, not chase-then-absorb.
+  `unpaidAtTheGate` puts the Sunday question in front of the office with the
+  deposit arithmetic done; it never cancels anything itself (§18.12).
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–
