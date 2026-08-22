@@ -321,8 +321,9 @@ Supabase project.
    now." The full agreement also settles the reprint-verification flag on the
    consent registry's corrected invoicing sentence. The nursing assessment is
    scratched for now by her decision; the Hiring Screen Roadmap and Product
-   Bible remain unuploaded, so Hiring and Phone Intake stay verified against
-   what was described rather than what was printed — accepted for now.
+   Bible remain unuploaded. **The Client Intake Form arrived (22 August)** —
+   vendored at `docs/specs/Joy_Health_Client_Intake_Form.pdf` and audited
+   below; Phone Intake is now verified against the printed form.
 5. ~~The legal review of one-signature reuse has not been booked.~~ Settled by
    Karynn, 22 August: one signature with initials is the approach, applied only
    after the completed agreement is reviewed in its entirety — the read-back
@@ -384,12 +385,13 @@ Recorded here so they are not only in a chat log.
 - **How often a care plan must be reviewed.** `REVIEW_EVERY_MONTHS` is 12,
   matching the annual supervisory visit the service agreement commits to. If
   Joy's licence category requires it sooner, it is one number.
-- **The assessment's payer question.** `payer_source` still offers Medicare,
-  Medicaid, third-party payor and grant programme. Joy is all private pay, so
-  those options are either dead or transcribed from a paper form that predates
-  the decision. Left alone rather than edited, because rewriting a transcribed
-  document on inference is how a packet stops matching what a client signed —
-  worth checking against the paper form.
+- **The assessment's payer question — now checked against the paper form.**
+  The Client Intake Form (vendored 22 August) offers exactly three payment
+  options: Private Pay, LTC Insurance, and Other/Comments. Medicare, Medicaid,
+  third-party payor and grant programme were never on Joy's form — the 0004
+  enum's extra values are dead, kept only because Postgres cannot drop enum
+  values, and nothing may surface them in a UI. The domain's
+  `PAYMENT_SOURCES` already matches the printed form.
 - **Billing accounts** (Phase 1, step 1 of the billing specification). Everything
   financial was keyed on the client, so a daughter paying for both her parents
   had no representation at all — two rate records, two unrelated invoices, and
@@ -548,6 +550,19 @@ Recorded here so they are not only in a chat log.
   longer a placeholder: Karynn supplied the full portal language, vendored
   verbatim as `joy-epay-v1` (docs/billing/ELECTRONIC_PAYMENT_AUTHORIZATION_v1.md)
   with a clause-by-clause map showing each sentence's enforcement in code.
+- **The Client Intake Form, audited field by field** (22 August). The printed
+  two-page form matches the built phone-intake flow on every field, both
+  directions. Three earlier judgement calls the form CONFIRMS: the client's
+  address is collected at consultation scheduling, not at the top of the call
+  — the form's own parenthetical says "collect when scheduling home visit";
+  the per-need detail lines exist (`care_need_details`); and the "Important"
+  box — name and role of who is coming, a confirmation call beforehand — is
+  carried verbatim in the `consultation_attendees` helper. Deliberate
+  deviations, all supersets: living situation refines the form's three options
+  into seven (the care-facility split matters to the RN); care needs adds
+  medication reminders (ruled 15 August); payment adds "not sure yet" for the
+  caller who genuinely is not. And the form settles the payer-enum question —
+  see the assessment note above.
 - **The Sunday gate** (22 August). Asked about write-off authority, Karynn
   answered with the policy that makes it moot: payment is due Sunday before
   the care week, non-payment stops services, and the one-week deposit covers
