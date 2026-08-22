@@ -336,6 +336,27 @@ requires a reason while held and refuses a stale reason once lifted.
 
 Verified in `billing_runs_test.sql`.
 
+`0018` widens portal grants and opens the family finance read. Three rules.
+
+- **A grant says what it allows, in a closed vocabulary.** Role, allowed
+  actions, effective window, on top of 0006's attributed revocation. An open
+  action list is how a typo becomes a permission. A workforce grant carries no
+  role and no actions — a caregiver login is not a finance surface, by check
+  constraint.
+- **The family's only financial read is a view with the check inside it.**
+  `family_invoices` and `family_payments` are SECURITY DEFINER — the one place
+  that pattern is right rather than a hole, and the migration says why: RLS
+  gates rows, never columns, and §9.3's exclusions are column exclusions. There
+  is no family policy on `issued_invoices` or `payments` at all; what the view
+  lacks cannot leak. Drafts never reach a family (§7.2 step 7's mirror image),
+  and neither do collection judgements.
+- **The assertions predate the policy.** 0013 gave families nothing, which was
+  safe; widening is the risky direction, because a daughter who cannot see an
+  invoice reports it and a neighbour who can does not. `widened_grants_test.sql`
+  was written before the views existed.
+
+Verified in `widened_grants_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -355,7 +376,7 @@ Verified in `billing_runs_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0017
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0018
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -366,4 +387,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0017`: 269 assertions across thirteen files.
+As of `0018`: 284 assertions across fourteen files.

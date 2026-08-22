@@ -116,8 +116,9 @@ A trigger refusing any change to `total`, `service_period_*` or lines once
 `approved_at` is set — the same shape as the confirmed-chart trigger in 0008 and
 the live-care-plan trigger in 0010.
 
-> **Numbering update (as built):** billing runs landed as `0017`, so Stripe
-> mapping below becomes `0018` and widened grants `0019`.
+> **Numbering update (as built):** billing runs landed as `0017` and widened
+> grants as `0018` (they were unblocked; Stripe mapping waits on the §8.1
+> server layer, and becomes `0019`).
 
 ## 0017 — Stripe mapping and event receipts
 

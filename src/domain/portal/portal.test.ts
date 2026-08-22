@@ -11,6 +11,7 @@ import {
   familyNextStep,
   resolvePortal,
   workforceNextStep,
+  grantAllows,
   type PortalGrant,
 } from "@/domain/portal/identity";
 import {
@@ -322,6 +323,28 @@ describe("SMS routing and templates", () => {
     expect(msg.body).toContain("Open your Joy portal");
   });
 
+  it("tells a family about money without saying any (§9.4)", () => {
+    // The spec's own examples: "A new Joy invoice is available", "Your payment
+    // method needs attention." A dollar figure on a lock screen is the size of
+    // somebody's care, and "card declined" is a financial fact about the
+    // family — both readable by whoever is holding the phone.
+    const invoice = composeMessage("invoice_notification", "+17132319662", {
+      firstName: "Susan",
+      link: "https://joy.example/p/abc",
+    });
+    expect(invoice.body).toContain("invoice is available");
+    expect(invoice.body).not.toMatch(/\$|\d+\.\d{2}/);
+    expect(invoice.carrier).toBe("spruce");
+
+    const method = composeMessage("payment_method_notification", "+17132319662", {
+      firstName: "Susan",
+      link: "https://joy.example/p/abc",
+    });
+    expect(method.body).toContain("needs attention");
+    expect(method.body).not.toMatch(/declin|expir|fail/i);
+    expect(method.carrier).toBe("spruce");
+  });
+
   it("keeps every login code off the office number", () => {
     // Karynn, 20 Aug: all OTPs through GHL.
     expect(SMS_ROUTING.login_code_workforce).toBe("ghl");
@@ -499,5 +522,50 @@ describe("familyNextStep", () => {
     const step = familyNextStep({ ...base, state: "pre_admission", startOfCare: "Monday" });
     expect(step.headline).toBe("Care starts Monday");
     expect(step.action).toBeNull();
+  });
+});
+
+describe("grantAllows — §9.1's widened grant, mirrored from 0018", () => {
+  const grant = (over: Partial<PortalGrant> = {}): PortalGrant => ({
+    audience: "family",
+    personId: "p-susan",
+    subjectPersonId: "c-marcus",
+    greetingName: "Susan",
+    subjectName: "Marcus",
+    state: "active",
+    active: true,
+    role: "responsible_party",
+    allowedActions: ["view_invoices", "pay_invoice"],
+    effectiveFrom: "2026-08-01",
+    effectiveTo: null,
+    ...over,
+  });
+
+  const TODAY = "2026-08-22";
+
+  it("allows what the grant says, today", () => {
+    expect(grantAllows(grant(), "view_invoices", TODAY)).toBe(true);
+    expect(grantAllows(grant(), "pay_invoice", TODAY)).toBe(true);
+  });
+
+  it("what a grant does not say, it does not allow", () => {
+    // The daughter pays; the son follows along. Same client, different grants.
+    const son = grant({ allowedActions: ["view_care_updates"] });
+    expect(grantAllows(son, "view_invoices", TODAY)).toBe(false);
+  });
+
+  it("respects the window at both ends", () => {
+    expect(grantAllows(grant({ effectiveFrom: "2026-09-01" }), "view_invoices", TODAY)).toBe(false);
+    expect(grantAllows(grant({ effectiveTo: "2026-08-21" }), "view_invoices", TODAY)).toBe(false);
+    expect(grantAllows(grant({ effectiveTo: "2026-08-22" }), "view_invoices", TODAY)).toBe(true);
+  });
+
+  it("a revoked grant allows nothing, immediately", () => {
+    expect(grantAllows(grant({ active: false }), "view_invoices", TODAY)).toBe(false);
+  });
+
+  it("a workforce grant is not a finance surface", () => {
+    const caregiver = grant({ audience: "workforce", subjectPersonId: null });
+    expect(grantAllows(caregiver, "view_invoices", TODAY)).toBe(false);
   });
 });

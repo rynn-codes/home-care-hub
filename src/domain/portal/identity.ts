@@ -78,6 +78,56 @@ export interface PortalGrant {
   revokedAt?: string | null;
   revokedReason?: string | null;
   revokedByUserId?: string | null;
+
+  /**
+   * §9.1's widening (0018). A family grant says WHO the person is to the
+   * client and WHAT they may do — two family members of one client routinely
+   * differ: the daughter pays, the son follows along. Absent on workforce
+   * grants, which are not a finance surface.
+   */
+  role?: FamilyRole | null;
+  allowedActions?: readonly GrantAction[];
+  /** Inclusive dates. Null from = since granted; null to = until revoked. */
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+}
+
+export type FamilyRole = "responsible_party" | "family_viewer" | "client";
+
+export const FAMILY_ROLE_LABELS: Record<FamilyRole, string> = {
+  responsible_party: "Responsible party",
+  family_viewer: "Family member",
+  client: "The client themselves",
+};
+
+/** The closed vocabulary — mirrors portal_grants_actions_known in 0018. */
+export type GrantAction =
+  | "view_invoices"
+  | "pay_invoice"
+  | "manage_payment_methods"
+  | "download_documents"
+  | "view_care_updates";
+
+export const GRANT_ACTION_LABELS: Record<GrantAction, string> = {
+  view_invoices: "See invoices and balances",
+  pay_invoice: "Pay an invoice",
+  manage_payment_methods: "Add or change how they pay",
+  download_documents: "Download documents",
+  view_care_updates: "Follow care updates",
+};
+
+/**
+ * Is this grant good today, for this action? Mirrors `grant_allows` in 0018 —
+ * the database is the authority, this lets a screen say why before the
+ * attempt.
+ */
+export function grantAllows(grant: PortalGrant, action: GrantAction, today: string): boolean {
+  if (!grant.active || grant.audience !== "family") return false;
+  if (!(grant.allowedActions ?? []).includes(action)) return false;
+  const day = today.slice(0, 10);
+  if (grant.effectiveFrom && grant.effectiveFrom.slice(0, 10) > day) return false;
+  if (grant.effectiveTo && grant.effectiveTo.slice(0, 10) < day) return false;
+  return true;
 }
 
 /**

@@ -243,6 +243,7 @@ supabase/migrations/0014_billing_accounts.sql                  payers, rate vers
 supabase/migrations/0015_verified_service_units.sql            the one approved fact both ledgers read
 supabase/migrations/0016_invoice_approval.sql                  the invoice lifecycle, lines, adjustments
 supabase/migrations/0017_billing_runs.sql                      the weekly run's record, the account hold
+supabase/migrations/0018_widened_grants.sql                    §9.1 grants, and the family finance read
 ```
 
 To verify locally:
@@ -266,6 +267,7 @@ psql -f supabase/migrations/0014_billing_accounts.sql
 psql -f supabase/migrations/0015_verified_service_units.sql
 psql -f supabase/migrations/0016_invoice_approval.sql
 psql -f supabase/migrations/0017_billing_runs.sql
+psql -f supabase/migrations/0018_widened_grants.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -280,6 +282,7 @@ psql -f supabase/tests/billing_accounts_test.sql # 16
 psql -f supabase/tests/verified_units_test.sql   # 27
 psql -f supabase/tests/invoice_approval_test.sql # 24
 psql -f supabase/tests/billing_runs_test.sql     # 9
+psql -f supabase/tests/widened_grants_test.sql   # 15
 ```
 
 Each suite is self-contained and can be run alone against a fresh database.
@@ -452,6 +455,16 @@ Recorded here so they are not only in a chat log.
   entry, and the gates left visible. A refused mandatory consent resists the
   override — that is a refusal of terms, not a delay. Legacy demo state maps
   the old boolean forward rather than dropping what the office ticked.
+- **Widened grants and the family finance read** (Phase 2, steps 8–10 — Phase 2
+  of the billing plan is complete except the §8.1-blocked Stripe pieces).
+  §9.1's grant carries role, a closed action vocabulary, and an effective
+  window; a workforce grant can carry neither role nor actions, so a caregiver
+  login can never quietly become a finance surface. The family's only
+  financial read is two SECURITY DEFINER views with the access check inside
+  and §9.3's excluded columns structurally absent — the assertions were
+  written before the views existed, because a daughter who cannot see an
+  invoice reports it and a neighbour who can does not. §9.4's two notification
+  templates say a thing exists without saying an amount or a reason.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–

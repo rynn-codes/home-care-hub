@@ -113,8 +113,8 @@ g_other as (
   select org.id, 'workforce', other_caregiver.id, 'active' from org, other_caregiver returning id
 ),
 g_dau as (
-  insert into portal_grants (organization_id, audience, person_id, subject_person_id, state)
-  select org.id, 'family', daughter.id, client_a.id, 'active' from org, daughter, client_a returning id
+  insert into portal_grants (organization_id, audience, person_id, subject_person_id, state, role, allowed_actions)
+  select org.id, 'family', daughter.id, client_a.id, 'active', 'family_viewer', array['view_care_updates'] from org, daughter, client_a returning id
 ),
 -- Jamisha is assigned to Marcus tomorrow, and to nobody else.
 v_assigned as (

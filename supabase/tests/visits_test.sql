@@ -81,8 +81,8 @@ g_other as (
   select org.id, 'workforce', other_caregiver.id, 'active' from org, other_caregiver returning id
 ),
 g_dau as (
-  insert into portal_grants (organization_id, audience, person_id, subject_person_id, state)
-  select org.id, 'family', daughter.id, current_client.id, 'active'
+  insert into portal_grants (organization_id, audience, person_id, subject_person_id, state, role, allowed_actions)
+  select org.id, 'family', daughter.id, current_client.id, 'active', 'family_viewer', array['view_care_updates']
   from org, daughter, current_client returning id
 ),
 -- A visit tomorrow: she is assigned and should be able to prepare.

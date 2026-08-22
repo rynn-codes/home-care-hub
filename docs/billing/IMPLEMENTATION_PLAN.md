@@ -125,11 +125,33 @@ and neither infers the other; every financial act is on the trail.
    refusal of the terms care is offered on, not a delay. The family portal's
    §9.2 status line shows the spec's strings; "Needs attention" prompts a
    family to ring without diagnosing on the line, per §9.3's exclusions.
-8. `0018` widened grants — role, allowed actions, effective dates.
-9. The family finance read model: sanitized fields only, with the SQL assertions
-   written **before** the policy is widened.
-10. Two notification templates. No free-text SMS body exists anywhere in Joy and
-    none is added.
+8. ~~`0018` widened grants — role, allowed actions, effective dates.~~ **Done.**
+   §9.1's full grant: role (responsible_party | family_viewer | client), a
+   closed vocabulary of allowed actions, an effective window, on top of 0006's
+   revocation. A family grant must carry a role (`NOT VALID`, so the migration
+   applies over pre-0018 rows — legacy grants keep allowing no finance actions);
+   a workforce grant may carry neither role nor actions, so a caregiver login
+   can never quietly become a finance surface. Domain mirror: `grantAllows` in
+   `portal/identity.ts`.
+9. ~~The family finance read model: sanitized fields only, with the SQL
+   assertions written **before** the policy is widened.~~ **Done, in that
+   order** — `widened_grants_test.sql` existed before the views did. Two
+   SECURITY DEFINER views, `family_invoices` and `family_payments`, are the
+   ONLY financial read a family has: the access check (grant + action +
+   window + revocation) lives inside the view, there is no family policy on
+   the base tables at all, and the columns §9.3 excludes are absent rather
+   than filtered — no approver, no snapshot hash, no run id, no rate version,
+   no write-off reason. Definer rather than invoker is deliberate and
+   documented in the migration: RLS gates rows, never columns, and column
+   control is the point here. Drafts and approvals-in-progress never reach a
+   family; neither do collection judgements.
+10. ~~Two notification templates.~~ **Done.** §9.4's own strings, nearly
+    verbatim: "a new Joy Health invoice is available", "your payment method
+    needs attention". Routed via Spruce with the other family notifications;
+    no amount, no client name, no reason on a lock screen — a dollar figure is
+    the size of somebody's care, and "card declined" is a financial fact about
+    the family. Tests pin both exclusions. No free-text SMS body exists
+    anywhere in Joy and none was added.
 
 **Done when:** two authorised family members have distinct access, revoking one
 does not revoke the other, and an unauthorised user cannot infer whether a

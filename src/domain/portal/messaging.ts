@@ -108,7 +108,11 @@ export type MessagePurpose =
   /** §25 — a schedule or document change the family should open Joy for. */
   | "care_notification"
   /** A caregiver's shift changed. */
-  | "shift_notification";
+  | "shift_notification"
+  /** §9.4 — a new invoice exists. The portal has the detail; this never does. */
+  | "invoice_notification"
+  /** §9.4 — the saved payment method needs attention. Same rule. */
+  | "payment_method_notification";
 
 /**
  * Which number carries which message.
@@ -146,6 +150,12 @@ export type MessagePurpose =
  *   Joy already uses with clients.
  *
  * - `shift_notification` → Spruce. It names a client to a caregiver.
+ *
+ * - `invoice_notification`, `payment_method_notification` → Spruce. §9.4:
+ *   "Portal is persistent truth; Spruce is a notification channel." They go to
+ *   the responsible party about a care relationship, which is itself health
+ *   information — the same reasoning as `care_notification`, and the same
+ *   channel the family already knows.
  */
 export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
   login_code_workforce: "ghl",
@@ -155,6 +165,8 @@ export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
   family_invitation: "ghl",
   care_notification: "spruce",
   shift_notification: "spruce",
+  invoice_notification: "spruce",
+  payment_method_notification: "spruce",
 };
 
 /**
@@ -263,6 +275,17 @@ export function composeMessage(
 
       case "shift_notification":
         return `${name}your Joy Health schedule has changed. Open your portal to see it: ${link}`;
+
+      case "invoice_notification":
+        // §9.4's own example, nearly verbatim. No amount, no client name, no
+        // week — a dollar figure on a lock screen is the size of somebody's
+        // care, readable by whoever is holding the phone.
+        return `${name}a new Joy Health invoice is available. Sign in to view it: ${link}`;
+
+      case "payment_method_notification":
+        // Never why. "Card declined" or "card expired" on a lock screen is a
+        // financial fact about the family; "needs attention" is a doorbell.
+        return `${name}your payment method needs attention. Sign in to Joy Health to update it: ${link}`;
     }
   })();
 

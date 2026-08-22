@@ -64,8 +64,8 @@ g_cg as (
   select org.id, 'workforce', caregiver.id, 'active' from org, caregiver returning id
 ),
 g_dau as (
-  insert into portal_grants (organization_id, audience, person_id, subject_person_id, state)
-  select org.id, 'family', daughter.id, client.id, 'active' from org, daughter, client returning id
+  insert into portal_grants (organization_id, audience, person_id, subject_person_id, state, role, allowed_actions)
+  select org.id, 'family', daughter.id, client.id, 'active', 'family_viewer', array['view_care_updates'] from org, daughter, client returning id
 ),
 v as (
   insert into visits (organization_id, client_person_id, caregiver_person_id, starts_at, ends_at)
