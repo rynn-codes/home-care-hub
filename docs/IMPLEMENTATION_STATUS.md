@@ -315,10 +315,14 @@ Supabase project.
    claim function all exist and are tested; nothing invokes `processDue` on a
    schedule, so `domain_events` would accumulate as `pending`. The failure is
    silent, which is what makes it a blocker rather than a nuisance.
-4. **Four approved specs are missing from the repository** — the Hiring Screen
-   Roadmap, the Product Bible, the two-page Client Intake Form and the Joy
-   nursing assessment. Hiring and Phone Intake should not be considered fully
-   specified until those are read.
+4. **The documents Joy still owes the repository, per Karynn (22 August):**
+   the **Plan of Care** and the **full (corrected) service agreement** — "as
+   long as we have the Plan of Care and the full agreement, that's enough for
+   now." The full agreement also settles the reprint-verification flag on the
+   consent registry's corrected invoicing sentence. The nursing assessment is
+   scratched for now by her decision; the Hiring Screen Roadmap and Product
+   Bible remain unuploaded, so Hiring and Phone Intake stay verified against
+   what was described rather than what was printed — accepted for now.
 5. ~~The legal review of one-signature reuse has not been booked.~~ Settled by
    Karynn, 22 August: one signature with initials is the approach, applied only
    after the completed agreement is reviewed in its entirety — the read-back
