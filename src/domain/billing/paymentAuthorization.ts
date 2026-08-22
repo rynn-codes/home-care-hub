@@ -40,6 +40,15 @@ export function collectionMethodFromMode(mode: PaymentMode): CollectionMethod {
 
 // ---------------------------------------------------------- the record --
 
+/**
+ * The wording currently in use. Karynn supplied the full text on 22 August;
+ * it is vendored verbatim at docs/billing/ELECTRONIC_PAYMENT_AUTHORIZATION_v1.md
+ * and every authorization row cites the version it was signed under. A wording
+ * change is a NEW version — never an edit to this one, because signatures
+ * point at it.
+ */
+export const CURRENT_AUTHORIZATION_TEXT_VERSION = "joy-epay-v1";
+
 export type AuthorizationRecordStatus = "active" | "revoked" | "superseded";
 
 /**

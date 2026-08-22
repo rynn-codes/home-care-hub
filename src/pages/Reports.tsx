@@ -194,7 +194,7 @@ export default function Reports() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [period, setPeriod] = useState<ReportPeriod>("month");
   const [selected, setSelected] = useState<ReportKey>("revenue_by_month");
-  const { recordedPayments } = useDemo();
+  const { recordedPayments, issuedInvoices } = useDemo();
 
   const range = useMemo(() => resolvePeriod(period, today), [period, today]);
 
@@ -227,14 +227,14 @@ export default function Reports() {
       // question about now — narrowing it to last month would hide the
       // ninety-day debt, which is the only one that really matters.
       outstanding: outstandingInvoices({
-        invoices: seedIssuedInvoices,
+        invoices: [...issuedInvoices, ...seedIssuedInvoices],
         // The seeds plus anything recorded through the app, so this report and
         // the Billing screen's outstanding list are the same fact.
         payments: [...seedPayments, ...recordedPayments],
         asOf: today,
       }),
     }),
-    [range, today, nameFor, recordedPayments],
+    [range, today, nameFor, recordedPayments, issuedInvoices],
   );
 
   const report = reports[selected];

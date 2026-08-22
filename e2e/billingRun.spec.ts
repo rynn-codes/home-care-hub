@@ -33,13 +33,35 @@ test.describe("the Saturday run", () => {
 
     const card = page.locator("section").filter({ hasText: "The Saturday run" });
     await card.getByRole("button", { name: "Approve" }).first().click();
-    await expect(card.getByText(/Approved by Karynn Verrett/).first()).toBeVisible();
+    // Approved: the name appears beside the Send button that approval unlocks.
+    await expect(card.getByText("Karynn Verrett").first()).toBeVisible();
+    await expect(card.getByRole("button", { name: "Send", exact: true }).first()).toBeVisible();
 
     // §7.2 step 6 is an audited act — the trail says who approved.
     await page.goto("/operations/audit");
     const trail = page.locator("section").filter({ hasText: "The trail, this session" });
     await expect(trail).toContainText("approved an invoice");
     await expect(trail).toContainText("Karynn Verrett");
+    expect(log.errors).toEqual([]);
+  });
+
+  test("send assigns the number, tells the family a thing exists, and lands in Outstanding", async ({ page }) => {
+    const log = watchForErrors(page);
+    await page.goto("/billing");
+
+    const card = page.locator("section").filter({ hasText: "The Saturday run" });
+    await card.getByRole("button", { name: "Approve" }).first().click();
+    await card.getByRole("button", { name: "Send", exact: true }).first().click();
+    await expect(card.getByText(/Sent as JH-\d+/).first()).toBeVisible();
+
+    // §7.2 step 8: the sent invoice is a debt now — Outstanding shows it.
+    const outstanding = page.locator("section").filter({ hasText: "Outstanding" });
+    await expect(outstanding.getByText(/JH-|week of/i).first()).toBeVisible();
+
+    // The trail records the send.
+    await page.goto("/operations/audit");
+    const trail = page.locator("section").filter({ hasText: "The trail, this session" });
+    await expect(trail).toContainText("sent an invoice");
     expect(log.errors).toEqual([]);
   });
 
@@ -51,10 +73,11 @@ test.describe("the Saturday run", () => {
     if (before === 0) test.skip();
 
     await buttons.first().click();
-    await expect(card.getByText(/Approved by/).first()).toBeVisible();
+    await expect(card.getByRole("button", { name: "Send", exact: true }).first()).toBeVisible();
 
     await page.reload();
     const after = page.locator("section").filter({ hasText: "The Saturday run" });
-    await expect(after.getByText(/Approved by Karynn Verrett/).first()).toBeVisible();
+    // Still approved after the reload: the Send button is the proof.
+    await expect(after.getByRole("button", { name: "Send", exact: true }).first()).toBeVisible();
   });
 });

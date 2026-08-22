@@ -141,7 +141,7 @@ function InvoiceCard({ invoice, paid }: { invoice: Invoice; paid: boolean }) {
 
 export default function Billing() {
   const weekStart = useMemo(currentBillingWeek, []);
-  const { recordedPayments } = useDemo();
+  const { recordedPayments, issuedInvoices } = useDemo();
   const [payingBalance, setPayingBalance] = useState<InvoiceBalance | null>(null);
 
   // Issued invoices and every payment against them — the seeds plus anything
@@ -150,11 +150,13 @@ export default function Billing() {
   const openBalances = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
     const allPayments = [...seedPayments, ...recordedPayments];
-    return seedIssuedInvoices
+    // Seeds plus everything sent from the Saturday run — one list, so this
+    // screen, the run card and the reports cannot disagree about who owes what.
+    return [...issuedInvoices, ...seedIssuedInvoices]
       .map((invoice) => invoiceBalance({ invoice, payments: allPayments, asOf: today }))
       .filter((b) => b.balance > 0 && b.state !== "written_off")
       .sort((a, b) => b.daysOverdue - a.daysOverdue);
-  }, [recordedPayments]);
+  }, [recordedPayments, issuedInvoices]);
 
   const invoices = useMemo(
     () =>

@@ -536,6 +536,14 @@ Recorded here so they are not only in a chat log.
   billing and scheduling silently found nobody — the revenue report had been
   claiming "no rate on file" for clients Billing priced on the same screen.
   Ids now come from the schedule, and the reports e2e count is the receipt.
+- **The send step, and the authorization wording** (22 August). The run card
+  now finishes the lifecycle: Send assigns the JH- number, queues the §9.4
+  notification (a thing exists; the figures wait in the portal), writes
+  `invoice.issued` to the trail, and the invoice lands in Outstanding and the
+  reports from one merged list. And the Electronic Payment Authorization is no
+  longer a placeholder: Karynn supplied the full portal language, vendored
+  verbatim as `joy-epay-v1` (docs/billing/ELECTRONIC_PAYMENT_AUTHORIZATION_v1.md)
+  with a clause-by-clause map showing each sentence's enforcement in code.
 - **The Sunday gate** (22 August). Asked about write-off authority, Karynn
   answered with the policy that makes it moot: payment is due Sunday before
   the care week, non-payment stops services, and the one-week deposit covers

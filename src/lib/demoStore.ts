@@ -6,7 +6,7 @@ import type { RnLicence } from "@/domain/clinical/registeredNurse";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
 import type { Contact } from "@/domain/people/contacts";
 import type { StoredAuditEntry } from "@/lib/demoAudit";
-import type { Payment } from "@/domain/billing/receivables";
+import type { IssuedInvoice, Payment } from "@/domain/billing/receivables";
 import type { PaymentSetupState } from "@/domain/billing/paymentSetup";
 
 /**
@@ -173,7 +173,15 @@ export interface DemoState {
    * client:week:rateVersion. §7.2 step 6 — approval is a person's act, and
    * this is where the demo holds it.
    */
-  approvedDrafts: Record<string, { by: string; at: string }>;
+  approvedDrafts: Record<string, { by: string; at: string; sentAs?: string }>;
+  /**
+   * Invoices sent from the Saturday run — §7.2 step 8's other half. Each
+   * carries the JH- number assigned at send. They merge with the seeds
+   * everywhere balances are computed, so Outstanding and the reports agree.
+   */
+  issuedInvoices: IssuedInvoice[];
+  /** The demo's stand-in for 0020's sequence. */
+  nextInvoiceNumber: number;
   contacts: Contact[];
   /**
    * Changes to contacts, by id.
@@ -225,6 +233,8 @@ function initial(): DemoState {
     domainEvents: [],
     recordedPayments: [],
     approvedDrafts: {},
+    issuedInvoices: [],
+    nextInvoiceNumber: 10430,
     contacts: [],
     contactEdits: {},
     deletedContactIds: [],

@@ -35,7 +35,7 @@ import type { Visit } from "@/domain/scheduling/conflicts";
  * IS this week, moved.
  */
 export function SaturdayRunCard() {
-  const { approvedDrafts, approveDraft, currentUser } = useDemo();
+  const { approvedDrafts, approveDraft, sendInvoice, currentUser } = useDemo();
 
   const weekStart = useMemo(() => upcomingBillingWeek(new Date().toISOString()), []);
 
@@ -168,11 +168,36 @@ export function SaturdayRunCard() {
                     <span className="text-sm font-semibold tabular-nums">
                       ${(draft.subtotal ?? 0).toFixed(2)}
                     </span>
-                    {approved ? (
+                    {approved?.sentAs ? (
                       <span className="flex items-center gap-1 text-xs text-[hsl(var(--success))]">
                         <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        Approved by {approved.by}
+                        Sent as {approved.sentAs}
                       </span>
+                    ) : approved ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-xs text-[hsl(var(--success))]">
+                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                          {approved.by}
+                        </span>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            sendInvoice({
+                              key,
+                              clientPersonId: draft.clientPersonId,
+                              clientName: draft.clientName,
+                              weekStart: draft.weekStart,
+                              weekEnd: draft.weekEnd,
+                              total: draft.subtotal ?? 0,
+                            });
+                            toast.success(
+                              `${draft.clientName}'s invoice is on its way — the family is told one exists, and the figures wait in the portal.`,
+                            );
+                          }}
+                        >
+                          Send
+                        </Button>
+                      </div>
                     ) : (
                       <Button size="sm" variant="outline" onClick={() => approve(i)}>
                         Approve

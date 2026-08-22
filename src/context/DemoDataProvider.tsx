@@ -19,7 +19,7 @@ import { seedContacts } from "@/lib/peopleSeed";
 import { recordAudit } from "@/lib/demoAudit";
 import type { AuditRecord } from "@/domain/audit/audit";
 import { paymentRefusals, type Payment, type PaymentRefusal } from "@/domain/billing/receivables";
-import { externalPaymentRecorded, invoiceApproved } from "@/domain/billing/financialAudit";
+import { externalPaymentRecorded, invoiceApproved, invoiceIssued } from "@/domain/billing/financialAudit";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 
 /**
@@ -69,6 +69,19 @@ interface DemoContextValue extends DemoState {
   recordExternalPayment: (payment: Payment) => PaymentRefusal[];
   /** §7.2 step 6: an authorized person approves a draft, with their name on it. */
   approveDraft: (key: string, summary: { total: number; lineCount: number; ratePlanVersionId: string | null }) => void;
+  /**
+   * §7.2 step 8's other half: an approved draft goes out. The JH- number is
+   * assigned here, the family notification queues (§9.4's words — a thing
+   * exists, no amount), and the invoice lands in Outstanding.
+   */
+  sendInvoice: (input: {
+    key: string;
+    clientPersonId: string;
+    clientName: string;
+    weekStart: string;
+    weekEnd: string;
+    total: number;
+  }) => void;
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
   reset: () => void;
@@ -683,6 +696,77 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     }));
   }, [audit]);
 
+  const sendInvoice = useCallback<DemoContextValue["sendInvoice"]>((input) => {
+    const state = stateRef.current;
+    const number = `JH-${state.nextInvoiceNumber}`;
+    const today = new Date().toISOString().slice(0, 10);
+    const dueOn = (() => {
+      const d = new Date(`${today}T12:00:00`);
+      d.setDate(d.getDate() + 1); // due within one calendar day, per the packet
+      return d.toISOString().slice(0, 10);
+    })();
+
+    audit(
+      invoiceIssued({ invoiceId: number, total: input.total, dueOn }),
+    );
+
+    setState((s) => ({
+      ...s,
+      nextInvoiceNumber: s.nextInvoiceNumber + 1,
+      issuedInvoices: [
+        {
+          id: `inv-${number}`,
+          invoiceNumber: number,
+          clientPersonId: input.clientPersonId,
+          clientName: input.clientName,
+          weekStart: input.weekStart,
+          weekEnd: input.weekEnd,
+          total: input.total,
+          issuedOn: today,
+          dueOn,
+          writtenOffOn: null,
+          writtenOffReason: null,
+        },
+        ...s.issuedInvoices,
+      ],
+      // §9.4: the text says an invoice exists; the portal holds the figures.
+      communications: [
+        {
+          id: newId("comm"),
+          entityType: "invoice",
+          entityId: number,
+          recipientName: input.clientName,
+          channel: "sms" as const,
+          provider: "spruce",
+          templateKey: "invoice_notification",
+          status: "queued" as const,
+          providerMessageId: null,
+          errorMessage: null,
+          createdAt: new Date().toISOString(),
+          sentAt: null,
+        },
+        ...s.communications,
+      ],
+      domainEvents: [
+        {
+          id: newId("evt"),
+          eventType: "invoice.issued",
+          aggregateType: "invoice",
+          aggregateId: number,
+          status: "pending" as const,
+          createdAt: new Date().toISOString(),
+        },
+        ...s.domainEvents,
+      ],
+      // The sent draft is done; keep the approval record, mark it sent by
+      // pointing at the number.
+      approvedDrafts: {
+        ...s.approvedDrafts,
+        [input.key]: { ...s.approvedDrafts[input.key], sentAs: number },
+      },
+    }));
+  }, [audit]);
+
   const hireEmployee = useCallback<DemoContextValue["hireEmployee"]>((employee) => {
     audit({
       action: "employee.hired",
@@ -733,6 +817,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       assignShift,
       recordExternalPayment,
       approveDraft,
+      sendInvoice,
       currentUser: state.currentUser,
       setCurrentUser,
       saveAssessment,
@@ -744,7 +829,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, setCurrentUser, reset],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
