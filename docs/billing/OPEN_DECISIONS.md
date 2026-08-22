@@ -73,7 +73,7 @@ page may or may not already be it.
 whether a separate authorisation is required. This is a question for the same
 legal review as the one-signature-reuse item already on Karynn's list.
 
-### 5. Retry cadence, grace period, late fees, service hold — BLOCKING (partly answered)
+### 5. Retry cadence, grace period, late fees, service hold — ANSWERED (hold policy still open)
 
 The packet gives the fees: $100 after the third day of an outstanding invoice, a
 fee on anything not paid in full within two business days.
@@ -83,8 +83,15 @@ non-payment — *may*, not must — and Karynn has said cancelling for non-payme
 is real and does happen. Joy already treats this as advisory: `ageing()` reports
 that suspension is permitted and never acts.
 
-*Needed:* the retry cadence, and who approves a hold. The retry cadence is
-blocking; the hold policy is not, because Joy will not automate it either way.
+**Retry cadence answered.** Karynn, 22 August: one automatic retry the next
+day, same method, then it becomes a conversation — "On Wednesday, the family
+should receive an email and on Thursday, a text to pay their bill." Held in
+`DUNNING` (domain/billing/dunning.ts); the Thursday text is the
+`payment_reminder` template. §7.4's rule stands: never a different saved
+method automatically.
+
+*Still open:* who approves a service hold. Not blocking — Joy will not
+automate suspension either way.
 
 ### 6. Refund, credit, void, write-off, dispute, overpayment authority — PARTLY ANSWERED
 
@@ -129,9 +136,12 @@ Partly built rather than decided: grants are per person, revocation is
 attributable, and the packet's disclosure list already names who Joy may discuss
 care with.
 
-*Needed:* what happens to a portal grant and an outstanding balance when a
-client dies. The seeded roster has a discharged client who transitioned to
-hospice, so this is not hypothetical.
+**Answered.** Karynn, 22 August: "Portal stays open for the payer." The care
+surface closes; the finance surface survives — the responsible party sees the
+final invoices and the balance and can pay it, and the balance is collected
+normally. Held as `actionsAfterCareEnds` (portal/identity.ts): a per-action
+filter, not a revocation, so the record of what the person could do while care
+was live stays whole.
 
 ### 12. Whether payment failure may affect start of care — ANSWERED IN PRINCIPLE
 
@@ -152,11 +162,11 @@ gate already exists — so this is a confirmation, not a design question.
 | 2 | Quantity billed for the upcoming week | Answered — agreement hours + carry-forward |
 | 3 | Collection methods | Answered — all private pay |
 | 4 | Off-session authorisation | **Blocking**, legal |
-| 5 | Retry cadence | **Blocking** (fees and hold policy answered) |
+| 5 | Retry cadence | Answered — retry next day, email Wed, text Thu |
 | 6 | Refund and write-off authority | Partly answered |
 | 7 | Legal record of the invoice | Recommendation made |
 | 8 | Tap to Pay | Recommend deferring |
-| 9 | Split payers | Needs a yes or no |
+| 9 | Split payers | Answered — yes, it happens; built in 0019 |
 | 10 | Tax | Needs an adviser |
-| 11 | Deceased or incapacitated client | Needs a decision |
+| 11 | Deceased or incapacitated client | Answered — portal stays open for the payer |
 | 12 | Payment failure and start of care | Answered in principle |

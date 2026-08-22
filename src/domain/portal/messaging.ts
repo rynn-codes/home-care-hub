@@ -112,7 +112,9 @@ export type MessagePurpose =
   /** §9.4 — a new invoice exists. The portal has the detail; this never does. */
   | "invoice_notification"
   /** §9.4 — the saved payment method needs attention. Same rule. */
-  | "payment_method_notification";
+  | "payment_method_notification"
+  /** The Thursday nudge — Karynn's dunning rhythm. Says a bill exists, never how much. */
+  | "payment_reminder";
 
 /**
  * Which number carries which message.
@@ -167,6 +169,7 @@ export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
   shift_notification: "spruce",
   invoice_notification: "spruce",
   payment_method_notification: "spruce",
+  payment_reminder: "spruce",
 };
 
 /**
@@ -286,6 +289,11 @@ export function composeMessage(
         // Never why. "Card declined" or "card expired" on a lock screen is a
         // financial fact about the family; "needs attention" is a doorbell.
         return `${name}your payment method needs attention. Sign in to Joy Health to update it: ${link}`;
+
+      case "payment_reminder":
+        // Karynn's Thursday text. No amount, no "overdue", no late-fee threat
+        // on a lock screen — the ask, and the door.
+        return `${name}you have a Joy Health invoice awaiting payment. Sign in to pay it: ${link}`;
     }
   })();
 

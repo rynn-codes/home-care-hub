@@ -28,11 +28,12 @@ import type { TimeEntry } from "@/domain/payroll/hours";
  * Which one it is, in every case, is a judgement somebody makes. So neither
  * figure is ever computed and stored without a name against it.
  *
- * WHAT THIS DELIBERATELY DOES NOT DO. It does not round. Rounding to the
- * nearest quarter hour is common in this industry and it is a business decision
- * with money attached in both directions — it belongs in Karynn's open
- * decisions, not in an arithmetic helper that quietly shaves six minutes off
- * every visit.
+ * WHAT THIS DELIBERATELY DOES NOT DO. It does not round — and that is now
+ * CONFIRMED BY KARYNN, 22 August: "Exact minutes, no rounding." The clock says
+ * 3 hours 52 minutes, the suggestion says 232, and both ledgers carry what was
+ * approved to the minute. Nearest-quarter-hour rounding is common in this
+ * industry and was offered; she declined it. Nobody should reintroduce it as a
+ * tidy-up.
  */
 
 export type UnitState = "proposed" | "verified" | "superseded";

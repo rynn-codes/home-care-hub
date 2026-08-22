@@ -477,6 +477,16 @@ Recorded here so they are not only in a chat log.
   calendar. And split payers are real: 0019 replaces the one-payer refusal
   with shares that never exceed 100, a run that refuses to draft while they
   total less, and one invoice per payer per week.
+- **Three more answers, built** (22 August, second round). Exact minutes, no
+  rounding — confirmed and pinned in `verifiedUnit.ts` so nobody reintroduces
+  quarter-hour rounding as a tidy-up. The dunning rhythm is data
+  (`domain/billing/dunning.ts`): one automatic retry the next day on the same
+  method, an email Wednesday, a text Thursday (`payment_reminder`, no amount
+  and no threat on a lock screen), then a phone call — never a process. And
+  after a death the payer's portal stays open: `actionsAfterCareEnds` closes
+  the care surface and keeps the finance one, as a per-action filter rather
+  than a revocation, so the final invoices are visible and payable without a
+  phone call to ask what is owed.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–

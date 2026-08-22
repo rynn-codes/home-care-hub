@@ -131,6 +131,40 @@ export function grantAllows(grant: PortalGrant, action: GrantAction, today: stri
 }
 
 /**
+ * What survives the end of care — a discharge, or a death.
+ *
+ * Karynn, 22 August, asked what happens to a family's portal when a client
+ * passes away: "Portal stays open for the payer." So the grant is not revoked.
+ * The care surface closes — there are no more updates, and showing a dead
+ * client's chart to a grieving family as though care were ongoing is its own
+ * kind of wrong — but the FINANCE surface stays exactly as it was: the
+ * responsible party can see the final invoices, see the balance, and pay it,
+ * without a phone call to ask what they owe.
+ *
+ * This is a per-action filter, not a state change, on purpose. Revoking and
+ * re-granting would destroy the record of what the person could do while care
+ * was live; the grant stays whole and the care actions simply stop passing.
+ */
+export function actionsAfterCareEnds(grant: PortalGrant): GrantAction[] {
+  const FINANCE: GrantAction[] = [
+    "view_invoices",
+    "pay_invoice",
+    "manage_payment_methods",
+    "download_documents",
+  ];
+  return (grant.allowedActions ?? []).filter((a) => FINANCE.includes(a));
+}
+
+/** grantAllows, after the client's care has ended. */
+export function grantAllowsAfterCareEnds(
+  grant: PortalGrant,
+  action: GrantAction,
+  today: string,
+): boolean {
+  return actionsAfterCareEnds(grant).includes(action) && grantAllows(grant, action, today);
+}
+
+/**
  * Why access was withdrawn.
  *
  * A closed list rather than free text, because these are the reasons that

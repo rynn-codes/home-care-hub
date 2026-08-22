@@ -12,6 +12,8 @@ import {
   resolvePortal,
   workforceNextStep,
   grantAllows,
+  grantAllowsAfterCareEnds,
+  actionsAfterCareEnds,
   type PortalGrant,
 } from "@/domain/portal/identity";
 import {
@@ -567,5 +569,52 @@ describe("grantAllows — §9.1's widened grant, mirrored from 0018", () => {
   it("a workforce grant is not a finance surface", () => {
     const caregiver = grant({ audience: "workforce", subjectPersonId: null });
     expect(grantAllows(caregiver, "view_invoices", TODAY)).toBe(false);
+  });
+});
+
+describe("after a death, the payer's portal stays open", () => {
+  // Karynn, 22 Aug: "Portal stays open for the payer." The care surface
+  // closes; the finance surface does not — the final invoices, the balance,
+  // and the means to pay it, without a phone call to ask what is owed.
+  const daughter: PortalGrant = {
+    audience: "family",
+    personId: "p-susan",
+    subjectPersonId: "c-marcus",
+    greetingName: "Susan",
+    subjectName: "Marcus",
+    state: "closed",
+    active: true,
+    role: "responsible_party",
+    allowedActions: ["view_invoices", "pay_invoice", "view_care_updates"],
+    effectiveFrom: "2026-01-01",
+    effectiveTo: null,
+  };
+
+  it("keeps the finance actions and drops the care ones", () => {
+    expect(actionsAfterCareEnds(daughter)).toEqual(["view_invoices", "pay_invoice"]);
+    expect(grantAllowsAfterCareEnds(daughter, "pay_invoice", "2026-08-22")).toBe(true);
+    expect(grantAllowsAfterCareEnds(daughter, "view_care_updates", "2026-08-22")).toBe(false);
+  });
+
+  it("never widens — an action the grant did not carry does not appear", () => {
+    const son: PortalGrant = { ...daughter, allowedActions: ["view_care_updates"] };
+    expect(actionsAfterCareEnds(son)).toEqual([]);
+  });
+
+  it("a revocation still ends everything — the filter is not a bypass", () => {
+    const revoked: PortalGrant = { ...daughter, active: false };
+    expect(grantAllowsAfterCareEnds(revoked, "pay_invoice", "2026-08-22")).toBe(false);
+  });
+});
+
+describe("the Thursday reminder text", () => {
+  it("asks for payment without an amount, a threat, or the word overdue", () => {
+    const msg = composeMessage("payment_reminder", "+17132319662", {
+      firstName: "Susan",
+      link: "https://joy.example/p/abc",
+    });
+    expect(msg.body).toContain("awaiting payment");
+    expect(msg.body).not.toMatch(/\$|\d+\.\d{2}|overdue|late fee/i);
+    expect(msg.carrier).toBe("spruce");
   });
 });
