@@ -314,8 +314,11 @@ Supabase project.
    Roadmap, the Product Bible, the two-page Client Intake Form and the Joy
    nursing assessment. Hiring and Phone Intake should not be considered fully
    specified until those are read.
-5. **The legal review of one-signature reuse has not been booked.** Karynn's to
-   arrange. Consents themselves now record Agree / Decline / N/A.
+5. ~~The legal review of one-signature reuse has not been booked.~~ Settled by
+   Karynn, 22 August: one signature with initials is the approach, applied only
+   after the completed agreement is reviewed in its entirety — the read-back
+   step in `ConsentSigning` renders every clause with the client's answers
+   filled in, and the signature button sits past the end of it.
 6. **`supabase/functions/mcp/index.ts` is a generated file tracked in git.** It
    regenerates on install and produces surprise diffs. Either gitignore it and
    build on deploy, or own it deliberately.
@@ -488,6 +491,20 @@ Recorded here so they are not only in a chat log.
   payer's portal stays open exactly as long as money is owed and closes when
   it settles: `actionsAfterCareEnds` + `portalAfterDeath`, with closure a
   named revocation, never an automatic one.
+- **The professional-review round, answered by Karynn herself** (22 August).
+  Off-session charging authority is Joy's OWN authorization form, captured at
+  payment setup — the FreshBooks arrangement ("they had that covered on their
+  end") does not travel to Stripe, which is why the form exists; the Stripe
+  work is unblocked on this point. The agreement is corrected and now states
+  bill in advance — the Billing screen note shrank to a one-liner for the old
+  signed copies still in drawers, and the consent registry carries the
+  corrected sentence (verify against the reprint when in hand). The charges
+  are the fees already built — 2.9% card, $5 ACH, $100 late fee — with no
+  separate tax line, and the late fee is now WAIVABLE per invoice, attributed,
+  with the forgiveness visible on the ageing message and the debt unforgiven.
+  And the signing flow gained its read-back step: the completed agreement,
+  every clause with the client's answers, reviewed in its entirety before one
+  signature and one set of initials.
 - **The Sunday gate** (22 August). Asked about write-off authority, Karynn
   answered with the policy that makes it moot: payment is due Sunday before
   the care week, non-payment stops services, and the one-week deposit covers

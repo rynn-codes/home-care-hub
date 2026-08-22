@@ -92,6 +92,12 @@ export interface DemoConsentSession {
   witnessName?: string | null;
   witnessRole?: UserRole | null;
   signerRelationship: string | null;
+  /**
+   * When the completed document — every clause, this client's answers — was
+   * reviewed in its entirety before signing. Karynn's requirement, 22 August:
+   * nobody signs a summary.
+   */
+  reviewedCompletedAt?: string | null;
   signedAt: string | null;
 }
 

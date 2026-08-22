@@ -57,11 +57,18 @@ export const DELIVERY_LABELS: Record<DeliveryPreference, string> = {
 /**
  * Whether Joy may charge a saved method when nobody is present.
  *
- * §18.4 is an OPEN BUSINESS DECISION with legal weight: charging a card
- * off-session needs recorded authority, and whether the signed agreement
- * already constitutes it has not been confirmed. So this is recorded as a fact
- * about a particular account rather than assumed from the payment method
- * existing — a saved card is not permission.
+ * ANSWERED — §18.4 was the open question with legal weight, and Karynn closed
+ * it on 22 August: "We already have an authorization form. That form can be
+ * set up during the billing part. We were using FreshBooks and were told we
+ * didn't need an auth form bc FreshBooks had that covered on their end. But
+ * since we are switching we have our own form."
+ *
+ * So the authority is JOY'S OWN FORM, captured during payment setup — not the
+ * service agreement's payment page, and not anything a processor holds on
+ * Joy's behalf (that was the FreshBooks arrangement, and it does not travel).
+ * `authorizationDocumentId` points at the signed form; `captured` means it is
+ * on file. The rule stands unchanged: a saved card is not permission, and an
+ * automatic account cannot be ready without this.
  */
 export type AuthorizationStatus = "not_captured" | "captured" | "withdrawn";
 
@@ -138,7 +145,7 @@ export type AccountGap =
 export const ACCOUNT_GAP_MESSAGES: Record<AccountGap, string> = {
   no_payment_method: "No payment method on file.",
   no_authorization:
-    "Nobody has recorded authority to charge this account. A saved card is not permission.",
+    "Joy's payment authorization form is not on file for this account. A saved card is not permission — capture the form during payment setup.",
   authorization_withdrawn: "Authority to charge this account has been withdrawn.",
   no_billing_contact: "No billing e-mail or phone, so an invoice has nowhere to go.",
   no_clients: "This account pays for nobody.",

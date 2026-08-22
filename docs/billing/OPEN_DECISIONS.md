@@ -63,15 +63,23 @@ rather than a billing one.
 *Still open, smaller:* whether Joy produces a reimbursement pack for those
 clients, and what is in it.
 
-### 4. Authorisation language and evidence for off-session charges — BLOCKING
+### 4. Authorisation language and evidence for off-session charges — ANSWERED
 
-Not answered, and this is the one with legal weight. Charging a saved card
-without the payer present requires recorded authority, and the packet's payment
-page may or may not already be it.
+Karynn, 22 August: "We already have an authorization form. That form can be
+set up during the billing part. We were using FreshBooks and were told we
+didn't need an auth form bc FreshBooks had that covered on their end. But
+since we are switching we have our own form."
 
-*Needed:* whether the existing signed agreement covers off-session charging, or
-whether a separate authorisation is required. This is a question for the same
-legal review as the one-signature-reuse item already on Karynn's list.
+So: Joy's own authorization form, captured during payment setup, is the
+recorded authority — `authorization_document_id` points at it, and an
+automatic account cannot be ready without it (0014's constraint, unchanged).
+The FreshBooks arrangement does not travel to Stripe, which is exactly why the
+form exists. The Stripe work is unblocked on this point.
+
+**Related, settled the same day:** the one-signature question. The consent is
+one signature with initials — and the signing flow now requires the COMPLETED
+agreement, every clause with the client's answers filled in, to be reviewed in
+its entirety before the pen (the read-back step in ConsentSigning).
 
 ### 5. Retry cadence, grace period, late fees, service hold — ANSWERED (hold policy still open)
 
@@ -132,10 +140,18 @@ never exceeding 100 (deferred trigger), the run refusing to draft while they
 total less, and one invoice per payer per week, each for their share of the
 agreement and of any carried lines.
 
-### 10. Tax treatment
+### 10. Tax treatment — ANSWERED BY KARYNN
 
-Not answered. `buildInvoice` has no tax line. *Needed:* confirmation from a
-qualified adviser that none is required, or what is.
+Karynn, 22 August: "Taxes are to be charged, 2.9% on all cards and $5 fee on
+ACH. Late fee is $100. We should be allowed the option to waive the late fee."
+
+Read carefully, that is a statement that the CHARGES are the convenience fees
+and the late fee — all three already built — and that no separate sales-tax
+line exists. The late-fee waiver is new and built: per invoice, attributed
+("waived by Karynn Verrett" stays on the ageing message), and forgiving the
+fee never forgives the debt. A one-line confirmation from the accountant that
+Texas home-care services carry no sales tax remains a sensible thing to file,
+but nothing is blocked on it.
 
 ### 11. Portal authorisation documentation, proxy access, revocation, deceased or incapacitated clients
 
@@ -168,12 +184,12 @@ gate already exists — so this is a confirmation, not a design question.
 | 1 | Weekly cutoff and charge date | Answered — Sat–Fri week, draft Sat AM, approve Sat–Mon |
 | 2 | Quantity billed for the upcoming week | Answered — agreement hours + carry-forward |
 | 3 | Collection methods | Answered — all private pay |
-| 4 | Off-session authorisation | **Blocking**, legal |
+| 4 | Off-session authorisation | Answered — Joy's own form, captured at payment setup |
 | 5 | Retry cadence | Answered — daily emails from Wed, text Thu, call+text Fri, stop Sun |
 | 6 | Refund and write-off authority | Answered in substance — Sunday gate + deposit backstop |
 | 7 | Legal record of the invoice | Recommendation made |
 | 8 | Tap to Pay | Recommend deferring |
 | 9 | Split payers | Answered — yes, it happens; built in 0019 |
-| 10 | Tax | Needs an adviser |
+| 10 | Tax | Answered — fees only, no tax line; waivable late fee built |
 | 11 | Deceased or incapacitated client | Answered — open for the payer until settled, then closed |
 | 12 | Payment failure and start of care | Answered in principle |

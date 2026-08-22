@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useDemo } from "@/context/DemoDataProvider";
 import {
   CONSENTS,
+  CONSENT_GROUPS,
   consentReadiness,
   consentsByGroup,
   declineConsequences,
@@ -50,11 +51,16 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
 
   const [decisions, setDecisions] = useState<ConsentDecisions>(() => stored?.decisions ?? {});
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"review" | "sign" | "done">(stored?.signedAt ? "done" : "review");
+  const [phase, setPhase] = useState<"review" | "read_back" | "sign" | "done">(
+    stored?.signedAt ? "done" : "review",
+  );
   const [signerName, setSignerName] = useState(stored?.signerName ?? "");
   const [signerRelationship, setSignerRelationship] = useState(stored?.signerRelationship ?? "");
   const [signature, setSignature] = useState("");
   const [initials, setInitials] = useState("");
+  const [reviewedCompletedAt, setReviewedCompletedAt] = useState<string | null>(
+    stored?.reviewedCompletedAt ?? null,
+  );
 
   const readiness = useMemo(() => consentReadiness(decisions), [decisions]);
   const consequences = useMemo(() => declineConsequences(decisions), [decisions]);
@@ -112,7 +118,7 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
     );
   }
 
-  if (phase === "sign") {
+  if (phase === "sign" || phase === "read_back") {
     // Karynn's rule, 18 Aug: only an RN or the Admin/Owner may take the
     // client's signature. Everyone else can still run the review and record
     // decisions — this stops at the signature, not at the conversation.
@@ -135,6 +141,76 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
             </Button>
             <Button variant="ghost" onClick={onBack}>
               Back to the assessment
+            </Button>
+          </div>
+        </section>
+      );
+    }
+
+    if (phase === "read_back") {
+      // Karynn, 22 August: "When it comes time to sign the agreement, the
+      // agreement should be filled out and the client should have the ability
+      // to review the completed document in its entirety and then sign." So
+      // between deciding and signing sits the whole document, completed with
+      // this client's name and this client's answers — and the only way to the
+      // pen is past the end of it. Nobody signs a summary.
+      return (
+        <section className="rounded-2xl border border-border bg-surface p-8">
+          <h2 className="text-xl font-semibold tracking-tight">The completed agreement</h2>
+          <p className="mt-2 max-w-prose text-sm text-muted-foreground">
+            This is the whole document as it will be signed — every clause in full, with{" "}
+            {clientName}'s answers filled in. The signature button is at the end, past all of it.
+          </p>
+
+          <article className="mt-6 space-y-6 border-y border-border py-6">
+            <p className="text-sm">
+              Service agreement and consents between <strong>{clientName}</strong> and Joy
+              Health, prepared {new Date().toLocaleDateString()}.
+            </p>
+            {CONSENT_GROUPS.map(({ group, title }) => (
+              <div key={group}>
+                <h3 className="text-sm font-semibold">{title}</h3>
+                <div className="mt-2 space-y-4">
+                  {CONSENTS.filter((c) => c.group === group).map((c) => (
+                    <div key={c.key} className="rounded-xl border border-border p-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="text-sm font-medium">{c.title}</p>
+                        <span
+                          className={cn(
+                            "text-xs font-medium",
+                            decisions[c.key] === "agree"
+                              ? "text-[hsl(var(--success))]"
+                              : "text-[hsl(var(--warning))]",
+                          )}
+                        >
+                          {decisions[c.key] === "agree"
+                            ? "Agreed"
+                            : decisions[c.key] === "decline"
+                              ? "Declined"
+                              : "Not applicable"}
+                        </span>
+                      </div>
+                      <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
+                        {c.fullText}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </article>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Button
+              onClick={() => {
+                setReviewedCompletedAt(new Date().toISOString());
+                setPhase("sign");
+              }}
+            >
+              {clientName} has reviewed the completed agreement — sign it
+            </Button>
+            <Button variant="ghost" onClick={() => setPhase("review")}>
+              Back to the decisions
             </Button>
           </div>
         </section>
@@ -191,9 +267,10 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
           </div>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          A typed signature stands in for handwriting in this prototype. A real signature pad is
-          needed before this is used with a client, and legal review of reusing one signature
-          across separate authorizations is still outstanding.
+          A typed signature stands in for handwriting in this prototype; a real signature pad is
+          needed before this is used with a client. One signature with initials is Joy's settled
+          approach — Karynn, 22 August — applied only after the completed document has been
+          reviewed in its entirety.
         </p>
 
         <dl className="mt-6 divide-y divide-border border-y border-border">
@@ -221,6 +298,9 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
                 signerRelationship,
                 witnessName: currentUser.name,
                 witnessRole: currentUser.role,
+                // The record that the whole completed document was in front of
+                // them before the pen — Karynn's requirement, 22 August.
+                reviewedCompletedAt,
                 signedAt: new Date().toISOString(),
               });
               setPhase("done");
@@ -321,8 +401,8 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
       )}
 
       <div className="mt-7 flex flex-wrap gap-2 border-t border-border pt-5">
-        <Button disabled={!readiness.canSign} onClick={() => setPhase("sign")}>
-          Sign the packet
+        <Button disabled={!readiness.canSign} onClick={() => setPhase("read_back")}>
+          Review the completed agreement
         </Button>
         <Button variant="ghost" onClick={onBack}>
           Back to the assessment

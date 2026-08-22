@@ -150,7 +150,11 @@ export const CONSENTS: ConsentItem[] = [
     mark: "initials",
     mandatory: true,
     fullText:
-      "I understand Joy Healthcare Services, LLC. will invoice every week in advance. Due to billing in arrears, the undersigned agrees to submit payment within 1 calendar day. Payments will be collected via credit card, debit card, auto-pay, or ACH depending on your preference. The undersigned will be legally responsible for all collection activity fees; legal fees incurred by Joy Healthcare Services, LLC. for collecting on delinquent invoices/monies owed to Joy Healthcare Services, LLC. Joy Healthcare Services, LLC applies a 2.9% convenience fee to all credit card payments and a $5 convenience fee to ACH debit payments. A fee will also apply to any outstanding invoice not paid in full within two (2) business days. Services may be suspended within 24 hours of non-payment. A late fee will incur after the third day of an outstanding invoice of $100. If a third party is utilized for payment of services, it is still the sole responsibility of the undersigned to ensure Joy Healthcare Services, LLC. receives payment on-time.",
+      // Corrected wording. Karynn, 22 August: "We have corrected the agreement
+      // and it now states bill in advance." The transcription below follows
+      // the corrected print; verify the exact sentence against the reprint
+      // when it is in hand. The old copies said "due to billing in arrears".
+      "I understand Joy Healthcare Services, LLC. will invoice every week in advance. As billing is in advance, the undersigned agrees to submit payment within 1 calendar day. Payments will be collected via credit card, debit card, auto-pay, or ACH depending on your preference. The undersigned will be legally responsible for all collection activity fees; legal fees incurred by Joy Healthcare Services, LLC. for collecting on delinquent invoices/monies owed to Joy Healthcare Services, LLC. Joy Healthcare Services, LLC applies a 2.9% convenience fee to all credit card payments and a $5 convenience fee to ACH debit payments. A fee will also apply to any outstanding invoice not paid in full within two (2) business days. Services may be suspended within 24 hours of non-payment. A late fee will incur after the third day of an outstanding invoice of $100. If a third party is utilized for payment of services, it is still the sole responsibility of the undersigned to ensure Joy Healthcare Services, LLC. receives payment on-time.",
   },
   {
     key: "changes_and_cancellation",

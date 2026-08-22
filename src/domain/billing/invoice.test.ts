@@ -267,7 +267,9 @@ describe("Joy bills in advance", () => {
     // Ambiguous invites a judgement call at the desk. Wrong tells somebody
     // which sentence to ignore.
     expect(PACKET_CONTRADICTION).toContain("Joy bills in advance");
-    expect(PACKET_CONTRADICTION).toContain("incorrect");
+    // The agreement is corrected now; the note survives for old signed copies.
+    expect(PACKET_CONTRADICTION).toContain("corrected");
+    expect(PACKET_CONTRADICTION).toContain("in advance is right");
   });
 });
 
@@ -450,5 +452,41 @@ describe("pricing from a rate version", () => {
     });
     expect(invoice.subtotal).toBe(240);
     expect(invoice.ratePlanVersionId).toBeNull();
+  });
+});
+
+describe("the late fee can be forgiven, by name", () => {
+  // Karynn, 22 August: "Late fee is $100. We should be allowed the option to
+  // waive the late fee."
+  it("applies after the third day, as the agreement says", () => {
+    const late = ageing({ dueOn: "2026-08-10", paid: false, asOf: "2026-08-15", total: 480 });
+    expect(late.lateFeeDue).toBe(100);
+  });
+
+  it("waives it when somebody chooses to, and says who", () => {
+    const forgiven = ageing({
+      dueOn: "2026-08-10",
+      paid: false,
+      asOf: "2026-08-15",
+      total: 480,
+      lateFeeWaivedBy: "Karynn Verrett",
+    });
+    expect(forgiven.lateFeeDue).toBe(0);
+    // The forgiveness stays visible — a waived fee that vanishes reads later
+    // like a fee that never accrued.
+    expect(forgiven.message).toContain("waived by Karynn Verrett");
+    // The overdue days still count; forgiving the fee is not forgiving the debt.
+    expect(forgiven.daysOverdue).toBeGreaterThan(0);
+  });
+
+  it("a waiver on an invoice that is not yet late changes nothing", () => {
+    const early = ageing({
+      dueOn: "2026-08-14",
+      paid: false,
+      asOf: "2026-08-15",
+      total: 480,
+      lateFeeWaivedBy: "Karynn Verrett",
+    });
+    expect(early.message).not.toContain("waived");
   });
 });

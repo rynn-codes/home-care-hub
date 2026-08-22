@@ -60,29 +60,24 @@ import { billableHours, type VerifiedServiceUnit } from "@/domain/service/verifi
  */
 
 /**
- * JOY BILLS IN ADVANCE. The packet's arrears sentence is a mistake.
+ * JOY BILLS IN ADVANCE — and the agreement now says so.
  *
- * Karynn, 21 August: "We bill in advance. Make sure that is noted. In arrears is
- * incorrect." That is the business owner correcting her own document, not an
- * inference from it, and it settles a question that has been open since Billing
- * was built. The specification agrees independently — evidence J-05, Joy
- * invoices the upcoming care week — but her sentence is the authority.
+ * The history, because old signed copies are still in drawers: the packet
+ * carried both "will invoice every week in advance" and "due to billing in
+ * arrears" in adjacent sentences. Karynn ruled on 21 August ("In arrears is
+ * incorrect") and confirmed on 22 August: "We have corrected the agreement and
+ * it now states bill in advance."
  *
- * The note stays on the Billing screen, and it now says the packet is WRONG
- * rather than that it is ambiguous. Those are different things to tell somebody.
- * Ambiguous invites a judgement call at the desk; wrong tells them which
- * sentence to ignore and that a corrected packet is coming.
- *
- * IT STAYS UNTIL THE REPRINT because the client-facing document is still out
- * there. A family reading their signed agreement finds a sentence saying they
- * are billed in arrears, and the first time that matters is an argument about a
- * week nobody has delivered yet — with the family holding a signed page that
- * appears to support them.
+ * The note SHRINKS but does not disappear. Every agreement signed before the
+ * correction still carries the arrears sentence, and the first time that
+ * matters is a billing dispute with a family holding a signed page that
+ * appears to support them. The office needs the one-liner ready until the
+ * last pre-correction agreement is off the books.
  */
 export const PACKET_CONTRADICTION =
-  'Joy bills in advance. The agreement also carries the sentence "due to billing in arrears", ' +
-  "which is incorrect and is on the list for the next printing. Where the two disagree, in " +
-  "advance is right — Karynn, 21 August.";
+  "Joy bills in advance, and the corrected agreement says so (22 August). Agreements signed " +
+  'before the correction carry an old "in arrears" sentence — where an old copy disagrees, ' +
+  "in advance is right.";
 
 /** From the signed agreement. */
 export const OVERTIME_AFTER_HOURS = 40;
@@ -550,6 +545,13 @@ export function ageing(input: {
   asOf: string;
   /** Nothing to pay. A deposit-covered week is settled, not late. */
   total?: number | null;
+  /**
+   * Karynn, 22 August: "We should be allowed the option to waive the late
+   * fee." The waiver is per invoice and attributed — who chose to forgive it —
+   * because a fee that silently never applies is a policy nobody remembers
+   * deciding, and a fee waived by name is a kindness somebody chose.
+   */
+  lateFeeWaivedBy?: string | null;
 }): Ageing {
   if (input.paid) {
     return { daysOverdue: 0, lateFeeDue: 0, suspensionPermitted: false, message: "Paid." };
@@ -580,11 +582,17 @@ export function ageing(input: {
     };
   }
 
-  const lateFeeDue = days > LATE_FEE_AFTER_DAYS ? LATE_FEE : 0;
+  const waived = Boolean(input.lateFeeWaivedBy);
+  const lateFeeDue = !waived && days > LATE_FEE_AFTER_DAYS ? LATE_FEE : 0;
   const suspensionPermitted = days * 24 >= SUSPENSION_AFTER_HOURS;
 
   const parts = [`${days} ${days === 1 ? "day" : "days"} overdue.`];
   if (lateFeeDue) parts.push(`$${LATE_FEE} late fee applies.`);
+  if (waived && days > LATE_FEE_AFTER_DAYS) {
+    // The forgiveness stays visible. A waived fee that vanishes reads, three
+    // weeks later, like a fee that never accrued.
+    parts.push(`Late fee waived by ${input.lateFeeWaivedBy}.`);
+  }
   if (suspensionPermitted) {
     // Said as a fact about the agreement, not as a recommendation.
     parts.push("The agreement permits suspending service — that is a call for a person to make.");

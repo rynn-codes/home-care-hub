@@ -262,7 +262,7 @@ export default function Billing() {
         <p className="flex items-start gap-2 text-sm">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
           <span>
-            <span className="font-medium">The packet has this wrong.</span>{" "}
+            <span className="font-medium">The agreement is corrected.</span>{" "}
             {PACKET_CONTRADICTION}
           </span>
         </p>
