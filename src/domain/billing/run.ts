@@ -41,21 +41,37 @@ import type { CarryForwardLine } from "@/domain/billing/invoice";
  *
  * So the billing week is SATURDAY through FRIDAY — the same seven days as the
  * Gusto payroll week, which means payroll, billing and Gusto all agree on what
- * "the week" is. The run drafts Saturday morning for the week beginning that
- * Saturday (Joy bills in advance); approval happens Saturday to Monday; the
- * invoice or charge goes out on approval.
+ * "the week" is. And the Saturday draft bills the week beginning the FOLLOWING
+ * Saturday. Karynn's worked example (22 August) settles the offset: "Client is
+ * billed on Aug 10th for services that will start on Aug 15–21st" — invoice
+ * out Monday the 10th means drafted Saturday the 8th, billing the week of the
+ * 15th. A week's head start is what makes the whole collection rhythm
+ * possible: reminders Thursday and Friday, and the Sunday gate, all BEFORE
+ * Joy is more than a weekend exposed.
  */
 export const BILLING_CALENDAR = {
   weekStartsOn: 6 as const, // Saturday
-  draftsOn: "Saturday morning, for the week beginning that day",
+  draftsOn: "Saturday morning, for the week beginning the FOLLOWING Saturday",
   approvalWindow: "Saturday to Monday",
-  sendsOn: "when approved",
+  sendsOn: "when approved — out by Monday, five days before the care week",
 };
 
 /** The Saturday on or before this date — the billing week containing it. */
 export function billingWeekStart(iso: string): string {
   const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
   d.setDate(d.getDate() - ((d.getDay() + 1) % 7));
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * The week the office is billing and collecting for right now: the one that
+ * begins NEXT Saturday. On Monday the 10th, that is the 15th — the invoice
+ * going out today is for that week, per the worked example above.
+ */
+export function upcomingBillingWeek(iso: string): string {
+  const thisWeek = billingWeekStart(iso);
+  const d = new Date(`${thisWeek}T12:00:00`);
+  d.setDate(d.getDate() + 7);
   return d.toISOString().slice(0, 10);
 }
 

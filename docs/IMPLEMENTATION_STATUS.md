@@ -477,16 +477,17 @@ Recorded here so they are not only in a chat log.
   calendar. And split payers are real: 0019 replaces the one-payer refusal
   with shares that never exceed 100, a run that refuses to draft while they
   total less, and one invoice per payer per week.
-- **Three more answers, built** (22 August, second round). Exact minutes, no
-  rounding — confirmed and pinned in `verifiedUnit.ts` so nobody reintroduces
-  quarter-hour rounding as a tidy-up. The dunning rhythm is data
-  (`domain/billing/dunning.ts`): one automatic retry the next day on the same
-  method, an email Wednesday, a text Thursday (`payment_reminder`, no amount
-  and no threat on a lock screen), then a phone call — never a process. And
-  after a death the payer's portal stays open: `actionsAfterCareEnds` closes
-  the care surface and keeps the finance one, as a per-action filter rather
-  than a revocation, so the final invoices are visible and payable without a
-  phone call to ask what is owed.
+- **Three more answers, built** (22 August, second round — then refined by
+  Karynn's worked example). Exact minutes, no rounding — confirmed and pinned
+  in `verifiedUnit.ts`. The dunning rhythm is data
+  (`domain/billing/dunning.ts`), anchored to her example ("billed Aug 10th for
+  Aug 15–21st"): invoice out Monday, five days ahead — which also corrected
+  the run's target week to the FOLLOWING Saturday (`upcomingBillingWeek`) —
+  then emails every day from Wednesday until paid, a text joining Thursday
+  morning, a call and text Friday, and the Sunday gate. After a death the
+  payer's portal stays open exactly as long as money is owed and closes when
+  it settles: `actionsAfterCareEnds` + `portalAfterDeath`, with closure a
+  named revocation, never an automatic one.
 - **The Sunday gate** (22 August). Asked about write-off authority, Karynn
   answered with the policy that makes it moot: payment is due Sunday before
   the care week, non-payment stops services, and the one-week deposit covers

@@ -14,6 +14,7 @@ import {
   grantAllows,
   grantAllowsAfterCareEnds,
   actionsAfterCareEnds,
+  portalAfterDeath,
   type PortalGrant,
 } from "@/domain/portal/identity";
 import {
@@ -604,6 +605,21 @@ describe("after a death, the payer's portal stays open", () => {
   it("a revocation still ends everything — the filter is not a bypass", () => {
     const revoked: PortalGrant = { ...daughter, active: false };
     expect(grantAllowsAfterCareEnds(revoked, "pay_invoice", "2026-08-22")).toBe(false);
+  });
+
+  it("stays open exactly as long as money is owed, and not a day past it", () => {
+    // The second half of her rule: "the client portal needs to close after
+    // payment is settled."
+    const owing = portalAfterDeath({ grant: daughter, balanceOutstanding: 360 });
+    expect(owing.open).toBe(true);
+    expect(owing.actions).toEqual(["view_invoices", "pay_invoice"]);
+
+    const settled = portalAfterDeath({ grant: daughter, balanceOutstanding: 0 });
+    expect(settled.open).toBe(false);
+    expect(settled.actions).toEqual([]);
+    // Closure is a recommendation to revoke attributably — nothing closes
+    // itself, and the closure gets a name and a reason like every revocation.
+    expect(settled.why).toContain("revoke");
   });
 });
 

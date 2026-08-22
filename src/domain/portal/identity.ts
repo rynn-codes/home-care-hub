@@ -133,13 +133,15 @@ export function grantAllows(grant: PortalGrant, action: GrantAction, today: stri
 /**
  * What survives the end of care — a discharge, or a death.
  *
- * Karynn, 22 August, asked what happens to a family's portal when a client
- * passes away: "Portal stays open for the payer." So the grant is not revoked.
- * The care surface closes — there are no more updates, and showing a dead
- * client's chart to a grieving family as though care were ongoing is its own
- * kind of wrong — but the FINANCE surface stays exactly as it was: the
- * responsible party can see the final invoices, see the balance, and pay it,
- * without a phone call to ask what they owe.
+ * Karynn, 22 August: "Portal stays open for the payer" — and then the second
+ * half of the rule: "After a death, the client portal needs to close after
+ * payment is settled." So the portal outlives the client exactly as long as
+ * money is owed, and not a day past it. While the balance is open, the care
+ * surface closes — there are no more updates, and showing a dead client's
+ * chart to a grieving family as though care were ongoing is its own kind of
+ * wrong — but the FINANCE surface stays: the responsible party sees the final
+ * invoices and pays them without a phone call to ask what they owe. The
+ * moment the balance reaches zero, the portal closes; see `portalAfterDeath`.
  *
  * This is a per-action filter, not a state change, on purpose. Revoking and
  * re-granting would destroy the record of what the person could do while care
@@ -162,6 +164,33 @@ export function grantAllowsAfterCareEnds(
   today: string,
 ): boolean {
   return actionsAfterCareEnds(grant).includes(action) && grantAllows(grant, action, today);
+}
+
+/**
+ * The whole after-death answer in one place: open for the payer while money
+ * is owed, closed the moment it is not.
+ *
+ * "Closed" here is the recommendation to REVOKE — attributably, through the
+ * ordinary revocation path with a reason, so the closure has a name and a
+ * date like every other withdrawal of access. Nothing closes itself; the
+ * settling payment surfaces this in the office's queue.
+ */
+export function portalAfterDeath(input: {
+  grant: PortalGrant;
+  balanceOutstanding: number;
+}): { open: boolean; actions: GrantAction[]; why: string } {
+  if (input.balanceOutstanding > 0) {
+    return {
+      open: true,
+      actions: actionsAfterCareEnds(input.grant),
+      why: `$${input.balanceOutstanding.toFixed(2)} is still owed. The payer keeps finance access until it settles — Karynn, 22 August.`,
+    };
+  }
+  return {
+    open: false,
+    actions: [],
+    why: "The balance is settled. The portal closes now — revoke the grant, with the reason on it.",
+  };
 }
 
 /**

@@ -9,7 +9,7 @@ import {
   type Invoice,
 } from "@/domain/billing/invoice";
 import { seedBillingTerms, seedPaidWeeks } from "@/lib/billingSeed";
-import { billingWeekStart } from "@/domain/billing/run";
+import { upcomingBillingWeek } from "@/domain/billing/run";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 import { invoiceBalance, BALANCE_LABELS, type InvoiceBalance } from "@/domain/billing/receivables";
 import { RecordPaymentDialog } from "@/components/billing/RecordPaymentDialog";
@@ -36,8 +36,9 @@ function money(n: number | null): string {
 }
 
 function currentBillingWeek(): string {
-  // Saturday–Friday, per BILLING_CALENDAR — the week Gusto and payroll use.
-  return billingWeekStart(new Date().toISOString());
+  // The week being billed NOW is next Saturday's — the invoice goes out five
+  // days ahead of the care it covers. See BILLING_CALENDAR.
+  return upcomingBillingWeek(new Date().toISOString());
 }
 
 function InvoiceCard({ invoice, paid }: { invoice: Invoice; paid: boolean }) {

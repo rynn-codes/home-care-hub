@@ -83,15 +83,16 @@ non-payment — *may*, not must — and Karynn has said cancelling for non-payme
 is real and does happen. Joy already treats this as advisory: `ageing()` reports
 that suspension is permitted and never acts.
 
-**Retry cadence answered.** Karynn, 22 August: one automatic retry the next
-day, same method, then it becomes a conversation — "On Wednesday, the family
-should receive an email and on Thursday, a text to pay their bill." Held in
-`DUNNING` (domain/billing/dunning.ts); the Thursday text is the
-`payment_reminder` template. §7.4's rule stands: never a different saved
-method automatically.
-
-*Still open:* who approves a service hold. Not blocking — Joy will not
-automate suspension either way.
+**Answered in full, with a worked example.** Karynn, 22 August: "Client is
+billed on Aug 10th for services that will start on Aug 15–21st. If they do
+not pay by Sunday, services are stopped." The contacts, as she refined them
+across the conversation: emails begin Wednesday and go out **every day until
+paid**; Thursday morning a text joins the daily email; Friday, still unpaid,
+a call and a text. A failed card retries once, next day, same method (§7.4:
+never a different saved card automatically). Held in `DUNNING`,
+`dunningDatesFor` and `todaysTouch` (domain/billing/dunning.ts); the
+Sunday stop is the `PAYMENT_GATE`, surfaced to a person and never automated
+(§18.12).
 
 ### 6. Refund, credit, void, write-off, dispute, overpayment authority — ANSWERED IN SUBSTANCE
 
@@ -142,12 +143,12 @@ Partly built rather than decided: grants are per person, revocation is
 attributable, and the packet's disclosure list already names who Joy may discuss
 care with.
 
-**Answered.** Karynn, 22 August: "Portal stays open for the payer." The care
-surface closes; the finance surface survives — the responsible party sees the
-final invoices and the balance and can pay it, and the balance is collected
-normally. Held as `actionsAfterCareEnds` (portal/identity.ts): a per-action
-filter, not a revocation, so the record of what the person could do while care
-was live stays whole.
+**Answered, both halves.** Karynn, 22 August: "Portal stays open for the
+payer" — and then: "After a death, the client portal needs to close after
+payment is settled." So the portal outlives the client exactly as long as
+money is owed: care surface closed, finance surface open, and the moment the
+balance reaches zero the grant is revoked attributably. Held as
+`actionsAfterCareEnds` and `portalAfterDeath` (portal/identity.ts).
 
 ### 12. Whether payment failure may affect start of care — ANSWERED IN PRINCIPLE
 
@@ -168,11 +169,11 @@ gate already exists — so this is a confirmation, not a design question.
 | 2 | Quantity billed for the upcoming week | Answered — agreement hours + carry-forward |
 | 3 | Collection methods | Answered — all private pay |
 | 4 | Off-session authorisation | **Blocking**, legal |
-| 5 | Retry cadence | Answered — retry next day, email Wed, text Thu |
+| 5 | Retry cadence | Answered — daily emails from Wed, text Thu, call+text Fri, stop Sun |
 | 6 | Refund and write-off authority | Answered in substance — Sunday gate + deposit backstop |
 | 7 | Legal record of the invoice | Recommendation made |
 | 8 | Tap to Pay | Recommend deferring |
 | 9 | Split payers | Answered — yes, it happens; built in 0019 |
 | 10 | Tax | Needs an adviser |
-| 11 | Deceased or incapacitated client | Answered — portal stays open for the payer |
+| 11 | Deceased or incapacitated client | Answered — open for the payer until settled, then closed |
 | 12 | Payment failure and start of care | Answered in principle |

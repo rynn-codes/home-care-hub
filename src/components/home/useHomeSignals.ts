@@ -1,4 +1,4 @@
-import { billingWeekStart } from "@/domain/billing/run";
+import { upcomingBillingWeek } from "@/domain/billing/run";
 import { useMemo } from "react";
 import { homeSignals, type HomeSignal } from "@/domain/home/signals";
 import { useDemo } from "@/context/DemoDataProvider";
@@ -28,7 +28,7 @@ export function useHomeSignals(): HomeSignal[] {
   return useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
 
-    const weekStart = billingWeekStart(new Date().toISOString());
+    const weekStart = upcomingBillingWeek(new Date().toISOString());
 
     const periodStart = new Date();
     periodStart.setDate(periodStart.getDate() - 13);
