@@ -25,7 +25,7 @@ function progress(over: Partial<AdmissionProgress> = {}): AdmissionProgress {
   return {
     assessmentComplete: true,
     serviceAgreementSigned: true,
-    paymentSetUp: true,
+    paymentSetup: "complete" as const,
     carePlanState: "in_review",
     startOfCare: "Monday",
     requestedDocuments: [],
@@ -208,5 +208,29 @@ describe("§23 — care team", () => {
     expect(
       careTeam([visit({ clientName: "Someone else", caregiverName: "Nobody" })], "Marcus Bell"),
     ).toEqual([]);
+  });
+});
+
+describe("§9.2 payment setup presentation", () => {
+  it("shows the spec's own strings, not a tick", () => {
+    const line = (state: "not_started" | "method_needed" | "ready" | "complete" | "needs_attention") =>
+      admissionLines(progress({ paymentSetup: state })).find((l) => l.label === "Payment setup")!;
+
+    expect(line("not_started").value).toBe("Not started");
+    expect(line("method_needed").value).toBe("Payment method needed");
+    expect(line("ready").value).toBe("Ready");
+    expect(line("complete").value).toBe("Complete");
+    expect(line("needs_attention").value).toBe("Needs attention");
+  });
+
+  it("prompts a family to look without diagnosing on the line", () => {
+    // A daughter reading "expired card, verification failed" on a status row
+    // learns internal detail §9.3 keeps off the portal; "Needs attention" sends
+    // her to the phone, which is where the details belong.
+    const line = admissionLines(progress({ paymentSetup: "needs_attention" })).find(
+      (l) => l.label === "Payment setup",
+    )!;
+    expect(line.state).toBe("attention");
+    expect(line.value).toBe("Needs attention");
   });
 });

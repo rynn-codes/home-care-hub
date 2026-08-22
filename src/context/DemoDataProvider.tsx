@@ -375,10 +375,22 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, [audit]);
 
   const savePreOnboarding = useCallback<DemoContextValue["savePreOnboarding"]>((admissionId, patch) => {
+    // §4.2: the documented exception is never silent. The entry carries the
+    // reason and whose name is on it, in the same breath as the save.
+    if (patch.gateOverride) {
+      audit({
+        action: "admission.gate_overridden",
+        entityType: "admission",
+        entityId: admissionId,
+        after: { reason: patch.gateOverride.reason, by: patch.gateOverride.by },
+      });
+    }
     setState((s) => {
       const existing = s.preOnboarding[admissionId] ?? {
         admissionId,
-        paymentSetUp: false,
+        paymentSetup: "not_started",
+        rateAgreed: false,
+        gateOverride: null,
         carePlanApproved: false,
         approvedAt: null,
         approvedBy: null,
@@ -387,7 +399,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       };
       return { ...s, preOnboarding: { ...s.preOnboarding, [admissionId]: { ...existing, ...patch } } };
     });
-  }, []);
+  }, [audit]);
 
   const approveAdmission = useCallback<DemoContextValue["approveAdmission"]>((admissionId, approvedBy) => {
     // §26 keeps admissions at "prepare summary" authority: Joy assembles the

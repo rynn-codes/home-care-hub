@@ -48,7 +48,10 @@ test.describe("audit", () => {
     await expect(page.locator("main")).toContainText("Nothing yet");
 
     await page.goto("/admissions/adm-robert/review");
-    await page.getByRole("button", { name: "Mark payment set up" }).click();
+    // §9.2: payment setup is five states now, picked rather than ticked.
+    await page.getByRole("combobox", { name: "Payment setup" }).click();
+    await page.getByRole("option", { name: "Ready", exact: true }).click();
+    await page.getByRole("button", { name: "Record the agreed rate" }).click();
     await page.getByRole("button", { name: "Approve plan of care" }).click();
     await page.getByRole("button", { name: "Approve admission" }).click();
 

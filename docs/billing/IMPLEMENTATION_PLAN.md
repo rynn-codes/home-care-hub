@@ -109,9 +109,22 @@ and neither infers the other; every financial act is on the trail.
 
 ## Phase 2 — Payment readiness and the portal shell
 
-7. Replace `paymentSetUp: boolean` with §9.2's five states; add the four missing
-   readiness gates and the six gate states; add the authorised override with a
-   reason and an audit entry.
+7. ~~Replace `paymentSetUp: boolean` with §9.2's five states; add the four
+   missing readiness gates and the six gate states; add the authorised override
+   with a reason and an audit entry.~~ **Done.**
+   `domain/billing/paymentSetup.ts` holds the five states with the spec's exact
+   strings and meanings — the boolean flattened "not started" and "the card
+   just expired" into one `false`, and they are opposite situations.
+   `paymentSetupFrom()` computes the state from a billing account so the hand
+   picker on the admission screen comes out the moment accounts are wired live.
+   Admission readiness is §4.2's nine gates in six states; the four new gates
+   are requested documents, start-of-care plan, responsible party & billing
+   contact, and rate agreement. The documented exception carries a reason and a
+   name, writes `admission.gate_overridden` to the trail, leaves the gates
+   visible — and cannot step past a refused mandatory consent, which is a
+   refusal of the terms care is offered on, not a delay. The family portal's
+   §9.2 status line shows the spec's strings; "Needs attention" prompts a
+   family to ring without diagnosing on the line, per §9.3's exclusions.
 8. `0018` widened grants — role, allowed actions, effective dates.
 9. The family finance read model: sanitized fields only, with the SQL assertions
    written **before** the policy is widened.

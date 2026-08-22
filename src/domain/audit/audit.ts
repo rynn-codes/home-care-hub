@@ -58,6 +58,8 @@ export const AUDITED_ACTIONS = [
   "account.hold_placed",
   "account.hold_lifted",
   "billing_run.created",
+  // §4.2: admission proceeding past an unsatisfied gate, with a reason.
+  "admission.gate_overridden",
 ] as const;
 
 export class AuditError extends Error {}

@@ -1,3 +1,4 @@
+import { PAYMENT_SETUP_LABELS, type PaymentSetupState } from "@/domain/billing/paymentSetup";
 import type { Visit } from "@/domain/scheduling/conflicts";
 import { timeRange } from "@/domain/portal/employeeHome";
 import type { StatusLine } from "@/domain/portal/candidateStatus";
@@ -37,7 +38,8 @@ import type { StatusLine } from "@/domain/portal/candidateStatus";
 export interface AdmissionProgress {
   assessmentComplete: boolean;
   serviceAgreementSigned: boolean;
-  paymentSetUp: boolean;
+  /** §9.2's five states — the spec's own presentation, not a boolean. */
+  paymentSetup: PaymentSetupState;
   carePlanState: "not_started" | "in_review" | "current";
   startOfCare: string | null;
   /** Documents the office has asked this family for. §21. */
@@ -96,8 +98,14 @@ export function admissionLines(progress: AdmissionProgress): StatusLine[] {
     },
     {
       label: "Payment setup",
-      value: progress.paymentSetUp ? "Complete" : "To do",
-      state: progress.paymentSetUp ? "done" : "attention",
+      // The spec's own strings (§9.2). "Needs attention" for a family is a
+      // prompt to look, never a diagnostic — the details live in a phone call,
+      // not on this line.
+      value: PAYMENT_SETUP_LABELS[progress.paymentSetup],
+      state:
+        progress.paymentSetup === "ready" || progress.paymentSetup === "complete"
+          ? "done"
+          : "attention",
     },
     {
       label: "Care plan",

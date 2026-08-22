@@ -5,7 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDemo } from "@/context/DemoDataProvider";
-import { checkAdmission, startOfCareRestrictions } from "@/domain/admissions/readiness";
+import {
+  GATE_STATE_LABELS,
+  checkAdmission,
+  gateSatisfied,
+  startOfCareRestrictions,
+} from "@/domain/admissions/readiness";
+import { PAYMENT_SETUP_LABELS, type PaymentSetupState } from "@/domain/billing/paymentSetup";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { admissionIsMovingForward } from "@/domain/admissions/classify";
 import { FamilyPortalCard } from "@/components/clients/FamilyPortalCard";
 import type { Invitation } from "@/domain/hiring/invitation";
@@ -36,6 +49,7 @@ export default function AdmissionReview() {
   const consent = consentSessions[id];
   const pre = preOnboarding[id];
   const [approver, setApprover] = useState("Karynn Verrett");
+  const [overrideReason, setOverrideReason] = useState("");
   const [familyInvitation, setFamilyInvitation] = useState<Invitation | null>(null);
   const [startDate, setStartDate] = useState(
     new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
@@ -48,10 +62,23 @@ export default function AdmissionReview() {
         assessmentComplete: canCompleteAssessment(assessments[id]?.answers ?? {}),
         consentDecisions: consent?.decisions ?? {},
         packetSigned: Boolean(consent?.signedAt),
-        paymentSetUp: Boolean(pre?.paymentSetUp),
+        paymentSetup: pre?.paymentSetup ?? "not_started",
         carePlanApproved: Boolean(pre?.carePlanApproved),
+        // Nothing requests documents during an admission in the demo data yet;
+        // an empty list reads as "nothing has been requested", which is true.
+        requestedDocuments: [],
+        startOfCareDate: pre?.startOfCareDate ?? startDate,
+        // The caller from phone intake is the responsible party §19 invites —
+        // if intake captured them, billing has somewhere to send an invoice.
+        billingContactNamed: Boolean(
+          (intakes[id]?.answers as Record<string, unknown> | undefined)?.caller_name,
+        ),
+        rateAgreed: Boolean(pre?.rateAgreed),
+        override: pre?.gateOverride
+          ? { reason: pre.gateOverride.reason, byUserId: pre.gateOverride.by, at: pre.gateOverride.at }
+          : null,
       }),
-    [id, intakes, assessments, consent, pre],
+    [id, intakes, assessments, consent, pre, startDate],
   );
 
   // §19's gate, live on the screen where the admission actually is. The client
@@ -148,9 +175,9 @@ export default function AdmissionReview() {
               {check.items.map((item) => (
                 <li key={item.key} className="flex items-start gap-3 py-3">
                   <span aria-hidden="true" className="mt-0.5">
-                    {item.state === "ready" ? (
+                    {gateSatisfied(item.state) ? (
                       <Check className="h-4 w-4 text-[hsl(var(--success))]" />
-                    ) : item.state === "blocked" ? (
+                    ) : item.state === "needs_attention" ? (
                       <X className="h-4 w-4 text-destructive" />
                     ) : (
                       <TriangleAlert className="h-4 w-4 text-[hsl(var(--warning))]" />
@@ -162,24 +189,48 @@ export default function AdmissionReview() {
                   </div>
                   <span className={cn(
                     "shrink-0 text-xs",
-                    item.state === "ready" ? "text-[hsl(var(--success))]"
-                      : item.state === "blocked" ? "text-destructive"
+                    gateSatisfied(item.state) ? "text-[hsl(var(--success))]"
+                      : item.state === "needs_attention" ? "text-destructive"
                       : "text-[hsl(var(--warning))]",
                   )}>
-                    {item.state === "ready" ? "Ready" : item.state === "blocked" ? "Stops admission" : "Outstanding"}
+                    {GATE_STATE_LABELS[item.state]}
                   </span>
                 </li>
               ))}
             </ul>
 
-            {/* The two the office ticks itself. */}
-            <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+            {/* What the office records itself. Payment setup is picked by hand
+                only until billing accounts are wired live — §4.2 wants it
+                computed, and paymentSetupFrom() is waiting to compute it. */}
+            <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+              <div className="flex items-center gap-2">
+                <span id="payment-state-label" className="text-xs font-medium text-muted-foreground">
+                  Payment setup
+                </span>
+                <Select
+                  value={pre?.paymentSetup ?? "not_started"}
+                  onValueChange={(v) =>
+                    savePreOnboarding(id, { paymentSetup: v as PaymentSetupState })
+                  }
+                >
+                  <SelectTrigger aria-labelledby="payment-state-label" className="h-8 w-56 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(PAYMENT_SETUP_LABELS) as PaymentSetupState[]).map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {PAYMENT_SETUP_LABELS[state]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 size="sm"
-                variant={pre?.paymentSetUp ? "default" : "outline"}
-                onClick={() => savePreOnboarding(id, { paymentSetUp: !pre?.paymentSetUp })}
+                variant={pre?.rateAgreed ? "default" : "outline"}
+                onClick={() => savePreOnboarding(id, { rateAgreed: !pre?.rateAgreed })}
               >
-                {pre?.paymentSetUp ? "Payment set up" : "Mark payment set up"}
+                {pre?.rateAgreed ? "Rate recorded" : "Record the agreed rate"}
               </Button>
               <Button
                 size="sm"
@@ -226,6 +277,48 @@ export default function AdmissionReview() {
                       : "border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)]",
                   )}>
                     {check.reason}
+                  </p>
+                )}
+
+                {/* §4.2's documented exception. Only offered when gates are
+                    unsatisfied but nothing is a hard stop — a refused consent
+                    cannot be excepted past, and the button never appears. */}
+                {!check.canAdmit && check.blocked.every((b) => b.key !== "consents") && (
+                  <div className="mt-4 max-w-prose rounded-xl border border-border bg-surface-muted p-4">
+                    <p className="text-xs font-medium">Admit anyway, with a documented exception</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      A reason, your name, and an audit entry. The gates stay visible — an
+                      exception explains a decision, it does not tidy one away.
+                    </p>
+                    <Input
+                      className="mt-2"
+                      placeholder="Why admission should proceed — words a surveyor could read"
+                      value={overrideReason}
+                      onChange={(e) => setOverrideReason(e.target.value)}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      disabled={!overrideReason.trim() || !approver.trim()}
+                      onClick={() =>
+                        savePreOnboarding(id, {
+                          gateOverride: {
+                            reason: overrideReason.trim(),
+                            by: approver.trim(),
+                            at: new Date().toISOString(),
+                          },
+                        })
+                      }
+                    >
+                      Document the exception
+                    </Button>
+                  </div>
+                )}
+
+                {pre?.gateOverride && (
+                  <p className="mt-4 max-w-prose rounded-xl border border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.06)] p-3.5 text-sm">
+                    Exception documented by {pre.gateOverride.by}: {pre.gateOverride.reason}
                   </p>
                 )}
 

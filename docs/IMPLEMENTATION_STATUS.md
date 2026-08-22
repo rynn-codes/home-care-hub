@@ -441,6 +441,17 @@ Recorded here so they are not only in a chat log.
   through `paymentRefusals` in the domain's words, writes the audit entry the
   moment it lands, and the outstanding-invoices report reads the same merged
   list so the two screens cannot disagree.
+- **Payment setup states and the nine admission gates** (Phase 2, step 7).
+  `paymentSetUp: boolean` is gone. §9.2's five states carry the spec's exact
+  strings on both the admission screen and the family portal, and
+  `paymentSetupFrom()` is ready to compute the state from a billing account
+  when the developer wires accounts live — §4.2 wants readiness computed, not
+  picked. Admission readiness is now the spec's nine gates in six states, and
+  `ready_for_admission` can be carried past an unsatisfied gate only by a
+  documented exception: a reason, a name, an `admission.gate_overridden` audit
+  entry, and the gates left visible. A refused mandatory consent resists the
+  override — that is a refusal of terms, not a delay. Legacy demo state maps
+  the old boolean forward rather than dropping what the office ticked.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–

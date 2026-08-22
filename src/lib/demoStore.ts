@@ -7,6 +7,7 @@ import type { HiredEmployee } from "@/domain/hiring/pipeline";
 import type { Contact } from "@/domain/people/contacts";
 import type { StoredAuditEntry } from "@/lib/demoAudit";
 import type { Payment } from "@/domain/billing/receivables";
+import type { PaymentSetupState } from "@/domain/billing/paymentSetup";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -96,8 +97,16 @@ export interface DemoConsentSession {
 
 export interface DemoPreOnboarding {
   admissionId: string;
-  paymentSetUp: boolean;
+  /** §9.2's five states, not a boolean. See domain/billing/paymentSetup.ts. */
+  paymentSetup: PaymentSetupState;
   carePlanApproved: boolean;
+  /** The office has recorded the agreed rate — §4.2's rate agreement gate. */
+  rateAgreed: boolean;
+  /**
+   * §4.2's documented authorized exception: admission proceeding past an
+   * unsatisfied gate, with a reason and a name. Audited when set.
+   */
+  gateOverride: { reason: string; by: string; at: string } | null;
   /** Set when the office approves admission. A human decision, never Joy's. */
   approvedAt: string | null;
   approvedBy: string | null;
@@ -225,7 +234,20 @@ export function loadDemoState(): DemoState {
     const parsed = JSON.parse(raw) as Partial<DemoState>;
     // Merge over a fresh baseline so a stored blob written by an older build
     // cannot leave a required collection undefined and crash a screen.
-    return { ...initial(), ...parsed };
+    const merged = { ...initial(), ...parsed };
+    // A blob from before §9.2 landed carries `paymentSetUp: boolean`. Map it
+    // rather than dropping it — the office ticked that box on purpose.
+    for (const [key, pre] of Object.entries(merged.preOnboarding)) {
+      const legacy = pre as DemoPreOnboarding & { paymentSetUp?: boolean };
+      merged.preOnboarding[key] = {
+        ...legacy,
+        paymentSetup:
+          legacy.paymentSetup ?? (legacy.paymentSetUp ? "complete" : "not_started"),
+        rateAgreed: legacy.rateAgreed ?? false,
+        gateOverride: legacy.gateOverride ?? null,
+      };
+    }
+    return merged;
   } catch {
     return initial();
   }

@@ -25,7 +25,7 @@ export const seedRequestedDocuments: RequestedDocument[] = [
 export const seedAdmissionProgress: AdmissionProgress = {
   assessmentComplete: true,
   serviceAgreementSigned: true,
-  paymentSetUp: true,
+  paymentSetup: "complete",
   // Overwritten at render time from the client's actual plan — see FamilyHome.
   // Left here so the type stays satisfied and so this file does not look like
   // it is the source of truth for something it is not.

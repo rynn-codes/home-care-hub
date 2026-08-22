@@ -142,6 +142,7 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "account.hold_placed": "paused billing on an account",
   "account.hold_lifted": "resumed billing on an account",
   "billing_run.created": "ran the week's billing",
+  "admission.gate_overridden": "admitted past a gate, with a reason",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {
