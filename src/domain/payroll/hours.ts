@@ -46,17 +46,19 @@ export const OVERTIME_AFTER_HOURS = 40;
 export const OVERTIME_MULTIPLIER = 1.5;
 
 /**
- * Day the workweek begins. 0 = Sunday.
+ * Day the workweek begins. 0 = Sunday, 6 = Saturday.
  *
- * FLAGGED FOR KARYNN. Set to Monday because the rest of Joy's scheduling
- * already works in Monday-first weeks, so the caregiver's "this week" and the
- * payroll week agree on screen. US payroll more often runs Sunday–Saturday, and
- * Gusto will have this configured somewhere. Whichever it is, the two must be
- * the same value, and a mismatch is invisible: nothing breaks, overtime is
- * simply computed against a different seven days for anybody who works a
- * weekend.
+ * CONFIRMED BY KARYNN, 22 August: "The week on Gusto starts on Saturday and
+ * ends on Friday." So Joy's overtime week is Saturday–Friday, matching Gusto
+ * exactly — the mismatch this constant was flagged for cannot now happen. It
+ * also matches the billing week ("our billing ends on Friday"), so payroll,
+ * billing and Gusto all mean the same seven days when they say "the week".
+ *
+ * The scheduling screens still draw Monday-first calendars, which is fine:
+ * how a calendar is drawn and where overtime accrues are different questions,
+ * and only the second one moves money.
  */
-export const WORKWEEK_STARTS_ON = 1;
+export const WORKWEEK_STARTS_ON = 6;
 
 export interface TimeEntry {
   id: string;

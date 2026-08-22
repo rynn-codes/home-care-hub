@@ -97,19 +97,39 @@ begin
   select count(*) into visible from billing_account_clients where billing_account_id = acct;
   perform assert(visible = 2, 'Diane pays for both her parents on one account');
 
-  raise notice 'And a client is paid for by one account at a time';
+  raise notice 'Two people can split one client''s bill — Karynn, 22 Aug: it happens';
   insert into billing_accounts (organization_id, payer_person_id, billing_email)
   values (f.org_id, f.stranger, 'lian@example.com')
   returning id into other;
 
+  -- The shares trigger is deferred so a rebalance can happen in one
+  -- transaction; forcing it immediate here makes each step checkable.
+  set constraints all immediate;
+
+  update billing_account_clients
+  set share_percent = 60 where billing_account_id = acct and client_person_id = f.mother;
+
+  insert into billing_account_clients (billing_account_id, client_person_id, share_percent)
+  values (other, f.mother, 40);
+
+  select count(*) into visible from billing_account_clients where client_person_id = f.mother;
+  perform assert(visible = 2, 'two payers split Odessa''s bill, 60/40');
+
   begin
-    insert into billing_account_clients (billing_account_id, client_person_id)
-    values (other, f.mother);
-    perform assert(false, 'a second payer for the same client was refused');
-  exception when unique_violation then
-    -- Split payers are §18.9, an open business decision. Until Karynn says it
-    -- happens, the database says it does not.
-    perform assert(true, 'a second payer for the same client was refused');
+    update billing_account_clients
+    set share_percent = 70 where billing_account_id = other and client_person_id = f.mother;
+    perform assert(false, 'shares totalling more than the bill were refused');
+  exception when check_violation then
+    -- 60 + 70 is somebody being billed for 130% of their care.
+    perform assert(true, 'shares totalling more than the bill were refused');
+  end;
+
+  begin
+    insert into billing_account_clients (billing_account_id, client_person_id, agreed_weekly_hours)
+    values (other, f.father, -12);
+    perform assert(false, 'negative agreed hours were refused');
+  exception when check_violation then
+    perform assert(true, 'negative agreed hours were refused');
   end;
 
   raise notice 'Automatic collection needs recorded authority';

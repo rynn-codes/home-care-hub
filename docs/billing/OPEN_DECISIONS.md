@@ -8,7 +8,7 @@ recorded, so nobody asks twice.
 
 ---
 
-### 1. Weekly invoice cutoff, service period, approval time, charge date — BLOCKING
+### 1. Weekly invoice cutoff, service period, approval time, charge date — ANSWERED
 
 **Direction answered.** Karynn, 21 August: "We bill in advance. Make sure that is
 noted. In arrears is incorrect." J-05 says the same. The packet's arrears
@@ -22,14 +22,28 @@ Gusto's setting must match). The packet says payment is due within one calendar
 day of the invoice and a $100 late fee applies after the third day, which
 constrains this but does not decide it.
 
-*Needed:* which day the run generates, which day the office approves by, which
-day the charge goes out.
+**Answered.** Karynn, 22 August: "It would need to be Saturday AM you can draft
+bc our billing ends of Friday. If we ever do get a 24/7 case, the billing would
+end on Friday 11:59 PM. Everything should be prepped to go out. I can approve
+anytime from Sat–Mon and then it goes out."
 
-### 2. What quantity the upcoming week is billed from — BLOCKING
+So the billing week is **Saturday through Friday** — the same seven days as the
+Gusto payroll week — the run drafts Saturday morning, approval runs Saturday to
+Monday, and the invoice or charge goes out on approval. Held in
+`BILLING_CALENDAR` (domain/billing/run.ts).
 
-Not answered. The options in the spec are scheduled hours, authorised hours,
-minimum contracted hours, or another figure — and then how a later change is
-credited or debited.
+### 2. What quantity the upcoming week is billed from — ANSWERED
+
+**Answered.** Karynn, 22 August: "What I usually have on the invoice is what is
+on the service agreement (12 hours/week), the week we bill for. If there is any
+OT from the previous week. Any additional hours that were added but not billed.
+Any credits from the previous week."
+
+So the base quantity is the **service agreement's weekly hours**, and last
+week's differences travel as their own lines: carried hours, carried overtime
+at time and a half, and credits as visible negative lines. Built:
+`buildInvoice`'s advance mode and `carryForwardFrom`; the agreed hours live on
+the client-account link (`agreed_weekly_hours`, 0019).
 
 This matters more than it sounds because Joy bills in advance. `reconcile()`
 already exists for the case where a family paid on Monday for a week that then
@@ -96,14 +110,13 @@ deferred to Phase 5.
 *Recommendation:* defer. Every client is private pay and invoiced weekly; a card
 reader solves a problem Joy may not have.
 
-### 9. Split payers and LTC insurance behaviour — MOSTLY ANSWERED
+### 9. Split payers and LTC insurance behaviour — ANSWERED
 
-LTC is answered (see 3). Split payers — one client, two people paying — is not,
-and the proposed `billing_account_clients.share_percent` exists only because §13
-lists the case.
-
-*Needed:* whether this actually happens at Joy. If it does not, the column comes
-out; a schema that supports a case nobody has is a schema people write code for.
+LTC is answered (see 3). Split payers: Karynn, 22 August — **"Yes, it
+happens."** Built in 0019: `share_percent` on the client-account link, shares
+never exceeding 100 (deferred trigger), the run refusing to draft while they
+total less, and one invoice per payer per week, each for their share of the
+agreement and of any carried lines.
 
 ### 10. Tax treatment
 
@@ -135,8 +148,8 @@ gate already exists — so this is a confirmation, not a design question.
 
 | # | Decision | Status |
 | --- | --- | --- |
-| 1 | Weekly cutoff and charge date | **Blocking** |
-| 2 | Quantity billed for the upcoming week | **Blocking** |
+| 1 | Weekly cutoff and charge date | Answered — Sat–Fri week, draft Sat AM, approve Sat–Mon |
+| 2 | Quantity billed for the upcoming week | Answered — agreement hours + carry-forward |
 | 3 | Collection methods | Answered — all private pay |
 | 4 | Off-session authorisation | **Blocking**, legal |
 | 5 | Retry cadence | **Blocking** (fees and hold policy answered) |

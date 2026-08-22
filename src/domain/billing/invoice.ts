@@ -142,7 +142,15 @@ export interface ClientBillingTerms {
   depositRemaining: number;
 }
 
-export type LineKind = "standard" | "overtime" | "holiday";
+export type LineKind =
+  | "standard"
+  | "overtime"
+  | "holiday"
+  /** Last week's extra time, billed now — Karynn's carry-forward model. */
+  | "carried_hours"
+  | "carried_overtime"
+  /** Negative amount: last week had less care than was billed in advance. */
+  | "credit";
 
 export interface InvoiceLine {
   kind: LineKind;
@@ -241,6 +249,72 @@ export function splitHours(
   };
 }
 
+/**
+ * One line carried from the previous week onto this one.
+ *
+ * Hours, not dollars, for the charges — the line prints as its own arithmetic
+ * (hours × rate), which is what lets a family check it. A credit is also in
+ * hours for the same reason: "4 hours not used the week of the 15th" is
+ * checkable against a calendar; "−$120" is only checkable against trust.
+ */
+export interface CarryForwardLine {
+  kind: "carried_hours" | "carried_overtime" | "credit";
+  hours: number;
+  /** Names the week it came from — the family is reading this cold. */
+  description: string;
+}
+
+/**
+ * What last week owes this week's invoice.
+ *
+ * Joy bills the agreement in advance (Karynn, 22 August), so the previous
+ * week's invoice said `billedHours` and the verified record then said what
+ * actually happened. The difference travels forward as lines, never as a
+ * silent change to the base quantity:
+ *
+ *   worked more  → carried hours, and overtime carried at time and a half
+ *   worked less  → a credit in hours
+ *   worked as agreed → nothing, which is the usual case and prints nothing
+ */
+export function carryForwardFrom(input: {
+  weekStart: string;
+  billedHours: number;
+  /** The verified billable hours for that week — the approved fact. */
+  workedHours: number;
+  /** Hours over the overtime threshold in that week, already approved. */
+  overtimeHours?: number;
+}): CarryForwardLine[] {
+  const lines: CarryForwardLine[] = [];
+  const overtime = money(input.overtimeHours ?? 0);
+  // Overtime hours are billed at the higher rate, so they are their own line
+  // and excluded from the plain difference.
+  const ordinaryWorked = money(input.workedHours - overtime);
+  const difference = money(ordinaryWorked - input.billedHours);
+
+  if (difference > 0) {
+    lines.push({
+      kind: "carried_hours",
+      hours: difference,
+      description: `Additional hours from the week of ${input.weekStart}`,
+    });
+  }
+  if (difference < 0) {
+    lines.push({
+      kind: "credit",
+      hours: -difference,
+      description: `Hours not used in the week of ${input.weekStart}`,
+    });
+  }
+  if (overtime > 0) {
+    lines.push({
+      kind: "carried_overtime",
+      hours: overtime,
+      description: `Overtime from the week of ${input.weekStart} — time and a half`,
+    });
+  }
+  return lines;
+}
+
 export function buildInvoice(input: {
   terms: ClientBillingTerms;
   visits: readonly Visit[];
@@ -265,6 +339,22 @@ export function buildInvoice(input: {
    * invoice rather than being billed at the scheduled length.
    */
   units?: readonly VerifiedServiceUnit[];
+  /**
+   * Bill the agreement, not the board. Karynn, 22 August, on what the invoice
+   * carries: "What is on the service agreement (12 hours/week), the week we
+   * bill for. If there is any OT from the previous week. Any additional hours
+   * that were added but not billed. Any credits from the previous week."
+   *
+   * When present, the base line is `agreedHours` at the ordinary rate and the
+   * schedule is not consulted for quantity at all — the schedule is a plan,
+   * the agreement is what the family signed. Last week's differences arrive as
+   * `carryForward` lines: extra hours and overtime as charges, shortfalls as a
+   * credit with a negative amount. `reconcile` produces them; this prints them.
+   */
+  advance?: {
+    agreedHours: number;
+    carryForward?: readonly CarryForwardLine[];
+  } | null;
 }): Invoice {
   const { terms, weekStart } = input;
   const weekEnd = addDays(weekStart, 6);
@@ -331,11 +421,46 @@ export function buildInvoice(input: {
     });
   };
 
-  line("standard", "Care hours", split.standard, 1);
-  for (const holiday of split.holidays) {
-    line("holiday", `${HOLIDAY_LABELS[holiday.key]} — time and a half`, holiday.hours, TIME_AND_A_HALF);
+  if (input.advance) {
+    // The agreement's hours, not the board's. Holidays are not projected —
+    // whether a holiday visit happened is next week's carry-forward, not this
+    // week's guess.
+    line(
+      "standard",
+      `Care hours for the week of ${weekStart} — as agreed`,
+      input.advance.agreedHours,
+      1,
+    );
+
+    for (const carry of input.advance.carryForward ?? []) {
+      if (carry.kind === "credit") {
+        // A negative line, deliberately visible as itself. Quietly shrinking
+        // the base quantity would leave the family unable to check the invoice
+        // against the agreement they signed.
+        lines.push({
+          kind: "credit",
+          description: carry.description,
+          hours: carry.hours,
+          rate,
+          multiplier: 1,
+          amount: rate === null ? null : money(-carry.hours * rate),
+        });
+      } else {
+        line(
+          carry.kind,
+          carry.description,
+          carry.hours,
+          carry.kind === "carried_overtime" ? TIME_AND_A_HALF : 1,
+        );
+      }
+    }
+  } else {
+    line("standard", "Care hours", split.standard, 1);
+    for (const holiday of split.holidays) {
+      line("holiday", `${HOLIDAY_LABELS[holiday.key]} — time and a half`, holiday.hours, TIME_AND_A_HALF);
+    }
+    line("overtime", `Hours over ${OVERTIME_AFTER_HOURS} — time and a half`, split.overtime, TIME_AND_A_HALF);
   }
-  line("overtime", `Hours over ${OVERTIME_AFTER_HOURS} — time and a half`, split.overtime, TIME_AND_A_HALF);
 
   // ------------------------------------------------------------- totals --
   if (rate === null) {

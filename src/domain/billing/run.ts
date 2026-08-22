@@ -4,10 +4,12 @@ import {
   accountGaps,
   ACCOUNT_GAP_MESSAGES,
   rateInEffect,
+  shareOf,
   type BillingAccount,
   type BillingAccountClient,
   type RatePlanVersion,
 } from "@/domain/billing/accounts";
+import type { CarryForwardLine } from "@/domain/billing/invoice";
 
 /**
  * The weekly billing run — §7.2 steps 1 to 4.
@@ -30,6 +32,32 @@ import {
  * AUTHORIZATION_LIMIT_NOTE — because the enum is the contract the developer
  * wires to, and a kind that is missing is a kind nobody can ever log.
  */
+
+/**
+ * Joy's billing calendar. Karynn, 22 August: "It would need to be Saturday AM
+ * you can draft bc our billing ends of Friday. If we ever do get a 24/7 case,
+ * the billing would end on Friday 11:59 PM. Everything should be prepped to go
+ * out. I can approve anytime from Sat–Mon and then it goes out."
+ *
+ * So the billing week is SATURDAY through FRIDAY — the same seven days as the
+ * Gusto payroll week, which means payroll, billing and Gusto all agree on what
+ * "the week" is. The run drafts Saturday morning for the week beginning that
+ * Saturday (Joy bills in advance); approval happens Saturday to Monday; the
+ * invoice or charge goes out on approval.
+ */
+export const BILLING_CALENDAR = {
+  weekStartsOn: 6 as const, // Saturday
+  draftsOn: "Saturday morning, for the week beginning that day",
+  approvalWindow: "Saturday to Monday",
+  sendsOn: "when approved",
+};
+
+/** The Saturday on or before this date — the billing week containing it. */
+export function billingWeekStart(iso: string): string {
+  const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
+  d.setDate(d.getDate() - ((d.getDay() + 1) % 7));
+  return d.toISOString().slice(0, 10);
+}
 
 export type RunExceptionKind =
   | "missing_rate"
@@ -124,6 +152,12 @@ interface RunInputs {
    * bill. Positive dollars.
    */
   credits?: readonly { clientPersonId: string; amount: number; source: string }[];
+  /**
+   * What last week owes this week, per client — Karynn's carry-forward model.
+   * Built by `carryForwardFrom` out of the previous week's invoice and its
+   * verified units.
+   */
+  carryForward?: Readonly<Record<string, readonly CarryForwardLine[]>>;
 }
 
 function periodVisits(input: RunInputs): Visit[] {
@@ -156,13 +190,10 @@ export function detectRunExceptions(input: RunInputs): RunException[] {
   for (const v of visits) clients.set(v.clientPersonId!, v.clientName);
 
   for (const [clientId, clientName] of clients) {
-    const link = input.accountClients.find((c) => c.clientPersonId === clientId);
-    const account = link
-      ? input.accounts.find((a) => a.id === link.billingAccountId) ?? null
-      : null;
+    const links = input.accountClients.filter((c) => c.clientPersonId === clientId);
 
     // -------------------------------------------------- payer not ready --
-    if (!account) {
+    if (links.length === 0) {
       exceptions.push({
         kind: "payer_not_ready",
         clientPersonId: clientId,
@@ -171,50 +202,70 @@ export function detectRunExceptions(input: RunInputs): RunException[] {
         blocksDraft: true,
       });
     } else {
-      if (account.onHold) {
-        // ------------------------------------------------- account hold --
-        exceptions.push({
-          kind: "account_hold",
-          clientPersonId: clientId,
-          clientName,
-          detail: account.holdReason
-            ? `Billing is paused on this account: ${account.holdReason}`
-            : "Billing is paused on this account.",
-          blocksDraft: true,
-        });
-      }
-
-      const gaps = accountGaps({
-        account,
-        clients: input.accountClients,
-        // The rate has its own exception below, with a better message.
-        hasRate: true,
-      });
-      if (gaps.length > 0) {
+      // Shares that do not reach the whole bill. The database allows the gap
+      // (the moment between adding the first sibling and the second is a real
+      // editing state); the run is where it must not pass, because a silently
+      // unbilled 40% is revenue nobody notices losing.
+      const committed = links.reduce((t, l) => t + shareOf(l), 0);
+      if (committed !== 100) {
         exceptions.push({
           kind: "payer_not_ready",
           clientPersonId: clientId,
           clientName,
-          detail: gaps.map((g) => ACCOUNT_GAP_MESSAGES[g]).join(" "),
+          detail: `The payers on this client cover ${committed}% of the bill. Shares must reach 100 before the week is billed.`,
           blocksDraft: true,
         });
       }
 
-      // ------------------------------------------------------ missing rate --
-      const rate = rateInEffect({
-        versions: input.rateVersions,
-        billingAccountId: account.id,
-        clientPersonId: clientId,
-        on: input.periodStart,
-      });
-      if (!rate) {
-        exceptions.push({
-          kind: "missing_rate",
-          clientPersonId: clientId,
-          clientName,
-          detail: `No rate is in effect for the week of ${input.periodStart}. The agreed rate is emailed at admission — record it before billing.`,
-          blocksDraft: true,
+      for (const link of links) {
+        const account = input.accounts.find((a) => a.id === link.billingAccountId) ?? null;
+        if (!account) continue;
+
+        if (account.onHold) {
+          // ------------------------------------------------- account hold --
+          exceptions.push({
+            kind: "account_hold",
+            clientPersonId: clientId,
+            clientName,
+            detail: account.holdReason
+              ? `Billing is paused on ${account.payerName}'s account: ${account.holdReason}`
+              : `Billing is paused on ${account.payerName}'s account.`,
+            blocksDraft: true,
+          });
+        }
+
+        const gaps = accountGaps({
+          account,
+          clients: input.accountClients,
+          // The rate has its own exception below, with a better message.
+          hasRate: true,
         });
+        if (gaps.length > 0) {
+          exceptions.push({
+            kind: "payer_not_ready",
+            clientPersonId: clientId,
+            clientName,
+            detail: gaps.map((g) => ACCOUNT_GAP_MESSAGES[g]).join(" "),
+            blocksDraft: true,
+          });
+        }
+
+        // ------------------------------------------------------ missing rate --
+        const rate = rateInEffect({
+          versions: input.rateVersions,
+          billingAccountId: account.id,
+          clientPersonId: clientId,
+          on: input.periodStart,
+        });
+        if (!rate) {
+          exceptions.push({
+            kind: "missing_rate",
+            clientPersonId: clientId,
+            clientName,
+            detail: `No rate is in effect on ${account.payerName}'s account for the week of ${input.periodStart}. The agreed rate is emailed at admission — record it before billing.`,
+            blocksDraft: true,
+          });
+        }
       }
     }
 
@@ -295,30 +346,52 @@ export function planBillingRun(input: RunInputs): BillingRun {
       continue;
     }
 
-    const link = input.accountClients.find((c) => c.clientPersonId === clientId)!;
-    const account = input.accounts.find((a) => a.id === link.billingAccountId)!;
-    const rate = rateInEffect({
-      versions: input.rateVersions,
-      billingAccountId: account.id,
-      clientPersonId: clientId,
-      on: input.periodStart,
-    })!;
+    // One draft per PAYER. Two siblings at 50/50 each get their own invoice
+    // for their own share, on their own account and terms.
+    const links = input.accountClients.filter((c) => c.clientPersonId === clientId);
+    const carry = input.carryForward?.[clientId] ?? [];
 
-    drafts.push(
-      buildInvoice({
-        terms: {
-          clientPersonId: clientId,
-          clientName,
-          // The version prices it; a bare rate here would be a second answer.
-          hourlyRate: null,
-          paymentMethod: (account.paymentMethod ?? "check") as PaymentMethod,
-          depositRemaining: account.depositRemaining,
-        },
-        visits: input.visits,
-        weekStart: input.periodStart,
-        rateVersion: { id: rate.id, hourlyRate: rate.hourlyRate },
-      }),
-    );
+    for (const link of links) {
+      const account = input.accounts.find((a) => a.id === link.billingAccountId)!;
+      const rate = rateInEffect({
+        versions: input.rateVersions,
+        billingAccountId: account.id,
+        clientPersonId: clientId,
+        on: input.periodStart,
+      })!;
+      const share = shareOf(link) / 100;
+
+      // The agreement's hours, scaled by the payer's share, and the same for
+      // every carried line — the siblings split the corrections exactly as
+      // they split the week.
+      const advance =
+        link.agreedWeeklyHours != null
+          ? {
+              agreedHours: Math.round(link.agreedWeeklyHours * share * 100) / 100,
+              carryForward: carry.map((c) => ({
+                ...c,
+                hours: Math.round(c.hours * share * 100) / 100,
+              })),
+            }
+          : null;
+
+      drafts.push(
+        buildInvoice({
+          terms: {
+            clientPersonId: clientId,
+            clientName,
+            // The version prices it; a bare rate here would be a second answer.
+            hourlyRate: null,
+            paymentMethod: (account.paymentMethod ?? "check") as PaymentMethod,
+            depositRemaining: account.depositRemaining,
+          },
+          visits: input.visits,
+          weekStart: input.periodStart,
+          rateVersion: { id: rate.id, hourlyRate: rate.hourlyRate },
+          advance,
+        }),
+      );
+    }
   }
 
   return {

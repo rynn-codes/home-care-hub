@@ -54,11 +54,15 @@ describe("entryHours", () => {
 });
 
 describe("workweeks", () => {
-  it("puts Monday-start weeks where Joy's schedule already puts them", () => {
-    // 2026-08-17 is a Monday, 2026-08-23 the Sunday that ends that week.
-    expect(workweekStart("2026-08-17T09:00:00")).toBe("2026-08-17");
-    expect(workweekStart("2026-08-23T09:00:00")).toBe("2026-08-17");
-    expect(workweekStart("2026-08-24T09:00:00")).toBe("2026-08-24");
+  it("runs Saturday to Friday, the week Gusto uses", () => {
+    // Karynn, 22 Aug: "The week on Gusto starts on Saturday and ends on
+    // Friday." 2026-08-22 is a Saturday; the 28th is the Friday ending that
+    // week; the 29th begins the next.
+    expect(workweekStart("2026-08-22T09:00:00")).toBe("2026-08-22");
+    expect(workweekStart("2026-08-28T21:00:00")).toBe("2026-08-22");
+    expect(workweekStart("2026-08-29T09:00:00")).toBe("2026-08-29");
+    // A Monday belongs to the week that began the Saturday before it.
+    expect(workweekStart("2026-08-24T09:00:00")).toBe("2026-08-22");
   });
 
   it("moves the boundary when the workweek is configured differently", () => {
@@ -129,7 +133,7 @@ describe("overtime is per workweek, not per pay period", () => {
       clockedInAt: "2026-08-23T22:00:00",
       clockedOutAt: "2026-08-24T06:00:00",
     });
-    expect(weeklyTotals([overnight])[0].weekStart).toBe("2026-08-17");
+    expect(weeklyTotals([overnight])[0].weekStart).toBe("2026-08-22");
   });
 });
 
@@ -231,8 +235,9 @@ describe("payrollRun", () => {
   });
 
   it("totals overtime across everybody", () => {
+    // Six straight days inside one Saturday–Friday week: 22nd (Sat) to 27th.
     const heavy = ["a", "b", "c", "d", "e", "f"].map((id, i) =>
-      day(`2026-08-${17 + i}`, id, 8),
+      day(`2026-08-${22 + i}`, id, 8),
     );
     const run = payrollRun({ period: PERIOD, people, entries: heavy, visits: [] });
     expect(run.totalHours).toBe(48);

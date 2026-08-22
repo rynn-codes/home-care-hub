@@ -244,6 +244,7 @@ supabase/migrations/0015_verified_service_units.sql            the one approved 
 supabase/migrations/0016_invoice_approval.sql                  the invoice lifecycle, lines, adjustments
 supabase/migrations/0017_billing_runs.sql                      the weekly run's record, the account hold
 supabase/migrations/0018_widened_grants.sql                    §9.1 grants, and the family finance read
+supabase/migrations/0019_split_payers.sql                      shares, and the agreement's weekly hours
 ```
 
 To verify locally:
@@ -268,6 +269,7 @@ psql -f supabase/migrations/0015_verified_service_units.sql
 psql -f supabase/migrations/0016_invoice_approval.sql
 psql -f supabase/migrations/0017_billing_runs.sql
 psql -f supabase/migrations/0018_widened_grants.sql
+psql -f supabase/migrations/0019_split_payers.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -465,6 +467,16 @@ Recorded here so they are not only in a chat log.
   written before the views existed, because a daughter who cannot see an
   invoice reports it and a neighbour who can does not. §9.4's two notification
   templates say a thing exists without saying an amount or a reason.
+- **Four of Karynn's answers, built** (22 August). The billing week is
+  Saturday–Friday, drafted Saturday morning, approved Saturday–Monday — and it
+  is the same seven days as the Gusto payroll week, so `WORKWEEK_STARTS_ON` is
+  Saturday and carried overtime lines up with paid overtime. The advance
+  invoice bills the service agreement's hours, not the board, with last week's
+  overtime, additions and credits as their own lines (`carryForwardFrom`); a
+  credit prints as a visible negative line a family can check against a
+  calendar. And split payers are real: 0019 replaces the one-payer refusal
+  with shares that never exceed 100, a run that refuses to draft while they
+  total less, and one invoice per payer per week.
 - **The billing and Stripe specification has arrived** (v1.0, 21 August) and
   Section 20's five Phase 0 deliverables are complete: `docs/billing/` holds the
   existing-system map, the gap table against §4–13, proposed migrations 0014–

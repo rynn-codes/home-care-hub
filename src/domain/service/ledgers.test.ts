@@ -217,6 +217,7 @@ describe("a visit nobody clocked, which somebody then approved", () => {
     // Approved two weeks later. The hours belong to the week she worked, not
     // the week somebody got round to reviewing it — overtime is decided per
     // workweek, so putting them in the wrong one invents or erases overtime.
-    expect(paid.caregivers[0].weeks[0].weekStart).toBe("2026-08-17");
+    // Monday the 17th sits in the Saturday–Friday week that began the 15th.
+    expect(paid.caregivers[0].weeks[0].weekStart).toBe("2026-08-15");
   });
 });

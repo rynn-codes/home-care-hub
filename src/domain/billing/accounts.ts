@@ -106,6 +106,23 @@ export interface BillingAccountClient {
   billingAccountId: string;
   clientPersonId: string;
   clientName: string;
+  /**
+   * Of this client's bill, the percentage this account pays. Undefined means
+   * 100 — the ordinary sole payer. Karynn, 22 Aug: split payers happen; two
+   * siblings each paying half is real at Joy.
+   */
+  sharePercent?: number;
+  /**
+   * The service agreement's weekly hours — what the advance invoice bills
+   * (Karynn: "what is on the service agreement, 12 hours/week"). Null or
+   * undefined means not recorded, and the run refuses to draft in advance.
+   */
+  agreedWeeklyHours?: number | null;
+}
+
+/** A link's share, with the sole-payer default applied. */
+export function shareOf(link: BillingAccountClient): number {
+  return link.sharePercent ?? 100;
 }
 
 // ------------------------------------------------------------- readiness --

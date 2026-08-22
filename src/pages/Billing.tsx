@@ -9,6 +9,7 @@ import {
   type Invoice,
 } from "@/domain/billing/invoice";
 import { seedBillingTerms, seedPaidWeeks } from "@/lib/billingSeed";
+import { billingWeekStart } from "@/domain/billing/run";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 import { invoiceBalance, BALANCE_LABELS, type InvoiceBalance } from "@/domain/billing/receivables";
 import { RecordPaymentDialog } from "@/components/billing/RecordPaymentDialog";
@@ -34,10 +35,9 @@ function money(n: number | null): string {
   return n === null ? "—" : `$${n.toFixed(2)}`;
 }
 
-function monday(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  return d.toISOString().slice(0, 10);
+function currentBillingWeek(): string {
+  // Saturday–Friday, per BILLING_CALENDAR — the week Gusto and payroll use.
+  return billingWeekStart(new Date().toISOString());
 }
 
 function InvoiceCard({ invoice, paid }: { invoice: Invoice; paid: boolean }) {
@@ -138,7 +138,7 @@ function InvoiceCard({ invoice, paid }: { invoice: Invoice; paid: boolean }) {
 }
 
 export default function Billing() {
-  const weekStart = useMemo(monday, []);
+  const weekStart = useMemo(currentBillingWeek, []);
   const { recordedPayments } = useDemo();
   const [payingBalance, setPayingBalance] = useState<InvoiceBalance | null>(null);
 

@@ -1,3 +1,4 @@
+import { billingWeekStart } from "@/domain/billing/run";
 import { useMemo } from "react";
 import { homeSignals, type HomeSignal } from "@/domain/home/signals";
 import { useDemo } from "@/context/DemoDataProvider";
@@ -27,8 +28,7 @@ export function useHomeSignals(): HomeSignal[] {
   return useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
 
-    const monday = new Date();
-    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const weekStart = billingWeekStart(new Date().toISOString());
 
     const periodStart = new Date();
     periodStart.setDate(periodStart.getDate() - 13);
@@ -74,7 +74,7 @@ export function useHomeSignals(): HomeSignal[] {
       documentRequests: seedRequestedDocuments,
       incidents: seedIncidents,
       nameFor: (id) => id.replace(/^p-/, "").replace(/^\w/, (c) => c.toUpperCase()),
-      weekStart: monday.toISOString().slice(0, 10),
+      weekStart,
       payPeriod: { start: periodStart.toISOString().slice(0, 10), end: today },
       today,
     });

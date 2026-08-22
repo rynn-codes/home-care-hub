@@ -376,7 +376,7 @@ Verified in `widened_grants_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0018
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0019
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -387,4 +387,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0018`: 284 assertions across fourteen files.
+As of `0019`: 286 assertions across fourteen files.

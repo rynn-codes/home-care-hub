@@ -86,15 +86,21 @@ export function lineAmount(quantity: number, unitRate: number): number {
 export function linesFromInvoice(invoice: Invoice): ApprovalLine[] {
   return invoice.lines
     .filter((l) => l.rate !== null)
-    .map((l, i) => ({
-      id: `line-${i}`,
-      description: l.description,
-      serviceDate: null,
-      quantity: l.hours,
-      unitLabel: "hours",
-      unitRate: Math.round((l.rate as number) * l.multiplier * 100) / 100,
-      amount: l.amount ?? lineAmount(l.hours, (l.rate as number) * l.multiplier),
-    }));
+    .map((l, i) => {
+      // A credit is a negative RATE on a positive quantity, so the line stays
+      // its own arithmetic (amount = quantity × rate, checked by 0016) and the
+      // hours stay countable against a calendar.
+      const signedRate = (l.rate as number) * l.multiplier * (l.kind === "credit" ? -1 : 1);
+      return {
+        id: `line-${i}`,
+        description: l.description,
+        serviceDate: null,
+        quantity: l.hours,
+        unitLabel: "hours",
+        unitRate: Math.round(signedRate * 100) / 100,
+        amount: l.amount ?? lineAmount(l.hours, signedRate),
+      };
+    });
 }
 
 // --------------------------------------------------------------- approval --
