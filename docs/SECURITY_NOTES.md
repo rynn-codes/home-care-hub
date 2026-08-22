@@ -357,6 +357,17 @@ Verified in `billing_runs_test.sql`.
 
 Verified in `widened_grants_test.sql`.
 
+`0020`–`0021` add the addendum's payment schema. The rules worth naming: an
+authorization's history is immutable — revocation is attributed and a revoked
+row cannot be resurrected; processor idempotency is a UNIQUE INDEX on the
+Stripe event id, not a promise in a handler; event receipts are written only
+by the service role, because no person at Joy is allowed to say what Stripe
+said; and what Joy holds of a payment method is brand and last four — the
+last-four column refuses a fifth digit by constraint, and the family's view
+carries no Stripe column at all.
+
+Verified in `stripe_addendum_test.sql`.
+
 ## When adding a table
 
 1. Add `organization_id`, or reach tenancy through a foreign key to `people`.
@@ -376,7 +387,7 @@ Verified in `widened_grants_test.sql`.
 
 ```
 psql -f supabase/tests/local_shim.sql
-psql -f supabase/migrations/0001_foundation.sql   # ... through 0019
+psql -f supabase/migrations/0001_foundation.sql   # ... through 0021
 psql -f supabase/tests/rls_test.sql               # then the rest
 ```
 
@@ -387,4 +398,4 @@ must run under `set local role authenticated`** — RLS is bypassed for the tabl
 owner, so a suite running as `postgres` passes while proving nothing. That
 mistake was made once here already; see `DOCUMENT_PIPELINE.md`.
 
-As of `0019`: 286 assertions across fourteen files.
+As of `0021`: 300 assertions across fifteen files.

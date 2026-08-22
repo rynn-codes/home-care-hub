@@ -26,6 +26,12 @@ import { daysBetween } from "@/domain/dates";
 
 export interface IssuedInvoice {
   id: string;
+  /**
+   * The human number — "JH-10428" (addendum §7). A family reads it over the
+   * phone; the office types it into a search box. Assigned by the database
+   * (0020); optional here only until the screens read live data.
+   */
+  invoiceNumber?: string;
   clientPersonId: string;
   clientName: string;
   /** The week it covers, for the conversation about what it is for. */

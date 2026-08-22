@@ -143,6 +143,18 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "account.hold_lifted": "resumed billing on an account",
   "billing_run.created": "ran the week's billing",
   "admission.gate_overridden": "admitted past a gate, with a reason",
+  "billing_contact.updated": "changed the billing contact",
+  "payment_authorization.created": "captured a payment authorization",
+  "payment_authorization.revoked": "recorded an authorization being withdrawn",
+  "payment_preference.changed": "changed how a family pays",
+  "payment_method.added": "saved a payment method",
+  "payment_method.updated": "updated a payment method",
+  "invoice.viewed": "a family opened their invoice",
+  "payment.initiated": "started a payment",
+  "payment.succeeded": "a payment went through",
+  "payment.failed": "a payment failed",
+  "refund.initiated": "started a refund",
+  "refund.completed": "completed a refund",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {

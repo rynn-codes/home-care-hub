@@ -43,6 +43,8 @@ function invoice(input: {
 }): IssuedInvoice {
   return {
     id: input.id,
+    // The 0020 shape: "JH-" and a boring sequential number.
+    invoiceNumber: `JH-${10420 + Number(input.id.replace(/\D/g, ""))}`,
     clientPersonId: input.client.clientPersonId,
     clientName: input.client.clientName,
     weekStart: daysAgo(input.issuedDaysAgo),

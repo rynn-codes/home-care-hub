@@ -114,7 +114,9 @@ export type MessagePurpose =
   /** §9.4 — the saved payment method needs attention. Same rule. */
   | "payment_method_notification"
   /** The Thursday nudge — Karynn's dunning rhythm. Says a bill exists, never how much. */
-  | "payment_reminder";
+  | "payment_reminder"
+  /** Addendum §18 — the receipt: "Your Joy Health payment was received." */
+  | "payment_received";
 
 /**
  * Which number carries which message.
@@ -170,6 +172,7 @@ export const SMS_ROUTING: Record<MessagePurpose, SmsCarrier> = {
   invoice_notification: "spruce",
   payment_method_notification: "spruce",
   payment_reminder: "spruce",
+  payment_received: "spruce",
 };
 
 /**
@@ -294,6 +297,11 @@ export function composeMessage(
         // Karynn's Thursday text. No amount, no "overdue", no late-fee threat
         // on a lock screen — the ask, and the door.
         return `${name}you have a Joy Health invoice awaiting payment. Sign in to pay it: ${link}`;
+
+      case "payment_received":
+        // The addendum's own sentence. The receipt with the figures lives in
+        // the portal; the text is the thank-you and the door.
+        return `${name}your Joy Health payment was received. Your receipt is in your portal: ${link}`;
     }
   })();
 

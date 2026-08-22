@@ -1,5 +1,6 @@
 import type { AuditRecord } from "@/domain/audit/audit";
 import type { AdjustmentKind } from "@/domain/billing/approval";
+import type { PaymentMode } from "@/domain/billing/paymentAuthorization";
 import type { PaymentMethod } from "@/domain/billing/invoice";
 
 /**
@@ -198,5 +199,121 @@ export function billingRunCreated(input: {
       drafts: input.drafts,
       exceptions: input.exceptions,
     },
+  };
+}
+
+// ------------------------------------------- the addendum's §15 additions --
+
+export function billingContactUpdated(input: {
+  billingAccountId: string;
+  contactName: string;
+}): Entry {
+  return {
+    action: "billing_contact.updated",
+    entityType: "billing_account",
+    entityId: input.billingAccountId,
+    after: { contactName: input.contactName },
+  };
+}
+
+export function paymentAuthorizationCreated(input: {
+  authorizationId: string;
+  billingAccountId: string;
+  mode: PaymentMode;
+  textVersion: string;
+}): Entry {
+  return {
+    action: "payment_authorization.created",
+    entityType: "payment_authorization",
+    entityId: input.authorizationId,
+    after: {
+      billingAccountId: input.billingAccountId,
+      mode: input.mode,
+      // Which wording they agreed to — the fact that defends the charge later.
+      textVersion: input.textVersion,
+    },
+  };
+}
+
+export function paymentAuthorizationRevoked(input: {
+  authorizationId: string;
+  reason: string;
+}): Entry {
+  return {
+    action: "payment_authorization.revoked",
+    entityType: "payment_authorization",
+    entityId: input.authorizationId,
+    after: { status: "revoked", reason: input.reason },
+  };
+}
+
+export function paymentPreferenceChanged(input: {
+  billingAccountId: string;
+  from: PaymentMode;
+  to: PaymentMode;
+}): Entry {
+  return {
+    action: "payment_preference.changed",
+    entityType: "billing_account",
+    entityId: input.billingAccountId,
+    before: { mode: input.from },
+    after: { mode: input.to },
+  };
+}
+
+export function paymentMethodChanged(input: {
+  billingAccountId: string;
+  /** "Visa •••• 4242" — display-safe by construction; there is no parameter
+   * that could carry more. */
+  summary: string;
+  added: boolean;
+}): Entry {
+  return {
+    action: input.added ? "payment_method.added" : "payment_method.updated",
+    entityType: "billing_account",
+    entityId: input.billingAccountId,
+    after: { method: input.summary },
+  };
+}
+
+export function invoiceViewed(input: { invoiceId: string; byPersonId: string }): Entry {
+  return {
+    action: "invoice.viewed",
+    entityType: "invoice",
+    entityId: input.invoiceId,
+    // §20.6 hangs on this record existing: AutoPay may collect only after the
+    // finalized invoice was available — and "available" with a view record
+    // beats "available" as an assertion.
+    after: { viewedByPersonId: input.byPersonId },
+  };
+}
+
+export function paymentLifecycle(input: {
+  stage: "initiated" | "succeeded" | "failed";
+  invoiceId: string;
+  amount: number;
+  /** A processor event id for succeeded/failed — state changes only from
+   * verified events (§10), and the entry cites its evidence. */
+  processorEventId?: string | null;
+}): Entry {
+  return {
+    action: `payment.${input.stage}`,
+    entityType: "invoice",
+    entityId: input.invoiceId,
+    after: { amount: input.amount, processorEventId: input.processorEventId ?? null },
+  };
+}
+
+export function refundLifecycle(input: {
+  stage: "initiated" | "completed";
+  invoiceId: string;
+  amount: number;
+  reason: string;
+}): Entry {
+  return {
+    action: `refund.${input.stage}`,
+    entityType: "invoice",
+    entityId: input.invoiceId,
+    after: { amount: input.amount, reason: input.reason },
   };
 }

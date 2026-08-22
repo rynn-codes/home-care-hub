@@ -245,6 +245,8 @@ supabase/migrations/0016_invoice_approval.sql                  the invoice lifec
 supabase/migrations/0017_billing_runs.sql                      the weekly run's record, the account hold
 supabase/migrations/0018_widened_grants.sql                    §9.1 grants, and the family finance read
 supabase/migrations/0019_split_payers.sql                      shares, and the agreement's weekly hours
+supabase/migrations/0020_payment_authorizations.sql            authorization history, invoice numbers, pricing review
+supabase/migrations/0021_stripe_mapping.sql                    Stripe refs, method summaries, event receipts
 ```
 
 To verify locally:
@@ -270,6 +272,8 @@ psql -f supabase/migrations/0016_invoice_approval.sql
 psql -f supabase/migrations/0017_billing_runs.sql
 psql -f supabase/migrations/0018_widened_grants.sql
 psql -f supabase/migrations/0019_split_payers.sql
+psql -f supabase/migrations/0020_payment_authorizations.sql
+psql -f supabase/migrations/0021_stripe_mapping.sql
 
 psql -f supabase/tests/rls_test.sql          # 19 assertions
 psql -f supabase/tests/admissions_test.sql   # 10
@@ -285,6 +289,7 @@ psql -f supabase/tests/verified_units_test.sql   # 27
 psql -f supabase/tests/invoice_approval_test.sql # 24
 psql -f supabase/tests/billing_runs_test.sql     # 9
 psql -f supabase/tests/widened_grants_test.sql   # 15
+psql -f supabase/tests/stripe_addendum_test.sql  # 14
 ```
 
 Each suite is self-contained and can be run alone against a fresh database.
@@ -505,6 +510,23 @@ Recorded here so they are not only in a chat log.
   And the signing flow gained its read-back step: the completed agreement,
   every clause with the client's answers, reviewed in its entirety before one
   signature and one set of initials.
+- **The Billing/Invoicing/Stripe addendum, audited and built** (22 August).
+  Karynn supplied a locked addendum; `docs/billing/ADDENDUM_AUDIT.md` answers
+  it section by section. New in this pass: payment authorizations as history
+  (0020 — who, mode, wording version, attributed revocation, one active per
+  account, settled rows immutable); human invoice numbers ("JH-10428");
+  YOUR CARE COST and the pricing-review gate before any card request; the two
+  payment modes by their product names, mapped onto 0014; the autopay gate
+  (`autopayCollectionRefusals` — no charge without a finalized, reviewable
+  invoice, and a revoked authorization stops collection loudly); the processor
+  boundary (`PaymentProcessorPort`, a fake that never invents success,
+  `reconcileEvent` — state changes only from verified events); the Stripe
+  mapping tables and idempotent event receipts (0021 — idempotency is a
+  unique index); §13's sanitized failure cards; §15's full audit vocabulary;
+  the `payment_received` template; and the family portal's billing card,
+  rendered only under a grant with `view_invoices`. What remains is named in
+  the audit: the §8.1 server layer, the draft-review screen, and the §16
+  panel that waits on live account data.
 - **The Sunday gate** (22 August). Asked about write-off authority, Karynn
   answered with the policy that makes it moot: payment is due Sunday before
   the care week, non-payment stops services, and the one-week deposit covers

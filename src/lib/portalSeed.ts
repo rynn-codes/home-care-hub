@@ -41,6 +41,10 @@ export const seedPortalGrants: Array<PortalGrant & { id: string; phone: E164 }> 
     subjectName: "Marcus",
     state: "pre_admission",
     active: true,
+    // §9.1's widened grant: Susan is the responsible party, and money is her
+    // lane. The billing card renders from these actions and only these.
+    role: "responsible_party",
+    allowedActions: ["view_invoices", "pay_invoice", "manage_payment_methods", "view_care_updates"],
   },
 
   // Both, on one number. This is the case the mode picker exists for.
@@ -65,6 +69,8 @@ export const seedPortalGrants: Array<PortalGrant & { id: string; phone: E164 }> 
     subjectName: "Albert",
     state: "active",
     active: true,
+    role: "responsible_party",
+    allowedActions: ["view_invoices", "pay_invoice", "view_care_updates"],
   },
 
   // A candidate Joy decided against.

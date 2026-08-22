@@ -60,6 +60,22 @@ export const AUDITED_ACTIONS = [
   "billing_run.created",
   // §4.2: admission proceeding past an unsatisfied gate, with a reason.
   "admission.gate_overridden",
+  // Addendum §15's vocabulary. Where the addendum and the earlier list name
+  // the same act differently, the earlier name stands and the mapping is:
+  // invoice.finalized ≈ invoice.approved, invoice.sent ≈ invoice.issued,
+  // invoice.created ≈ billing_run.created (drafts are born in runs).
+  "billing_contact.updated",
+  "payment_authorization.created",
+  "payment_authorization.revoked",
+  "payment_preference.changed",
+  "payment_method.added",
+  "payment_method.updated",
+  "invoice.viewed",
+  "payment.initiated",
+  "payment.succeeded",
+  "payment.failed",
+  "refund.initiated",
+  "refund.completed",
 ] as const;
 
 export class AuditError extends Error {}

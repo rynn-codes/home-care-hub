@@ -115,6 +115,9 @@ export const seedBillingAccountClients: BillingAccountClient[] = seedBillingTerm
       i < 2 ? "acct-diane" : OTHER_ACCOUNTS[(i - 2) % OTHER_ACCOUNTS.length],
     clientPersonId: terms.clientPersonId,
     clientName: terms.clientName,
+    // The agreement's weekly hours — what the advance invoice bills, and what
+    // YOUR CARE COST previews. Fictional, like every client fact here.
+    agreedWeeklyHours: 12 + (i % 3) * 4,
   }),
 );
 

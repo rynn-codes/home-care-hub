@@ -17,6 +17,7 @@ import { seedCarePlans } from "@/lib/carePlanSeed";
 import { carePlanStateForFamily } from "@/domain/carePlan/plan";
 import type { StatusState } from "@/domain/portal/candidateStatus";
 import { cn } from "@/lib/utils";
+import { FamilyBillingCard } from "@/components/portal/FamilyBillingCard";
 
 /**
  * The family's home — §20 before start of care, §23 after.
@@ -200,6 +201,9 @@ export default function FamilyHome() {
           </ul>
         </>
       )}
+
+      {/* ------------------------------------------ billing (addendum §8) -- */}
+      {!preAdmission && grant && <FamilyBillingCard grant={grant} clientName={clientName} />}
 
       <p className="mt-10 text-sm text-muted-foreground">
         Anything at all, call us on{" "}
