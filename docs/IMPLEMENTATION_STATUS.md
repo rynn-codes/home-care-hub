@@ -525,8 +525,17 @@ Recorded here so they are not only in a chat log.
   unique index); §13's sanitized failure cards; §15's full audit vocabulary;
   the `payment_received` template; and the family portal's billing card,
   rendered only under a grant with `view_invoices`. What remains is named in
-  the audit: the §8.1 server layer, the draft-review screen, and the §16
-  panel that waits on live account data.
+  the audit: the §8.1 server layer and the §16 panel that waits on live
+  account data.
+- **The Saturday run, on screen** (22 August). The draft-review screen from
+  the addendum's §19: exceptions first, drafts second, approval with a name
+  through the same refusals the database enforces, audited, and persisted —
+  the e2e proves an approval survives a reload. Building it caught a real
+  seed defect: `billingSeed` re-derived client ids by slugifying names
+  ("c-lianhuang") while the schedule carried "c-lian", so every join between
+  billing and scheduling silently found nobody — the revenue report had been
+  claiming "no rate on file" for clients Billing priced on the same screen.
+  Ids now come from the schedule, and the reports e2e count is the receipt.
 - **The Sunday gate** (22 August). Asked about write-off authority, Karynn
   answered with the policy that makes it moot: payment is due Sunday before
   the care week, non-payment stops services, and the one-week deposit covers

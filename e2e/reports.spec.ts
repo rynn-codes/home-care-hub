@@ -55,8 +55,14 @@ test.describe("reports", () => {
   });
 
   test("marks the reports it cannot produce in the list, not only when opened", async ({ page }) => {
+    // One, and it is net margin (no real pay rates — see Payroll's reasoning).
+    // It was two until the billing seed stopped re-deriving client ids: the
+    // revenue report was matching rates by a slugified id ("c-lianhuang")
+    // while the schedule said "c-lian", so it claimed no served client had a
+    // rate — on the same screen where Billing priced those exact clients.
+    // Unifying the ids fixed the report; this count is the receipt.
     const nav = page.getByRole("navigation", { name: "Reports" });
-    await expect(nav.getByRole("button", { name: /Cannot be produced yet/ })).toHaveCount(2);
+    await expect(nav.getByRole("button", { name: /Cannot be produced yet/ })).toHaveCount(1);
   });
 
   test("has no authorisation report, because Joy has no payers", async ({ page }) => {

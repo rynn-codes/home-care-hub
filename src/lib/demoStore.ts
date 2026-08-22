@@ -168,6 +168,12 @@ export interface DemoState {
    * Billing screen and the outstanding-invoices report read one list.
    */
   recordedPayments: Payment[];
+  /**
+   * Drafts from the Saturday run that somebody approved, keyed by
+   * client:week:rateVersion. §7.2 step 6 — approval is a person's act, and
+   * this is where the demo holds it.
+   */
+  approvedDrafts: Record<string, { by: string; at: string }>;
   contacts: Contact[];
   /**
    * Changes to contacts, by id.
@@ -218,6 +224,7 @@ function initial(): DemoState {
     communications: [],
     domainEvents: [],
     recordedPayments: [],
+    approvedDrafts: {},
     contacts: [],
     contactEdits: {},
     deletedContactIds: [],

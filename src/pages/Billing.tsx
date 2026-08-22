@@ -13,6 +13,7 @@ import { upcomingBillingWeek } from "@/domain/billing/run";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 import { invoiceBalance, BALANCE_LABELS, type InvoiceBalance } from "@/domain/billing/receivables";
 import { RecordPaymentDialog } from "@/components/billing/RecordPaymentDialog";
+import { SaturdayRunCard } from "@/components/billing/SaturdayRunCard";
 import { useDemo } from "@/context/DemoDataProvider";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { cn } from "@/lib/utils";
@@ -173,6 +174,8 @@ export default function Billing() {
         title="Billing"
         description="Invoiced weekly in advance, on the terms in the service agreement."
       />
+
+      <SaturdayRunCard />
 
       <section className="mb-8 rounded-2xl border border-border bg-surface p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">

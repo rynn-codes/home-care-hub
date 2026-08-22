@@ -27,7 +27,7 @@ Stripe server the developer wires; **Partial** says exactly what is missing.
 | 16 | Admissions shows readiness only | **Built** (gates) / **Partial** (panel) | The nine gates and the five payment states are the readiness display; the fuller §16 panel (contact/pricing/preference/method/authorization rows) lands when accounts are live data rather than seeds — showing seed data for a prospective client would fabricate a record |
 | 17 | Changed verified visit triggers review, not rewrite | **Built** (pre-existing) | Supersede-only verified units; `carryForwardFrom` turns the difference into next week's lines; payroll re-reads the live unit |
 | 18 | Spruce notifies, portal is truth | **Built** | `payment_received` joins the templates; all three addendum examples exist, none carries an amount or a reason |
-| 19 | V1 screens | **Partial** | Admin: invoice list/outstanding/record-payment/run engine exist on the Billing page; draft-review-and-approve UI is domain-complete (`approval.ts`) but not yet a screen. Client: billing summary/open invoices/preference/history built; method setup and live payment need Stripe Elements (server-layer) |
+| 19 | V1 screens | **Mostly built** | Admin: the Saturday run card on the Billing page walks §7.2 on screen — exceptions first, drafts second, approval with a name that lands on the trail and survives a reload; plus invoice list, outstanding, record-payment. Client: billing summary/open invoices/preference/history built; method setup and live payment need Stripe Elements (server-layer) |
 | 20 | Acceptance criteria | 11 of 14 **met** | 1–3, 5, 6, 10–14 met; 4 met to the initiation boundary; 7–8 are the Stripe server; 9 met |
 | 21 | The locked rule | **Built** | Joy creates (0016), the client sees (`family_invoices`, the portal card, `invoice.viewed`), Stripe processes (the port). Neither mode can charge an unexplained amount: every line is its own arithmetic, by constraint |
 
@@ -37,7 +37,5 @@ Stripe server the developer wires; **Partial** says exactly what is missing.
    signature verification, and Elements mount. Everything it needs on Joy's
    side exists: the port to implement, the tables to land in, the gate to ask,
    the reconciler to call, the audit builders to invoke.
-2. **The draft-review screen** — the approval domain is complete and tested;
-   the screen that walks a run's drafts past a reviewer is UI work.
-3. **The §16 payment-setup panel** — waits on billing accounts becoming live
+2. **The §16 payment-setup panel** — waits on billing accounts becoming live
    data for prospective clients; building it on seeds would fabricate records.

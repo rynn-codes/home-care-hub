@@ -19,7 +19,7 @@ import { seedContacts } from "@/lib/peopleSeed";
 import { recordAudit } from "@/lib/demoAudit";
 import type { AuditRecord } from "@/domain/audit/audit";
 import { paymentRefusals, type Payment, type PaymentRefusal } from "@/domain/billing/receivables";
-import { externalPaymentRecorded } from "@/domain/billing/financialAudit";
+import { externalPaymentRecorded, invoiceApproved } from "@/domain/billing/financialAudit";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 
 /**
@@ -67,6 +67,8 @@ interface DemoContextValue extends DemoState {
    * something is wrong, so the form can say why in the domain's words.
    */
   recordExternalPayment: (payment: Payment) => PaymentRefusal[];
+  /** §7.2 step 6: an authorized person approves a draft, with their name on it. */
+  approveDraft: (key: string, summary: { total: number; lineCount: number; ratePlanVersionId: string | null }) => void;
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
   reset: () => void;
@@ -663,6 +665,24 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     [audit],
   );
 
+  const approveDraft = useCallback<DemoContextValue["approveDraft"]>((key, summary) => {
+    audit(
+      invoiceApproved({
+        invoiceId: key,
+        total: summary.total,
+        lineCount: summary.lineCount,
+        ratePlanVersionId: summary.ratePlanVersionId,
+      }),
+    );
+    setState((s) => ({
+      ...s,
+      approvedDrafts: {
+        ...s.approvedDrafts,
+        [key]: { by: currentUserRef.current.name, at: new Date().toISOString() },
+      },
+    }));
+  }, [audit]);
+
   const hireEmployee = useCallback<DemoContextValue["hireEmployee"]>((employee) => {
     audit({
       action: "employee.hired",
@@ -712,6 +732,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       hireEmployee,
       assignShift,
       recordExternalPayment,
+      approveDraft,
       currentUser: state.currentUser,
       setCurrentUser,
       saveAssessment,
@@ -723,7 +744,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       retryCommunication,
       reset,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, setCurrentUser, reset],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, setCurrentUser, reset],
   );
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;

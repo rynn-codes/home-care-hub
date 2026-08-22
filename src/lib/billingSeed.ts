@@ -20,8 +20,18 @@ import { seedVisits } from "@/lib/schedulingSeed";
 // a caregiver's name in the client column — see `isBillable`.
 const clients = [...new Set(seedVisits.filter(isBillable).map((v) => v.clientName))];
 
+// The schedule's OWN person id, never re-derived from the name. This file
+// used to slugify the full name ("c-lianhuang") while the schedule carried
+// "c-lian" — two ids for one person, and every join between billing and
+// scheduling silently found nobody. The Saturday run's exception list is what
+// finally caught it.
+const personIdFor = new Map(
+  seedVisits.filter((v) => v.clientPersonId).map((v) => [v.clientName, v.clientPersonId!]),
+);
+
 export const seedBillingTerms: ClientBillingTerms[] = clients.map((clientName, i) => ({
-  clientPersonId: `c-${clientName.toLowerCase().replace(/[^a-z]/g, "")}`,
+  clientPersonId:
+    personIdFor.get(clientName) ?? `c-${clientName.toLowerCase().replace(/[^a-z]/g, "")}`,
   clientName,
   // Placeholder rates. Not Joy's real pricing.
   hourlyRate: i === 1 ? null : [32, null, 28, 35, 30][i % 5] ?? 30,
