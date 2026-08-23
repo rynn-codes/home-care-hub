@@ -6,6 +6,7 @@ import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  HIRING_ORDER,
   HIRING_STAGE_LABELS,
   NO_FIT_LABELS,
   ONBOARDING_STAGE_LABELS,
@@ -149,6 +150,21 @@ export default function Hiring() {
     closed: rows.filter((r) => r.track === "no_fit").length,
   };
 
+  // The roadmap's hiring pulse: "a single thin summary strip rather than large
+  // KPI cards... Numbers are clickable filters. Minimal color." Counts come
+  // from the same rows the queue shows, so the strip and the queue cannot
+  // disagree. Stages with nobody in them stay off the strip — a zero is noise.
+  const pulse = useMemo(() => {
+    const active = rows.filter((r) => r.track === "hiring");
+    return HIRING_ORDER.filter((stage) => stage !== "applied" && stage !== "phone_screen")
+      .map((stage) => ({
+        stage,
+        label: HIRING_STAGE_LABELS[stage],
+        count: active.filter((r) => r.stage === stage).length,
+      }))
+      .filter((entry) => entry.count > 0);
+  }, [rows]);
+
   return (
     <>
       <PageHeader
@@ -162,6 +178,17 @@ export default function Hiring() {
           ? "Nothing is waiting on you in this view."
           : `${needsYou} ${needsYou === 1 ? "applicant needs" : "applicants need"} you today.`}
       </p>
+
+      {pulse.length > 0 && (
+        <p className="mb-4 text-sm text-muted-foreground" aria-label="Hiring pulse">
+          {pulse.map((entry, i) => (
+            <span key={entry.stage}>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              <span className="font-medium text-foreground">{entry.label}</span> {entry.count}
+            </span>
+          ))}
+        </p>
+      )}
 
       <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter applicants">
         {(

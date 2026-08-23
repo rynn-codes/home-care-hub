@@ -67,14 +67,41 @@ describe("hiring stages", () => {
   });
 
   // Sequence is discipline. This one is liability.
-  it("refuses an offer before the background check has cleared", () => {
+  it("refuses the decision before the background check has cleared", () => {
+    // The roadmap's own gate placement: "Once documents and background
+    // requirements are complete, move the candidate to Ready for Decision."
     const ready = applicant({ stage: "background", documents: docs(["licence"]) });
-    const refusal = canAdvanceHiring(ready, "offer");
+    const refusal = canAdvanceHiring(ready, "decision");
     expect(refusal.allowed).toBe(false);
     expect(refusal.reason).toMatch(/background check has not cleared/i);
 
     const cleared = applicant({ stage: "background", documents: docs(["background_check"]) });
-    expect(canAdvanceHiring(cleared, "offer").allowed).toBe(true);
+    expect(canAdvanceHiring(cleared, "decision").allowed).toBe(true);
+  });
+
+  it("a review-required background never resolves itself", () => {
+    // "Joy should never silently hire or reject someone based on AI. Human
+    // staff makes the hiring decision." A person clears it or records a no-fit.
+    const flagged = applicant({
+      stage: "background",
+      documents: docs(["licence"]),
+      backgroundStatus: "review_required" as const,
+    });
+    const refusal = canAdvanceHiring(flagged, "decision");
+    expect(refusal.allowed).toBe(false);
+    expect(refusal.reason).toMatch(/human review/i);
+
+    const cleared = applicant({
+      stage: "background",
+      documents: docs(["licence"]),
+      backgroundStatus: "clear" as const,
+    });
+    expect(canAdvanceHiring(cleared, "decision").allowed).toBe(true);
+  });
+
+  it("the decision is a stage, and the offer follows it", () => {
+    const deciding = applicant({ stage: "decision", documents: docs(["background_check"]) });
+    expect(canAdvanceHiring(deciding, "offer").allowed).toBe(true);
   });
 
   it("will not move a closed applicant without reopening them", () => {
@@ -84,13 +111,14 @@ describe("hiring stages", () => {
     expect(check.reason).toMatch(/closed/i);
   });
 
-  it("covers every stage the mockup shows", () => {
+  it("covers the roadmap's continuum, decision included", () => {
     expect(HIRING_ORDER).toEqual([
       "applied",
       "phone_screen",
       "interview",
       "documents",
       "background",
+      "decision",
       "offer",
     ]);
   });

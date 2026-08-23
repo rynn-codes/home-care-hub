@@ -27,6 +27,7 @@ export type HiringStage =
   | "interview"
   | "documents"
   | "background"
+  | "decision"
   | "offer";
 
 export const HIRING_STAGE_LABELS: Record<HiringStage, string> = {
@@ -35,6 +36,11 @@ export const HIRING_STAGE_LABELS: Record<HiringStage, string> = {
   interview: "Interview",
   documents: "Documents",
   background: "Background & references",
+  // The roadmap's own stage, added when the printed roadmap arrived (22 Aug):
+  // documents done and background clear is a MOMENT, and the moment belongs to
+  // a person — "Move to Offer" or "Do Not Hire", never a drift into the next
+  // column.
+  decision: "Ready for decision",
   offer: "Offer",
 };
 
@@ -44,10 +50,36 @@ export const HIRING_ORDER: HiringStage[] = [
   "interview",
   "documents",
   "background",
+  "decision",
   "offer",
 ];
 
+/**
+ * The roadmap's background vocabulary, verbatim. Its rule travels with it:
+ * "Joy should never silently hire or reject someone based on AI. AI may
+ * identify missing information or prepare a summary. Human staff makes the
+ * hiring decision." `review_required` therefore never resolves itself — a
+ * person reads the report and either clears it or records a no-fit.
+ */
+export type BackgroundStatus =
+  | "not_started"
+  | "authorization_needed"
+  | "submitted"
+  | "pending"
+  | "clear"
+  | "review_required";
+
+export const BACKGROUND_STATUS_LABELS: Record<BackgroundStatus, string> = {
+  not_started: "Not started",
+  authorization_needed: "Authorization needed",
+  submitted: "Submitted",
+  pending: "Pending",
+  clear: "Clear",
+  review_required: "Review required",
+};
+
 export type OnboardingStage =
+  | "gusto_onboarding"
   | "online_orientation"
   | "field_orientation"
   | "first_shift"
@@ -55,20 +87,40 @@ export type OnboardingStage =
   | "week_2";
 
 export const ONBOARDING_STAGE_LABELS: Record<OnboardingStage, string> = {
+  // The roadmap puts Gusto between Offer and Orientation, and draws the line
+  // Joy must not cross: "Joy should display status, not duplicate Gusto."
+  // What Joy tracks here is whether the person can move forward — the W-4,
+  // I-9 and payroll pieces belong to Gusto and stay there.
+  gusto_onboarding: "Gusto / HR onboarding",
   online_orientation: "Online orientation",
   field_orientation: "Field orientation",
   first_shift: "First shift",
   week_1: "Week 1 follow-up",
+  // One more follow-up than the roadmap's continuum, kept deliberately: the
+  // roadmap ends at Week 1 → Active, and Joy checks in once more before
+  // calling somebody settled. An extra conversation is a superset, not a
+  // deviation.
   week_2: "Week 2 follow-up",
 };
 
 export const ONBOARDING_ORDER: OnboardingStage[] = [
+  "gusto_onboarding",
   "online_orientation",
   "field_orientation",
   "first_shift",
   "week_1",
   "week_2",
 ];
+
+/** The Gusto items Joy SURFACES — status display, never a rebuild of Gusto. */
+export const GUSTO_TRACKED_ITEMS = [
+  "Gusto invite sent",
+  "Offer accepted",
+  "W-4",
+  "I-9",
+  "Payroll setup",
+  "Gusto onboarding complete",
+] as const;
 
 export type Track = "hiring" | "onboarding" | "hired" | "no_fit";
 
@@ -112,6 +164,8 @@ export interface Applicant {
   availability: string;
   drives: boolean;
   noFitReason?: NoFitReason | null;
+  /** The roadmap's six background states. Undefined reads as not started. */
+  backgroundStatus?: BackgroundStatus | null;
   /**
    * Documents supplied so far, keyed the same as the Employees credential
    * module so a hire converts without translation. Each carries its own dates,
@@ -226,7 +280,26 @@ export function canAdvanceHiring(applicant: Applicant, to: HiringStage): Transit
     };
   }
 
-  if (to === "offer" && !applicant.documents.background_check) {
+  // The roadmap's gate sits at the decision, where the roadmap puts it:
+  // "Once documents and background requirements are complete, move the
+  // candidate to Ready for Decision." A review_required background never
+  // advances on its own — a person reads the report and either clears it or
+  // records a no-fit.
+  if (to === "decision") {
+    const cleared =
+      applicant.backgroundStatus === "clear" || Boolean(applicant.documents.background_check);
+    if (!cleared) {
+      return {
+        allowed: false,
+        reason:
+          applicant.backgroundStatus === "review_required"
+            ? "The background check needs a human review. Clear it or record a no-fit — it never resolves itself."
+            : "The background check has not cleared. Nobody reaches the decision before it does.",
+      };
+    }
+  }
+
+  if (to === "offer" && !applicant.documents.background_check && applicant.backgroundStatus !== "clear") {
     return {
       allowed: false,
       reason: "The background check has not cleared. An offer cannot be made before it does.",

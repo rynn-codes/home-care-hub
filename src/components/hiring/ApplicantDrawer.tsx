@@ -109,6 +109,16 @@ function ApplicantBody({
     ...documentsDueSoonAfterHire(seedCredentialRequirements, role, applicant.drives),
   ];
 
+  // The roadmap's drawer block: concise portal progress, and what the
+  // candidate is being waited on for — the first missing blocking document,
+  // by name, because "Waiting On: TB Upload" is the roadmap's own example.
+  const stageIndexOf = (stage: (typeof HIRING_ORDER)[number]) => HIRING_ORDER.indexOf(stage);
+  const firstMissing = blockingKeys.find((key) => !applicant.documents[key]);
+  const waitingOn =
+    applicant.track === "hiring" && applicant.stage === "documents" && firstMissing
+      ? `${firstMissing.replace(/_/g, " ")} upload`
+      : null;
+
   const removeDoc = (key: string) => {
     const next = { ...applicant.documents };
     delete next[key];
@@ -166,6 +176,37 @@ function ApplicantBody({
             Reopen
           </Button>
         </div>
+      )}
+
+      {/* ------------------------------------------- portal status (roadmap) */}
+      {applicant.track !== "no_fit" && (
+        <section className="mt-6 rounded-xl bg-surface-muted p-3.5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Their portal
+          </h3>
+          <dl className="mt-2 space-y-1 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Portal invitation</dt>
+              {/* Invited at Move Forward — reaching `documents` means the
+                  handoff happened and the link went out via GHL. */}
+              <dd>{stageIndexOf(applicant.stage) >= stageIndexOf("documents") ? "Sent" : "Not yet"}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Application</dt>
+              <dd>
+                {applicant.documents.application
+                  ? "Submitted"
+                  : stageIndexOf(applicant.stage) >= stageIndexOf("documents")
+                    ? "In progress"
+                    : "—"}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Waiting on</dt>
+              <dd>{waitingOn ?? "Nothing — the next step is Joy's"}</dd>
+            </div>
+          </dl>
+        </section>
       )}
 
       {/* ------------------------------------------------------- documents */}
@@ -255,13 +296,16 @@ function ApplicantBody({
                 onChange({
                   ...applicant,
                   track: "onboarding",
-                  onboardingStage: "online_orientation",
+                  // The roadmap's order: Offer → Gusto/HR onboarding →
+                  // Orientation. Gusto's W-4/I-9/payroll setup comes first,
+                  // and Joy displays its status rather than duplicating it.
+                  onboardingStage: "gusto_onboarding",
                   offerAcceptedOn: stamp(),
                   stageSince: stamp(),
                 })
               }
             >
-              Offer accepted — start onboarding
+              Offer accepted — start Gusto onboarding
             </Button>
           )}
 

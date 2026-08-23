@@ -76,6 +76,9 @@ const EXTERNAL_STATUS: Record<HiringStage, string> = {
   interview: "Application under review",
   documents: "Waiting on your documents",
   background: "Application under review",
+  // The decision stage reads identically to background on purpose: "we are
+  // deciding about you" is not a sentence to put on somebody's phone.
+  decision: "Application under review",
   offer: "We'd like to offer you a position",
 };
 

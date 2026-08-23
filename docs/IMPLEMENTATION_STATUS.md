@@ -320,10 +320,13 @@ Supabase project.
    long as we have the Plan of Care and the full agreement, that's enough for
    now." The full agreement also settles the reprint-verification flag on the
    consent registry's corrected invoicing sentence. The nursing assessment is
-   scratched for now by her decision; the Hiring Screen Roadmap and Product
-   Bible remain unuploaded. **The Client Intake Form arrived (22 August)** —
-   vendored at `docs/specs/Joy_Health_Client_Intake_Form.pdf` and audited
-   below; Phone Intake is now verified against the printed form.
+   scratched for now by her decision; the Product Bible remains unuploaded.
+   **The Client Intake Form arrived (22 August)** — vendored and audited;
+   Phone Intake is verified against the printed form. **The Hiring Screen
+   Roadmap arrived (22 August)** — vendored, audited in
+   `docs/HIRING_ROADMAP_AUDIT.md`, and the print's additions built: the
+   decision stage, the six background states, the Gusto onboarding stage, the
+   GHL event vocabulary, the drawer's portal block, the pulse strip.
 5. ~~The legal review of one-signature reuse has not been booked.~~ Settled by
    Karynn, 22 August: one signature with initials is the approach, applied only
    after the completed agreement is reviewed in its entirety — the read-back
