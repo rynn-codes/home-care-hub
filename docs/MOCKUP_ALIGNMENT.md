@@ -152,6 +152,27 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   must always work. The assessment's section rail, plan-of-care and
   review-and-sign flows were already built to their mocks' structure.
 
+- **09 — Billing.** Aligned 23 Aug, on Karynn's ruling ("adopt the mock's
+  To send | Sent | Profitability framing"). The three tabs over the
+  unchanged Saturday-run engine: **To send** carries the This-week's-batch
+  card (run identity, total, hours, a Send-all that unlocks when every
+  draft is approved), one card per client with status pill, expandable
+  invoice lines and the run's real exceptions as the mock's review flags,
+  amber No-draft cards for skipped clients saying what clears them, and
+  the rail — The week (Karynn's rhythm: drafts Saturday, approve Sat–Mon,
+  out Monday, the dunning ladder, the Sunday gate — the mock's "due
+  Wednesday" is superseded), Outstanding with Record-a-payment, and an
+  honest Stripe card ("Not connected"; the plumbing is ready). **Sent** is
+  the mock's table over the issued invoices and every payment against
+  them, with balance-state pills and the unpaid footer. **Profitability**
+  keeps the mock's frame and refuses the net figure honestly — caregiver
+  pay rates live in Gusto, so the billed side is real and the cost side
+  says "In Gusto" instead of multiplying placeholder rates into something
+  that reads like a margin. The mock's Hide-amounts toggle is real;
+  Create invoice is greyed (invoices come from the run). Approve → Send →
+  JH-number → Outstanding → audit trail all behave exactly as before, and
+  the same four e2e specs prove it.
+
 ## Conflicts needing Karynn's ruling (per the mockups README protocol)
 
 1. **Hiring: mock 02 vs the newer roadmap.** The mock (Aug 18) shows an "Open
@@ -160,13 +181,3 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
    specifies the post-interview candidate work queue with Needs You | Waiting,
    and says GHL owns recruiting. The build follows the roadmap. If she also
    wants the job-positions view, it is a new surface, not a replacement.
-2. **Billing: mock 09's framing.** The mock shows "To send | Sent |
-   Profitability" tabs with a THIS WEEK'S BATCH review card and per-client
-   review flags ("overtime captured", "shifts added after the schedule was
-   set"). The built screen carries the same substance (the Saturday run's
-   drafts and exceptions ARE the review flags) in a different frame. Mock also
-   says "Due Wednesday" — superseded by her Saturday-run answers. Alignment
-   plan: adopt the mock's tab framing and batch-summary card over the current
-   stack, keeping the run engine underneath; confirm with her that
-   "Profitability" waits for real pay rates (net margin currently refuses to
-   compute, honestly).
