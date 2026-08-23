@@ -1,76 +1,41 @@
-import { useState } from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import { joyInsights } from "@/lib/joySeed";
-import { cn } from "@/lib/utils";
+
+/** Where each prepared item's action leads. The insight rows come from the
+    seed; the destinations are the modules where the human decision happens. */
+const insightDestinations: Record<string, string> = {
+  j1: "/scheduling",
+  j2: "/billing",
+  j3: "/admissions",
+};
 
 /**
- * Joy Assistant, collapsed by default.
- *
- * Revision 3 puts this at the bottom of the page, collapsed, so AI supports the
- * user without dominating the screen. It states plainly that Joy has prepared
- * work rather than done it — under section 26, Home-level AI is draft and
- * propose authority only, so every item ends in a human action.
+ * Joy Assistant — the mock's right-hand column: a quiet list of what Joy
+ * prepared overnight, each row ending in an action a person takes. Under
+ * section 26, Home-level AI is draft and propose authority only, and the
+ * sub-line says so in plain words.
  */
 export function JoyAssistant() {
-  const [open, setOpen] = useState(false);
-
   return (
-    <>
-    {/* The mock's signature control: the Ask Joy pill, bottom-right on every
-        dashboard frame. It opens the same collapsed panel — one AI surface,
-        two doors, no duplicate content. */}
-    <button
-      type="button"
-      onClick={() => {
-        setOpen(true);
-        document.getElementById("joy-assistant-items")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }}
-      className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-    >
-      <Sparkles className="h-4 w-4" aria-hidden="true" />
-      Ask Joy
-    </button>
-
-    <section className="mt-6 rounded-2xl border border-border bg-surface">
-      <h2>
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls="joy-assistant-items"
-          className="flex w-full items-center gap-3 rounded-2xl px-5 py-4 text-left transition-colors hover:bg-surface-muted"
-        >
-          <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-          <span className="flex-1">
-            <span className="block text-sm font-semibold">Joy Assistant</span>
-            <span className="block text-xs text-muted-foreground">
-              Prepared for your review · Joy prepares, a human approves
-            </span>
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground">{joyInsights.length} items</span>
-          <ChevronDown
-            aria-hidden="true"
-            className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
-          />
-        </button>
-      </h2>
-
-      {open && (
-        <ul id="joy-assistant-items" className="divide-y divide-border border-t border-border">
-          {joyInsights.map((insight) => (
-            <li key={insight.id} className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center">
-              <p className="flex-1 text-sm text-muted-foreground">{insight.message}</p>
-              <button
-                type="button"
-                className="shrink-0 self-start rounded-md border border-primary/30 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary-soft sm:self-auto"
-              >
-                {insight.action}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <section aria-label="Joy Assistant">
+      <div className="mb-0.5 flex items-baseline justify-between">
+        <h2 className="m-0 text-[17px] font-medium tracking-[-.02em]">Joy Assistant</h2>
+        <span className="text-[12.5px] font-light text-muted-foreground">{joyInsights.length} items</span>
+      </div>
+      <p className="m-0 mb-2 text-[12.5px] font-light text-muted-foreground">
+        Prepared for your review · Joy prepares, a human approves
+      </p>
+      {joyInsights.map((insight) => (
+        <div key={insight.id} className="flex flex-col gap-1.5 border-t border-black/[.05] py-[15px]">
+          <span className="text-[13.5px] font-normal leading-[1.55]">{insight.message}</span>
+          <Link
+            to={insightDestinations[insight.id] ?? "/"}
+            className="text-[12.5px] font-medium text-primary hover:text-[#2A1BD1]"
+          >
+            {insight.action}
+          </Link>
+        </div>
+      ))}
     </section>
-    </>
   );
 }

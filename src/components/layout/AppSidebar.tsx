@@ -4,28 +4,31 @@ import {
   Receipt, Wallet, BarChart3, FolderOpen, BookOpen, Settings, ShieldAlert, HeartPulse, CalendarCheck, ClipboardCheck,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
-import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
-  SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, useSidebar,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useData } from "@/context/DataProvider";
+import { useDemo } from "@/context/DemoDataProvider";
+import { seedApplicants } from "@/lib/hiringSeed";
 
 interface NavChild {
   title: string;
   url: string;
   icon: typeof Home;
+  count?: number;
 }
 
 interface NavItem {
   title: string;
   url: string;
   icon: typeof Home;
+  count?: number;
   children?: NavChild[];
 }
 
 /**
- * The Joy navigation, fixed by section 6 of the Codex Engineering Kickoff.
+ * The Joy navigation, fixed by section 6 of the Codex Engineering Kickoff,
+ * restyled to the approved mock: white, 13px rows, the active row on a quiet
+ * grey with an indigo icon, and live counts on the right edge.
  *
  * Two rules this encodes, both easy to lose:
  *   - Hiring lives under Operations, never at the top level (§6).
@@ -37,45 +40,54 @@ interface NavItem {
  *     are their own destinations. The people table underneath is unchanged;
  *     this is only where a record is shown.
  *
- * "Talk to Joy" is persistent AI access and is deliberately not a nav item.
+ * "Talk to Joy" is persistent AI access and is deliberately not a nav item —
+ * it lives on the Ask Joy pill.
  */
-const nav: NavItem[] = [
-  { title: "Home", url: "/", icon: Home },
-  {
-    title: "Operations",
-    url: "/operations",
-    icon: Compass,
-    children: [
-      { title: "Hiring", url: "/operations/hiring", icon: UserPlus },
-      { title: "Incidents", url: "/operations/incidents", icon: ShieldAlert },
-      { title: "Audit", url: "/operations/audit", icon: ClipboardCheck },
-      { title: "Documents", url: "/documents", icon: FolderOpen },
-      { title: "SOPs", url: "/sops", icon: BookOpen },
-    ],
-  },
-  { title: "Admissions", url: "/admissions", icon: ClipboardList },
-  {
-    title: "Clients",
-    url: "/clients",
-    icon: Users,
-    children: [
-      { title: "Care plans", url: "/clients/care-plans", icon: HeartPulse },
-      { title: "Supervision", url: "/clients/supervision", icon: CalendarCheck },
-    ],
-  },
-  { title: "Employees", url: "/employees", icon: UserCog },
-  { title: "People", url: "/people", icon: Contact },
-  { title: "Scheduling", url: "/scheduling", icon: CalendarDays },
-  { title: "Billing", url: "/billing", icon: Receipt },
-  { title: "Payroll", url: "/payroll", icon: Wallet },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
-  { title: "Settings", url: "/settings", icon: Settings },
-];
+function useNav(): NavItem[] {
+  const { clients, employees } = useData();
+  const hiringCount = seedApplicants.filter((a) => a.track !== "no_fit" && a.track !== "hired").length;
+
+  return [
+    { title: "Home", url: "/", icon: Home },
+    {
+      title: "Operations",
+      url: "/operations",
+      icon: Compass,
+      children: [
+        { title: "Hiring", url: "/operations/hiring", icon: UserPlus, count: hiringCount },
+        { title: "Incidents", url: "/operations/incidents", icon: ShieldAlert },
+        { title: "Audit", url: "/operations/audit", icon: ClipboardCheck },
+        { title: "Documents", url: "/documents", icon: FolderOpen },
+        { title: "SOPs", url: "/sops", icon: BookOpen },
+      ],
+    },
+    { title: "Admissions", url: "/admissions", icon: ClipboardList },
+    {
+      title: "Clients",
+      url: "/clients",
+      icon: Users,
+      count: clients.filter((c) => c.status === "active").length,
+      children: [
+        { title: "Care plans", url: "/clients/care-plans", icon: HeartPulse },
+        { title: "Supervision", url: "/clients/supervision", icon: CalendarCheck },
+      ],
+    },
+    { title: "Employees", url: "/employees", icon: UserCog, count: employees.length },
+    { title: "People", url: "/people", icon: Contact },
+    { title: "Scheduling", url: "/scheduling", icon: CalendarDays },
+    { title: "Billing", url: "/billing", icon: Receipt },
+    { title: "Payroll", url: "/payroll", icon: Wallet },
+    { title: "Reports", url: "/reports", icon: BarChart3 },
+    { title: "Settings", url: "/settings", icon: Settings },
+  ];
+}
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
+  const { currentUser } = useDemo();
+  const nav = useNav();
 
   const isActive = (url: string) =>
     url === "/" ? pathname === "/" : pathname === url || pathname.startsWith(`${url}/`);
@@ -83,50 +95,85 @@ export function AppSidebar() {
   const isSectionOpen = (item: NavItem) =>
     isActive(item.url) || (item.children ?? []).some((child) => isActive(child.url));
 
+  const rowClass = (active: boolean) =>
+    cn(
+      "flex items-center gap-[11px] rounded-lg px-2.5 py-2 text-[13px] transition-colors",
+      active
+        ? "bg-[#F1F2F6] font-medium text-foreground"
+        : "font-normal text-[#6E6E76] hover:bg-[#FAFAFB] hover:text-foreground",
+    );
+
+  const initials = currentUser.name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center justify-center px-2 py-3">
-          <img
-            src={logo}
-            alt="Joy Health"
-            className={cn("object-contain transition-all", collapsed ? "h-8 w-8" : "h-16 w-auto")}
-          />
+    <Sidebar collapsible="icon" className="border-r border-black/[.07]">
+      <SidebarHeader className="border-none">
+        <div className={cn("flex items-center gap-2.5 px-2.5 pb-3 pt-2", collapsed && "justify-center px-0")}>
+          <img src={logo} alt="" className="h-[22px] w-[22px] flex-none rounded-full object-contain" />
+          {!collapsed && <span className="text-[13.5px] font-medium tracking-[-.01em]">Joy Health</span>}
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {nav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
 
-                  {item.children && !collapsed && isSectionOpen(item) && (
-                    <SidebarMenuSub>
-                      {item.children.map((child) => (
-                        <SidebarMenuSubItem key={child.title}>
-                          <SidebarMenuSubButton asChild isActive={isActive(child.url)}>
-                            <NavLink to={child.url} className="flex items-center gap-2">
-                              <child.icon className="h-3.5 w-3.5 shrink-0" />
-                              <span>{child.title}</span>
-                            </NavLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
+      <SidebarContent>
+        <nav className={cn("flex flex-col gap-0.5 px-2", collapsed && "items-center px-1")} aria-label="Main">
+          {nav.map((item) => {
+            const active = isActive(item.url);
+            return (
+              <div key={item.title} className="flex flex-col gap-0.5">
+                <NavLink to={item.url} end={item.url === "/"} className={rowClass(active)} title={item.title}>
+                  <item.icon
+                    className={cn("h-[15px] w-[15px] flex-none", active ? "text-primary" : "text-[#8A8A92]")}
+                    strokeWidth={active ? 1.6 : 1.5}
+                    aria-hidden="true"
+                  />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 truncate">{item.title}</span>
+                      {item.count != null && (
+                        <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">{item.count}</span>
+                      )}
+                    </>
                   )}
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                </NavLink>
+
+                {item.children && !collapsed && isSectionOpen(item) && (
+                  <div className="mb-1 ml-[13px] flex flex-col gap-0.5 border-l border-black/[.06] pl-2">
+                    {item.children.map((child) => {
+                      const childActive = isActive(child.url);
+                      return (
+                        <NavLink key={child.title} to={child.url} className={rowClass(childActive)}>
+                          <child.icon
+                            className={cn("h-3.5 w-3.5 flex-none", childActive ? "text-primary" : "text-[#8A8A92]")}
+                            strokeWidth={1.5}
+                            aria-hidden="true"
+                          />
+                          <span className="flex-1 truncate text-[12.5px]">{child.title}</span>
+                          {child.count != null && (
+                            <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">{child.count}</span>
+                          )}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
       </SidebarContent>
+
+      <SidebarFooter className="border-none">
+        <div className={cn("flex items-center gap-2.5 px-3 py-2.5", collapsed && "justify-center px-0")}>
+          <span className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full bg-[#F0F0F2] text-[10px] font-semibold text-muted-foreground">
+            {initials}
+          </span>
+          {!collapsed && <span className="truncate text-[12.5px] text-[#6E6E76]">{currentUser.name}</span>}
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

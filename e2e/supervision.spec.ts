@@ -17,13 +17,16 @@ test.describe("supervisory visits", () => {
     await signInAsStaff(page, PROJECT_REF);
   });
 
-  test("Home links to the screen that can actually do something about it", async ({ page }) => {
+  test("the nav reaches the screen that can actually do something about it", async ({ page }) => {
     const log = watchForErrors(page);
     await page.goto("/");
 
-    const tile = page.locator('a[href="/clients/supervision"]').first();
-    await expect(tile).toContainText("Supervisory visits");
-    await tile.click();
+    // The approved dashboard mock keeps Home to the morning's work; the
+    // supervision clock lives where it can be acted on, under Clients.
+    await page.locator('nav a[href="/clients"]').first().click();
+    const link = page.locator('a[href="/clients/supervision"]').first();
+    await expect(link).toContainText("Supervision");
+    await link.click();
     await expect(page.locator("h1")).toHaveText("Supervisory visits");
     expect(log.errors).toEqual([]);
   });

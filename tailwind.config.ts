@@ -18,25 +18,24 @@ export default {
       // System UI faces are chosen because they are metrically closer to Inter
       // than a generic sans, which makes the swap far less jarring.
       fontFamily: {
+        // Public Sans everywhere — the approved mocks' one face, in light
+        // weights (300–700). The previous Inter + Plus Jakarta pairing was the
+        // drift Karynn caught on her first walkthrough.
         sans: [
-          'Inter',
+          '"Public Sans"',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
-          'BlinkMacSystemFont',
-          '"Segoe UI"',
-          'Roboto',
           '"Helvetica Neue"',
           'Arial',
           'sans-serif',
         ],
         display: [
-          '"Plus Jakarta Sans"',
-          'Inter',
+          '"Public Sans"',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
-          '"Segoe UI"',
+          '"Helvetica Neue"',
           'sans-serif',
         ],
       },

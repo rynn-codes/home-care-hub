@@ -101,6 +101,32 @@ export interface Deadline {
   inDays: string;
 }
 
+export interface MyTask {
+  id: string;
+  title: string;
+  category: string;
+  tag: string;
+  time: string;
+}
+
+/**
+ * My Tasks — the approved dashboard mock's own list, verbatim. Susan Miller
+ * and Lian Huang are seeded fictional clients; T. Johnson is a fictional
+ * candidate. The four-done offset and nine-task total in the progress footer
+ * are the mock's numbers: five visible tasks, four already ticked off-screen
+ * this morning.
+ */
+export const myTasks: MyTask[] = [
+  { id: "t1", title: "Call Susan Miller about increased hours", category: "Client follow-up", tag: "Client", time: "9:00 AM" },
+  { id: "t2", title: "Approve payroll for week ending 8/8", category: "Payroll", tag: "Payroll", time: "10:30 AM" },
+  { id: "t3", title: "Review assessment — Lian Huang", category: "Assessment", tag: "Assessment", time: "11:00 AM" },
+  { id: "t4", title: "Interview: CNA candidate — T. Johnson", category: "Human Resources", tag: "HR", time: "2:00 PM" },
+  { id: "t5", title: "Review billing exceptions", category: "Billing", tag: "Billing", time: "3:00 PM" },
+];
+
+export const TASKS_DONE_OFFSET = 4;
+export const TASKS_TOTAL = 9;
+
 export const upcomingDeadlines: Deadline[] = [
   { date: "Aug 10", label: "Payroll and invoicing", inDays: "in 3 days" },
   { date: "Aug 13", label: "Latest Gusto submission", inDays: "in 6 days" },

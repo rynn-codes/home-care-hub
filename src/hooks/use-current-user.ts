@@ -7,15 +7,13 @@ interface CurrentUser {
   loading: boolean;
 }
 
-function firstNameFrom(metadata: Record<string, unknown> | undefined, email: string | undefined) {
+function firstNameFrom(metadata: Record<string, unknown> | undefined) {
   const preferred = metadata?.preferred_name ?? metadata?.first_name ?? metadata?.full_name;
   if (typeof preferred === "string" && preferred.trim()) {
     return preferred.trim().split(/\s+/)[0];
   }
-  if (email) {
-    const handle = email.split("@")[0].replace(/[._-]+/g, " ").trim();
-    if (handle) return handle.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
-  }
+  // No guessing from the email handle — "p.verrett@" greeted somebody as "P".
+  // A missing name is the caller's decision, not a string to fabricate.
   return "";
 }
 
@@ -38,7 +36,7 @@ export function useCurrentUser(): CurrentUser {
       .then(({ data }) => {
         if (!active) return;
         const user = data.session?.user;
-        setFirstName(firstNameFrom(user?.user_metadata, user?.email));
+        setFirstName(firstNameFrom(user?.user_metadata));
       })
       .catch(() => {
         /* No session available; the greeting falls back to no name. */
@@ -49,7 +47,7 @@ export function useCurrentUser(): CurrentUser {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
-      setFirstName(firstNameFrom(session?.user?.user_metadata, session?.user?.email));
+      setFirstName(firstNameFrom(session?.user?.user_metadata));
     });
 
     return () => {

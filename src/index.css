@@ -160,3 +160,9 @@
   .prose li { @apply my-1; }
   .prose strong { @apply font-semibold; }
 }
+
+/* The Ask Joy sparkle's breathing glow, from the approved dashboard mock. */
+@keyframes joyGlow {
+  0%, 100% { opacity: .5; transform: scale(1); }
+  50% { opacity: .95; transform: scale(1.06); }
+}

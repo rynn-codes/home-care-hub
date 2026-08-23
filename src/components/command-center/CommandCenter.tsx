@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bot, Loader2, Plus, Send, Sparkles, Trash2, X, Check, AlertTriangle, ChevronDown } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from "ai";
@@ -164,9 +164,10 @@ function useToolRunner() {
 }
 
 // ---------- Chat thread (UI for one conversation) ----------
-function ChatThread({ thread }: { thread: StoredThread }) {
+function ChatThread({ thread, initialQuestion }: { thread: StoredThread; initialQuestion?: string }) {
   const runner = useToolRunner();
   const [input, setInput] = useState("");
+  const seededRef = useRef(false);
 
   const transport = useMemo(
     () =>
@@ -191,6 +192,17 @@ function ChatThread({ thread }: { thread: StoredThread }) {
       // add_shift / update_shift wait for human approval in the UI
     },
   });
+
+  // A question typed into the Ask Joy pill's panel arrives here and is sent
+  // as the thread's first message, so the pill and the Command Center are one
+  // AI surface with two doors rather than two assistants.
+  useEffect(() => {
+    if (initialQuestion && messages.length === 0 && !seededRef.current) {
+      seededRef.current = true;
+      sendMessage({ text: initialQuestion });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Persist on every change
   useEffect(() => {
@@ -452,13 +464,34 @@ function ToolCard({
 }
 
 // ---------- Panel with thread list + active chat ----------
-function CommandCenterPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function CommandCenterPanel({
+  open, onOpenChange, seedQuestion,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  seedQuestion?: string | null;
+}) {
   const [threads, setThreads] = useState<StoredThread[]>(() => threadStore.list());
   const [activeId, setActiveId] = useState<string | null>(() => threadStore.list()[0]?.id ?? null);
+  const [seededThreadId, setSeededThreadId] = useState<string | null>(null);
 
   function refresh() {
     setThreads(threadStore.list());
   }
+
+  // Opened from the Ask Joy pill: a typed question starts a fresh thread.
+  useEffect(() => {
+    if (!open) return;
+    if (seedQuestion) {
+      const t = threadStore.create();
+      setSeededThreadId(t.id);
+      setActiveId(t.id);
+    } else if (!threadStore.list().some((t) => t.id === activeId)) {
+      setActiveId(threadStore.list()[0]?.id ?? null);
+    }
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, seedQuestion]);
 
   function newThread() {
     const t = threadStore.create();
@@ -527,7 +560,11 @@ function CommandCenterPanel({ open, onOpenChange }: { open: boolean; onOpenChang
 
           <div className="flex-1 min-w-0">
             {active ? (
-              <ChatThread key={active.id} thread={active} />
+              <ChatThread
+                key={active.id}
+                thread={active}
+                initialQuestion={active.id === seededThreadId ? seedQuestion ?? undefined : undefined}
+              />
             ) : (
               <div className="h-full grid place-items-center p-6 text-center">
                 <div>
@@ -543,22 +580,35 @@ function CommandCenterPanel({ open, onOpenChange }: { open: boolean; onOpenChang
   );
 }
 
-// ---------- Floating launcher ----------
+// ---------- Global listener ----------
+//
+// The mock has one AI entry point: the Ask Joy pill, bottom-right. The old
+// round launcher duplicated it, so the pill is now the only door. AskJoy
+// dispatches "joy:ask" — with a question when one was typed — and this opens
+// the full Command Center.
 export function CommandCenter() {
   const [open, setOpen] = useState(false);
+  const [seed, setSeed] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const q = (e as CustomEvent<{ question?: string }>).detail?.question?.trim();
+      setSeed(q ? q : null);
+      if (!q && threadStore.list().length === 0) threadStore.create();
+      setOpen(true);
+    };
+    document.addEventListener("joy:ask", onAsk);
+    return () => document.removeEventListener("joy:ask", onAsk);
+  }, []);
+
   return (
-    <>
-      <button
-        onClick={() => {
-          if (threadStore.list().length === 0) threadStore.create();
-          setOpen(true);
-        }}
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 grid place-items-center hover:scale-105 active:scale-95 transition-transform"
-        aria-label="Open Command Center"
-      >
-        <Sparkles className="h-6 w-6" />
-      </button>
-      <CommandCenterPanel open={open} onOpenChange={setOpen} />
-    </>
+    <CommandCenterPanel
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) setSeed(null);
+      }}
+      seedQuestion={seed}
+    />
   );
 }

@@ -41,15 +41,20 @@ const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
  * on the stylesheet rather than on how busy the machine is.
  *
  * Deliberately waiting rather than disabling animations: this tests the page a
- * person actually gets, and an animation that never finishes is itself worth
- * failing on.
+ * person actually gets. Animations that loop forever by declaration — the Ask
+ * Joy pill's breathing glow, a pulsing dot — are exempt: they will never
+ * finish, that is their design, and they animate decorative opacity and
+ * transform rather than the colours axe measures text against. An entrance
+ * animation that never finishes still fails, which is the bug worth catching.
  */
 async function settle(page: import("@playwright/test").Page) {
   await page.waitForFunction(
     () =>
-      document
-        .getAnimations()
-        .every((a) => a.playState === "finished" || a.playState === "idle"),
+      document.getAnimations().every((a) => {
+        if (a.playState === "finished" || a.playState === "idle") return true;
+        const timing = a.effect?.getTiming();
+        return timing?.iterations === Infinity;
+      }),
     undefined,
     { timeout: 5_000 },
   );
