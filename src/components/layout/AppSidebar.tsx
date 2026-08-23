@@ -6,9 +6,10 @@ import {
 import logo from "@/assets/logo.png";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useData } from "@/context/DataProvider";
 import { useDemo } from "@/context/DemoDataProvider";
 import { seedApplicants } from "@/lib/hiringSeed";
+import { seedClients } from "@/lib/clientsSeed";
+import { seedEmployees } from "@/lib/employeesSeed";
 
 interface NavChild {
   title: string;
@@ -44,7 +45,16 @@ interface NavItem {
  * it lives on the Ask Joy pill.
  */
 function useNav(): NavItem[] {
-  const { clients, employees } = useData();
+  // The same seeds the module screens count, never a second store — a sidebar
+  // saying 21 clients over a directory showing 8 is Joy contradicting itself.
+  const { people } = useDemo();
+  const admitted = people.filter(
+    (p) =>
+      p.clientStatus === "active" &&
+      !seedClients.some((c) => c.personId === p.personId),
+  ).length;
+  const clientCount = seedClients.filter((c) => c.status === "active").length + admitted;
+  const employeeCount = seedEmployees.filter((e) => e.status === "active").length;
   const hiringCount = seedApplicants.filter((a) => a.track !== "no_fit" && a.track !== "hired").length;
 
   return [
@@ -66,13 +76,13 @@ function useNav(): NavItem[] {
       title: "Clients",
       url: "/clients",
       icon: Users,
-      count: clients.filter((c) => c.status === "active").length,
+      count: clientCount,
       children: [
         { title: "Care plans", url: "/clients/care-plans", icon: HeartPulse },
         { title: "Supervision", url: "/clients/supervision", icon: CalendarCheck },
       ],
     },
-    { title: "Employees", url: "/employees", icon: UserCog, count: employees.length },
+    { title: "Employees", url: "/employees", icon: UserCog, count: employeeCount },
     { title: "People", url: "/people", icon: Contact },
     { title: "Scheduling", url: "/scheduling", icon: CalendarDays },
     { title: "Billing", url: "/billing", icon: Receipt },

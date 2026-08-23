@@ -111,10 +111,32 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   the employee seed said "on leave"), and the stale "c-lianhuang" paid-week
   id is fixed to the schedule's "c-lian".
 
+- **04 — Employees.** Aligned 23 Aug from the design source. The directory
+  to the mock's values, including the mock's compliance-attention strip —
+  one amber chip per person with something lapsed or expiring, each opening
+  that record — plus role pills, status and compliance dots, and Hours /
+  Next shift columns. The record takes the mock's header and layout:
+  Profile with the Details rail and Highlights (Summary, the tinted
+  Compliance card, Next shift / This week / Driving tiles — This week
+  computed from the schedule board, not a typed number), the Activity
+  timeline, Employment & Compliance with the mock's facts grid, dotted
+  credentials table (issued/expires from the record) and eligibility rail,
+  and three tabs that used to stub out: **Schedule** is the per-caregiver
+  month calendar over the board's visits with live tiles; **Docs** lists
+  the credential documents' dates and states honestly ("the files
+  themselves need storage the prototype doesn't have"); **Roles** shows the
+  role chips and what each role may do, noting the real grants live in the
+  migrations. Audit packet stays as built.
+
+  Also caught: the sidebar counted 21 clients and 15 employees out of the
+  old mockData store while the directories showed 8 and 9 from the seeds —
+  the sidebar now counts the same seeds the screens render. Chanel's
+  summary no longer claims 38 hours over a tile computing 8.8 from the
+  board.
+
 ## To align next
 
-- **04 — Employees**,
-  **05 — Admissions**, **06/07 — Intake & Assessment:** compare each against
+- **05 — Admissions**, **06/07 — Intake & Assessment:** compare each against
   its mock and close the visual gaps. (Flows are built; this is layout,
   density, and vocabulary.)
 

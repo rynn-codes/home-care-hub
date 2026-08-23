@@ -73,7 +73,7 @@ export const seedEmployees: SeedEmployee[] = [
     kin: "Robert P",
     kinLine: "Husband · (713) 555-0127",
     summary:
-      "Longest-serving field caregiver and the primary on the Huang case. Carries 38 hours a week without crossing into overtime.",
+      "Longest-serving field caregiver and the primary on the Huang case, with room in her week before overtime.",
     records: { ...ok },
   },
   {
