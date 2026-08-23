@@ -65,9 +65,28 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   nothing here sends anything. The page-level "This week" stats are computed
   from the same visits the canvas shows.
 
+- **10 — Payroll.** Aligned 23 Aug from the design source. The readiness
+  hero with its progress bar and Review-items CTA (green-bordered once
+  clear), the tabbed Needs-review queue whose rows open the exception
+  drawer (compare cards, what-Joy-found, hours by week, and a plain
+  statement of what clears each exception), the Payroll-cycle checklist
+  with collapsed done-steps and the Also-on-Monday card, the week grid over
+  the payroll week with flagged cells, the export preview with draft
+  asterisks, and payroll history. All computed from the real payrollRun.
+  Deviations, deliberate and recorded: **no money anywhere** — the mock's
+  Rate/Gross columns and dollar pay-impacts are out because rates are not
+  in the payroll domain (Karynn has not supplied real ones; Joy produces
+  hours, Gusto produces wages); tab vocabulary follows the domain's real
+  exception kinds (Time & clock / Verification / Documentation / Overtime —
+  the mock's Mileage and Adjustments categories don't exist in Joy yet);
+  the drawer explains what clears an exception instead of offering an
+  approve button that would resolve nothing; download buttons are disabled
+  (file generation lands with the developer); history starts honest and
+  empty.
+
 ## To align next
 
-- **10 — Payroll**, **03 — Clients**, **04 — Employees**,
+- **03 — Clients**, **04 — Employees**,
   **05 — Admissions**, **06/07 — Intake & Assessment:** compare each against
   its mock and close the visual gaps. (Flows are built; this is layout,
   density, and vocabulary.)
