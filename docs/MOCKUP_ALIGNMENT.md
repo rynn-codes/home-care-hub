@@ -50,9 +50,24 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
      into its panel opens the full Command Center with that question as the
      thread's first message.
 
+- **08 — Scheduling.** Aligned 23 Aug from the design source. The mock's
+  252px rail of white cards (Needs you with colored dots, This week's counts,
+  Ask Joy prompts that open the Command Center with the question), the week
+  canvas with OPEN/CONFLICT pills, dashed open cards, avatar chips and tinted
+  weekends — and the mock's Day and Month views, now real, over the same
+  visits. Dragging a visit to another day raises the mock's confirm sheet
+  with a live conflict check (a blocking double-booking disables Confirm and
+  shows the red panel), and a confirmed change lands as the dark toast.
+  Deviations: the shared shell keeps the Brief Band header rather than the
+  mock's per-page breadcrumb strip; Quick add lists the mock's six items but
+  greys the four that aren't built ("soon") instead of pretending; and every
+  "notified through Spruce" claim reads "Spruce · not wired yet" because
+  nothing here sends anything. The page-level "This week" stats are computed
+  from the same visits the canvas shows.
+
 ## To align next
 
-- **08 — Scheduling**, **10 — Payroll**, **03 — Clients**, **04 — Employees**,
+- **10 — Payroll**, **03 — Clients**, **04 — Employees**,
   **05 — Admissions**, **06/07 — Intake & Assessment:** compare each against
   its mock and close the visual gaps. (Flows are built; this is layout,
   density, and vocabulary.)
