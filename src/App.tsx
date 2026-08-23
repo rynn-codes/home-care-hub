@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, HashRouter, Navigate, Route, Routes } from "react-router-dom";
+
+// The standalone demo build (published as a hosted single-file page for
+// Karynn to click through) has no server to answer deep links, so routes live
+// in the hash and survive a refresh. The dev/production build keeps clean
+// paths. Same routes, same screens, one flag.
+const Router = import.meta.env.VITE_STANDALONE_DEMO === "true" ? HashRouter : BrowserRouter;
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -57,7 +63,7 @@ const App = () => (
       <DataProvider>
         <DemoDataProvider>
         <PortalSessionProvider>
-        <BrowserRouter>
+        <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
@@ -137,7 +143,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        </Router>
         </PortalSessionProvider>
       </DemoDataProvider>
       </DataProvider>
