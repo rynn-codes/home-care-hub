@@ -98,6 +98,13 @@ export interface DemoConsentSession {
    * nobody signs a summary.
    */
   reviewedCompletedAt?: string | null;
+  /**
+   * What the pen actually wrote — the typed signature and initials, kept so
+   * the signed packet can be rendered as the document it is. A typed
+   * signature stands in for handwriting in this prototype.
+   */
+  signatureText?: string | null;
+  initials?: string | null;
   signedAt: string | null;
 }
 

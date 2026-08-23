@@ -16,6 +16,7 @@ import {
 } from "@/domain/consents/registry";
 import { cn } from "@/lib/utils";
 import { canWitnessSignature, witnessLine, witnessRefusal } from "@/domain/consents/witness";
+import { SignedPacket } from "@/components/assessment/SignedPacket";
 
 interface Props {
   admissionId: string;
@@ -61,6 +62,7 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
   const [reviewedCompletedAt, setReviewedCompletedAt] = useState<string | null>(
     stored?.reviewedCompletedAt ?? null,
   );
+  const [showPacket, setShowPacket] = useState(false);
 
   const readiness = useMemo(() => consentReadiness(decisions), [decisions]);
   const consequences = useMemo(() => declineConsequences(decisions), [decisions]);
@@ -107,13 +109,22 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
         )}
 
         <p className="mt-5 text-xs text-muted-foreground">
-          Generating the finalized PDF sits behind <code className="rounded bg-surface-muted px-1">CONSENT_PDF_GENERATION_ENABLED</code>,
-          which is off. Nothing has been produced as a signed document yet.
+          The signed record can be viewed and printed below — the browser's print produces a
+          PDF of what Joy recorded. The tamper-evident generated document sits behind{" "}
+          <code className="rounded bg-surface-muted px-1">CONSENT_PDF_GENERATION_ENABLED</code>,
+          which is off, and this view never claims to be it.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
+          <Button variant="outline" onClick={() => setShowPacket(true)}>
+            View the signed packet
+          </Button>
           <Button onClick={onDone}>Back to Admissions</Button>
         </div>
+
+        {showPacket && stored && (
+          <SignedPacket clientName={clientName} session={stored} onClose={() => setShowPacket(false)} />
+        )}
       </section>
     );
   }
@@ -301,6 +312,8 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
                 // The record that the whole completed document was in front of
                 // them before the pen — Karynn's requirement, 22 August.
                 reviewedCompletedAt,
+                signatureText: signature,
+                initials,
                 signedAt: new Date().toISOString(),
               });
               setPhase("done");

@@ -327,6 +327,16 @@ Supabase project.
    `docs/HIRING_ROADMAP_AUDIT.md`, and the print's additions built: the
    decision stage, the six background states, the Gusto onboarding stage, the
    GHL event vocabulary, the drawer's portal block, the pulse strip.
+- **The developer hand-off and the signed packet** (22 August).
+  `docs/DEVELOPER_HANDOFF.md` is day one for the developer: the wiring order
+  (migrations first), the ports with their adapter status, the six inherited
+  non-negotiables, and the traps this project already paid for. And the
+  signed consent packet is now viewable and printable as the document it is —
+  every clause, the decisions, the typed signature and initials (persisted at
+  signing now), the witness, and the review-in-entirety timestamp; the
+  browser's print produces the PDF. The CONSENT_PDF_GENERATION_ENABLED flag
+  stays off: that is the server-generated tamper-evident document, and this
+  view says plainly it is not that.
 5. ~~The legal review of one-signature reuse has not been booked.~~ Settled by
    Karynn, 22 August: one signature with initials is the approach, applied only
    after the completed agreement is reviewed in its entirety — the read-back

@@ -302,7 +302,7 @@ Four layers, each catching what the others structurally cannot:
 ```sh
 npm run typecheck     # was not being run at all; found 28 errors the first time
 npm test              # 1052 unit tests
-npm run test:e2e      # 81 browser tests — every screen renders, console quiet
+npm run test:e2e      # 82 browser tests — every screen renders, console quiet
 psql -f supabase/tests/…   # 300 policy assertions, as `authenticated`
 ```
 
