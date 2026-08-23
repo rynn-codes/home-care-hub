@@ -186,13 +186,13 @@ export default function PhoneIntake() {
       {phase === "questions" && (
         <>
           <div className="mb-6">
-            <div className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
-              <span>{question.section}</span>
-              <span className="tabular-nums">
-                {index + 1} of {questions.length}
+            <div className="mb-2 flex items-baseline gap-3 text-[12.5px]">
+              <span className="font-semibold tracking-[.02em] text-primary tabular-nums">
+                {String(index + 1).padStart(2, "0")} / {questions.length}
               </span>
+              <span className="text-muted-foreground">{question.section}</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-surface-muted">
+            <div className="h-1 overflow-hidden rounded-full bg-[#F1F2F6]">
               <div
                 className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${((index + 1) / questions.length) * 100}%` }}
@@ -200,10 +200,13 @@ export default function PhoneIntake() {
             </div>
           </div>
 
-          <section className="rounded-2xl border border-border bg-surface p-8">
-            <h2 className="text-xl font-semibold tracking-tight text-balance">{question.question}</h2>
+          {/* The mock's question floats on the page — no card around it. */}
+          <section className="pt-4">
+            <h2 className="m-0 text-[29px] font-semibold leading-[1.22] tracking-[-.025em] [text-wrap:pretty]">
+              {question.question}
+            </h2>
             {question.helper && (
-              <p className="mt-2 text-sm text-muted-foreground">{question.helper}</p>
+              <p className="mt-2.5 text-sm leading-[1.55] text-muted-foreground [text-wrap:pretty]">{question.helper}</p>
             )}
 
             <div className="mt-6">

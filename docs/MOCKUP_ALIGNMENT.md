@@ -134,11 +134,23 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   summary no longer claims 38 hours over a tile computing 8.8 from the
   board.
 
-## To align next
+- **05 — Admissions.** Aligned 23 Aug. The stage filter tabs with counts,
+  the stalled-record banner (Send reminder greyed with the Spruce reason,
+  Open record real), the grouped queue under the mock's colored dots —
+  WorkQueueSection restyled once, so Hiring's queue gains the same frame —
+  rows with avatars, stage and Overdue pills, and the Today + Ask Joy rail.
+  Deviation, recorded: the mock's kanban Board view is deliberately not
+  built — §3 of the Admissions Master Build Spec prefers the
+  who-holds-the-next-move queue and §2 warns against pipeline columns, so a
+  second view of the same records would need its own reason to exist.
 
-- **05 — Admissions**, **06/07 — Intake & Assessment:** compare each against
-  its mock and close the visual gaps. (Flows are built; this is layout,
-  density, and vocabulary.)
+- **06/07 — Intake & Assessment.** Question screens aligned 23 Aug to the
+  mock's floating one-question frame: the indigo NN / NN counter with the
+  section label, the 29px question with its light helper, no card around
+  the question. The mock's AI conversation mode ("Joy is listening") stays
+  behind AI_PHONE_INTAKE_ENABLED, off — the manual path is the one that
+  must always work. The assessment's section rail, plan-of-care and
+  review-and-sign flows were already built to their mocks' structure.
 
 ## Conflicts needing Karynn's ruling (per the mockups README protocol)
 
