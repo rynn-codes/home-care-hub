@@ -8,6 +8,7 @@ import {
   type PaymentAuthorization,
 } from "@/domain/billing/paymentAuthorization";
 import { careCostPreview, paymentMethodRequestGate } from "@/domain/billing/careCost";
+import { paymentSetupFromFacts } from "@/domain/billing/paymentSetup";
 import {
   MemoryPaymentProcessor,
   paymentFailureCards,
@@ -222,5 +223,51 @@ describe("the receipt text (§18)", () => {
     expect(msg.body).toContain("payment was received");
     expect(msg.body).not.toMatch(/\$|\d+\.\d{2}/);
     expect(msg.carrier).toBe("spruce");
+  });
+});
+
+describe("payment setup is computed from facts, never picked (§4.2, §16)", () => {
+
+  it("starts at not started, with the steps in flow order", () => {
+    const { state, nextSteps } = paymentSetupFromFacts({
+      pricingReviewedAt: null,
+      preference: null,
+      methodOnFile: false,
+      authorizationCapturedAt: null,
+    });
+    expect(state).toBe("not_started");
+    // Pricing first — the first billing interaction is never "enter your card".
+    expect(nextSteps[0]).toContain("care cost");
+  });
+
+  it("pay invoice is ready without a saved method — the payer chooses each time", () => {
+    const { state } = paymentSetupFromFacts({
+      pricingReviewedAt: "2026-08-22T10:00:00Z",
+      preference: "pay_invoice",
+      methodOnFile: false,
+      authorizationCapturedAt: "2026-08-22T10:05:00Z",
+    });
+    expect(state).toBe("ready");
+  });
+
+  it("autopay without a method is method_needed — the spec's own definition", () => {
+    const { state, nextSteps } = paymentSetupFromFacts({
+      pricingReviewedAt: "2026-08-22T10:00:00Z",
+      preference: "autopay",
+      methodOnFile: false,
+      authorizationCapturedAt: "2026-08-22T10:05:00Z",
+    });
+    expect(state).toBe("method_needed");
+    expect(nextSteps.join(" ")).toContain("nothing to charge");
+  });
+
+  it("autopay with method and authorization is ready", () => {
+    const { state } = paymentSetupFromFacts({
+      pricingReviewedAt: "2026-08-22T10:00:00Z",
+      preference: "autopay",
+      methodOnFile: true,
+      authorizationCapturedAt: "2026-08-22T10:05:00Z",
+    });
+    expect(state).toBe("ready");
   });
 });

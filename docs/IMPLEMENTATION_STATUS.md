@@ -315,43 +315,14 @@ Supabase project.
    claim function all exist and are tested; nothing invokes `processDue` on a
    schedule, so `domain_events` would accumulate as `pending`. The failure is
    silent, which is what makes it a blocker rather than a nuisance.
-4. **The documents Joy still owes the repository, per Karynn (22 August):**
-   the **Plan of Care** and the **full (corrected) service agreement** — "as
-   long as we have the Plan of Care and the full agreement, that's enough for
-   now." The full agreement also settles the reprint-verification flag on the
-   consent registry's corrected invoicing sentence. The nursing assessment is
-   scratched for now by her decision; the Product Bible remains unuploaded.
-   **The Client Intake Form arrived (22 August)** — vendored and audited;
-   Phone Intake is verified against the printed form. **The Hiring Screen
-   Roadmap arrived (22 August)** — vendored, audited in
-   `docs/HIRING_ROADMAP_AUDIT.md`, and the print's additions built: the
-   decision stage, the six background states, the Gusto onboarding stage, the
-   GHL event vocabulary, the drawer's portal block, the pulse strip. **The
-   Product Bible v1.0 Builder Edition arrived (22 August)** — vendored; it is
-   a principle-level draft ("future revisions will fully specify every
-   module"), and its twelve approved principles audit cleanly against the
-   build: AI-drafts-humans-approve is structural everywhere machine
-   suggestions exist; enter-once-reuse-everywhere is the one-person-one-id
-   rule; autosave exists (`use-autosave`); graceful failure is the honest-fake
-   discipline; Tap to Pay with the fallback ladder is §7.4, built to rung 6.
-   Its one named gap is now closed: "OpenAI is the primary AI provider with a
-   provider abstraction layer" — the abstraction is `domain/ai/provider.ts`,
-   a purpose-tagged port whose responses are structurally drafts (a person
-   accepts them or nothing happens), with a null provider that refuses loudly
-   per §41. The named primary is the client's call; the port makes it
-   configuration, not architecture. Voice/photo assessment entry and
-   offline-first recovery remain future-volume work, named here so they are
-   not forgotten.
-- **The developer hand-off and the signed packet** (22 August).
-  `docs/DEVELOPER_HANDOFF.md` is day one for the developer: the wiring order
-  (migrations first), the ports with their adapter status, the six inherited
-  non-negotiables, and the traps this project already paid for. And the
-  signed consent packet is now viewable and printable as the document it is —
-  every clause, the decisions, the typed signature and initials (persisted at
-  signing now), the witness, and the review-in-entirety timestamp; the
-  browser's print produces the PDF. The CONSENT_PDF_GENERATION_ENABLED flag
-  stays off: that is the server-generated tamper-evident document, and this
-  view says plainly it is not that.
+4. ~~The documents Joy still owes the repository.~~ **Settled for the
+   prototype, per Karynn (22 August):** "Just use the Plan of Care and the
+   agreement I previously provided. We'll make the change before handoff to
+   the dev." So the transcribed Patient Consents Packet (docs/specs/) is the
+   agreement of record for the prototype, and the built care-plan structure
+   stands. Any updated documents arrive as a pre-handoff change, audited then.
+   The Client Intake Form, Hiring Roadmap and Product Bible are vendored and
+   audited; the nursing assessment is scratched by her decision.
 5. ~~The legal review of one-signature reuse has not been booked.~~ Settled by
    Karynn, 22 August: one signature with initials is the approach, applied only
    after the completed agreement is reviewed in its entirety — the read-back

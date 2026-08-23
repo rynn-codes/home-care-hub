@@ -1,4 +1,5 @@
 import { accountGaps, type BillingAccount, type BillingAccountClient } from "@/domain/billing/accounts";
+import type { PaymentMode } from "@/domain/billing/paymentAuthorization";
 
 /**
  * Payment setup, as §9.2 presents it — five states, replacing a boolean.
@@ -69,4 +70,58 @@ export function paymentSetupFrom(input: {
   if (gaps.length > 0) return "not_started";
 
   return account.status === "ready" ? "ready" : "complete";
+}
+
+// ---------------------------------------------- computed from setup facts --
+
+/**
+ * The §16 panel's facts — what the office actually records during payment
+ * setup, before any billing account exists for a prospective client.
+ */
+export interface PaymentSetupFacts {
+  /** The family saw YOUR CARE COST (§2 of the addendum). */
+  pricingReviewedAt: string | null;
+  /** Pay Invoice or AutoPay — the addendum's two modes. */
+  preference: PaymentMode | null;
+  /** A usable method is saved (via Stripe, when wired). AutoPay needs one;
+   * Pay Invoice does not — the payer chooses a method each time. */
+  methodOnFile: boolean;
+  /** Joy's Electronic Payment Authorization, captured — the form is versioned
+   * (joy-epay-v1) and the capture is audited. */
+  authorizationCapturedAt: string | null;
+}
+
+/**
+ * §4.2's instruction, finally honoured end to end: readiness is COMPUTED from
+ * gates, never selected. This replaces the hand picker the admission screen
+ * carried while no facts existed to compute from.
+ *
+ * The order of the checks is the order of the flow: pricing before anything
+ * (the family's first billing interaction is never "enter your card"), then
+ * the preference, then what the preference requires.
+ */
+export function paymentSetupFromFacts(facts: PaymentSetupFacts): {
+  state: PaymentSetupState;
+  /** What stands between here and ready, in the order it should happen. */
+  nextSteps: string[];
+} {
+  const steps: string[] = [];
+  if (!facts.pricingReviewedAt) steps.push("Show the family their care cost");
+  if (!facts.preference) steps.push("Record the payment preference");
+  if (!facts.authorizationCapturedAt) steps.push("Capture the payment authorization");
+  if (facts.preference === "autopay" && !facts.methodOnFile) {
+    steps.push("Save a payment method — AutoPay has nothing to charge without one");
+  }
+
+  if (!facts.pricingReviewedAt && !facts.preference && !facts.authorizationCapturedAt) {
+    return { state: "not_started", nextSteps: steps };
+  }
+  if (steps.length === 0) return { state: "ready", nextSteps: [] };
+
+  // Authorization exists or is in progress but no usable arrangement yet —
+  // the spec's own definition of method_needed.
+  if (facts.authorizationCapturedAt && facts.preference === "autopay" && !facts.methodOnFile) {
+    return { state: "method_needed", nextSteps: steps };
+  }
+  return { state: "not_started", nextSteps: steps };
 }

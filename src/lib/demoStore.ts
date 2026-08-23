@@ -8,6 +8,7 @@ import type { Contact } from "@/domain/people/contacts";
 import type { StoredAuditEntry } from "@/lib/demoAudit";
 import type { IssuedInvoice, Payment } from "@/domain/billing/receivables";
 import type { PaymentSetupState } from "@/domain/billing/paymentSetup";
+import type { PaymentMode } from "@/domain/billing/paymentAuthorization";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -110,8 +111,17 @@ export interface DemoConsentSession {
 
 export interface DemoPreOnboarding {
   admissionId: string;
-  /** §9.2's five states, not a boolean. See domain/billing/paymentSetup.ts. */
+  /**
+   * §9.2's five states. COMPUTED from the facts below since the §16 panel
+   * landed — the field remains for continuity and needs_attention overrides,
+   * but the picker is gone: §4.2 wants readiness computed, not selected.
+   */
   paymentSetup: PaymentSetupState;
+  /** The §16 panel's facts. See paymentSetupFromFacts. */
+  pricingReviewedAt?: string | null;
+  paymentPreference?: PaymentMode | null;
+  paymentMethodOnFile?: boolean;
+  authorizationCapturedAt?: string | null;
   carePlanApproved: boolean;
   /** The office has recorded the agreed rate — §4.2's rate agreement gate. */
   rateAgreed: boolean;
