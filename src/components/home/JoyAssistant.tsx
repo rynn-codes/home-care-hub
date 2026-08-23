@@ -15,6 +15,22 @@ export function JoyAssistant() {
   const [open, setOpen] = useState(false);
 
   return (
+    <>
+    {/* The mock's signature control: the Ask Joy pill, bottom-right on every
+        dashboard frame. It opens the same collapsed panel — one AI surface,
+        two doors, no duplicate content. */}
+    <button
+      type="button"
+      onClick={() => {
+        setOpen(true);
+        document.getElementById("joy-assistant-items")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }}
+      className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
+      <Sparkles className="h-4 w-4" aria-hidden="true" />
+      Ask Joy
+    </button>
+
     <section className="mt-6 rounded-2xl border border-border bg-surface">
       <h2>
         <button
@@ -55,5 +71,6 @@ export function JoyAssistant() {
         </ul>
       )}
     </section>
+    </>
   );
 }

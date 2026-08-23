@@ -1,44 +1,38 @@
 import { format } from "date-fns";
-import { CloudSun } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { motivationalLines } from "@/lib/joySeed";
 
-function greetingFor(hour: number) {
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+function greetingFor(hour: number): { before: string; accent: string } {
+  if (hour < 12) return { before: "Good", accent: "morning" };
+  if (hour < 18) return { before: "Good", accent: "afternoon" };
+  return { before: "Good", accent: "evening" };
 }
 
 /**
- * The personalised header.
+ * The greeting, exactly as the approved dashboard mock draws it
+ * (docs/mockups/11-brief-band.png): the time of day carries the accent colour,
+ * the wave is part of the welcome, and beneath it one quiet line — the date,
+ * the city, the weather — with hairline dots between.
  *
- * Revision 3 is specific that this stays compact: a greeting, the date, one
- * motivational line and small weather. It is explicitly not a hero banner, and
- * the weather must stay secondary to the operational work — no large weather
- * card, no multi-day forecast.
+ * The weather is seeded demo copy until a weather source is wired; it reads as
+ * ambience, never as data anybody would act on.
  */
 export function GreetingBand() {
   const { firstName } = useCurrentUser();
   const now = new Date();
-  const line = motivationalLines[now.getDate() % motivationalLines.length];
+  const { before, accent } = greetingFor(now.getHours());
 
   return (
-    <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {greetingFor(now.getHours())}
-          {firstName ? `, ${firstName}` : ""}.
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{format(now, "EEEE, MMMM d")}</p>
-        <p className="mt-2 text-sm italic text-muted-foreground">{line}</p>
-      </div>
-
-      {/* Weather is deliberately a single quiet line, not a card. */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground sm:pt-1">
-        <CloudSun className="h-4 w-4" aria-hidden="true" />
-        <span className="font-medium text-foreground">Houston 92°F</span>
-        <span className="hidden sm:inline">· Partly cloudy, H 96° L 78°</span>
-      </div>
+    <header className="mb-6">
+      <h1 className="font-display text-3xl font-bold tracking-tight">
+        {before} <span className="text-primary">{accent}</span>
+        {firstName ? `, ${firstName}` : ""}.{" "}
+        <span aria-hidden="true">👋</span>
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {format(now, "EEEE, MMMM d")}
+        <span aria-hidden="true"> · </span>Houston 92°
+        <span aria-hidden="true"> · </span>Partly cloudy, H 96° L 78°
+      </p>
     </header>
   );
 }
