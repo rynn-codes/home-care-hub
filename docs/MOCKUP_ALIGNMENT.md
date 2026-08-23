@@ -84,9 +84,36 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   (file generation lands with the developer); history starts honest and
   empty.
 
+- **03 — Clients.** Aligned 23 Aug from the design source. The directory
+  table to the mock's values (uppercase hairline headers, indigo-soft
+  avatars, payer pills, status dots), and the client record's full tab set —
+  Profile with the Details rail, Highlights (Summary + the indigo Payer
+  card) and inline Activity; the Activity timeline; and the three tabs that
+  used to say "not built yet", now real: **Schedule** is the mock's
+  per-client month calendar over the same visits the Scheduling board shows
+  (one Joy schedule, §20); **Services** carries the service card, the live
+  care plan (goals, RN thresholds with their values, emergency plan) and
+  its required-before-clock-out tasks, with the agreement rail — the rate
+  row honestly reads "Emailed privately, not stored in the prototype";
+  **Billing & Payments** computes the advance invoice from the agreement
+  (Karynn's bill-the-agreement model), the deposit, and payment method from
+  the same billing domain the Saturday run uses.
+
+  The big fix underneath: **one cast, everywhere.** The directory used to
+  carry six invented clients (Hollis, Arceneaux, Brightwell…) while every
+  other module spoke of Lian Huang, Edward Pham and Ruth Alvarez — the
+  person the dashboard said to call did not exist in the directory. The
+  directory now carries the schedule board's own people with the board's
+  own ids, so care plans, billing terms, visits and supervision all join;
+  Theo (on hold) and Augustin (discharged) are deliberately absent from the
+  board because on-hold and discharged clients have no visits. Thylia is
+  active again (the board and the dashboard both showed her working while
+  the employee seed said "on leave"), and the stale "c-lianhuang" paid-week
+  id is fixed to the schedule's "c-lian".
+
 ## To align next
 
-- **03 — Clients**, **04 — Employees**,
+- **04 — Employees**,
   **05 — Admissions**, **06/07 — Intake & Assessment:** compare each against
   its mock and close the visual gaps. (Flows are built; this is layout,
   density, and vocabulary.)

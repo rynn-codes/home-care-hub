@@ -69,11 +69,11 @@ export const seedEmployees: SeedEmployee[] = [
     phone: "(713) 555-0126",
     email: "chanel@joyhealthcare.example",
     nextShift: "Tue, Aug 19 · 7:00 AM",
-    clients: ["Wendell Hollis"],
+    clients: ["Lian Huang"],
     kin: "Robert P",
     kinLine: "Husband · (713) 555-0127",
     summary:
-      "Longest-serving field caregiver and the primary on the Hollis case. Carries 38 hours a week without crossing into overtime.",
+      "Longest-serving field caregiver and the primary on the Huang case. Carries 38 hours a week without crossing into overtime.",
     records: { ...ok },
   },
   {
@@ -91,11 +91,11 @@ export const seedEmployees: SeedEmployee[] = [
     phone: "(281) 555-0111",
     email: "bedjine@joyhealthcare.example",
     nextShift: "Today · 9:00 AM",
-    clients: ["Odessa Arceneaux"],
+    clients: ["Ruth Alvarez"],
     kin: "Dana Cupidon",
     kinLine: "Sister · (281) 555-0112",
     summary:
-      "Covers the Arceneaux case in Katy, logging weight and fluid checks every visit. CPR renewal is the only open item.",
+      "Relief caregiver on the Alvarez case, logging orientation checks every visit. CPR renewal is the only open item.",
     // Inside the warning window.
     records: { ...ok, cpr: { issued: "2024-10-01", expires: "2026-10-01" } },
   },
@@ -116,11 +116,11 @@ export const seedEmployees: SeedEmployee[] = [
     phone: "(713) 555-0134",
     email: "heather@joyhealthcare.example",
     nextShift: "Wed, Aug 20 · 8:00 AM",
-    clients: ["Cordelia Brightwell"],
+    clients: ["Evelyn Carter"],
     kin: "Marcus Gonzales",
     kinLine: "Brother · (713) 555-0135",
     summary:
-      "Consistent weekday caregiver on the Brightwell dementia case, where the family asked for minimal substitution. Does not drive.",
+      "Consistent weekday caregiver on the Carter dementia case, where the family asked for minimal substitution. Does not drive.",
     records: { ...ok },
   },
   {
@@ -138,7 +138,7 @@ export const seedEmployees: SeedEmployee[] = [
     phone: "(346) 555-0148",
     email: "tanya@joyhealthcare.example",
     nextShift: "Thu, Aug 20 · 10:00 AM",
-    clients: ["Beatrice Okonkwo"],
+    clients: ["Susan Miller"],
     kin: "Alvin Robinson",
     kinLine: "Husband · (346) 555-0149",
     summary:
@@ -161,10 +161,10 @@ export const seedEmployees: SeedEmployee[] = [
     phone: "(346) 555-0177",
     email: "vanessa@joyhealthcare.example",
     nextShift: "Thu, Aug 20 · 10:00 AM",
-    clients: ["Beatrice Okonkwo"],
+    clients: ["Edward Pham", "Susan Miller"],
     kin: null,
     kinLine: null,
-    summary: "Companionship mornings three days a week, with weekend relief availability.",
+    summary: "Live-in coverage on the Pham case with Thursday evenings for Susan Miller.",
     records: { ...ok },
   },
   {
@@ -199,21 +199,25 @@ export const seedEmployees: SeedEmployee[] = [
     name: "Thylia",
     title: "Field caregiver",
     role: "hha",
-    status: "on_leave",
+    // Active, because the schedule board has her on the Vance evening case —
+    // she used to be this seed's on-leave example while the board and the
+    // dashboard agenda both showed her working, which is the one-cast rule
+    // broken from the other side.
+    status: "active",
     location: "Houston · Memorial",
     hiredOn: "2024-02-19",
     employmentType: "Full-time · hourly",
     baseRate: 18.0,
-    weeklyHours: null,
+    weeklyHours: 20,
     drives: true,
     phone: "(713) 555-0158",
     email: "thylia@joyhealthcare.example",
-    nextShift: null,
-    clients: [],
+    nextShift: "Tue · 6:30 PM",
+    clients: ["Dolores Vance"],
     kin: null,
     kinLine: null,
     summary:
-      "On approved leave through the end of August. Clients reassigned; credentials held active for a September return.",
+      "Evening caregiver on the Vance case, four nights a week. Covered the Huang substitution on Aug 2.",
     records: { ...ok },
   },
   {
@@ -231,7 +235,7 @@ export const seedEmployees: SeedEmployee[] = [
     phone: "(713) 555-0102",
     email: "kelsey@joyhealthcare.example",
     nextShift: "Mon, Aug 17 · 10:30 AM",
-    clients: ["Cordelia Brightwell"],
+    clients: ["Evelyn Carter", "Dolores Vance"],
     kin: null,
     kinLine: null,
     summary:
@@ -265,7 +269,7 @@ export const seedEmployees: SeedEmployee[] = [
 /** Activity feed. Demo only — the real one is built from the audit log (§27). */
 export const seedEmployeeActivity: Record<string, Array<{ label: string; when: string; tone: string }>> = {
   "emp-bedjine": [
-    { label: "Visit completed — Odessa Arceneaux, 9:00 AM to 2:00 PM", when: "Aug 16 · 2:20 PM", tone: "done" },
+    { label: "Visit completed — Ruth Alvarez, 12:00 PM to 6:00 PM", when: "Aug 12 · 6:05 PM", tone: "done" },
     { label: "CPR renewal requested", when: "Aug 12 · 8:05 AM", tone: "warn" },
   ],
   "emp-tanya": [

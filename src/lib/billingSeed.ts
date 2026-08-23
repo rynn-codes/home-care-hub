@@ -40,5 +40,8 @@ export const seedBillingTerms: ClientBillingTerms[] = clients.map((clientName, i
   depositRemaining: i === 0 ? 180 : i % 3 === 0 ? 960 : 0,
 }));
 
-/** Which clients have been paid up, for the ageing demo. */
-export const seedPaidWeeks = new Set<string>(["c-lianhuang"]);
+/** Which clients have been paid up, for the ageing demo. The id is the
+ * schedule's own ("c-lian"), never a re-slugified name — the same lesson the
+ * comment above records, caught here a second time when the Clients billing
+ * tab looked a paid week up and found nobody. */
+export const seedPaidWeeks = new Set<string>(["c-lian"]);

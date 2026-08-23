@@ -10,56 +10,52 @@ import type { ClientInput } from "@/domain/clients/roster";
  * real client's name in it is a disclosure, not a convenience. Staff names are
  * Joy Health's real team; care recipients are invented.
  *
+ * ONE CAST, EVERYWHERE. This directory used to carry six invented clients
+ * (Hollis, Arceneaux, Brightwell…) while Scheduling, Billing, Care plans,
+ * Supervision and the dashboard all spoke of Lian Huang, Edward Pham and Ruth
+ * Alvarez. Two casts for one agency is Joy contradicting itself on the first
+ * click — the person the dashboard says to call did not exist in the
+ * directory. The directory now carries the same people the schedule board
+ * carries, with the schedule's own person ids, so every cross-module join
+ * (care plan, billing terms, visits, supervision) lands. Theo and Augustin
+ * are the two who are NOT on this week's board — deliberately, because
+ * on-hold and discharged clients have no visits, and that absence agreeing
+ * across screens is the point.
+ *
  * The states are chosen to exercise the record rather than to look tidy — one
  * client whose records authorization has already lapsed, one whose renewal
  * falls inside the warning window, one who declined transport and photographs,
  * one on hold, one discharged. A directory where everything is fine proves
  * nothing about the screen.
  *
- * Clients admitted through the demo appear alongside these; nothing here is
- * duplicated when that happens, because admission adds a client profile to the
- * existing person rather than creating a second record (§10).
- *
  * EVERY CLIENT IS PRIVATE PAY. Karynn, 21 August: "We are all private pay. We
  * allow long term care insurance, but only for them to reimburse the client
  * once they have paid us. We don't need anything regarding authorizations."
- *
- * This file used to carry Medicaid STAR+PLUS, VA Community Care, Medicare and
- * LTC Insurance as payers, with one record reading "authorization through Dec
- * 2026". None of that was true of Joy, and it was invented here rather than
- * given — which is exactly how a seed stops being a demo and starts being a
- * wrong answer somebody builds on. It cost an authorisation module and a burn
- * rate report before anybody said so.
- *
- * A long-term care policy reimburses the CLIENT, after the client has paid Joy.
- * Joy invoices the client either way and is not a party to the claim. What that
- * client needs from Joy is documentation good enough to submit — which is a
- * different feature from billing an insurer, and not one that has been asked
- * for yet.
+ * A long-term care policy reimburses the CLIENT, after the client has paid
+ * Joy. Joy invoices the client either way and is not a party to the claim.
  */
 export const seedClients: ClientInput[] = [
   {
-    personId: "cli-hollis",
-    firstName: "Wendell",
-    lastName: "Hollis",
-    preferredName: "Wen",
-    dateOfBirth: "1943-11-04",
+    personId: "c-lian",
+    firstName: "Lian",
+    lastName: "Huang",
+    dateOfBirth: "1948-11-04",
     phone: "(713) 555-0182",
-    email: "hollis.family@example.com",
+    email: "huang.family@example.com",
     address: "4212 Chatsworth Dr, Houston, TX 77027",
     location: "Houston · Memorial",
     status: "active",
     payer: "Private Pay",
-    payerLine: "Weekly invoicing · card on file",
-    services: ["Personal Care", "Companionship Care"],
+    payerLine: "Weekly invoicing · ACH",
+    services: ["Personal Care"],
     caregiver: "Chanel P",
     coordinator: "John Segura",
     condition: "Parkinson's disease",
-    hoursPerWeek: 40,
-    nextVisit: "Tue, Aug 19 · 7:00 AM",
+    hoursPerWeek: 8,
+    nextVisit: "Wed · 8:00 AM",
     lastActivity: "Care plan signed · Aug 4",
-    responsiblePartyName: "Marguerite Hollis",
-    responsiblePartyLine: "Daughter · (713) 555-0188 · primary contact",
+    responsiblePartyName: "Johnathan Huang",
+    responsiblePartyLine: "Son · (713) 555-0188 · primary contact",
     admissionDate: "2026-02-16",
     // Signed nearly a year ago: the records authorizations are inside the
     // warning window, which is exactly when someone should be told.
@@ -67,56 +63,133 @@ export const seedClients: ClientInput[] = [
     decisions: { transportation: "agree", photograph: "agree" },
   },
   {
-    personId: "cli-arceneaux",
-    firstName: "Odessa",
-    lastName: "Arceneaux",
-    dateOfBirth: "1938-06-21",
+    personId: "c-edward",
+    firstName: "Edward",
+    lastName: "Pham",
+    dateOfBirth: "1941-06-21",
     phone: "(281) 555-0119",
-    email: "o.arceneaux@example.com",
+    email: "pham.family@example.com",
     address: "908 Kingsland Blvd, Katy, TX 77450",
     location: "Katy",
     status: "active",
     payer: "Private Pay",
-    payerLine: "Weekly invoicing · ACH",
-    services: ["Personal Care"],
-    caregiver: "Bedjine Cupidon",
-    coordinator: "John Segura",
+    payerLine: "Weekly invoicing · card on file",
+    services: ["Live-In"],
+    caregiver: "Vanessa",
+    coordinator: "Kelsey Westley",
     condition: "Congestive heart failure",
-    hoursPerWeek: 25,
-    nextVisit: "Today · 9:00 AM",
-    lastActivity: "Visit note filed · Aug 16",
-    responsiblePartyName: "Renata Arceneaux",
+    hoursPerWeek: 56,
+    nextVisit: "Mon · 4:00 PM",
+    lastActivity: "Supervisory visit booked · Aug 20",
+    responsiblePartyName: "Tuyet Pham",
     responsiblePartyLine: "Daughter · (281) 555-0143",
+    admissionDate: "2025-09-14",
+    signedAt: "2026-06-30T16:05:00.000Z",
+    decisions: { transportation: "agree", photograph: "agree" },
+  },
+  {
+    personId: "c-dolores",
+    firstName: "Dolores",
+    lastName: "Vance",
+    preferredName: "Dee",
+    dateOfBirth: "1939-01-30",
+    phone: "(713) 555-0131",
+    email: "vance.family@example.com",
+    address: "1140 Yale St, Houston, TX 77008",
+    location: "Houston · Heights",
+    status: "active",
+    payer: "Private Pay",
+    // The long-term care policy reimburses HER, after she has paid Joy. Joy
+    // is not a party to it and never bills the insurer.
+    payerLine: "Weekly invoicing · claims LTC reimbursement herself",
+    services: ["Evening Care"],
+    caregiver: "Thylia",
+    coordinator: "Kelsey Westley",
+    condition: "Fall risk, evening confusion",
+    hoursPerWeek: 20,
+    nextVisit: "Tue · 6:30 PM",
+    lastActivity: "Incident classified · Aug 18",
+    responsiblePartyName: "Marta Vance",
+    responsiblePartyLine: "Niece · (713) 555-0156",
     admissionDate: "2025-02-03",
     // Lapsed. This is the record the directory should surface first.
     signedAt: "2025-02-01T16:05:00.000Z",
     decisions: { transportation: "agree", photograph: "agree" },
   },
   {
-    personId: "cli-brightwell",
-    firstName: "Cordelia",
-    lastName: "Brightwell",
-    preferredName: "Cora",
-    dateOfBirth: "1935-01-30",
-    phone: "(713) 555-0131",
-    email: "brightwell.family@example.com",
-    address: "1140 Yale St, Houston, TX 77008",
-    location: "Houston · Heights",
+    personId: "c-susan",
+    firstName: "Susan",
+    lastName: "Miller",
+    dateOfBirth: "1946-04-08",
+    phone: "(346) 555-0177",
+    email: "miller.family@example.com",
+    address: "3305 Broadway St, Pearland, TX 77581",
+    location: "Pearland",
     status: "active",
     payer: "Private Pay",
-    // The long-term care policy reimburses HER, after she has paid Joy. Joy is
-    // not a party to it and never bills the insurer — see the note at the top
-    // of this file.
-    payerLine: "Weekly invoicing · claims LTC reimbursement herself",
-    services: ["Personal Care", "Respite"],
+    payerLine: "Weekly invoicing · check",
+    services: ["Personal Care"],
+    caregiver: "Vanessa",
+    coordinator: "John Segura",
+    condition: "Type 2 diabetes",
+    hoursPerWeek: 12,
+    nextVisit: "Thu · 6:00 PM",
+    lastActivity: "Asked about increased hours · Aug 21",
+    responsiblePartyName: "Daniel Miller",
+    responsiblePartyLine: "Son · (346) 555-0178",
+    admissionDate: "2026-06-05",
+    signedAt: "2026-06-03T13:15:00.000Z",
+    decisions: { transportation: "agree", photograph: "agree" },
+  },
+  {
+    personId: "c-ruth",
+    firstName: "Ruth",
+    lastName: "Alvarez",
+    dateOfBirth: "1944-09-15",
+    phone: "(832) 555-0164",
+    email: "alvarez.family@example.com",
+    address: "2203 Austin Pkwy, Sugar Land, TX 77479",
+    location: "Sugar Land",
+    status: "active",
+    payer: "Private Pay",
+    payerLine: "Weekly invoicing · card on file",
+    services: ["Companion Care"],
+    // Her Wednesday shift is the open one on the board — the dashboard's
+    // "3 available caregivers" insight and this null are the same fact.
+    caregiver: null,
+    coordinator: "John Segura",
+    condition: "Early dementia",
+    hoursPerWeek: 6,
+    nextVisit: "Wed · 12:00 PM",
+    lastActivity: "Shift reopened · Aug 17",
+    responsiblePartyName: "Gloria Alvarez",
+    responsiblePartyLine: "Daughter · (832) 555-0165",
+    admissionDate: "2026-01-20",
+    signedAt: "2026-07-18T09:40:00.000Z",
+    decisions: { transportation: "agree", photograph: "not_applicable" },
+  },
+  {
+    personId: "c-evelyn",
+    firstName: "Evelyn",
+    lastName: "Carter",
+    preferredName: "Evie",
+    dateOfBirth: "1936-12-19",
+    phone: "(713) 555-0193",
+    email: "carter.family@example.com",
+    address: "5401 Bissonnet St, Bellaire, TX 77401",
+    location: "Houston · Bellaire",
+    status: "active",
+    payer: "Private Pay",
+    payerLine: "Weekly invoicing · ACH",
+    services: ["Dementia Care"],
     caregiver: "Heather Gonzales",
     coordinator: "Kelsey Westley",
     condition: "Dementia, moderate",
-    hoursPerWeek: 30,
-    nextVisit: "Wed, Aug 20 · 8:00 AM",
+    hoursPerWeek: 16,
+    nextVisit: "Fri · 9:00 AM",
     lastActivity: "Assessment updated · Aug 2",
     responsiblePartyName: "Junie Rowe",
-    responsiblePartyLine: "Niece · (713) 555-0156",
+    responsiblePartyLine: "Niece · (713) 555-0157",
     admissionDate: "2026-05-12",
     signedAt: "2026-05-10T11:00:00.000Z",
     // Refused both. The record must show what a caregiver may not do, and the
@@ -128,18 +201,20 @@ export const seedClients: ClientInput[] = [
     },
   },
   {
-    personId: "cli-nakamura",
+    personId: "c-theo",
     firstName: "Theo",
     lastName: "Nakamura",
     dateOfBirth: "1957-09-15",
-    phone: "(832) 555-0164",
+    phone: "(832) 555-0174",
     email: "t.nakamura@example.com",
-    address: "2203 Austin Pkwy, Sugar Land, TX 77479",
+    address: "2610 Settlers Way Blvd, Sugar Land, TX 77479",
     location: "Sugar Land",
     status: "on_hold",
     payer: "Private Pay",
     payerLine: "Weekly invoicing · card on file",
     services: ["Personal Care"],
+    // On hold means no visits — which is why he is absent from the schedule
+    // board, and the two screens agreeing on that absence is deliberate.
     caregiver: null,
     coordinator: "John Segura",
     condition: "Post-surgical recovery",
@@ -153,39 +228,13 @@ export const seedClients: ClientInput[] = [
     decisions: { transportation: "agree", photograph: "not_applicable" },
   },
   {
-    personId: "cli-okonkwo",
-    firstName: "Beatrice",
-    lastName: "Okonkwo",
-    preferredName: "Bea",
-    dateOfBirth: "1950-04-08",
-    phone: "(346) 555-0177",
-    email: "b.okonkwo@example.com",
-    address: "3305 Broadway St, Pearland, TX 77581",
-    location: "Pearland",
-    status: "active",
-    payer: "Private Pay",
-    payerLine: "Card on file · weekly invoicing",
-    services: ["Companionship Care"],
-    caregiver: "Vanessa",
-    coordinator: "Kelsey Westley",
-    condition: "Type 2 diabetes",
-    hoursPerWeek: 12,
-    nextVisit: "Thu, Aug 20 · 10:00 AM",
-    lastActivity: "Invoice paid · Aug 7",
-    responsiblePartyName: "Chidi Okonkwo",
-    responsiblePartyLine: "Son · (346) 555-0178",
-    admissionDate: "2026-06-05",
-    signedAt: "2026-06-03T13:15:00.000Z",
-    decisions: { transportation: "agree", photograph: "agree" },
-  },
-  {
-    personId: "cli-vandermeer",
+    personId: "c-augustin",
     firstName: "Augustin",
     lastName: "Vandermeer",
     dateOfBirth: "1937-12-19",
-    phone: "(713) 555-0193",
+    phone: "(713) 555-0196",
     email: "vandermeer.family@example.com",
-    address: "5401 Bissonnet St, Bellaire, TX 77401",
+    address: "5402 Palmetto St, Bellaire, TX 77401",
     location: "Houston · Bellaire",
     status: "discharged",
     payer: "Private Pay",
@@ -207,21 +256,29 @@ export const seedClients: ClientInput[] = [
 
 /** Activity feed. Demo only — the real one is built from the audit log (§27). */
 export const seedActivity: Record<string, Array<{ label: string; when: string; tone: string }>> = {
-  "cli-hollis": [
+  "c-lian": [
     { label: "Care plan signed by Kelsey Westley", when: "Aug 4 · 1:32 PM", tone: "done" },
-    { label: "Visit completed by Chanel P — 7:00 AM to 3:00 PM", when: "Aug 7 · 3:04 PM", tone: "done" },
+    { label: "Visit completed by Chanel P — 8:00 AM to 12:00 PM", when: "Aug 17 · 12:04 PM", tone: "done" },
     { label: "Medical release form uploaded", when: "Aug 3 · 9:18 AM", tone: "prog" },
     { label: "Caregiver substitution — Thylia covered Aug 2", when: "Aug 2 · 6:40 AM", tone: "warn" },
-    { label: "Invoice INV-2041 paid by ACH", when: "Aug 1 · 11:02 AM", tone: "done" },
+    { label: "Invoice JH-2041 paid by ACH", when: "Aug 1 · 11:02 AM", tone: "done" },
   ],
-  "cli-arceneaux": [
-    { label: "Visit note filed by Bedjine Cupidon", when: "Aug 16 · 2:20 PM", tone: "done" },
-    { label: "Weight and fluid check logged", when: "Aug 16 · 2:18 PM", tone: "prog" },
+  "c-dolores": [
+    { label: "Incident classified — fall, family notified", when: "Aug 18 · 5:12 PM", tone: "warn" },
+    { label: "Visit note filed by Thylia", when: "Aug 18 · 10:32 PM", tone: "done" },
     { label: "Records authorization lapsed", when: "Feb 1 · 12:00 AM", tone: "bad" },
   ],
-  "cli-brightwell": [
+  "c-evelyn": [
     { label: "Assessment updated — mobility section revised", when: "Aug 2 · 2:14 PM", tone: "prog" },
     { label: "Transport consent declined at signing", when: "May 10 · 11:26 AM", tone: "warn" },
     { label: "Service agreement signed at intake", when: "May 10 · 11:00 AM", tone: "done" },
+  ],
+  "c-ruth": [
+    { label: "Wednesday shift reopened — caregiver call-out", when: "Aug 17 · 7:02 AM", tone: "warn" },
+    { label: "Visit completed by Bedjine Cupidon", when: "Aug 12 · 6:05 PM", tone: "done" },
+  ],
+  "c-susan": [
+    { label: "Family asked about increasing weekly hours", when: "Aug 21 · 3:40 PM", tone: "prog" },
+    { label: "Invoice paid by check", when: "Aug 7 · 11:02 AM", tone: "done" },
   ],
 };
