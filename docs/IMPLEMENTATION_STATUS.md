@@ -326,7 +326,22 @@ Supabase project.
    Roadmap arrived (22 August)** — vendored, audited in
    `docs/HIRING_ROADMAP_AUDIT.md`, and the print's additions built: the
    decision stage, the six background states, the Gusto onboarding stage, the
-   GHL event vocabulary, the drawer's portal block, the pulse strip.
+   GHL event vocabulary, the drawer's portal block, the pulse strip. **The
+   Product Bible v1.0 Builder Edition arrived (22 August)** — vendored; it is
+   a principle-level draft ("future revisions will fully specify every
+   module"), and its twelve approved principles audit cleanly against the
+   build: AI-drafts-humans-approve is structural everywhere machine
+   suggestions exist; enter-once-reuse-everywhere is the one-person-one-id
+   rule; autosave exists (`use-autosave`); graceful failure is the honest-fake
+   discipline; Tap to Pay with the fallback ladder is §7.4, built to rung 6.
+   Its one named gap is now closed: "OpenAI is the primary AI provider with a
+   provider abstraction layer" — the abstraction is `domain/ai/provider.ts`,
+   a purpose-tagged port whose responses are structurally drafts (a person
+   accepts them or nothing happens), with a null provider that refuses loudly
+   per §41. The named primary is the client's call; the port makes it
+   configuration, not architecture. Voice/photo assessment entry and
+   offline-first recovery remain future-volume work, named here so they are
+   not forgotten.
 - **The developer hand-off and the signed packet** (22 August).
   `docs/DEVELOPER_HANDOFF.md` is day one for the developer: the wiring order
   (migrations first), the ports with their adapter status, the six inherited
