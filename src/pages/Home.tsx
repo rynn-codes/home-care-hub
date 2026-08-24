@@ -4,7 +4,8 @@ import { useDemo } from "@/context/DemoDataProvider";
 import { MorningBriefCard } from "@/components/home/MorningBriefCard";
 import { DayTabs } from "@/components/home/DayTabs";
 import { JoyAssistantColumn } from "@/components/home/JoyAssistantColumn";
-import { weekLabel } from "@/lib/brainSeed";
+import { HOME_ASK_CHIPS } from "@/lib/homeSeed";
+import { AGENCY_WEEK } from "@/lib/brainSeed";
 
 /**
  * Home — the operator's morning, built to Karynn's own screenshot of the
@@ -27,16 +28,17 @@ const greeting = () => {
   return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
 };
 
-const ASK_CHIPS = [
-  "Show today's open shifts",
-  "What's missing for payroll?",
-  "Prepare tomorrow's schedule",
-];
-
 export default function Home() {
   const { currentUser } = useDemo();
   const [q, setQ] = useState("");
   const now = new Date();
+  // "Aug 22–28" — the mockup's compact form: month once, en dash, no repeat.
+  const start = new Date(`${AGENCY_WEEK.start}T12:00:00`);
+  const end = new Date(`${AGENCY_WEEK.end}T12:00:00`);
+  const billingWeekLabel =
+    start.getMonth() === end.getMonth()
+      ? `${start.toLocaleDateString([], { month: "short", day: "numeric" })}\u2013${end.getDate()}`
+      : `${start.toLocaleDateString([], { month: "short", day: "numeric" })}\u2013${end.toLocaleDateString([], { month: "short", day: "numeric" })}`;
 
   const ask = (question: string) => {
     const text = question.trim();
@@ -68,7 +70,7 @@ export default function Home() {
           </span>{" "}
           <span aria-hidden="true">👋</span>
         </h1>
-        <p className="m-0 text-[13px] text-muted-foreground">{weekLabel} · this billing week</p>
+        <p className="m-0 text-[13px] text-muted-foreground">{billingWeekLabel} · Billing Week 2 of 2</p>
       </div>
 
       <div className="grid items-start gap-[18px] lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -126,7 +128,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col items-start gap-1.5">
-              {ASK_CHIPS.map((c) => (
+              {HOME_ASK_CHIPS.map((c) => (
                 <button
                   key={c}
                   type="button"
