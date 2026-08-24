@@ -52,7 +52,9 @@ test.describe("the Saturday run", () => {
     const card = page.locator("section").filter({ hasText: "The Saturday run" });
     await card.getByRole("button", { name: "Approve" }).first().click();
     await card.getByRole("button", { name: "Send", exact: true }).first().click();
-    await expect(card.getByText(/Sent as JH-\d+/).first()).toBeVisible();
+    // The send is confirmed, and the draft folds into the sent invoices with
+    // its JH- number (the Invoices list now carries one status per row).
+    await expect(page.getByText(/is on its way/i).first()).toBeVisible();
 
     // §7.2 step 8: the sent invoice is a debt now — Outstanding shows it.
     const outstanding = page.locator("section").filter({ hasText: "Outstanding" });

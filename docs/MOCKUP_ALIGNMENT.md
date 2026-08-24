@@ -251,19 +251,26 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
    ruling confirms it, so nothing changed. The job board is not a Joy
    surface.
 
-2. **Billing: "To send | Sent | Profitability" (built) vs the updated mock's
-   "Invoices | Payers | Profitability" — OPEN, awaiting Karynn.** On 23 Aug
-   Karynn ruled "adopt the mock's To send | Sent | Profitability framing," and
-   Billing was built exactly that way over the Saturday-run engine (see the
-   Billing entry above). The 24 Aug updated Billing mock has moved past that:
-   it now shows a single **Invoices** tab with a status-filter dropdown
-   (Needs review · Ready · Sent · Paid · Past due · Adjusted), a new **Payers**
-   tab, and Profitability. This reverses her explicit earlier ruling and bears
-   on the thing she asked us to protect — "I do like how simple it was to
-   approve things. Make sure we keep that simplicity" — because folding To
-   send and Sent into one filtered table is arguably busier than the clean
-   two-tab split. So this one is **not** reframed silently: it is put to Karynn.
-   Until she decides, Billing stays on the built To send | Sent | Profitability
-   framing with its one-click approve. (Profitability still honestly refuses a
-   net figure until real pay rates exist; the mock's "due Wednesday" remains
-   superseded by the Saturday-run answers regardless of the tab framing.)
+2. **Billing: "To send | Sent | Profitability" vs the updated mock's
+   "Invoices | Payers | Profitability" — RESOLVED 24 Aug: adopt the full
+   updated mock.** The 24 Aug updated Billing mock superseded Karynn's 23 Aug
+   two-tab ruling with a single **Invoices** list under a status filter
+   (All · Needs review · Ready · Sent · Past due · Paid · Adjusted), a new
+   **Payers** tab, and Profitability. Because that reversed her explicit
+   earlier ruling and touched the approval simplicity she asked us to protect,
+   it was put to her rather than reframed silently — and she chose the full
+   updated mock. Built the same day: drafts and issued invoices are one list
+   (one status per row, sorted work-first), approve stays exactly one click on
+   the row and Approve → Send → JH-number → Outstanding is unchanged; the
+   batch banner still sends the whole ready set at once; a service-period
+   dropdown of Sat–Fri ranges and an Export-as-shown button sit in the header.
+   **Payers** shows who is responsible for each client's bill, the two payer
+   types, the method and the authorization line, from the real roster — with
+   no rate column, because rates are e-mailed privately and never stored (the
+   mock's per-payer rate and rate-history are out for the same recorded reason
+   as Profitability's cost side). Profitability still honestly refuses a net
+   figure until real pay rates exist, and the mock's "due Wednesday" remains
+   superseded by the Saturday-run answers. The mock's "Unsure" payer type on
+   an active client is not reproduced — the README's own business rule #1 says
+   "Not sure yet" is a lead-only value, and the mock's seed simply violates
+   its own rule.
