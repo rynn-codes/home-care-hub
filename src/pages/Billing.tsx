@@ -75,7 +75,6 @@ const STATUS_PILL: Record<RowStatus, string> = {
 
 const BALANCE_PILL: Record<BalanceState, string> = {
   paid: "bg-[#ECFDF3] text-[#027A48]",
-  part_paid: "bg-[#FFFAEB] text-[#B54708]",
   outstanding: "bg-[#EEF0FE] text-primary",
   overdue: "bg-[#FEF3F2] text-[#B42318]",
   written_off: "bg-[#F3F3F6] text-[#5B6274]",

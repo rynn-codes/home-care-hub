@@ -41,6 +41,21 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
     a missing earlier step. The mock's kanban Board view stays deliberately
     unbuilt for the reasons already recorded below.
 
+  - **The Saturday–Friday week, on every calendar.** Billing and payroll
+    already kept the agency week (README rule #4); the Scheduling board and the
+    per-client / per-employee month calendars still ran Monday-start. All are
+    Sat-first now — the board's columns, its month grid, the weekend tint, and
+    the record calendars — and the conflict service's overtime window moved
+    with them, because a Monday-based boundary would have split one payroll
+    week's hours across two windows and missed real overtime. The visit seed
+    anchors on the agency week too, so the board looks right on a weekend.
+
+  - **No partial-payment state** (README rule #3: "an invoice is paid or
+    unpaid"). The receivables domain had a `part_paid` status; it is removed,
+    not just hidden — money that arrives short of the balance is still recorded
+    and subtracted (a cheque is a fact), but the invoice stays plainly Unpaid
+    (or Overdue) until it is settled in full.
+
   - **Assessment — the mock dropped its standalone "Education provided"
     section** (the refreshed README's prose still lists it, so README and HTML
     disagree; trusting the concrete design, it is gone). Joy's assessment is not

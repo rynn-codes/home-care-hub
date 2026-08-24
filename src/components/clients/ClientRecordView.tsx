@@ -415,7 +415,8 @@ function ClientScheduleTab({ clientName }: { clientName: string }) {
 
   const cells = useMemo(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const lead = (first.getDay() + 6) % 7;
+    // Sat-first columns — the agency week is Saturday → Friday everywhere.
+    const lead = (first.getDay() + 1) % 7;
     const start = new Date(first);
     start.setDate(start.getDate() - lead);
     return Array.from({ length: 42 }, (_, i) => {
@@ -478,7 +479,7 @@ function ClientScheduleTab({ clientName }: { clientName: string }) {
         </span>
       </div>
       <div className="grid grid-cols-7 overflow-hidden rounded-[11px] border border-[#ECECF1]">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((w) => (
+        {["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"].map((w) => (
           <div
             key={w}
             className="border-b border-[#ECECF1] bg-[#FCFCFD] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[.06em] text-muted-foreground"

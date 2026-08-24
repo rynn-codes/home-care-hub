@@ -91,7 +91,10 @@ function sameWeek(a: string, b: string): boolean {
   const db = new Date(b);
   const startOfWeek = (d: Date) => {
     const x = new Date(d);
-    const day = (x.getDay() + 6) % 7; // Monday-based
+    // Saturday-based: the agency week (and payroll's overtime week) runs
+    // Saturday → Friday. A Monday-based boundary here would split one payroll
+    // week's hours across two windows and miss real overtime.
+    const day = (x.getDay() + 1) % 7;
     x.setDate(x.getDate() - day);
     x.setHours(0, 0, 0, 0);
     return x.getTime();

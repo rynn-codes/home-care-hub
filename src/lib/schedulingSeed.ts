@@ -15,10 +15,17 @@ import type { Visit } from "@/domain/scheduling/conflicts";
  * so — see the note in joySeed.ts.
  */
 
+/**
+ * The Monday INSIDE the current Saturday–Friday agency week (README business
+ * rule #4). Anchoring on the agency week rather than the calendar week keeps
+ * the seeded Mon–Fri visits visible in the board's Sat-start week view on any
+ * day the demo is opened — including the weekend, when a plain "Monday of this
+ * week" would point at the previous agency week.
+ */
 function mondayOfThisWeek(): Date {
   const d = new Date();
-  const day = (d.getDay() + 6) % 7;
-  d.setDate(d.getDate() - day);
+  const sinceSaturday = (d.getDay() + 1) % 7;
+  d.setDate(d.getDate() - sinceSaturday + 2);
   d.setHours(0, 0, 0, 0);
   return d;
 }

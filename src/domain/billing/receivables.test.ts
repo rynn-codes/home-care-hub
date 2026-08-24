@@ -79,13 +79,17 @@ describe("one invoice's balance", () => {
     expect(b.lastPaymentOn).toBe("2026-08-09");
   });
 
-  it("calls a part payment part paid when it is not yet late", () => {
+  it("keeps a short-paid invoice plainly unpaid — there is no partial state", () => {
+    // README business rule #3: an invoice is paid or unpaid. The $200 that
+    // arrived is recorded and subtracted, but it earns no softer status.
     const b = invoiceBalance({
       invoice: issued({ dueOn: "2026-08-30" }),
       payments: [payment({ amount: 200 })],
       asOf: ASOF,
     });
-    expect(b.state).toBe("part_paid");
+    expect(b.state).toBe("outstanding");
+    expect(b.paid).toBe(200);
+    expect(b.balance).toBe(issued().total - 200);
   });
 
   it("treats an overpayment as a credit rather than a negative debt", () => {

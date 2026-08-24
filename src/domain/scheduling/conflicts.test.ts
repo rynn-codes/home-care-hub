@@ -83,7 +83,8 @@ describe("conflict detection", () => {
 
   // Overtime is a cost the scheduler may knowingly accept, not an error.
   it("warns about overtime without blocking the change", () => {
-    // Mon 17 Aug 2026 through Fri 21 Aug, eight hours a day — exactly 40.
+    // Mon 17 Aug 2026 through Fri 21 Aug, eight hours a day — exactly 40,
+    // all inside the Sat 15 – Fri 21 agency week.
     const day = (n: number) => `2026-08-${String(17 + n).padStart(2, "0")}`;
     const existing = Array.from({ length: 5 }, (_, i) =>
       visit({
@@ -93,11 +94,13 @@ describe("conflict detection", () => {
         endsAt: `${day(i)}T16:00:00`,
       }),
     );
+    // The extra shift lands on the Sunday of that same Sat–Fri week. (Sat 22
+    // would begin the NEXT agency week — the week runs Saturday to Friday.)
     const proposed = visit({
       id: "extra",
       clientName: "Ruth Alvarez",
-      startsAt: "2026-08-22T08:00:00",
-      endsAt: "2026-08-22T14:00:00",
+      startsAt: "2026-08-16T08:00:00",
+      endsAt: "2026-08-16T14:00:00",
     });
 
     const conflicts = findConflicts(proposed, existing);

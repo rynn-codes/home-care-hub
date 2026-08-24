@@ -42,7 +42,12 @@ import { cn } from "@/lib/utils";
  * missing wire.
  */
 
-const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// The agency week runs Saturday → Friday (README business rule #4) — the same
+// boundary billing and payroll already keep, now on the board too.
+const DAY_NAMES = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
+
+/** Column index for a date in the Sat–Fri week: Sat=0 … Fri=6. */
+const dayCol = (d: Date) => (d.getDay() + 1) % 7;
 const QUICK_ADD: Array<{ label: string; to?: string; note?: string }> = [
   { label: "New shift", note: "Not built yet — shifts come from the seed and Admissions" },
   { label: "Recurring schedule", note: "Not built yet" },
@@ -59,7 +64,7 @@ const JOY_PROMPTS = [
 
 function startOfWeek(base: Date): Date {
   const d = new Date(base);
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  d.setDate(d.getDate() - dayCol(d));
   d.setHours(0, 0, 0, 0);
   return d;
 }
@@ -173,7 +178,7 @@ export default function Scheduling() {
     const buckets: Visit[][] = [[], [], [], [], [], [], []];
     for (const v of weekVisits) {
       if (!matches(v)) continue;
-      buckets[(new Date(v.startsAt).getDay() + 6) % 7].push(v);
+      buckets[dayCol(new Date(v.startsAt))].push(v);
     }
     for (const b of buckets) b.sort((a, z) => new Date(a.startsAt).getTime() - new Date(z.startsAt).getTime());
     return buckets;
@@ -247,7 +252,7 @@ export default function Scheduling() {
 
   const monthCells = useMemo(() => {
     const first = new Date(dayCursor.getFullYear(), dayCursor.getMonth(), 1);
-    const lead = (first.getDay() + 6) % 7;
+    const lead = dayCol(first);
     const start = new Date(first);
     start.setDate(start.getDate() - lead);
     return Array.from({ length: 42 }, (_, i) => {
@@ -391,7 +396,7 @@ export default function Scheduling() {
                         {open
                           .map(
                             (v) =>
-                              `${DAY_NAMES[(new Date(v.startsAt).getDay() + 6) % 7]} · ${v.clientName}`,
+                              `${DAY_NAMES[dayCol(new Date(v.startsAt))]} · ${v.clientName}`,
                           )
                           .join(" · ")}
                       </span>
@@ -522,7 +527,7 @@ export default function Scheduling() {
                   className={cn(
                     "flex min-h-[280px] flex-col gap-[7px] p-2",
                     i < 6 && "border-r border-[#F3F3F6]",
-                    overCol === i ? "bg-[#F7F8FE]" : i > 4 ? "bg-[#FCFCFD]" : "bg-white",
+                    overCol === i ? "bg-[#F7F8FE]" : i < 2 ? "bg-[#FCFCFD]" : "bg-white",
                   )}
                 >
                   {byDay[i].length === 0 && (

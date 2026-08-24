@@ -57,9 +57,15 @@ export interface Payment {
   reference: string | null;
 }
 
+/**
+ * There is deliberately no "part paid" state (README business rule #3: "an
+ * invoice is paid or unpaid"). Money that arrives short of the balance is a
+ * fact — `paid` records it and `balance` subtracts it — but it does not earn
+ * the invoice a softer status: an invoice with anything left on it is simply
+ * outstanding, or overdue once the due date passes.
+ */
 export type BalanceState =
   | "paid"
-  | "part_paid"
   | "outstanding"
   | "overdue"
   | "written_off"
@@ -67,8 +73,7 @@ export type BalanceState =
 
 export const BALANCE_LABELS: Record<BalanceState, string> = {
   paid: "Paid",
-  part_paid: "Part paid",
-  outstanding: "Outstanding",
+  outstanding: "Unpaid",
   overdue: "Overdue",
   written_off: "Written off",
   overpaid: "Credit on account",
@@ -126,7 +131,7 @@ export function invoiceBalance(input: {
     if (balance < 0) return "overpaid";
     if (balance === 0) return "paid";
     if (age.daysOverdue > 0) return "overdue";
-    return paid > 0 ? "part_paid" : "outstanding";
+    return "outstanding";
   })();
 
   return {
