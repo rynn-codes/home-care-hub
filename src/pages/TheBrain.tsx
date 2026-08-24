@@ -427,16 +427,23 @@ export default function TheBrain() {
             <span className={EYEBROW}>Brain Brief</span>
             <p className="m-0 text-[19px] font-medium leading-[1.5] tracking-[-.018em]">{headline}</p>
             <p className="m-0 max-w-[800px] text-[15px] leading-[1.75] text-[#3A3A42] [text-wrap:pretty]">{brief}</p>
-            {/* The needs-you links — a recorded deviation the static mock cannot
-                show: each urgent signal is a live link into the screen that can
-                do something about it. Three e2e stories walk these. */}
+            {/* A recorded deviation the static mock cannot show: the most
+                pressing signals as live links into the screen that can do
+                something about them. Capped at three and kept in the quiet
+                link colour — the brief is a paragraph, not an alarm board, and
+                the full list is one tap away under See why. */}
             {urgent.length > 0 && (
-              <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-                {urgent.map((s) => (
-                  <Link key={s.key} to={s.to} className="text-[12.5px] font-medium text-[#C2410C] hover:text-[#9A3412]">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+                {urgent.slice(0, 3).map((s) => (
+                  <Link key={s.key} to={s.to} className="text-[12.5px] font-medium text-primary hover:text-[#2A1BD1]">
                     {s.label} — {s.detail ?? s.value} →
                   </Link>
                 ))}
+                {urgent.length > 3 && (
+                  <span className="text-[12.5px] text-muted-foreground">
+                    and {urgent.length - 3} more
+                  </span>
+                )}
               </div>
             )}
             <button
@@ -1332,6 +1339,24 @@ export default function TheBrain() {
             </button>
           </div>
           <div className="flex flex-col gap-[18px] px-6 py-5">
+            {/* Everything the brief capped, in full — the brief shows three,
+                this is the whole list, each still a link to the owning screen. */}
+            {urgent.length > 0 && (
+              <div className="flex flex-col gap-[5px]">
+                <span className="text-[10.5px] font-semibold tracking-[.13em] text-muted-foreground">
+                  NEEDS YOU · {urgent.length}
+                </span>
+                {urgent.map((u) => (
+                  <Link
+                    key={u.key}
+                    to={u.to}
+                    className="text-[13.5px] leading-[1.6] text-primary hover:text-[#2A1BD1]"
+                  >
+                    {u.label} — {u.detail ?? u.value} →
+                  </Link>
+                ))}
+              </div>
+            )}
             {[
               {
                 label: "VISIT COVERAGE",
