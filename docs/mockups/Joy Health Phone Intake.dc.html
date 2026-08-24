@@ -12,1276 +12,954 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#FDFDFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#191A2E}
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#1B1B1F}
 a{color:#1407A2;text-decoration:none}
 a:hover{color:#2A1BD1}
-button{font-family:inherit}
-input,textarea{font-family:inherit}
+input,textarea,select{font-family:inherit}
+input:focus,textarea:focus,select:focus{border-color:rgba(20,7,162,.4)!important}
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
 ::-webkit-scrollbar-track{background:transparent}
-@keyframes joyGlow{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
-@keyframes listenRing{0%{transform:scale(1);opacity:.5}70%{transform:scale(1.9);opacity:0}100%{transform:scale(1.9);opacity:0}}
-@keyframes drawerIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes qIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
 </style>
 </helmet>
-<div style="min-height:100vh;background:#FDFDFC;display:flex;flex-direction:column;min-width:1100px">
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1280px">
 
-  <header style="position:sticky;top:0;z-index:30;background:rgba(253,253,252,.93);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:12px 32px;display:flex;align-items:center;gap:14px">
-    <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#8A8A92" style-hover="color:#191A2E">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5L5 8l4.5 4.5"></path></svg>Admissions
-    </a>
-    <span style="width:1px;height:16px;background:#ECECF1"></span>
-    <span style="font-size:13.5px;font-weight:500;color:#191A2E">{{ client }}</span>
-    <span style="font-size:12.5px;color:#C9C9D0">·</span>
-    <span style="font-size:12.5px;color:#8A8A92">Phone Intake</span>
-    <span style="display:flex;align-items:center;gap:6px;margin-left:8px">
-      <span style="{{ saveDotStyle }}"></span>
-      <span style="font-size:11.5px;color:#9B9BA3">{{ saveState }}</span>
-    </span>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <button onClick="{{ toggleGuide }}" style="{{ guideBtnStyle }}">Question guide</button>
-      <div style="position:relative">
-        <button onClick="{{ togglePreview }}" style="height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">Preview ▾</button>
-        <sc-if value="{{ previewMenuOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;top:38px;right:0;z-index:40;width:224px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
-            <sc-for list="{{ previewItems }}" as="i" hint-placeholder-count="3">
-              <button onClick="{{ i.click }}" style="text-align:left;background:transparent;border:none;padding:8px 10px;border-radius:8px;font-size:12.5px;color:#191A2E;cursor:pointer" style-hover="background:#FAFAFB">{{ i.label }}</button>
-            </sc-for>
-          </div>
-        </sc-if>
-      </div>
-      <button style="width:32px;height:32px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#8A8A92;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">···</button>
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
     </div>
-  </header>
-
-  <div style="flex:1;display:flex;justify-content:center;padding:0 32px">
-
-    <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ true }}">
-      <div style="width:100%;max-width:660px;padding:96px 0 80px;display:flex;flex-direction:column;gap:34px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9B9BA3">Phone intake</span>
-          <h1 style="margin:0;font-size:38px;font-weight:600;letter-spacing:-.03em;line-height:1.12;text-wrap:pretty">Have the conversation. Joy will handle the paperwork.</h1>
-          <p style="margin:0;font-size:15.5px;line-height:1.6;color:#5B6274;max-width:540px;text-wrap:pretty">Joy can listen to the call, organize what you learn, and show you anything that still needs to be confirmed. You can take over or correct anything at any time.</p>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid #ECECF1;border-radius:14px;background:#FFFFFF">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Already known from the lead</span>
-          <div style="display:flex;flex-direction:column">
-            <sc-for list="{{ knownRows }}" as="k" hint-placeholder-count="4">
-              <div style="display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid #F3F3F6">
-                <span style="font-size:12.5px;color:#9B9BA3;width:118px;flex:none">{{ k.label }}</span>
-                <span style="font-size:13.5px;color:#191A2E">{{ k.value }}</span>
-              </div>
-            </sc-for>
-          </div>
-          <span style="font-size:12px;color:#8A8A92">You won't be asked for these again.</span>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <button onClick="{{ startAi }}" style="display:flex;align-items:center;justify-content:center;gap:10px;height:52px;background:#1407A2;border:none;border-radius:12px;font-size:15px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
-            <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF"></span>Start intake with Joy
-          </button>
-          <button onClick="{{ startManual }}" style="align-self:center;background:transparent;border:none;font-size:13.5px;color:#1407A2;cursor:pointer;padding:4px">Complete manually instead</button>
-        </div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 7.4L8 3l5 4.4V13H3z"></path></svg>Home</a>
+      <a href="./Joy%20Health%20The%20Brain.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M6.6 2.6a2 2 0 00-2 2 2 2 0 00-1.2 3.5A2.1 2.1 0 005 11.6a2 2 0 003.6 1.1V3.9a1.9 1.9 0 00-2-1.3z"></path><path d="M9.4 3.4a1.9 1.9 0 013.4 1.2 2 2 0 011.2 3.5 2.1 2.1 0 01-1.6 3.5"></path></svg>The Brain</a>
+      <div style="height:14px"></div>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients</a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees</a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions</span>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring</a>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">KR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Karynn Reed</span>
+        <span style="font-size:11px;color:#9B9BA3">Chief Executive</span>
       </div>
-    </sc-if>
+    </div>
+  </aside>
 
-    <sc-if value="{{ isAi }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:660px;padding:64px 0 80px;display:flex;flex-direction:column;gap:34px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
-          <span style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center">
-            <span style="position:absolute;inset:0;border-radius:50%;background:#8FA0FF;animation:listenRing 2.4s ease-out infinite"></span>
-            <span style="position:relative;width:44px;height:44px;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center">
-              <span style="width:9px;height:9px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.2s ease-in-out infinite"></span>
-            </span>
-          </span>
-          <div style="display:flex;flex-direction:column;gap:7px">
-            <span style="font-size:19px;font-weight:600;letter-spacing:-.015em">Joy is listening</span>
-            <span style="font-size:14px;color:#5B6274;line-height:1.55">Have the conversation naturally. I'll organize the intake as you go.</span>
-            <span style="font-size:11.5px;color:#B9B9C1">Live transcription only · the call is not being recorded</span>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Captured so far</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:6px 16px">
-            <sc-for list="{{ captured }}" as="c" hint-placeholder-count="6">
-              <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid #F3F3F6">
-                <span style="width:17px;height:17px;flex:none;margin-top:1px;border-radius:50%;background:#ECFDF3;color:#12B76A;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
-                <span style="display:flex;flex-direction:column;gap:2px">
-                  <span style="font-size:13.5px;color:#191A2E;line-height:1.4">{{ c.label }}</span>
-                  <span style="font-size:11.5px;color:#9B9BA3">{{ c.note }}</span>
-                </span>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Still need to confirm</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:6px 16px">
-            <sc-for list="{{ stillNeed }}" as="n" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #F3F3F6">
-                <span style="width:17px;height:17px;flex:none;border-radius:50%;border:1px solid #E4E4EA;display:flex;align-items:center;justify-content:center;color:#C9C9D0;font-size:9px">○</span>
-                <span style="font-size:13.5px;color:#5B6274">{{ n.label }}</span>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px">
-          <button onClick="{{ toGaps }}" style="height:44px;padding:0 20px;background:#1407A2;border:none;border-radius:11px;font-size:14px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Review captured information</button>
-          <button onClick="{{ startManual }}" style="background:transparent;border:none;font-size:13px;color:#5B6274;cursor:pointer;padding:4px" style-hover="color:#191A2E">Switch to manual entry</button>
-          <button style="margin-left:auto;background:transparent;border:none;font-size:12.5px;color:#9B9BA3;cursor:pointer;padding:4px" style-hover="color:#5B6274">View transcript</button>
-        </div>
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:14px 44px;display:flex;align-items:center;gap:12px">
+      <a href="./Joy%20Health%20Admissions.dc.html" style="font-size:13px;color:#8A8A92" style-hover="color:#1407A2">← Admissions</a>
+      <span style="font-size:13px;color:#C8C8D0">/</span>
+      <span style="font-size:13.5px;font-weight:500">Phone intake</span>
+      <span style="display:flex;align-items:center;gap:7px;margin-left:14px;font-size:12.5px;color:#15803D"><span style="width:6px;height:6px;border-radius:50%;background:#15803D"></span>{{ savedLabel }}</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+        <span style="font-size:12.5px;color:#8A8A92">Call started 10:04 AM · 6 min</span>
+        <button style="height:34px;padding:0 14px;border-radius:10px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Save &amp; exit</button>
       </div>
-    </sc-if>
+    </header>
 
-    <sc-if value="{{ isQuestion }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:660px;padding:72px 0 120px;display:flex;flex-direction:column;gap:30px;animation:qIn .2s ease-out">
+    <div style="padding:30px 44px 110px;max-width:1120px;display:flex;flex-direction:column;gap:22px">
 
-        <div style="display:flex;align-items:center;gap:12px">
-          <span style="font-size:12.5px;font-weight:600;color:#1407A2;letter-spacing:.02em">{{ q.number }}</span>
-          <span style="font-size:12.5px;color:#9B9BA3">{{ q.section }}</span>
-          <sc-if value="{{ q.isGap }}" hint-placeholder-val="{{ false }}">
-            <span style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:3px 10px;border-radius:999px;background:#FFFAEB;font-size:11px;font-weight:500;color:#B54708">Needs confirmation</span>
-          </sc-if>
+      <section style="display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap">
+        <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:5px">
+          <h1 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.15;background:linear-gradient(96deg,#1B1B1F 0%,#3B2FB8 52%,#1407A2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">Phone intake</h1>
+          <p style="margin:0;font-size:14px;color:#8A8A92">Enough to understand, qualify, quote, and schedule. The rest comes at the assessment.</p>
         </div>
-
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <h2 style="margin:0;font-size:29px;font-weight:600;letter-spacing:-.025em;line-height:1.22;text-wrap:pretty">{{ q.question }}</h2>
-          <sc-if value="{{ q.hasHelper }}" hint-placeholder-val="{{ false }}">
-            <p style="margin:0;font-size:14px;color:#8A8A92;line-height:1.55;text-wrap:pretty">{{ q.helper }}</p>
-          </sc-if>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span style="font-size:12.5px;color:#8A8A92">{{ progressLabel }}</span>
+          <div style="width:190px;height:5px;border-radius:5px;background:#F0F0F2;overflow:hidden"><span style="{{ progressStyle }}"></span></div>
         </div>
+      </section>
 
-        <sc-if value="{{ q.isKnown }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column">
-              <sc-for list="{{ q.knownRows }}" as="k" hint-placeholder-count="3">
-                <div style="display:flex;align-items:baseline;gap:14px;padding:9px 0;border-bottom:1px solid #F3F3F6">
-                  <span style="font-size:12.5px;color:#9B9BA3;width:118px;flex:none">{{ k.label }}</span>
-                  <span style="font-size:14.5px;color:#191A2E">{{ k.value }}</span>
-                </div>
-              </sc-for>
-            </div>
-            <div style="display:flex;gap:9px">
-              <button onClick="{{ next }}" style="height:46px;padding:0 22px;background:#1407A2;border:none;border-radius:11px;font-size:14.5px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Looks right</button>
-              <button style="height:46px;padding:0 18px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:14px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Edit</button>
-            </div>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ q.isSingle }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex;flex-direction:column;gap:9px">
-            <sc-for list="{{ q.choices }}" as="c" hint-placeholder-count="4">
-              <button onClick="{{ c.pick }}" style="{{ c.style }}">
-                <span style="{{ c.markStyle }}">{{ c.mark }}</span>
-                <span style="font-size:15px;text-align:left">{{ c.label }}</span>
-              </button>
-            </sc-for>
-
-            <sc-if value="{{ q.showLtci }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex;flex-direction:column;gap:12px;padding:16px 17px;border:1px solid #E0E3FB;border-radius:14px;background:#F7F8FE;margin-top:2px">
-                <span style="font-size:12.5px;color:#5B6274;line-height:1.5;text-wrap:pretty">Susan still pays Joy Health directly each week. Capture the policy so billing can send the reimbursement packet.</span>
-                <div style="display:flex;flex-direction:column;gap:6px">
-                  <span style="font-size:12px;color:#8A8A92">Carrier</span>
-                  <select value="{{ q.ltciCarrier }}" onChange="{{ q.onCarrier }}" style="height:44px;padding:0 12px;border:1px solid #ECECF1;border-radius:11px;background:#FFFFFF;font-size:14.5px;color:#191A2E;outline:none;cursor:pointer">
-                    <option value="">Select a carrier</option>
-                    <sc-for list="{{ q.carriers }}" as="c" hint-placeholder-count="5">
-                      <option value="{{ c.v }}">{{ c.v }}</option>
-                    </sc-for>
-                  </select>
-                </div>
-                <sc-if value="{{ q.carrierIsOther }}" hint-placeholder-val="{{ false }}">
-                  <input type="text" value="{{ q.ltciCarrierOther }}" onChange="{{ q.onCarrierOther }}" placeholder="Carrier name as the caller says it" style="box-sizing:border-box;height:44px;padding:0 14px;border:1px solid #ECECF1;border-radius:11px;background:#FFFFFF;font-size:14.5px;color:#191A2E;outline:none"/>
-                </sc-if>
-                <div style="display:flex;flex-direction:column;gap:6px">
-                  <span style="font-size:12px;color:#8A8A92">Policy number <span style="color:#B9B9C1">— optional, can come later</span></span>
-                  <input type="text" value="{{ q.ltciPolicy }}" onChange="{{ q.onPolicy }}" placeholder="e.g. GW-4482119" style="box-sizing:border-box;height:44px;padding:0 14px;border:1px solid #ECECF1;border-radius:11px;background:#FFFFFF;font-size:14.5px;color:#191A2E;outline:none"/>
-                </div>
-              </div>
-            </sc-if>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ q.isMulti }}" hint-placeholder-val="{{ false }}">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
-            <sc-for list="{{ q.choices }}" as="c" hint-placeholder-count="10">
-              <button onClick="{{ c.pick }}" style="{{ c.style }}">
-                <span style="{{ c.markStyle }}">{{ c.mark }}</span>
-                <span style="font-size:14.5px;text-align:left">{{ c.label }}</span>
-              </button>
-            </sc-for>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ q.isChips }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-wrap:wrap;gap:9px">
-            <sc-for list="{{ q.choices }}" as="c" hint-placeholder-count="7">
-              <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
-            </sc-for>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ q.isText }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <textarea value="{{ q.textValue }}" onChange="{{ onText }}" placeholder="{{ q.placeholder }}" style="width:100%;box-sizing:border-box;min-height:132px;resize:vertical;padding:16px 18px;border:1px solid #ECECF1;border-radius:14px;background:#FFFFFF;font-size:15px;line-height:1.6;color:#191A2E;outline:none"></textarea>
-            <div style="display:flex;align-items:center;gap:12px">
-              <button style="display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>Dictate
-              </button>
-              <sc-if value="{{ q.optional }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ next }}" style="background:transparent;border:none;font-size:13px;color:#9B9BA3;cursor:pointer;padding:4px" style-hover="color:#5B6274">Skip for now</button>
-              </sc-if>
-            </div>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ q.isSchedule }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:16px">
-
-            <sc-if value="{{ q.hasHeard }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex;align-items:center;gap:11px;padding:13px 15px;border:1px solid #E0E3FB;border-radius:12px;background:#F7F8FE">
-                <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;flex:none"></span>
-                <span style="font-size:13px;color:#191A2E;line-height:1.45;text-wrap:pretty">{{ q.heard }}</span>
-              </div>
-            </sc-if>
-
-            <div style="display:flex;gap:9px">
-              <sc-for list="{{ q.modes }}" as="mo" hint-placeholder-count="3">
-                <button onClick="{{ mo.pick }}" style="{{ mo.style }}">
-                  <span style="font-size:13.5px;font-weight:500;color:#191A2E">{{ mo.label }}</span>
-                  <span style="font-size:11.5px;color:#8A8A92">{{ mo.hint }}</span>
-                </button>
-              </sc-for>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:9px">
-              <button onClick="{{ q.presetWeekdays }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:999px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Mon–Fri</button>
-              <button onClick="{{ q.presetAll }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:999px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Every day</button>
-              <sc-if value="{{ q.anyDay }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ q.applyAll }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:999px;font-size:12.5px;color:#1407A2;cursor:pointer" style-hover="background:#F7F8FE">Apply first day to all</button>
-              </sc-if>
-            </div>
-
-            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
-              <sc-for list="{{ q.dayRows }}" as="d" hint-placeholder-count="7">
-                <div style="{{ d.rowStyle }}">
-                  <button onClick="{{ d.toggle }}" style="{{ d.chipStyle }}">{{ d.abbr }}</button>
-
-                  <sc-if value="{{ d.off }}" hint-placeholder-val="{{ true }}">
-                    <span style="font-size:13px;color:#C9C9D0">No care</span>
-                  </sc-if>
-
-                  <sc-if value="{{ d.isExact }}" hint-placeholder-val="{{ false }}">
-                    <span style="display:flex;align-items:center;gap:8px">
-                      <select value="{{ d.start }}" onChange="{{ d.onStart }}" style="height:32px;padding:0 8px;border:1px solid #ECECF1;border-radius:9px;background:#FFFFFF;font-size:13px;color:#191A2E;outline:none;cursor:pointer">
-                        <sc-for list="{{ q.times }}" as="t" hint-placeholder-count="4">
-                          <option value="{{ t.v }}">{{ t.v }}</option>
-                        </sc-for>
-                      </select>
-                      <span style="font-size:12.5px;color:#B9B9C1">to</span>
-                      <select value="{{ d.end }}" onChange="{{ d.onEnd }}" style="height:32px;padding:0 8px;border:1px solid #ECECF1;border-radius:9px;background:#FFFFFF;font-size:13px;color:#191A2E;outline:none;cursor:pointer">
-                        <sc-for list="{{ q.times }}" as="t" hint-placeholder-count="4">
-                          <option value="{{ t.v }}">{{ t.v }}</option>
-                        </sc-for>
-                      </select>
-                    </span>
-                  </sc-if>
-
-                  <sc-if value="{{ d.isHours }}" hint-placeholder-val="{{ false }}">
-                    <span style="display:flex;align-items:center;gap:8px">
-                      <input type="number" value="{{ d.hrsValue }}" onChange="{{ d.onHrs }}" style="width:62px;box-sizing:border-box;height:32px;padding:0 10px;border:1px solid #ECECF1;border-radius:9px;background:#FFFFFF;font-size:13px;color:#191A2E;outline:none"/>
-                      <span style="font-size:13px;color:#8A8A92">hours, time of day flexible</span>
-                    </span>
-                  </sc-if>
-
-                  <sc-if value="{{ d.isPart }}" hint-placeholder-val="{{ false }}">
-                    <span style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-                      <sc-for list="{{ d.parts }}" as="p" hint-placeholder-count="4">
-                        <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
-                      </sc-for>
-                      <span style="font-size:12px;color:#B9B9C1">{{ d.partWindow }}</span>
-                    </span>
-                  </sc-if>
-
-                  <span style="{{ d.durStyle }}">{{ d.dur }}</span>
-                </div>
-              </sc-for>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid #ECECF1;border-radius:14px;background:#FCFCFD">
-              <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-                <span style="font-size:14px;font-weight:500;color:#191A2E">{{ q.schedSummary }}</span>
-                <span style="font-size:12px;color:#8A8A92">{{ q.weeklyNote }}</span>
-              </span>
-              <span style="margin-left:auto;flex:none;font-size:18px;font-weight:600;letter-spacing:-.02em;color:#191A2E">{{ q.weeklyTotal }}</span>
-            </div>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ q.isNumber }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <input type="number" value="{{ q.textValue }}" onChange="{{ onText }}" placeholder="20" style="width:132px;box-sizing:border-box;height:60px;padding:0 18px;border:1px solid #ECECF1;border-radius:14px;background:#FFFFFF;font-size:26px;font-weight:600;letter-spacing:-.02em;color:#191A2E;outline:none"/>
-              <span style="font-size:15px;color:#8A8A92">hours per week</span>
-            </div>
-            <sc-if value="{{ q.hasEstimate }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex;align-items:center;gap:11px;padding:13px 15px;border:1px solid #E0E3FB;border-radius:12px;background:#F7F8FE">
-                <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;flex:none"></span>
-                <span style="font-size:13px;color:#191A2E;line-height:1.45;text-wrap:pretty">{{ q.estimate }}</span>
-              </div>
-            </sc-if>
-            <button onClick="{{ setUnsure }}" style="align-self:flex-start;background:transparent;border:none;font-size:13px;color:#1407A2;cursor:pointer;padding:4px">Not sure yet</button>
-          </div>
-        </sc-if>
-
-        <div style="display:flex;align-items:center;gap:12px;padding-top:6px">
-          <sc-if value="{{ q.showContinue }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ next }}" style="{{ q.continueStyle }}">{{ q.continueLabel }}</button>
-          </sc-if>
-        </div>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{ isSummary }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:700px;padding:64px 0 100px;display:flex;flex-direction:column;gap:26px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;gap:9px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9B9BA3">Phone intake summary</span>
-          <h2 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-.025em">{{ client }}</h2>
-          <span style="font-size:13.5px;color:#5B6274">Taken by Dana Whitfield · Monday, August 10 · 10:03 AM</span>
-        </div>
-
-        <sc-if value="{{ hasNeedsReview }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:11px;padding:16px 18px;border:1px solid #FCE8B6;border-radius:14px;background:#FFFAEB">
-            <span style="font-size:12.5px;font-weight:600;color:#B54708">Needs review · {{ needsReviewCount }}</span>
-            <div style="display:flex;flex-direction:column;gap:7px">
-              <sc-for list="{{ needsReview }}" as="n" hint-placeholder-count="2">
-                <span style="display:flex;align-items:flex-start;gap:9px">
-                  <span style="width:5px;height:5px;border-radius:50%;background:#B54708;flex:none;margin-top:6px"></span>
-                  <span style="display:flex;flex-direction:column;gap:1px">
-                    <span style="font-size:13px;color:#191A2E">{{ n.label }}</span>
-                    <span style="font-size:11.5px;color:#912018">{{ n.why }}</span>
-                  </span>
-                </span>
-              </sc-for>
-            </div>
-            <button onClick="{{ resolveReview }}" style="align-self:flex-start;height:32px;padding:0 13px;background:#FFFFFF;border:1px solid #FCE8B6;border-radius:9px;font-size:12.5px;color:#B54708;cursor:pointer" style-hover="background:#FEF3D6">Resolve {{ needsReviewCount }} items</button>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ noNeedsReview }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex;align-items:center;gap:11px;padding:14px 16px;border:1px solid #D3F0DF;border-radius:14px;background:#F6FEF9">
-            <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
-            <span style="font-size:13.5px;color:#191A2E">Joy found no unanswered required intake items.</span>
-          </div>
-        </sc-if>
-
-        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;overflow:hidden">
-          <sc-for list="{{ summary }}" as="s" hint-placeholder-count="8">
-            <div style="padding:18px 20px;border-bottom:1px solid #F3F3F6;display:flex;gap:18px">
-              <span style="width:150px;flex:none;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3;padding-top:2px">{{ s.label }}</span>
-              <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-                <span style="font-size:14.5px;color:#191A2E;line-height:1.55;text-wrap:pretty">{{ s.value }}</span>
-                <span style="font-size:12px;color:#9B9BA3;line-height:1.45">{{ s.sub }}</span>
-              </span>
-              <button onClick="{{ s.edit }}" style="margin-left:auto;flex:none;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:2px 0;height:22px">Edit</button>
-            </div>
-          </sc-for>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px">
-          <button onClick="{{ completeIntake }}" style="height:48px;padding:0 22px;background:#1407A2;border:none;border-radius:12px;font-size:14.5px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Complete intake &amp; continue</button>
-          <button onClick="{{ openPreview }}" style="height:48px;padding:0 18px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;font-size:14px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Preview intake</button>
-        </div>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{ isDecision }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:600px;padding:110px 0 80px;display:flex;flex-direction:column;gap:30px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <span style="display:inline-flex;align-self:flex-start;align-items:center;gap:8px;padding:4px 11px;border-radius:999px;background:#ECFDF3;font-size:11.5px;font-weight:500;color:#12B76A">Phone intake complete</span>
-          <h2 style="margin:0;font-size:31px;font-weight:600;letter-spacing:-.025em;line-height:1.2;text-wrap:pretty">Would you like to move forward with an in-home RN assessment?</h2>
-          <p style="margin:0;font-size:14.5px;color:#5B6274;line-height:1.6;text-wrap:pretty">{{ client }}'s intake is saved. Scheduling the assessment carries everything captured today into the RN's visit.</p>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <button onClick="{{ toSchedule }}" style="display:flex;align-items:center;justify-content:center;height:52px;background:#1407A2;border:none;border-radius:12px;font-size:15px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Schedule RN assessment</button>
-          <button onClick="{{ toNotMoving }}" style="display:flex;align-items:center;justify-content:center;height:48px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;font-size:14px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Not moving forward</button>
-        </div>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{ isNotMoving }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:620px;padding:72px 0 100px;display:flex;flex-direction:column;gap:28px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;gap:9px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9B9BA3">Not moving forward</span>
-          <h2 style="margin:0;font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1.25">Why is this inquiry not moving forward?</h2>
-          <p style="margin:0;font-size:13.5px;color:#8A8A92;line-height:1.55">The lead is kept with its history. Nothing is deleted.</p>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <sc-for list="{{ closeReasons }}" as="c" hint-placeholder-count="8">
-            <button onClick="{{ c.pick }}" style="{{ c.style }}">
-              <span style="{{ c.markStyle }}">{{ c.mark }}</span>
-              <span style="font-size:14.5px;text-align:left">{{ c.label }}</span>
+      <sc-if value="{{ showListen }}" hint-placeholder-val="{{ true }}">
+        <section style="{{ listenCardStyle }}">
+          <div style="display:flex;align-items:center;gap:14px">
+            <button onClick="{{ toggleListen }}" style="{{ listenBtnStyle }}">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
             </button>
-          </sc-for>
-        </div>
-        <sc-if value="{{ showFollowUp }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid #ECECF1;border-radius:14px;background:#FFFFFF">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Plan a follow-up</span>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-size:12px;color:#8A8A92">Next follow-up date</span>
-                <span style="height:42px;display:flex;align-items:center;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;font-size:14px;color:#191A2E">Aug 17, 2026</span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:15.5px;font-weight:500;letter-spacing:-.015em">{{ listenTitle }}</span>
+              <span style="font-size:13px;color:#6E6E76">{{ listenSub }}</span>
+            </div>
+            <sc-if value="{{ listening }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;flex:none">
+                <span style="width:7px;height:7px;border-radius:50%;background:#C2410C;animation:joyGlow 1.6s ease-in-out infinite"></span>
+                <span style="font-size:12.5px;color:#C2410C;font-weight:500">{{ listenTimer }}</span>
               </div>
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-size:12px;color:#8A8A92">Time</span>
-                <span style="height:42px;display:flex;align-items:center;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;font-size:14px;color:#191A2E">10:00 AM</span>
-              </div>
+            </sc-if>
+            <button onClick="{{ toggleListen }}" style="{{ listenActionStyle }}">{{ listenAction }}</button>
+          </div>
+
+          <sc-if value="{{ listening }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px;padding:16px 18px;border:1px solid rgba(20,7,162,.12);border-radius:14px;background:#fff">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">LIVE TRANSCRIPT</span>
+              <sc-for list="{{ transcript }}" as="t" hint-placeholder-count="3">
+                <div style="display:flex;gap:12px">
+                  <span style="width:62px;flex:none;font-size:12.5px;color:#9B9BA3">{{ t.who }}</span>
+                  <span style="flex:1;font-size:13.5px;line-height:1.6;color:#3A3A42">{{ t.line }}</span>
+                </div>
+              </sc-for>
+              <span style="font-size:12.5px;color:#9B9BA3">Joy is filling the intake as you talk — you'll confirm everything before it saves.</span>
             </div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <span style="font-size:12px;color:#8A8A92">Preferred method</span>
-              <div style="display:flex;gap:8px">
-                <sc-for list="{{ followMethods }}" as="m" hint-placeholder-count="3">
-                  <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
-                </sc-for>
-              </div>
-            </div>
-          </div>
-        </sc-if>
-        <div style="display:flex;gap:11px">
-          <button onClick="{{ finishClose }}" style="{{ closeBtnStyle }}">{{ closeBtnLabel }}</button>
-          <button onClick="{{ backToDecision }}" style="height:46px;padding:0 18px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:11px;font-size:14px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Back</button>
-        </div>
-      </div>
-    </sc-if>
+          </sc-if>
 
-    <sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:680px;padding:64px 0 100px;display:flex;flex-direction:column;gap:26px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9B9BA3">Schedule RN assessment</span>
-          <h2 style="margin:0;font-size:29px;font-weight:600;letter-spacing:-.025em">{{ client }}</h2>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">When</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <span style="font-size:12px;color:#8A8A92">Date</span>
-              <span style="height:44px;display:flex;align-items:center;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;font-size:14.5px;color:#191A2E">Aug 17, 2026</span>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <span style="font-size:12px;color:#8A8A92">Start time</span>
-              <span style="height:44px;display:flex;align-items:center;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;font-size:14.5px;color:#191A2E">10:30 AM</span>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <span style="font-size:12px;color:#8A8A92">Expected duration</span>
-              <span style="height:44px;display:flex;align-items:center;padding:0 13px;border:1px solid #ECECF1;border-radius:10px;font-size:14.5px;color:#191A2E">90 min</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Who they'll be meeting with</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px">
-            <span style="width:36px;height:36px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center">JR</span>
-            <span style="display:flex;flex-direction:column;line-height:1.35">
-              <span style="font-size:14.5px;font-weight:500;color:#191A2E">Joan Robinson, RN</span>
-              <span style="font-size:12.5px;color:#8A8A92">Joy Health · available Aug 17 at 10:30 AM</span>
-            </span>
-            <button style="margin-left:auto;height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Change</button>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Where</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:3px"><path d="M8 14s-4.6-3.9-4.6-7.4A4.6 4.6 0 0112.6 6.6C12.6 10.1 8 14 8 14z"></path><circle cx="8" cy="6.4" r="1.7"></circle></svg>
-            <span style="display:flex;flex-direction:column;gap:3px">
-              <span style="font-size:14.5px;color:#191A2E">3704 Harmon Ave</span>
-              <span style="font-size:13px;color:#8A8A92">Houston, TX 77004</span>
-              <span style="font-size:11.5px;color:#B9B9C1">From the lead · confirm with the family</span>
-            </span>
-            <span style="margin-left:auto;display:flex;gap:8px;flex:none">
-              <button style="height:32px;padding:0 12px;background:#EEF0FE;border:1px solid #E0E3FB;border-radius:9px;font-size:12.5px;color:#1407A2;cursor:pointer">Use this address</button>
-              <button style="height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Edit</button>
-            </span>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Contact for the visit</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column">
-            <sc-for list="{{ contactRows }}" as="c" hint-placeholder-count="3">
-              <div style="display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid #F3F3F6">
-                <span style="font-size:12.5px;color:#9B9BA3;width:104px;flex:none">{{ c.label }}</span>
-                <span style="font-size:14px;color:#191A2E">{{ c.value }}</span>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Ask the family to have ready</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:8px 18px">
-            <sc-for list="{{ preItems }}" as="p" hint-placeholder-count="6">
-              <button onClick="{{ p.toggle }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:none;padding:11px 0;border-bottom:1px solid #F3F3F6;cursor:pointer">
-                <span style="{{ p.boxStyle }}">{{ p.mark }}</span>
-                <span style="font-size:14px;color:#191A2E">{{ p.label }}</span>
-                <span style="{{ p.noteStyle }}">{{ p.note }}</span>
-              </button>
-            </sc-for>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:11px">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Notify through Spruce</span>
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:8px 18px">
-            <sc-for list="{{ recipients }}" as="r" hint-placeholder-count="2">
-              <button onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:none;padding:11px 0;border-bottom:1px solid #F3F3F6;cursor:pointer">
-                <span style="{{ r.boxStyle }}">{{ r.mark }}</span>
-                <span style="display:flex;flex-direction:column;line-height:1.35">
-                  <span style="font-size:14px;color:#191A2E">{{ r.label }}</span>
-                  <span style="font-size:11.5px;color:#9B9BA3">{{ r.sub }}</span>
-                </span>
-              </button>
-            </sc-for>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:11px;padding-top:4px">
-          <button onClick="{{ scheduleIt }}" style="height:48px;padding:0 22px;background:#1407A2;border:none;border-radius:12px;font-size:14.5px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Schedule assessment</button>
-          <button onClick="{{ backToDecision }}" style="height:48px;padding:0 18px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;font-size:14px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Cancel</button>
-        </div>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ false }}">
-      <div style="width:100%;max-width:600px;padding:96px 0 80px;display:flex;flex-direction:column;gap:28px;animation:qIn .2s ease-out">
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <span style="width:44px;height:44px;border-radius:50%;background:#ECFDF3;color:#12B76A;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
-          <h2 style="margin:0;font-size:31px;font-weight:600;letter-spacing:-.025em">Assessment scheduled</h2>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <span style="font-size:16px;color:#191A2E">Monday, Aug 17 · 10:30 AM</span>
-            <span style="font-size:14px;color:#5B6274">Joan Robinson, RN</span>
-            <span style="font-size:14px;color:#5B6274">3704 Harmon Ave, Houston, TX 77004</span>
-          </div>
-        </div>
-
-        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:8px 18px">
-          <sc-for list="{{ successSteps }}" as="s" hint-placeholder-count="3">
-            <div style="display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid #F3F3F6">
-              <span style="{{ s.markStyle }}">{{ s.mark }}</span>
-              <span style="font-size:13.5px;color:#191A2E">{{ s.label }}</span>
-              <sc-if value="{{ s.failed }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ retryNotify }}" style="margin-left:auto;height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:8px;font-size:12px;color:#1407A2;cursor:pointer" style-hover="background:#EEF0FE">Retry notification</button>
-              </sc-if>
-            </div>
-          </sc-for>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:7px;padding:16px 18px;border:1px solid #E0E3FB;border-radius:14px;background:#F7F8FE">
-          <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Next</span>
-          <span style="font-size:13.5px;color:#191A2E;line-height:1.55;text-wrap:pretty">{{ client }}'s phone intake will be waiting for Joan when she starts the RN assessment — she won't ask the family anything twice.</span>
-        </div>
-
-        <div style="display:flex;gap:11px">
-          <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;justify-content:center;height:48px;padding:0 22px;background:#1407A2;border-radius:12px;font-size:14.5px;font-weight:500;color:#FFFFFF" style-hover="background:#2A1BD1;color:#FFFFFF">Done</a>
-          <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;justify-content:center;height:48px;padding:0 18px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;font-size:14px;color:#5B6274" style-hover="background:#F1F2F6;color:#191A2E">View on schedule</a>
-        </div>
-      </div>
-    </sc-if>
-
-  </div>
-
-  <sc-if value="{{ showFooter }}" hint-placeholder-val="{{ false }}">
-    <div style="position:sticky;bottom:0;background:rgba(253,253,252,.94);backdrop-filter:blur(10px);border-top:1px solid rgba(0,0,0,.06);padding:11px 32px;display:flex;align-items:center;gap:14px">
-      <button onClick="{{ back }}" style="display:flex;align-items:center;gap:7px;background:transparent;border:none;font-size:13px;color:#5B6274;cursor:pointer;padding:4px" style-hover="color:#191A2E">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5L5 8l4.5 4.5"></path></svg>{{ backLabel }}
-      </button>
-      <span style="margin:0 auto;display:flex;align-items:center;gap:12px">
-        <span style="font-size:12px;color:#9B9BA3">{{ progressLabel }}</span>
-        <span style="display:block;width:150px;height:3px;border-radius:999px;background:#F1F2F6;overflow:hidden">
-          <span style="{{ progressBarStyle }}"></span>
-        </span>
-      </span>
-      <button style="background:transparent;border:none;font-size:13px;color:#5B6274;cursor:pointer;padding:4px" style-hover="color:#191A2E">Save &amp; exit</button>
-    </div>
-  </sc-if>
-
-  <sc-if value="{{ guideOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end">
-      <div onClick="{{ toggleGuide }}" style="position:absolute;inset:0;background:rgba(25,26,46,.14)"></div>
-      <aside style="position:relative;width:376px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
-        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <span style="font-size:16px;font-weight:600;letter-spacing:-.01em">Question guide</span>
-            <span style="font-size:12.5px;color:#8A8A92">Talk naturally — this updates as Joy hears things.</span>
-          </div>
-          <button onClick="{{ toggleGuide }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
-        </div>
-        <div style="flex:1;overflow-y:auto;padding:16px 22px 24px;display:flex;flex-direction:column;gap:18px">
-          <sc-for list="{{ guide }}" as="g" hint-placeholder-count="6">
-            <div style="display:flex;flex-direction:column;gap:7px">
+          <sc-if value="{{ listenDone }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px;padding:16px 18px;border:1px solid rgba(20,7,162,.14);border-radius:14px;background:#fff">
               <div style="display:flex;align-items:center;gap:10px">
-                <span style="{{ g.markStyle }}">{{ g.mark }}</span>
-                <span style="{{ g.titleStyle }}">{{ g.title }}</span>
-                <span style="margin-left:auto;font-size:11px;color:#B9B9C1">{{ g.note }}</span>
+                <span style="font-size:13.5px;font-weight:500">Joy filled in {{ listenCount }} fields from the call</span>
+                <span style="margin-left:auto;font-size:12px;color:#9B9BA3">Confirm or correct anything below</span>
               </div>
-              <div style="display:flex;flex-direction:column;gap:2px;padding-left:27px">
-                <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
-                  <span style="display:flex;align-items:center;gap:9px;padding:3px 0">
-                    <span style="{{ i.dotStyle }}">{{ i.dot }}</span>
-                    <span style="{{ i.labelStyle }}">{{ i.label }}</span>
-                  </span>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                <sc-for list="{{ extractedFields }}" as="f" hint-placeholder-count="9">
+                  <div style="display:flex;flex-direction:column;gap:2px;padding:9px 12px;border:1px solid rgba(0,0,0,.06);border-radius:11px">
+                    <span style="font-size:11px;color:#9B9BA3">{{ f.label }}</span>
+                    <span style="font-size:13.5px;font-weight:500">{{ f.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:10px">
+                <button onClick="{{ acceptListen }}" style="height:34px;padding:0 15px;border-radius:10px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">Accept and continue</button>
+                <button onClick="{{ clearListen }}" style="height:34px;padding:0 15px;border-radius:10px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Start over</button>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <section style="display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid rgba(0,0,0,.07);padding-bottom:12px">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="8">
+          <button onClick="{{ s.click }}" style="{{ s.style }}">
+            <span style="{{ s.dotStyle }}">{{ s.num }}</span>{{ s.label }}
+          </button>
+        </sc-for>
+      </section>
+
+      <sc-if value="{{ isBasics }}" hint-placeholder-val="{{ true }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">Who are we talking about?</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">Just enough to know the person and confirm we serve their area. No date of birth or street address yet.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">Legal name<span style="color:#C2410C"> *</span></span>
+              <input type="text" value="{{ legalName }}" onChange="{{ onLegalName }}" placeholder="Marcus Bell" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">Preferred name</span>
+              <input type="text" value="{{ prefName }}" onChange="{{ onPrefName }}" placeholder="Marc" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+          </div>
+          <div style="display:grid;grid-template-columns:130px 150px 1fr 130px;gap:16px">
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">Age</span>
+              <input type="number" value="{{ age }}" onChange="{{ onAge }}" placeholder="82" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">ZIP<span style="color:#C2410C"> *</span></span>
+              <input type="text" value="{{ zip }}" onChange="{{ onZip }}" placeholder="77027" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">City</span>
+              <input type="text" value="{{ city }}" onChange="{{ onCity }}" placeholder="Houston" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">State</span>
+              <input type="text" value="{{ stateVal }}" onChange="{{ onState }}" placeholder="TX" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+          </div>
+          <span style="{{ serviceAreaStyle }}">{{ serviceAreaNote }}</span>
+          <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:flex-end">
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">Best contact number</span>
+              <input type="tel" value="{{ phone }}" onChange="{{ onPhone }}" placeholder="(713) 555-1234" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            </label>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:12px;font-weight:500;color:#6E6E76">Preferred contact method</span>
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ contactMethods }}" as="c" hint-placeholder-count="3">
+                  <button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button>
                 </sc-for>
               </div>
             </div>
-          </sc-for>
-        </div>
-      </aside>
-    </div>
-  </sc-if>
-
-  <sc-if value="{{ previewOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end">
-      <div onClick="{{ closePreview }}" style="position:absolute;inset:0;background:rgba(25,26,46,.14)"></div>
-      <aside style="position:relative;width:420px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
-        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <span style="font-size:16px;font-weight:600;letter-spacing:-.01em">Intake preview</span>
-            <span style="font-size:12.5px;color:#8A8A92">{{ client }} · read only</span>
           </div>
-          <button onClick="{{ closePreview }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
-        </div>
-        <div style="flex:1;overflow-y:auto;padding:16px 22px 24px;display:flex;flex-direction:column">
-          <sc-for list="{{ summary }}" as="s" hint-placeholder-count="8">
-            <div style="display:flex;flex-direction:column;gap:4px;padding:13px 0;border-bottom:1px solid #F3F3F6">
-              <span style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ s.label }}</span>
-              <span style="font-size:13.5px;color:#191A2E;line-height:1.5;text-wrap:pretty">{{ s.value }}</span>
-              <span style="font-size:11.5px;color:#9B9BA3">{{ s.sub }}</span>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isContacts }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">Who's involved?</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">The caller, the client, the decision maker, and the person paying may all be different people.</p>
+          </div>
+
+          <div style="border:1px solid rgba(0,0,0,.07);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CONTACT 1 · CLIENT</span>
+              <span style="margin-left:auto;font-size:12px;color:#9B9BA3">Prefilled from Basics</span>
             </div>
-          </sc-for>
+            <div style="display:grid;grid-template-columns:1fr 150px 200px;gap:14px">
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Name</span>
+                <input type="text" value="{{ legalName }}" onChange="{{ onLegalName }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Relationship</span>
+                <input type="text" value="Self" style="height:40px;border:1px solid rgba(0,0,0,.08);border-radius:11px;padding:0 12px;font-size:14px;outline:none;background:#FAFAFB;color:#8A8A92"/></label>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Phone</span>
+                <input type="tel" value="{{ phone }}" onChange="{{ onPhone }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 200px 180px;gap:14px">
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Email</span>
+                <input type="email" value="{{ c1Email }}" onChange="{{ onC1Email }}" placeholder="marcus@example.com" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Best time to reach</span>
+                <input type="text" value="{{ c1Best }}" onChange="{{ onC1Best }}" placeholder="Mornings" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Okay to text?</span>
+                <div style="display:flex;gap:8px">
+                  <sc-for list="{{ c1Text }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Is someone else helping coordinate care?</span>
+            <div style="display:flex;gap:8px">
+              <sc-for list="{{ hasContact2 }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ showContact2 }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid rgba(20,7,162,.14);background:#FDFDFF;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CONTACT 2</span>
+              <div style="display:grid;grid-template-columns:1fr 170px 190px;gap:14px">
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Full name</span>
+                  <input type="text" value="{{ c2Name }}" onChange="{{ onC2Name }}" placeholder="Susan Miller" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Relationship</span>
+                  <input type="text" value="{{ c2Rel }}" onChange="{{ onC2Rel }}" placeholder="Daughter" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Phone</span>
+                  <input type="tel" value="{{ c2Phone }}" onChange="{{ onC2Phone }}" placeholder="(713) 555-9088" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 260px;gap:14px">
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Email</span>
+                  <input type="email" value="{{ c2Email }}" onChange="{{ onC2Email }}" placeholder="susan@example.com" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Preferred contact method</span>
+                  <div style="display:flex;gap:8px"><sc-for list="{{ c2Methods }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;padding-top:4px">
+                <sc-for list="{{ c2Roles }}" as="r" hint-placeholder-count="3">
+                  <button onClick="{{ r.click }}" style="{{ r.style }}">{{ r.label }}</button>
+                </sc-for>
+              </div>
+              <button style="align-self:flex-start;background:transparent;border:none;padding:0;font-family:inherit;font-size:13px;font-weight:500;color:#1407A2;cursor:pointer">+ Add another contact</button>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isSituation }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">Tell me what's going on.</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">Let them talk. Type or dictate — Joy will structure it and fill what it can.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <textarea value="{{ story }}" onChange="{{ onStory }}" rows="6" placeholder="Susan is calling about her dad Marcus. He's 82, lives in Houston, fell last week and is using a walker now…" style="border:1px solid rgba(0,0,0,.1);border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.65;color:#1B1B1F;outline:none;resize:vertical"></textarea>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button onClick="{{ toggleMic }}" style="{{ micStyle }}">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>{{ micLabel }}</button>
+              <button onClick="{{ runExtract }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 15px;border-radius:20px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">
+                <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>Have Joy fill this in</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ extracted }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid rgba(20,7,162,.16);background:#FDFDFF;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="width:20px;height:20px;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center;flex:none"><span style="width:5px;height:5px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span></span>
+                <span style="font-size:13.5px;font-weight:500">Joy heard this — confirm or correct</span>
+                <span style="margin-left:auto;font-size:12px;color:#9B9BA3">Nothing is saved until you accept</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                <sc-for list="{{ extractedFields }}" as="f" hint-placeholder-count="6">
+                  <div style="display:flex;flex-direction:column;gap:2px;padding:9px 12px;border:1px solid rgba(0,0,0,.06);border-radius:11px;background:#fff">
+                    <span style="font-size:11px;color:#9B9BA3">{{ f.label }}</span>
+                    <span style="font-size:13.5px;font-weight:500">{{ f.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:10px">
+                <button onClick="{{ acceptExtract }}" style="height:34px;padding:0 15px;border-radius:10px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">Accept all</button>
+                <button onClick="{{ dismissExtract }}" style="height:34px;padding:0 15px;border-radius:10px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Dismiss</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Has something recently changed?</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ changes }}" as="c" hint-placeholder-count="11"><button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:12px;font-weight:500;color:#6E6E76">Known diagnoses or conditions (optional)</span>
+            <input type="text" value="{{ dx }}" onChange="{{ onDx }}" placeholder="Type 2 diabetes, arthritis…" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+            <button onClick="{{ toggleDxUnsure }}" style="{{ dxUnsureStyle }}">Not sure</button>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isNeeds }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">What kind of help are you looking for?</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">Broad strokes only — the RN assessment goes deeper.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ helpTypes }}" as="c" hint-placeholder-count="13"><button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Daily activities — how much help is needed?</span>
+            <div style="border:1px solid rgba(0,0,0,.07);border-radius:14px;overflow:hidden">
+              <sc-for list="{{ adls }}" as="a" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:16px;padding:12px 16px;border-top:1px solid rgba(0,0,0,.05)">
+                  <span style="flex:1;min-width:0;font-size:14px;font-weight:500;letter-spacing:-.01em">{{ a.label }}</span>
+                  <div style="display:flex;gap:6px;flex:none">
+                    <sc-for list="{{ a.options }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:150px 150px 1fr;gap:16px;align-items:flex-end">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Height</span>
+              <input type="text" value="{{ height }}" onChange="{{ onHeight }}" placeholder="5'9&quot;" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Weight</span>
+              <input type="text" value="{{ weight }}" onChange="{{ onWeight }}" placeholder="180 lb" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+            <button onClick="{{ toggleHwUnknown }}" style="{{ hwUnknownStyle }}">Unknown / not sure</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Mobility</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ mobility }}" as="c" hint-placeholder-count="7"><button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Equipment in the home</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ equipment }}" as="c" hint-placeholder-count="11"><button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Memory and thinking</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ cognitive }}" as="c" hint-placeholder-count="5"><button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Will the client need transportation assistance?</span>
+            <div style="display:flex;gap:8px">
+              <sc-for list="{{ transport }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+            </div>
+            <sc-if value="{{ showTransport }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;padding:14px 16px;border:1px solid rgba(20,7,162,.14);border-radius:13px;background:#FDFDFF">
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ transportPurposes }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <span style="font-size:13px;color:#6E6E76">Does the client have a vehicle a caregiver may drive?</span>
+                  <div style="display:flex;gap:8px"><sc-for list="{{ vehicle }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Home &amp; safety</span>
+            <div style="border:1px solid rgba(0,0,0,.07);border-radius:14px;overflow:hidden">
+              <sc-for list="{{ homeQuestions }}" as="q" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:16px;padding:12px 16px;border-top:1px solid rgba(0,0,0,.05)">
+                  <span style="flex:1;min-width:0;font-size:14px">{{ q.label }}</span>
+                  <div style="display:flex;gap:6px;flex:none"><sc-for list="{{ q.options }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div>
+                </div>
+              </sc-for>
+            </div>
+            <input type="text" value="{{ homeNotes }}" onChange="{{ onHomeNotes }}" placeholder="Other home considerations caregivers should know about…" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Anything important about their routine, personality, or preferences?</span>
+            <span style="font-size:12.5px;color:#9B9BA3">This travels into the client profile so caregivers arrive already knowing them.</span>
+            <textarea value="{{ personal }}" onChange="{{ onPersonal }}" rows="3" placeholder="Loves chess. Watches the evening news at 6. Anxious around unfamiliar people…" style="border:1px solid rgba(0,0,0,.1);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.6;outline:none;resize:vertical"></textarea>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">Schedule &amp; quote</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">What they're asking for, and what you quoted on this call.</p>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">When would you like care to begin?</span>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <sc-for list="{{ startOptions }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+              <input type="date" value="{{ startDate }}" onChange="{{ onStartDate }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:13.5px;outline:none"/>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Which days?</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ days }}" as="d" hint-placeholder-count="7"><button onClick="{{ d.click }}" style="{{ d.style }}">{{ d.label }}</button></sc-for>
+            </div>
+            <sc-for list="{{ dayTimes }}" as="d" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid rgba(0,0,0,.07);border-radius:12px">
+                <span style="width:110px;flex:none;font-size:13.5px;font-weight:500">{{ d.label }}</span>
+                <input type="time" value="{{ d.start }}" onChange="{{ d.onStart }}" style="height:36px;border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:0 10px;font-size:13.5px;outline:none"/>
+                <span style="font-size:13px;color:#9B9BA3">to</span>
+                <input type="time" value="{{ d.end }}" onChange="{{ d.onEnd }}" style="height:36px;border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:0 10px;font-size:13.5px;outline:none"/>
+                <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">{{ d.hours }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Is the schedule flexible?</span>
+              <div style="display:flex;gap:8px"><sc-for list="{{ flexible }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Ongoing or respite?</span>
+              <div style="display:flex;gap:8px"><sc-for list="{{ duration }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Overnight care needed?</span>
+              <div style="display:flex;gap:8px"><sc-for list="{{ overnight }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+          </div>
+
+          <input type="text" value="{{ schedNotes }}" onChange="{{ onSchedNotes }}" placeholder="Other scheduling notes…" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/>
+
+          <div style="display:grid;grid-template-columns:220px 220px;gap:16px;padding-top:6px;border-top:1px solid rgba(0,0,0,.06)">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Quoted hourly rate</span>
+              <input type="number" value="{{ rate }}" onChange="{{ onRate }}" placeholder="30" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Minimum shift</span>
+              <input type="text" value="{{ minShift }}" onChange="{{ onMinShift }}" placeholder="4 hours" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:22px;padding:18px 20px;border:1px solid rgba(20,7,162,.14);background:#FBFAFE;border-radius:14px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">ESTIMATED SCHEDULE</span>
+              <span style="font-size:14px;font-weight:500">{{ estSchedule }}</span>
+              <span style="font-size:13px;color:#6E6E76">{{ estHours }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;margin-left:auto;text-align:right">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">ESTIMATED CARE COST</span>
+              <span style="font-size:22px;font-weight:500;letter-spacing:-.02em">{{ estCost }}</span>
+              <span style="font-size:12px;color:#9B9BA3">Estimate only — not a final invoice</span>
+            </div>
+          </div>
+          <span style="font-size:12px;color:#9B9BA3">Quote logged by Karynn Reed · Aug 23, 10:11 AM · assumptions saved with this record</span>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isPayment }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">How do you plan to pay for care?</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">No card details on this call — billing setup happens at admission.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <sc-for list="{{ payment }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+          </div>
+          <sc-if value="{{ showLtc }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:flex-end;gap:14px;padding:16px 18px;border:1px solid rgba(20,7,162,.14);border-radius:13px;background:#FDFDFF;flex-wrap:wrap">
+              <label style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:260px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Long-term care insurance company</span>
+                <input type="text" value="{{ ltcCompany }}" onChange="{{ onLtcCompany }}" placeholder="Genworth, John Hancock…" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              <button onClick="{{ toggleLtcUnknown }}" style="{{ ltcUnknownStyle }}">I don't know yet</button>
+              <span style="flex-basis:100%;font-size:12px;color:#9B9BA3">Policy and claim numbers come later, at admission.</span>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Who will be financially responsible for services?</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ responsibleOptions }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;padding:14px 18px;border:1px solid rgba(0,0,0,.07);border-radius:13px;background:#FCFCFD;align-self:flex-start;min-width:280px">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">RESPONSIBLE PARTY</span>
+              <span style="font-size:14.5px;font-weight:500">{{ respName }}</span>
+              <span style="font-size:13px;color:#6E6E76">{{ respPhone }}</span>
+              <span style="font-size:13px;color:#6E6E76">{{ respEmail }}</span>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isAssessment }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:26px 28px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.02em">Would you like to schedule the in-person assessment?</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">This is the first point we ask for the full address.</p>
+          </div>
+          <div style="display:flex;gap:10px">
+            <sc-for list="{{ assessOptions }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+          </div>
+
+          <sc-if value="{{ assessYes }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:grid;grid-template-columns:1fr 140px;gap:14px">
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Street address</span>
+                  <input type="text" value="{{ street }}" onChange="{{ onStreet }}" placeholder="3704 Harmon Ave" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Apt / unit</span>
+                  <input type="text" value="{{ unit }}" onChange="{{ onUnit }}" placeholder="2B" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 120px 140px;gap:14px">
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">City</span>
+                  <input type="text" value="{{ city }}" onChange="{{ onCity }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">State</span>
+                  <input type="text" value="{{ stateVal }}" onChange="{{ onState }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">ZIP</span>
+                  <input type="text" value="{{ zip }}" onChange="{{ onZip }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Gate / access instructions</span>
+                  <input type="text" value="{{ access }}" onChange="{{ onAccess }}" placeholder="Gate code 4412" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Parking notes</span>
+                  <input type="text" value="{{ parking }}" onChange="{{ onParking }}" placeholder="Driveway on the left" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              </div>
+              <div style="display:grid;grid-template-columns:200px 180px 1fr;gap:14px;align-items:flex-end">
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Assessment date</span>
+                  <input type="date" value="{{ assessDate }}" onChange="{{ onAssessDate }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Time</span>
+                  <input type="time" value="{{ assessTime }}" onChange="{{ onAssessTime }}" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+                <span style="font-size:12.5px;color:#9B9BA3;padding-bottom:11px">Joan Robinson, RN is available this window.</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:14.5px;font-weight:500;letter-spacing:-.01em">Who will be present?</span>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ attendees }}" as="a" hint-placeholder-count="3"><button onClick="{{ a.click }}" style="{{ a.style }}">{{ a.label }}</button></sc-for>
+                </div>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Anything we should know before arriving?</span>
+                <input type="text" value="{{ preVisit }}" onChange="{{ onPreVisit }}" placeholder="Dog in the backyard, ring the side bell…" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ assessNo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:18px 20px;border:1px solid rgba(0,0,0,.07);border-radius:14px;background:#FCFCFD">
+              <span style="font-size:13.5px;color:#3A3A42">That's fine — Joy will carry the follow-up so nobody has to remember it.</span>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Reason / notes</span>
+                <input type="text" value="{{ followReason }}" onChange="{{ onFollowReason }}" placeholder="Wants to talk it over with her brother first" style="height:40px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-size:14px;outline:none"/></label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Follow up in</span>
+                  <div style="display:flex;gap:8px"><sc-for list="{{ followWhen }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:500;color:#6E6E76">Preferred method</span>
+                  <div style="display:flex;gap:8px"><sc-for list="{{ followHow }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.click }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <section style="{{ readyStyle }}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:14.5px;font-weight:600;letter-spacing:-.015em;white-space:nowrap">{{ readyTitle }}</span>
+              <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Optional items never block completion</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px 26px;margin-top:14px">
+              <sc-for list="{{ checklist }}" as="c" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="{{ c.iconStyle }}">{{ c.icon }}</span>
+                  <span style="{{ c.labelStyle }}">{{ c.label }}</span>
+                  <sc-if value="{{ c.action }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ c.fix }}" style="margin-left:auto;background:transparent;border:none;padding:0;font-family:inherit;font-size:12.5px;font-weight:500;color:#1407A2;cursor:pointer">{{ c.actionLabel }}</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+
+          <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:30px 34px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">INTAKE SUMMARY · WRITTEN BY JOY</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <h2 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.025em">{{ summaryName }}</h2>
+              <span style="font-size:14px;color:#8A8A92">{{ summaryMeta }}</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">SITUATION</span>
+              <p style="margin:0;font-size:15px;line-height:1.7;color:#3A3A42;max-width:760px;text-wrap:pretty">{{ summarySituation }}</p>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CARE REQUESTED</span>
+                <span style="font-size:14.5px;line-height:1.6;color:#3A3A42">{{ summaryHelp }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CURRENT NEEDS</span>
+                <sc-for list="{{ summaryNeeds }}" as="n" hint-placeholder-count="4">
+                  <span style="font-size:14px;color:#3A3A42">{{ n.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;padding-top:18px;border-top:1px solid rgba(0,0,0,.06)">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">SCHEDULE DISCUSSED</span>
+                <span style="font-size:14.5px;color:#3A3A42">{{ estSchedule }}</span>
+                <span style="font-size:14px;font-weight:500">{{ estHours }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">QUOTE PROVIDED</span>
+                <span style="font-size:14.5px;color:#3A3A42">{{ summaryRate }}</span>
+                <span style="font-size:14px;font-weight:500">{{ estCost }}</span>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;padding-top:18px;border-top:1px solid rgba(0,0,0,.06)">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">PAYMENT</span>
+                <span style="font-size:14.5px;color:#3A3A42">{{ summaryPayment }}</span>
+                <span style="font-size:14px;color:#6E6E76">Responsible party · {{ respName }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">ASSESSMENT</span>
+                <span style="font-size:14.5px;color:#3A3A42">{{ summaryAssessment }}</span>
+                <span style="font-size:14px;color:#6E6E76">{{ summaryAttendees }}</span>
+              </div>
+            </div>
+
+            <sc-if value="{{ hasPersonal }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px;padding-top:18px;border-top:1px solid rgba(0,0,0,.06)">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">PERSONAL NOTES</span>
+                <span style="font-size:14.5px;line-height:1.6;color:#3A3A42">{{ personal }}</span>
+              </div>
+            </sc-if>
+          </section>
         </div>
-      </aside>
+      </sc-if>
+
+      <section style="display:flex;align-items:center;gap:12px">
+        <button onClick="{{ back }}" style="{{ backStyle }}">← Back</button>
+        <span style="font-size:12.5px;color:#9B9BA3;margin-left:4px">Autosaves as you go — you can leave and pick this up later.</span>
+        <button onClick="{{ next }}" style="margin-left:auto;height:40px;padding:0 20px;border-radius:12px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">{{ nextLabel }}</button>
+      </section>
     </div>
-  </sc-if>
-
+  </main>
 </div>
-
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{}">
-const CLIENT = 'Marcus Bell';
-const CALLER = 'Susan Bell';
-
-const NEEDS = ['Bathing', 'Dressing', 'Feeding', 'Toileting', 'Mobility', 'Housekeeping', 'Transportation', 'Shopping / errands', 'Companionship', 'Other'];
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const QUESTIONS = [
-  { id: 'callerKnown', section: 'Caller', kind: 'known', question: 'We already have a few details.',
-    helper: 'Confirm these and we\u2019ll move on.',
-    rows: [['Caller', CALLER], ['Relationship', 'Daughter'], ['Phone', '(412) 555-0198'], ['Email', 'susan.bell@example.com']] },
-  { id: 'relationship', section: 'Caller', kind: 'single', question: 'What is Susan\u2019s relationship to Marcus?',
-    options: ['Self', 'Spouse / partner', 'Daughter / son', 'Other family', 'Friend', 'Guardian / representative', 'Facility / provider', 'Other'] },
-  { id: 'clientKnown', section: 'Client', kind: 'known', question: 'The lead is for Marcus Bell.',
-    rows: [['Client', CLIENT], ['Age', '81'], ['Service requested', 'Personal care']] },
-  { id: 'source', section: 'Client', kind: 'single', question: 'How did they hear about Joy Health?',
-    options: ['Family / word of mouth', 'Hospital or facility', 'Physician referral', 'Website', 'Online search', 'Existing client', 'Other'] },
-  { id: 'living', section: 'Client', kind: 'single', question: 'What is Marcus\u2019s current living situation?',
-    options: ['Lives alone at home', 'Lives with spouse / child / family', 'Care facility', 'Other'] },
-  { id: 'reason', section: 'Clinical snapshot', kind: 'text', question: 'What is happening that made the family look for care?',
-    helper: 'Their words are more useful than a summary.', placeholder: 'What changed recently\u2026' },
-  { id: 'diagnosis', section: 'Clinical snapshot', kind: 'single', question: 'Did the caller mention a primary diagnosis?',
-    helper: 'Only what the caller said — Joy does not infer a diagnosis.',
-    options: ['Yes', 'No / not provided'] },
-  { id: 'diagnosisText', section: 'Clinical snapshot', kind: 'text', onlyIf: ['diagnosis', 'Yes'],
-    question: 'What diagnosis did they mention?', helper: 'Recorded as caller-reported.', placeholder: 'e.g. Parkinson\u2019s disease' },
-  { id: 'dme', section: 'Clinical snapshot', kind: 'text', optional: true,
-    question: 'Anything about mobility or equipment the RN should know before the visit?',
-    helper: 'Walker, wheelchair, hospital bed, oxygen, lift, other equipment.', placeholder: 'Nothing mentioned' },
-  { id: 'needs', section: 'Care needs', kind: 'multi', question: 'What does Marcus need help with?', options: NEEDS },
-  { id: 'needsNote', section: 'Care needs', kind: 'text', optional: true,
-    question: 'Anything else we should know about these needs?', placeholder: 'Optional note\u2026' },
-  { id: 'matters', section: 'What matters most', kind: 'text',
-    question: 'What is most important to Susan when choosing a home care agency?',
-    helper: 'Capture this in their own words when possible.', placeholder: '\u201cConsistency \u2014 my dad gets anxious with unfamiliar people\u2026\u201d' },
-  { id: 'days', section: 'Requested schedule', kind: 'chips', question: 'Which days are you looking for care?', options: DAYS },
-  { id: 'schedule', section: 'Requested schedule', kind: 'schedule', question: 'What days and times are you looking for?',
-    helper: 'Get as specific as the caller can be. If they only know “about four hours a day” or “mornings,” capture that instead — the RN confirms exact times at the assessment.' },
-  { id: 'start', section: 'Requested schedule', kind: 'single', question: 'When would you like care to begin?',
-    options: ['As soon as possible', 'Pick a date', 'Not sure yet'] },
-  { id: 'payment', section: 'Payment', kind: 'single', question: 'How do they expect to pay for care?',
-    helper: 'The client always pays Joy Health directly. With LTC insurance they submit for reimbursement, so we still need a card or bank account on file.',
-    options: ['Self Pay', 'Self Pay + LTC Insurance', 'Not sure yet'] },
-  { id: 'notes', section: 'Notes', kind: 'text', optional: true,
-    question: 'Anything else the team should know before the RN assessment?',
-    helper: 'Internal note — the family won\u2019t see this.', placeholder: 'Optional\u2026' }
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1080}}">
+const STEPS = [
+  { id: 'basics', label: 'Basics' },
+  { id: 'contacts', label: 'Contacts' },
+  { id: 'situation', label: 'Situation' },
+  { id: 'needs', label: 'Care Needs' },
+  { id: 'schedule', label: 'Schedule & Quote' },
+  { id: 'payment', label: 'Payment' },
+  { id: 'assessment', label: 'Schedule Assessment' },
+  { id: 'review', label: 'Review' }
 ];
 
-const CARRIERS = ['Genworth', 'John Hancock', 'Mutual of Omaha', 'Transamerica', 'Bankers Life', 'MassMutual', 'New York Life', 'Northwestern Mutual', 'Other — write in'];
+const ADL_ROWS = ['Bathing', 'Dressing', 'Toileting', 'Transfers', 'Eating / feeding', 'Walking / ambulation'];
+const ADL_CHOICES = ['Independent', 'Needs help', 'Full assist', 'Unsure'];
+const HOME_ROWS = ['Does the client live alone?', 'Pets in the home?', 'Stairs?', 'Smoker in the home?', 'Any known safety concerns?'];
+const DAY_NAMES = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday' };
 
-const GAP_IDS = ['matters', 'schedule', 'payment'];
-
-const CAPTURED = [
-  { label: 'Caller: Susan Bell · daughter', note: '(412) 555-0198 · susan.bell@example.com' },
-  { label: 'Marcus lives alone at home', note: 'Caller mentioned he manages most mornings alone' },
-  { label: 'Needs help bathing and with mobility', note: 'Can dress himself — Dressing not checked' },
-  { label: 'Two recent falls mentioned', note: 'Within the last month · caller reported' },
-  { label: 'Parkinson\u2019s disease — reported by daughter', note: 'Caller-reported, not a Joy diagnosis' },
-  { label: 'Uses a walker', note: 'Noted for the RN visit' },
-  { label: 'Looking for weekday mornings', note: 'Mon–Fri · roughly 4 hours a day' }
+const EXTRACTED = [
+  ['Caller', 'Susan · daughter'], ['Client', 'Marcus Bell · 82'], ['Situation', 'Recent fall'],
+  ['Mobility', 'Uses walker'], ['Bathing', 'Needs help'], ['Dressing', 'Needs help'],
+  ['Days', 'Mon / Wed / Fri'], ['Times', '8:00 AM–12:00 PM'], ['Payment', 'Private pay · $30/hr quoted']
 ];
-
-const STILL_NEED = [
-  { label: 'What matters most when choosing an agency' },
-  { label: 'Exact days and time windows' },
-  { label: 'Payment source' }
-];
-
-const CLOSE_REASONS = ['Not a service fit', 'Outside service area', 'Unable to meet requested schedule', 'Payer / financial mismatch', 'Family declined', 'Unable to reach', 'Duplicate', 'Other'];
-const FOLLOW_REASONS = ['Unable to reach', 'Family declined'];
-
-const PRE_ITEMS = [
-  { id: 'meds', label: 'Medication list', note: 'Not provided yet' },
-  { id: 'phys', label: 'Physician list', note: '' },
-  { id: 'ins', label: 'Insurance / payer information', note: 'Private pay — may not apply' },
-  { id: 'ad', label: 'Advance directive information', note: '' },
-  { id: 'disch', label: 'Relevant discharge paperwork', note: '' },
-  { id: 'other', label: 'Other', note: '' }
-];
-
-const TIMES = (() => {
-  const out = [];
-  for (let h = 0; h < 24; h++) for (const mm of ['00', '30']) {
-    const ampm = h < 12 ? 'AM' : 'PM';
-    const hr = h % 12 === 0 ? 12 : h % 12;
-    out.push({ v: hr + ':' + mm + ' ' + ampm, mins: h * 60 + (mm === '30' ? 30 : 0) });
-  }
-  return out;
-})();
-const TIME_MINS = {};
-TIMES.forEach(t => { TIME_MINS[t.v] = t.mins; });
-
-const PARTS = [
-  { label: 'Mornings', window: '8:00 AM – 12:00 PM', hrs: 4 },
-  { label: 'Afternoons', window: '12:00 PM – 4:00 PM', hrs: 4 },
-  { label: 'Evenings', window: '4:00 PM – 8:00 PM', hrs: 4 },
-  { label: 'Overnights', window: '8:00 PM – 8:00 AM', hrs: 12 }
-];
-
-const SCHED_MODES = [
-  { id: 'exact', label: 'Specific times', hint: 'They know the window' },
-  { id: 'hours', label: 'Hours per day', hint: '“About 4 hours a day”' },
-  { id: 'part', label: 'Part of day', hint: '“Mornings,” “overnights”' }
-];
-
-const DAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const blankSched = () => {
-  const days = {};
-  DAY_KEYS.forEach(d => { days[d] = { on: false, start: '8:00 AM', end: '1:00 PM', hrs: 4, part: 'Mornings' }; });
-  return { mode: 'exact', days: days };
-};
-
-const LEAD_SEED = {
-  callerKnown: 'ok', relationship: 'Daughter / son', clientKnown: 'ok',
-  source: 'Family / word of mouth',
-  living: '', reason: '', diagnosis: '', diagnosisText: '', dme: '',
-  needs: [], needsNote: '', matters: '', days: [],
-  sched: blankSched(), start: '', payment: '',
-  ltciCarrier: '', ltciCarrierOther: '', ltciPolicy: '', notes: ''
-};
-
-const CONVERSATION_SEED = {
-  living: 'Lives alone at home',
-  reason: 'Susan reports two recent falls and increasing difficulty with bathing and walking safely around the home.',
-  diagnosis: 'Yes', diagnosisText: 'Parkinson\u2019s disease',
-  dme: 'Uses a walker.',
-  needs: ['Bathing', 'Mobility', 'Housekeeping', 'Companionship'],
-  days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-  sched: (() => {
-    const sc = blankSched();
-    sc.mode = 'hours';
-    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].forEach(d => { sc.days[d] = { on: true, start: '8:00 AM', end: '12:00 PM', hrs: 4, part: 'Mornings' }; });
-    return sc;
-  })(),
-  start: 'As soon as possible'
-};
 
 class Component extends DCLogic {
   state = {
-    stage: 'welcome', mode: null, qIdx: 0, gapIdx: 0,
-    answers: Object.assign({}, LEAD_SEED, { needs: [], days: [], sched: blankSched() }),
-    guideOpen: false, previewOpen: false, previewMenu: false,
-    closeReason: null, followMethod: 'Phone call', returnTo: null,
-    pre: { meds: true }, notify: { caller: true, client: false },
-    notifyFailed: false, saving: false
+    step: 0, saved: 'Saved', listen: 'idle',
+    legalName: 'Marcus Bell', prefName: 'Marc', age: '82', zip: '77027', city: 'Houston', stateVal: 'TX',
+    phone: '(713) 555-1234', method: 'Phone',
+    c1Email: '', c1Best: 'Mornings', c1Text: 'Yes',
+    hasC2: 'Yes', c2Name: 'Susan Miller', c2Rel: 'Daughter', c2Phone: '(713) 555-9088', c2Email: 'susan@example.com',
+    c2Method: 'Text', c2Roles: { 'Person we are speaking with': true, 'Involved in care decisions': true, 'Financially responsible': true },
+    story: '', mic: false, extracted: false,
+    changes: { 'Recent fall': true }, dx: '', dxUnsure: false,
+    help: { 'Personal care': true, 'Meal preparation': true, 'Companionship': true, 'Mobility assistance': true, 'Transportation': true },
+    adl: { Bathing: 'Needs help', Dressing: 'Needs help' },
+    height: '', weight: '', hwUnknown: false,
+    mobility: 'Uses walker', equipment: { Walker: true }, cognitive: 'No known concerns',
+    transport: 'Yes', transportPurposes: { 'Medical appointments': true }, vehicle: 'Yes',
+    home: { 'Does the client live alone?': 'Yes' }, homeNotes: '',
+    personal: 'Values consistency and becomes anxious around unfamiliar people. Loves chess.',
+    start: 'ASAP', startDate: '2026-08-31',
+    days: { Mon: true, Wed: true, Fri: true },
+    times: { Mon: ['08:00', '12:00'], Wed: ['08:00', '12:00'], Fri: ['08:00', '12:00'] },
+    flexible: 'Somewhat', duration: 'Ongoing', overnight: 'No',
+    schedNotes: '', rate: '30', minShift: '4 hours',
+    payment: 'Private pay', ltcCompany: '', ltcUnknown: false, responsible: 'Susan Miller — Daughter',
+    assess: 'Yes', street: '3704 Harmon Ave', unit: '', access: '', parking: '',
+    assessDate: '2026-08-25', assessTime: '10:30', attendees: { 'Marcus Bell — Client': true, 'Susan Miller — Daughter': true },
+    preVisit: '', followReason: '', followWhen: 'A few days', followHow: 'Phone'
   };
 
-  set(id, value) { this.setState(s => ({ answers: Object.assign({}, s.answers, { [id]: value }), saving: true }), () => {
-    setTimeout(() => this.setState({ saving: false }), 700);
-  }); }
-
-  toggleIn(id, value) {
-    const cur = this.state.answers[id] || [];
-    const nxt = cur.indexOf(value) < 0 ? cur.concat([value]) : cur.filter(v => v !== value);
-    this.set(id, nxt);
+  set(k, v) { this.setState({ [k]: v, saved: 'Saving…' }); setTimeout(() => this.setState({ saved: 'Saved' }), 500); }
+  onText(k) { return (e) => this.set(k, e.target.value); }
+  toggleIn(k, key) {
+    const cur = this.state[k] || {};
+    this.set(k, Object.assign({}, cur, { [key]: !cur[key] }));
   }
-
-  sched() { return this.state.answers.sched || blankSched(); }
-
-  setSched(mut) {
-    const cur = this.sched();
-    const next = { mode: cur.mode, days: {} };
-    DAY_KEYS.forEach(d => { next.days[d] = Object.assign({}, cur.days[d]); });
-    mut(next);
-    this.set('sched', next);
-    this.set('days', DAY_KEYS.filter(d => next.days[d].on));
+  chip(active, opts) {
+    const o = opts || {};
+    return 'font-family:inherit;font-size:' + (o.size || '12.5px') + ';font-weight:' + (active ? '500' : '400') +
+      ';padding:' + (o.pad || '8px 14px') + ';border-radius:20px;cursor:pointer;white-space:nowrap;border:1px solid ' +
+      (active ? 'rgba(20,7,162,.32)' : 'rgba(0,0,0,.1)') + ';background:' + (active ? '#EFEDFB' : '#fff') +
+      ';color:' + (active ? '#1407A2' : '#6E6E76');
   }
-
-  dayHours(d, mode) {
-    if (!d.on) return 0;
-    if (mode === 'hours') return Number(d.hrs) || 0;
-    if (mode === 'part') {
-      const p = PARTS.filter(p => p.label === d.part);
-      return p.length ? p[0].hrs : 0;
-    }
-    let mins = TIME_MINS[d.end] - TIME_MINS[d.start];
-    if (mins <= 0) mins += 24 * 60;
-    return mins / 60;
+  single(k, list, opts) {
+    return list.map(l => ({ key: l, label: l, click: () => this.set(k, l), style: this.chip(this.state[k] === l, opts) }));
   }
-
-  weeklyHours() {
-    const sc = this.sched();
-    return DAY_KEYS.reduce((a, k) => a + this.dayHours(sc.days[k], sc.mode), 0);
+  multi(k, list, opts) {
+    return list.map(l => ({ key: l, label: l, click: () => this.toggleIn(k, l), style: this.chip(!!(this.state[k] || {})[l], opts) }));
   }
-
-  schedRange() {
-    const sc = this.sched();
-    const on = DAY_KEYS.filter(k => sc.days[k].on);
-    if (!on.length) return '';
-    const contiguous = DAY_KEYS.indexOf(on[on.length - 1]) - DAY_KEYS.indexOf(on[0]) === on.length - 1;
-    const dayLabel = on.length === 7 ? 'Every day' : contiguous && on.length > 2 ? on[0] + '–' + on[on.length - 1] : on.join(', ');
-    const same = on.every(k => {
-      const d = sc.days[k], f0 = sc.days[on[0]];
-      return sc.mode === 'exact' ? (d.start === f0.start && d.end === f0.end)
-        : sc.mode === 'hours' ? String(d.hrs) === String(f0.hrs) : d.part === f0.part;
-    });
-    const f0 = sc.days[on[0]];
-    const detail = sc.mode === 'exact' ? f0.start + ' – ' + f0.end
-      : sc.mode === 'hours' ? (Number(f0.hrs) || 0) + ' hrs/day, time of day flexible'
-      : f0.part.toLowerCase();
-    return dayLabel + ' · ' + (same ? detail : 'varies by day');
+  hoursFor(d) {
+    const t = this.state.times[d];
+    if (!t) return 0;
+    const a = t[0].split(':'), b = t[1].split(':');
+    const h = (parseInt(b[0], 10) * 60 + parseInt(b[1], 10) - parseInt(a[0], 10) * 60 - parseInt(a[1], 10)) / 60;
+    return h > 0 ? h : 0;
   }
-
-  visibleQuestions() {
-    const a = this.state.answers;
-    return QUESTIONS.filter(q => !q.onlyIf || a[q.onlyIf[0]] === q.onlyIf[1]);
-  }
-
-  activeQuestion() {
-    const s = this.state;
-    if (s.stage === 'gaps') return QUESTIONS.find(q => q.id === GAP_IDS[s.gapIdx]);
-    if (s.stage === 'manual') {
-      const list = this.visibleQuestions();
-      return list[Math.min(s.qIdx, list.length - 1)];
-    }
-    return null;
-  }
-
-  next() {
-    const s = this.state;
-    if (s.returnTo === 'summary') { this.setState({ stage: 'summary', returnTo: null }); return; }
-    if (s.stage === 'gaps') {
-      if (s.gapIdx + 1 < GAP_IDS.length) this.setState({ gapIdx: s.gapIdx + 1 });
-      else this.setState({ stage: 'summary' });
-      return;
-    }
-    if (s.qIdx + 1 < this.visibleQuestions().length) this.setState({ qIdx: s.qIdx + 1 });
-    else this.setState({ stage: 'summary' });
-  }
-
-  back() {
-    const s = this.state;
-    if (s.returnTo === 'summary') { this.setState({ stage: 'summary', returnTo: null }); return; }
-    if (s.stage === 'gaps') {
-      if (s.gapIdx > 0) this.setState({ gapIdx: s.gapIdx - 1 });
-      else this.setState({ stage: 'ai' });
-      return;
-    }
-    if (s.qIdx > 0) this.setState({ qIdx: s.qIdx - 1 });
-    else this.setState({ stage: 'welcome' });
-  }
-
-  choiceStyle(selected) {
-    return 'display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:15px 17px;border-radius:12px;cursor:pointer;background:' +
-      (selected ? '#F7F8FE' : '#FFFFFF') + ';border:1px solid ' + (selected ? '#1407A2' : '#ECECF1') +
-      ';color:#191A2E;transition:border-color .12s ease';
-  }
-
-  markStyle(selected, round) {
-    return 'width:20px;height:20px;flex:none;border-radius:' + (round ? '50%' : '6px') +
-      ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:' +
-      (selected ? '#FFFFFF' : 'transparent') + ';background:' + (selected ? '#1407A2' : '#FFFFFF') +
-      ';border:1px solid ' + (selected ? '#1407A2' : '#E4E4EA');
-  }
-
-  summaryRows() {
-    const a = this.state.answers;
-    const jump = (id) => () => {
-      const gi = GAP_IDS.indexOf(id);
-      if (gi >= 0 && this.state.mode === 'ai') this.setState({ stage: 'gaps', gapIdx: gi, returnTo: 'summary' });
-      else this.setState({ stage: 'manual', qIdx: Math.max(0, this.visibleQuestions().findIndex(q => q.id === id)), returnTo: 'summary' });
-    };
-    return [
-      { key: 's1', label: 'Caller', value: CALLER + ' · Daughter', sub: '(412) 555-0198 · susan.bell@example.com', edit: jump('relationship') },
-      { key: 's2', label: 'Living situation', value: a.living || 'Not captured', sub: 'Lead source: ' + (a.source || '—'), edit: jump('living') },
-      { key: 's3', label: 'Why care is needed', value: a.reason || 'Not captured', sub: a.diagnosis === 'Yes' && a.diagnosisText ? 'Diagnosis as reported: ' + a.diagnosisText : 'No diagnosis provided', edit: jump('reason') },
-      { key: 's4', label: 'Care needs', value: (a.needs || []).join(' · ') || 'None selected', sub: a.dme ? 'Mobility / equipment: ' + a.dme : '', edit: jump('needs') },
-      { key: 's5', label: 'What matters most', value: a.matters || 'Not captured yet', sub: a.matters ? 'Captured in the caller\u2019s words' : 'Needs confirmation', edit: jump('matters') },
-      { key: 's6', label: 'Requested schedule', value: this.schedRange() || 'Not captured yet',
-        sub: (this.weeklyHours() ? 'About ' + Math.round(this.weeklyHours() * 10) / 10 + ' hrs/week' : 'Hours not confirmed') +
-          (this.sched().mode === 'exact' ? ' · exact times given' : this.sched().mode === 'hours' ? ' · exact times to be set at assessment' : ' · time of day only') +
-          ' · start: ' + (a.start || '—').toLowerCase(),
-        edit: jump('schedule') },
-      { key: 's7', label: 'Payment', value: a.payment || 'Not captured yet',
-        sub: a.payment === 'Self Pay + LTC Insurance'
-          ? 'Carrier: ' + ((a.ltciCarrier === 'Other — write in' ? a.ltciCarrierOther : a.ltciCarrier) || 'not captured') + (a.ltciPolicy ? ' · policy ' + a.ltciPolicy : '') + ' — client pays us, then submits for reimbursement'
-          : a.payment === 'Self Pay' ? 'Card or bank account collected before the first shift' : '',
-        edit: jump('payment') },
-      { key: 's8', label: 'Assessment', value: 'Not yet scheduled', sub: 'Scheduled after you complete the intake', edit: () => this.setState({ stage: 'decision' }) }
-    ];
-  }
-
-  needsReviewList() {
-    const a = this.state.answers;
-    const out = [];
-    if (!a.matters) out.push({ key: 'r1', label: 'What matters most not captured', why: 'Ask before completing the intake' });
-    if (!this.weeklyHours()) out.push({ key: 'r2', label: 'Schedule not captured', why: 'No days or hours confirmed yet' });
-    else if (this.sched().mode !== 'exact') out.push({ key: 'r2b', label: 'Exact times not set', why: this.sched().mode === 'hours' ? 'Caller gave hours per day only — RN confirms the window at the assessment' : 'Caller gave part of day only — RN confirms the window at the assessment' });
-    if (!a.payment) out.push({ key: 'r3', label: 'Payment source not confirmed', why: 'Caller did not state a payment source' });
-    else if (a.payment === 'Self Pay + LTC Insurance' && !a.ltciCarrier) out.push({ key: 'r3b', label: 'LTC insurance carrier not captured', why: 'Needed for the reimbursement packet' });
-    return out;
-  }
-
   renderVals() {
     const s = this.state;
-    const a = s.answers;
-    const q = this.activeQuestion();
-    const review = this.needsReviewList();
-    const sc = this.sched();
-
-    let qv = {};
-    if (q) {
-      const isGap = s.stage === 'gaps';
-      const total = isGap ? GAP_IDS.length : this.visibleQuestions().length;
-      const idx = isGap ? s.gapIdx : Math.min(s.qIdx, total - 1);
-      const val = a[q.id];
-      const single = q.kind === 'single', multi = q.kind === 'multi', chips = q.kind === 'chips';
-      qv = {
-        number: (isGap ? 'Confirm ' : '') + String(idx + 1).padStart(2, '0'),
-        section: q.section, question: q.question,
-        hasHelper: !!q.helper, helper: q.helper || '',
-        isGap: isGap,
-        isKnown: q.kind === 'known', isSingle: single, isMulti: multi, isChips: chips,
-        isText: q.kind === 'text', isNumber: q.kind === 'number', isSchedule: q.kind === 'schedule',
-        optional: !!q.optional,
-        knownRows: (q.rows || []).map((r, i) => ({ key: 'k' + i, label: r[0], value: r[1] })),
-        choices: (q.options || []).map(o => {
-          const sel = multi || chips ? (val || []).indexOf(o) >= 0 : val === o;
-          return {
-            key: o, label: o,
-            mark: sel ? (single ? '●' : '✓') : '',
-            markStyle: this.markStyle(sel, single),
-            style: chips
-              ? 'height:44px;padding:0 20px;border-radius:999px;font-size:14.5px;cursor:pointer;background:' + (sel ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (sel ? '#1407A2' : '#ECECF1') + ';color:' + (sel ? '#FFFFFF' : '#191A2E')
-              : this.choiceStyle(sel),
-            pick: () => {
-              if (q.id === 'days') {
-                const on = (a.days || []).indexOf(o) < 0;
-                this.setSched(n => { n.days[o].on = on; });
-                return;
-              }
-              if (multi || chips) this.toggleIn(q.id, o);
-              else if (q.id === 'payment' && o === 'Self Pay + LTC Insurance') this.set(q.id, o);
-              else { this.set(q.id, o); setTimeout(() => this.next(), 180); }
-            }
-          };
-        }),
-        textValue: val || '',
-        placeholder: q.placeholder || '',
-        hasEstimate: false, estimate: '',
-        hasHeard: q.kind === 'schedule' && s.mode === 'ai',
-        heard: 'Joy heard \u201cMon\u2013Fri mornings, maybe four hours a day.\u201d Set exact windows if Susan knows them.',
-        modes: SCHED_MODES.map(mo => ({
-          key: mo.id, label: mo.label, hint: mo.hint,
-          pick: () => this.setSched(n => { n.mode = mo.id; }),
-          style: 'flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:11px 14px;border-radius:12px;cursor:pointer;text-align:left;background:' +
-            (sc.mode === mo.id ? '#F7F8FE' : '#FFFFFF') + ';border:1px solid ' + (sc.mode === mo.id ? '#1407A2' : '#ECECF1')
-        })),
-        times: TIMES.map(t => ({ key: t.v, v: t.v })),
-        dayRows: DAY_KEYS.map(k => {
-          const d = sc.days[k];
-          const hrs = this.dayHours(d, sc.mode);
-          return {
-            key: k, abbr: k, on: d.on, off: !d.on,
-            isExact: d.on && sc.mode === 'exact',
-            isHours: d.on && sc.mode === 'hours',
-            isPart: d.on && sc.mode === 'part',
-            rowStyle: 'display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F3F3F6;background:' + (d.on ? '#FFFFFF' : '#FCFCFD'),
-            chipStyle: 'width:46px;height:32px;flex:none;border-radius:9px;font-size:12.5px;font-weight:500;cursor:pointer;background:' +
-              (d.on ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (d.on ? '#1407A2' : '#E4E4EA') + ';color:' + (d.on ? '#FFFFFF' : '#9B9BA3'),
-            toggle: () => this.setSched(n => { n.days[k].on = !n.days[k].on; }),
-            start: d.start, end: d.end, hrsValue: String(d.hrs),
-            onStart: (e) => { const v = e.target.value; this.setSched(n => { n.days[k].start = v; }); },
-            onEnd: (e) => { const v = e.target.value; this.setSched(n => { n.days[k].end = v; }); },
-            onHrs: (e) => { const v = e.target.value; this.setSched(n => { n.days[k].hrs = v; }); },
-            parts: PARTS.map(p => ({
-              key: p.label, label: p.label.replace(/s$/, ''),
-              pick: () => this.setSched(n => { n.days[k].part = p.label; }),
-              style: 'height:30px;padding:0 12px;border-radius:999px;font-size:12.5px;cursor:pointer;background:' +
-                (d.part === p.label ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (d.part === p.label ? '#1407A2' : '#ECECF1') + ';color:' + (d.part === p.label ? '#FFFFFF' : '#5B6274')
-            })),
-            partWindow: d.on && sc.mode === 'part' ? (PARTS.filter(p => p.label === d.part)[0] || {}).window || '' : '',
-            dur: d.on ? (Math.round(hrs * 10) / 10) + ' hrs' : '',
-            durStyle: 'margin-left:auto;flex:none;font-size:12.5px;color:' + (d.on ? '#8A8A92' : 'transparent')
-          };
-        }),
-        anyDay: DAY_KEYS.some(k => sc.days[k].on),
-        applyAll: () => this.setSched(n => {
-          const on = DAY_KEYS.filter(k => n.days[k].on);
-          if (!on.length) return;
-          const f0 = n.days[on[0]];
-          on.forEach(k => { n.days[k] = { on: true, start: f0.start, end: f0.end, hrs: f0.hrs, part: f0.part }; });
-        }),
-        presetWeekdays: () => this.setSched(n => { DAY_KEYS.forEach(k => { n.days[k].on = k !== 'Sat' && k !== 'Sun'; }); }),
-        presetAll: () => this.setSched(n => { DAY_KEYS.forEach(k => { n.days[k].on = true; }); }),
-        schedSummary: this.schedRange() || 'No days selected yet',
-        weeklyTotal: (Math.round(this.weeklyHours() * 10) / 10) + ' hrs/week',
-        weeklyNote: sc.mode === 'exact' ? 'Exact windows — bills as scheduled'
-          : sc.mode === 'hours' ? 'Hours only — RN sets the window at the assessment'
-          : 'Part of day only — RN sets the window at the assessment',
-        showLtci: q.id === 'payment' && a.payment === 'Self Pay + LTC Insurance',
-        carriers: CARRIERS.map(c => ({ key: c, v: c })),
-        ltciCarrier: a.ltciCarrier || '',
-        onCarrier: (e) => this.set('ltciCarrier', e.target.value),
-        carrierIsOther: a.ltciCarrier === 'Other — write in',
-        ltciCarrierOther: a.ltciCarrierOther || '',
-        onCarrierOther: (e) => this.set('ltciCarrierOther', e.target.value),
-        ltciPolicy: a.ltciPolicy || '',
-        onPolicy: (e) => this.set('ltciPolicy', e.target.value),
-        showContinue: (q.kind !== 'known' && !single) || (q.id === 'payment' && a.payment === 'Self Pay + LTC Insurance'),
-        continueLabel: s.returnTo === 'summary' ? 'Save and return to review' : idx + 1 === total ? 'Review intake' : 'Continue',
-        continueStyle: 'height:46px;padding:0 22px;background:#1407A2;border:none;border-radius:11px;font-size:14.5px;font-weight:500;color:#FFFFFF;cursor:pointer'
-      };
-    }
-
-    const guideState = (ids) => {
-      const done = ids.filter(id => {
-        const v = a[id];
-        return Array.isArray(v) ? v.length > 0 : !!v;
-      }).length;
-      return done === ids.length ? 'done' : done > 0 ? 'current' : 'todo';
-    };
-    const guideDefs = [
-      { title: 'Caller', ids: ['callerKnown', 'relationship'], items: [['Name', 'callerKnown'], ['Relationship', 'relationship'], ['Phone', 'callerKnown'], ['Email', 'callerKnown']] },
-      { title: 'Client', ids: ['clientKnown', 'source', 'living'], items: [['Client name', 'clientKnown'], ['Lead source', 'source'], ['Living situation', 'living']] },
-      { title: 'Clinical snapshot', ids: ['reason', 'diagnosis', 'dme'], items: [['Reason care is needed', 'reason'], ['Primary diagnosis if provided', 'diagnosis'], ['DME / mobility if mentioned', 'dme']] },
-      { title: 'Care needs', ids: ['needs'], items: [['What Marcus needs help with', 'needs'], ['What matters most', 'matters']] },
-      { title: 'Requested schedule', ids: ['days', 'schedule', 'start'], items: [['Days', 'days'], ['Days and time windows', 'schedule'], ['Start date', 'start']] },
-      { title: 'Assessment scheduling', ids: ['__assessment'], items: [['Date and RN', '__assessment'], ['Address confirmation', '__assessment']] }
+    const stepId = STEPS[s.step].id;
+    const selectedDays = Object.keys(s.days).filter(d => s.days[d]);
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const orderedDays = dayOrder.filter(d => s.days[d]);
+    const weekHours = orderedDays.reduce((sum, d) => sum + this.hoursFor(d), 0);
+    const rate = parseFloat(s.rate || '0') || 0;
+    const weekCost = Math.round(weekHours * rate);
+    const contacts = ['Client — ' + s.legalName];
+    if (s.hasC2 === 'Yes' && s.c2Name) contacts.push(s.c2Name + ' — ' + (s.c2Rel || 'Contact'));
+    contacts.push('+ Add someone else');
+    const respIsC2 = s.responsible.indexOf(s.c2Name) === 0;
+    const helpList = Object.keys(s.help).filter(k => s.help[k]);
+    const needLines = [];
+    Object.keys(s.adl).forEach(k => { if (s.adl[k] && s.adl[k] !== 'Unsure') needLines.push(k + ' — ' + s.adl[k]); });
+    if (s.mobility) needLines.push('Mobility — ' + s.mobility);
+    if (s.transport === 'Yes') needLines.push('Transportation — needed for appointments');
+    if (s.home['Does the client live alone?']) needLines.push('Lives alone — ' + s.home['Does the client live alone?']);
+    const addressMissing = s.assess === 'Yes' && !s.street;
+    const checks = [
+      ['Service area confirmed', !!s.zip, null],
+      ['Contact information captured', !!s.phone, null],
+      ['Situation documented', !!(s.story || Object.keys(s.changes).filter(k => s.changes[k]).length), null],
+      ['Care needs discussed', helpList.length > 0, null],
+      ['Quote recorded', rate > 0, null],
+      ['Payment type identified', s.payment !== 'Unsure', null],
+      [s.assess === 'Yes' ? (addressMissing ? 'Assessment address is missing' : 'Assessment scheduled') : 'Follow-up scheduled', s.assess === 'Yes' ? !addressMissing : !!s.followWhen, addressMissing ? 'Add address' : null]
     ];
-
-    const stageIs = (x) => s.stage === x;
-    const showFooter = stageIs('manual') || stageIs('gaps');
-    const total = stageIs('gaps') ? GAP_IDS.length : this.visibleQuestions().length;
-    const idx = stageIs('gaps') ? s.gapIdx : Math.min(s.qIdx, total - 1);
-
-    const notifyNames = [];
-    if (s.notify.caller) notifyNames.push(CALLER);
-    const clientReachable = false;
-    if (s.notify.client && clientReachable) notifyNames.push(CLIENT);
-    const requested = PRE_ITEMS.filter(p => s.pre[p.id]).map(p => p.label.toLowerCase());
-
-    const successSteps = [
-      { key: 'x1', label: 'Added to the Joy schedule', ok: true },
-      { key: 'x2', label: 'Joan Robinson, RN assigned', ok: true }
-    ];
-    if (!s.notify.caller && !s.notify.client) {
-      successSteps.push({ key: 'x3', label: 'No family notification sent — no recipient selected', ok: false, quiet: true });
-    } else if (notifyNames.length === 0) {
-      // recipients chosen but none reachable — the per-recipient line below explains why
-    } else if (s.notifyFailed) {
-      successSteps.push({ key: 'x3', label: notifyNames.join(' and ') + ' notification failed', ok: false });
-    } else {
-      successSteps.push({ key: 'x3', label: notifyNames.join(' and ') + ' notified through Spruce', ok: true });
-    }
-    if (s.notify.client && !clientReachable) {
-      successSteps.push({ key: 'x3b', label: CLIENT + ' not notified — no mobile number on file', ok: false, quiet: true });
-    }
-    if (requested.length) {
-      successSteps.push({
-        key: 'x4',
-        label: (requested.length === 1 ? requested[0].charAt(0).toUpperCase() + requested[0].slice(1) : requested.length + ' items') + ' requested before the visit',
-        ok: true
-      });
-    }
+    const openItems = checks.filter(c => !c[1]).length;
 
     return {
-      client: CLIENT,
-      saveState: s.saving ? 'Saving…' : 'Saved just now',
-      saveDotStyle: 'width:5px;height:5px;border-radius:50%;background:' + (s.saving ? '#F79009' : '#12B76A'),
-
-      guideBtnStyle: 'height:32px;padding:0 12px;border-radius:9px;font-size:12.5px;cursor:pointer;border:1px solid ' +
-        (s.guideOpen ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#5B6274'),
-      toggleGuide: () => this.setState({ guideOpen: !s.guideOpen, previewMenu: false }),
-      guideOpen: s.guideOpen,
-      guide: guideDefs.map(g => {
-        const st = g.ids[0] === '__assessment' ? 'todo' : guideState(g.ids);
-        return {
-          key: g.title, title: g.title,
-          mark: st === 'done' ? '✓' : st === 'current' ? '●' : '',
-          markStyle: 'width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:' +
-            (st === 'todo' ? '#C9C9D0' : '#FFFFFF') + ';background:' + (st === 'done' ? '#12B76A' : st === 'current' ? '#1407A2' : '#F1F2F6'),
-          titleStyle: 'font-size:13.5px;font-weight:500;color:' + (st === 'todo' ? '#9B9BA3' : '#191A2E'),
-          note: st === 'done' ? '' : st === 'current' ? 'In progress' : 'Not covered yet',
-          items: g.items.map(it => {
-            const v = it[1] === '__assessment' ? null : a[it[1]];
-            const filled = Array.isArray(v) ? v.length > 0 : !!v;
-            return {
-              key: it[0], label: it[0],
-              dot: filled ? '✓' : '○',
-              dotStyle: 'font-size:9.5px;width:12px;flex:none;color:' + (filled ? '#12B76A' : '#C9C9D0'),
-              labelStyle: 'font-size:12.5px;color:' + (filled ? '#5B6274' : '#9B9BA3')
-            };
-          })
-        };
-      }),
-
-      previewMenuOpen: s.previewMenu,
-      togglePreview: () => this.setState({ previewMenu: !s.previewMenu }),
-      previewItems: [
-        { key: 'p1', label: 'Preview intake summary', click: () => this.setState({ previewMenu: false, previewOpen: true }) },
-        { key: 'p2', label: 'View lead', click: () => this.setState({ previewMenu: false, previewOpen: true }) },
-        { key: 'p3', label: 'View known client information', click: () => this.setState({ previewMenu: false, previewOpen: true }) }
-      ],
-      previewOpen: s.previewOpen,
-      openPreview: () => this.setState({ previewOpen: true }),
-      closePreview: () => this.setState({ previewOpen: false }),
-
-      isWelcome: stageIs('welcome'), isAi: stageIs('ai'),
-      isQuestion: stageIs('manual') || stageIs('gaps'),
-      isSummary: stageIs('summary'), isDecision: stageIs('decision'),
-      isNotMoving: stageIs('notmoving'), isSchedule: stageIs('schedule'), isSuccess: stageIs('success'),
-
-      knownRows: [
-        { key: 'k1', label: 'Caller', value: CALLER + ' · daughter' },
-        { key: 'k2', label: 'Phone', value: '(412) 555-0198' },
-        { key: 'k3', label: 'Email', value: 'susan.bell@example.com' },
-        { key: 'k4', label: 'Service requested', value: 'Personal care · Houston' }
-      ],
-      startAi: () => this.setState({
-        stage: 'ai', mode: 'ai',
-        answers: Object.assign({}, s.answers, CONVERSATION_SEED, {
-          needs: CONVERSATION_SEED.needs.slice(), days: CONVERSATION_SEED.days.slice()
-        })
-      }),
-      startManual: () => this.setState({ stage: 'manual', mode: 'manual', qIdx: 0 }),
-
-      captured: CAPTURED.map((c, i) => ({ key: 'c' + i, label: c.label, note: c.note })),
-      stillNeed: STILL_NEED.map((n, i) => ({ key: 'n' + i, label: n.label })),
-      toGaps: () => this.setState({ stage: 'gaps', gapIdx: 0 }),
-
-      q: qv,
-      onText: (e) => q && this.set(q.id, e.target.value),
-      setUnsure: () => { if (q) { this.set(q.id, 'Not sure yet'); setTimeout(() => this.next(), 180); } },
-      next: () => this.next(),
-      back: () => this.back(),
-      backLabel: s.returnTo === 'summary' ? 'Back to review' : 'Back',
-      showFooter: showFooter,
-      progressLabel: (idx + 1) + ' of ' + total + (stageIs('gaps') ? ' to confirm' : ''),
-      progressBarStyle: 'display:block;height:100%;border-radius:999px;background:#1407A2;width:' + Math.round(((idx + 1) / total) * 100) + '%',
-
-      summary: this.summaryRows(),
-      hasNeedsReview: review.length > 0, noNeedsReview: review.length === 0,
-      needsReview: review, needsReviewCount: review.length,
-      resolveReview: () => {
-        const first = review[0];
-        const id = first.label.indexOf('matters') >= 0 ? 'matters' : (first.label.indexOf('Schedule') >= 0 || first.label.indexOf('times') >= 0) ? 'schedule' : 'payment';
-        const gi = GAP_IDS.indexOf(id);
-        if (gi >= 0 && s.mode === 'ai') this.setState({ stage: 'gaps', gapIdx: gi });
-        else this.setState({ stage: 'manual', qIdx: Math.max(0, this.visibleQuestions().findIndex(x => x.id === id)) });
-      },
-      completeIntake: () => this.setState({ stage: 'decision' }),
-
-      toSchedule: () => this.setState({ stage: 'schedule' }),
-      startAssessment: () => { window.location.href = './Joy%20Health%20Assessment.dc.html'; },
-      toNotMoving: () => this.setState({ stage: 'notmoving' }),
-      backToDecision: () => this.setState({ stage: 'decision' }),
-
-      closeReasons: CLOSE_REASONS.map(r => ({
-        key: r, label: r,
-        mark: s.closeReason === r ? '●' : '',
-        markStyle: this.markStyle(s.closeReason === r, true),
-        style: this.choiceStyle(s.closeReason === r),
-        pick: () => this.setState({ closeReason: r })
+      savedLabel: s.saved,
+      showListen: s.step === 0,
+      listening: s.listen === 'listening',
+      listenDone: s.listen === 'done',
+      listenTitle: s.listen === 'listening' ? 'Joy is listening to this call' : s.listen === 'done' ? 'Joy captured the call' : 'Start by just having the conversation',
+      listenSub: s.listen === 'listening' ? 'Talk normally — no need to work through the form in order.' : s.listen === 'done' ? 'Review what Joy heard, then move through the steps to confirm.' : 'Turn on listening and Joy will fill the intake as you talk. You can also type everything yourself.',
+      listenTimer: '2:14',
+      listenAction: s.listen === 'listening' ? 'Stop listening' : s.listen === 'done' ? 'Listen again' : 'Start listening',
+      listenActionStyle: 'flex:none;height:38px;padding:0 17px;border-radius:12px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:' +
+        (s.listen === 'listening' ? '1px solid rgba(194,65,12,.24);background:#fff;color:#C2410C' : 'none;background:#1407A2;color:#fff'),
+      listenBtnStyle: 'width:46px;height:46px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;border:1px solid ' +
+        (s.listen === 'listening' ? 'rgba(194,65,12,.3);background:#FDF0E7;color:#C2410C' : 'rgba(20,7,162,.2);background:#EFEDFB;color:#1407A2'),
+      listenCardStyle: 'display:flex;flex-direction:column;gap:16px;padding:20px 22px;border-radius:18px;background:' +
+        (s.listen === 'idle' ? '#fff' : '#FBFAFE') + ';border:1px solid ' + (s.listen === 'listening' ? 'rgba(194,65,12,.2)' : 'rgba(20,7,162,.14)'),
+      toggleListen: () => this.setState(st => ({ listen: st.listen === 'listening' ? 'done' : 'listening' })),
+      acceptListen: () => this.setState({ listen: 'idle', step: 1 }),
+      clearListen: () => this.setState({ listen: 'idle' }),
+      listenCount: '12',
+      transcript: [
+        ['Susan', "Hi — I'm calling about my dad, Marcus. He's 82 and lives over in Houston."],
+        ['You', 'I’m sorry to hear that. What’s been going on recently?'],
+        ['Susan', "He fell last week. He's using a walker now and he needs help bathing and getting dressed."],
+        ['You', 'And what days were you thinking?'],
+        ['Susan', 'Monday, Wednesday and Friday, around 8 to noon if that works.']
+      ].map(t => ({ key: t[1], who: t[0], line: t[1] })),
+      steps: STEPS.map((st, i) => ({
+        key: st.id, label: st.label, num: String(i + 1),
+        click: () => this.setState({ step: i }),
+        style: 'display:flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;font-weight:' + (i === s.step ? '500' : '400') +
+          ';padding:8px 14px;border-radius:11px;cursor:pointer;white-space:nowrap;border:1px solid ' +
+          (i === s.step ? 'rgba(0,0,0,.09)' : 'transparent') + ';background:' + (i === s.step ? '#fff' : 'transparent') +
+          ';color:' + (i === s.step ? '#1B1B1F' : i < s.step ? '#6E6E76' : '#9B9BA3') +
+          ';box-shadow:' + (i === s.step ? '0 1px 2px rgba(0,0,0,.05)' : 'none'),
+        dotStyle: 'width:19px;height:19px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;background:' +
+          (i === s.step ? '#1407A2' : i < s.step ? '#EFEDFB' : '#F4F4F6') + ';color:' + (i === s.step ? '#fff' : i < s.step ? '#1407A2' : '#9B9BA3')
       })),
-      showFollowUp: FOLLOW_REASONS.indexOf(s.closeReason) >= 0,
-      followMethods: ['Phone call', 'Text', 'Email'].map(m => ({
-        key: m, label: m,
-        style: 'height:38px;padding:0 16px;border-radius:10px;font-size:13px;cursor:pointer;background:' +
-          (s.followMethod === m ? '#1407A2' : '#FFFFFF') + ';border:1px solid ' + (s.followMethod === m ? '#1407A2' : '#ECECF1') +
-          ';color:' + (s.followMethod === m ? '#FFFFFF' : '#5B6274'),
-        pick: () => this.setState({ followMethod: m })
-      })),
-      closeBtnLabel: s.closeReason ? 'Close inquiry' : 'Select a reason',
-      closeBtnStyle: 'height:46px;padding:0 22px;border:none;border-radius:11px;font-size:14.5px;font-weight:500;cursor:' +
-        (s.closeReason ? 'pointer' : 'not-allowed') + ';background:' + (s.closeReason ? '#191A2E' : '#F1F2F6') +
-        ';color:' + (s.closeReason ? '#FFFFFF' : '#B9B9C1'),
-      finishClose: () => { if (s.closeReason) this.setState({ stage: 'success', notifyFailed: false }); },
+      progressLabel: 'Step ' + (s.step + 1) + ' of ' + STEPS.length,
+      progressStyle: 'display:block;height:100%;border-radius:5px;background:#1407A2;transition:width .25s ease;width:' + Math.round(((s.step + 1) / STEPS.length) * 100) + '%',
+      isBasics: stepId === 'basics', isContacts: stepId === 'contacts', isSituation: stepId === 'situation',
+      isNeeds: stepId === 'needs', isSchedule: stepId === 'schedule', isPayment: stepId === 'payment',
+      isAssessment: stepId === 'assessment', isReview: stepId === 'review',
+      back: () => this.setState(st => ({ step: Math.max(0, st.step - 1) })),
+      next: () => this.setState(st => ({ step: Math.min(STEPS.length - 1, st.step + 1) })),
+      backStyle: 'height:40px;padding:0 18px;border-radius:12px;border:1px solid rgba(0,0,0,.08);background:#fff;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;color:' + (s.step === 0 ? '#C8C8D0' : '#1B1B1F'),
+      nextLabel: stepId === 'review' ? 'Complete intake' : stepId === 'assessment' ? 'Review intake' : 'Continue',
 
-      contactRows: [
-        { key: 'c1', label: 'Contact', value: CALLER + ' · daughter' },
-        { key: 'c2', label: 'Phone', value: '(412) 555-0198' },
-        { key: 'c3', label: 'Email', value: 'susan.bell@example.com' }
-      ],
-      preItems: PRE_ITEMS.map(p => {
-        const on = !!s.pre[p.id];
-        return {
-          key: p.id, label: p.label,
-          mark: on ? '✓' : '',
-          boxStyle: this.markStyle(on, false),
-          note: p.note, noteStyle: 'margin-left:auto;font-size:11.5px;color:#B9B9C1',
-          toggle: () => this.setState({ pre: Object.assign({}, s.pre, { [p.id]: !on }) })
-        };
-      }),
-      recipients: [
-        { id: 'caller', label: CALLER, sub: 'Daughter · (412) 555-0198 · primary contact' },
-        { id: 'client', label: CLIENT, sub: 'Client · no mobile number on file — add one to reach him directly' }
-      ].map(r => {
-        const on = !!s.notify[r.id];
-        return {
-          key: r.id, label: r.label, sub: r.sub,
-          mark: on ? '✓' : '',
-          boxStyle: this.markStyle(on, false),
-          toggle: () => this.setState({ notify: Object.assign({}, s.notify, { [r.id]: !on }) })
-        };
-      }),
-      scheduleIt: () => this.setState({ stage: 'success' }),
+      legalName: s.legalName, onLegalName: this.onText('legalName'),
+      prefName: s.prefName, onPrefName: this.onText('prefName'),
+      age: s.age, onAge: this.onText('age'),
+      zip: s.zip, onZip: this.onText('zip'),
+      city: s.city, onCity: this.onText('city'),
+      stateVal: s.stateVal, onState: this.onText('stateVal'),
+      phone: s.phone, onPhone: this.onText('phone'),
+      contactMethods: this.single('method', ['Phone', 'Text', 'Email']),
+      serviceAreaNote: s.zip ? '✓ ' + (s.city || 'This ZIP') + ' is inside the Joy Health service area.' : 'Enter a ZIP to confirm the service area.',
+      serviceAreaStyle: 'font-size:13px;color:' + (s.zip ? '#15803D' : '#9B9BA3'),
 
-      successSteps: successSteps.map(x => ({
-        key: x.key, label: x.label, failed: !x.ok && !x.quiet,
-        mark: x.ok ? '✓' : '!',
-        markStyle: 'width:18px;height:18px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#FFFFFF;background:' + (x.ok ? '#12B76A' : '#F79009')
+      c1Email: s.c1Email, onC1Email: this.onText('c1Email'),
+      c1Best: s.c1Best, onC1Best: this.onText('c1Best'),
+      c1Text: this.single('c1Text', ['Yes', 'No']),
+      hasContact2: this.single('hasC2', ['Yes', 'No']),
+      showContact2: s.hasC2 === 'Yes',
+      c2Name: s.c2Name, onC2Name: this.onText('c2Name'),
+      c2Rel: s.c2Rel, onC2Rel: this.onText('c2Rel'),
+      c2Phone: s.c2Phone, onC2Phone: this.onText('c2Phone'),
+      c2Email: s.c2Email, onC2Email: this.onText('c2Email'),
+      c2Methods: this.single('c2Method', ['Phone', 'Text', 'Email']),
+      c2Roles: this.multi('c2Roles', ['Person we are speaking with', 'Involved in care decisions', 'Financially responsible']),
+
+      story: s.story, onStory: this.onText('story'),
+      toggleMic: () => this.setState(st => ({ mic: !st.mic })),
+      micLabel: s.mic ? 'Listening…' : 'Dictate',
+      micStyle: 'display:flex;align-items:center;gap:8px;height:36px;padding:0 15px;border-radius:20px;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid ' +
+        (s.mic ? '#1407A2;background:#EFEDFB;color:#1407A2' : 'rgba(0,0,0,.1);background:#fff;color:#6E6E76'),
+      runExtract: () => this.setState({ extracted: true }),
+      extracted: s.extracted,
+      extractedFields: EXTRACTED.map(f => ({ key: f[0], label: f[0], value: f[1] })),
+      acceptExtract: () => this.setState({ extracted: false, saved: 'Saved' }),
+      dismissExtract: () => this.setState({ extracted: false }),
+      changes: this.multi('changes', ['Hospitalization', 'Recent fall', 'Surgery / procedure', 'New diagnosis', 'Decline in mobility', 'Memory changes', 'More personal-care needs', 'Caregiver burnout', 'Planning ahead', 'Other', 'Unsure']),
+      dx: s.dx, onDx: this.onText('dx'),
+      toggleDxUnsure: () => this.set('dxUnsure', !s.dxUnsure),
+      dxUnsureStyle: 'align-self:flex-start;' + this.chip(s.dxUnsure),
+
+      helpTypes: this.multi('help', ['Personal care', 'Companionship', 'Meal preparation', 'Light housekeeping', 'Medication reminders', 'Transportation', 'Errands / shopping', 'Mobility assistance', 'Transfers', 'Toileting / incontinence', 'Respite', 'Supervision / safety', 'Other']),
+      adls: ADL_ROWS.map(row => ({
+        key: row, label: row,
+        options: ADL_CHOICES.map(c => ({
+          key: c, label: c, click: () => this.set('adl', Object.assign({}, s.adl, { [row]: c })),
+          style: this.chip(s.adl[row] === c, { size: '12px', pad: '6px 12px' })
+        }))
       })),
-      retryNotify: () => this.setState({ notifyFailed: false })
+      height: s.height, onHeight: this.onText('height'),
+      weight: s.weight, onWeight: this.onText('weight'),
+      toggleHwUnknown: () => this.set('hwUnknown', !s.hwUnknown),
+      hwUnknownStyle: 'align-self:flex-start;height:40px;' + this.chip(s.hwUnknown),
+      mobility: this.single('mobility', ['Ambulatory independently', 'Uses cane', 'Uses walker', 'Uses wheelchair', 'Bedbound', 'Other', 'Unsure']),
+      equipment: this.multi('equipment', ['Walker', 'Wheelchair', 'Cane', 'Hospital bed', 'Oxygen', 'Mechanical lift', 'Shower chair', 'Hearing aid', 'Other', 'None known', 'Unsure']),
+      cognitive: this.single('cognitive', ['No known concerns', 'Mild memory concerns', 'Moderate impairment / dementia', 'Significant impairment / dementia', 'Unsure']),
+      transport: this.single('transport', ['Yes', 'No', 'Unsure']),
+      showTransport: s.transport === 'Yes',
+      transportPurposes: this.multi('transportPurposes', ['Medical appointments', 'Errands / shopping', 'Social activities', 'Other']),
+      vehicle: this.single('vehicle', ['Yes', 'No', 'Unsure'], { size: '12px', pad: '6px 12px' }),
+      homeQuestions: HOME_ROWS.map(row => ({
+        key: row, label: row,
+        options: ['Yes', 'No', 'Unsure'].map(c => ({
+          key: c, label: c, click: () => this.set('home', Object.assign({}, s.home, { [row]: c })),
+          style: this.chip(s.home[row] === c, { size: '12px', pad: '6px 12px' })
+        }))
+      })),
+      homeNotes: s.homeNotes, onHomeNotes: this.onText('homeNotes'),
+      personal: s.personal, onPersonal: this.onText('personal'),
+      hasPersonal: !!s.personal,
+
+      startOptions: this.single('start', ['ASAP', 'On a date', 'Not sure yet']),
+      startDate: s.startDate, onStartDate: this.onText('startDate'),
+      days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => ({
+        key: d, label: d, click: () => this.toggleIn('days', d),
+        style: this.chip(!!s.days[d], { pad: '9px 16px' })
+      })),
+      dayTimes: orderedDays.map(d => ({
+        key: d, label: DAY_NAMES[d],
+        start: (s.times[d] || ['08:00', '12:00'])[0],
+        end: (s.times[d] || ['08:00', '12:00'])[1],
+        onStart: (e) => this.set('times', Object.assign({}, s.times, { [d]: [e.target.value, (s.times[d] || ['08:00', '12:00'])[1]] })),
+        onEnd: (e) => this.set('times', Object.assign({}, s.times, { [d]: [(s.times[d] || ['08:00', '12:00'])[0], e.target.value] })),
+        hours: this.hoursFor(d) + ' hrs'
+      })),
+      flexible: this.single('flexible', ['Yes', 'Somewhat', 'No'], { size: '12px', pad: '7px 13px' }),
+      duration: this.single('duration', ['Ongoing', 'Respite', 'Unsure'], { size: '12px', pad: '7px 13px' }),
+      overnight: this.single('overnight', ['Yes', 'No', 'Unsure'], { size: '12px', pad: '7px 13px' }),
+      schedNotes: s.schedNotes, onSchedNotes: this.onText('schedNotes'),
+      rate: s.rate, onRate: this.onText('rate'),
+      minShift: s.minShift, onMinShift: this.onText('minShift'),
+      estSchedule: orderedDays.length ? orderedDays.map(d => DAY_NAMES[d]).join(' / ') : 'No days selected yet',
+      estHours: weekHours ? weekHours + ' estimated hours/week' : '—',
+      estCost: rate && weekHours ? 'Approximately $' + weekCost + '/week' : 'Add a rate and schedule',
+      summaryRate: rate ? '$' + rate + '/hour' + (s.minShift ? ' · ' + s.minShift + ' minimum' : '') : 'No quote recorded',
+
+      payment: ['Private pay', 'Private pay + long-term care insurance', 'Unsure'].map(l => ({
+        key: l, label: l, click: () => this.set('payment', l), style: this.chip(s.payment === l, { size: '13.5px', pad: '11px 18px' })
+      })),
+      showLtc: s.payment === 'Private pay + long-term care insurance',
+      ltcCompany: s.ltcCompany, onLtcCompany: this.onText('ltcCompany'),
+      toggleLtcUnknown: () => this.set('ltcUnknown', !s.ltcUnknown),
+      ltcUnknownStyle: 'height:40px;' + this.chip(s.ltcUnknown),
+      responsibleOptions: contacts.map(l => ({
+        key: l, label: l, click: () => this.set('responsible', l), style: this.chip(s.responsible === l)
+      })),
+      respName: respIsC2 ? s.c2Name + ' · ' + s.c2Rel : s.legalName + ' · Client',
+      respPhone: respIsC2 ? s.c2Phone : s.phone,
+      respEmail: respIsC2 ? s.c2Email : (s.c1Email || '—'),
+
+      assessOptions: this.single('assess', ['Yes', 'Not ready yet'], { size: '13.5px', pad: '11px 18px' }),
+      assessYes: s.assess === 'Yes',
+      assessNo: s.assess === 'Not ready yet',
+      street: s.street, onStreet: this.onText('street'),
+      unit: s.unit, onUnit: this.onText('unit'),
+      access: s.access, onAccess: this.onText('access'),
+      parking: s.parking, onParking: this.onText('parking'),
+      assessDate: s.assessDate, onAssessDate: this.onText('assessDate'),
+      assessTime: s.assessTime, onAssessTime: this.onText('assessTime'),
+      attendees: [s.legalName + ' — Client', s.c2Name + ' — ' + s.c2Rel, '+ Add someone else'].map(l => ({
+        key: l, label: l, click: () => this.toggleIn('attendees', l), style: this.chip(!!s.attendees[l])
+      })),
+      preVisit: s.preVisit, onPreVisit: this.onText('preVisit'),
+      followReason: s.followReason, onFollowReason: this.onText('followReason'),
+      followWhen: this.single('followWhen', ['Tomorrow', 'A few days', 'Next week', 'Two weeks'], { size: '12px', pad: '7px 13px' }),
+      followHow: this.single('followHow', ['Phone', 'Text', 'Email'], { size: '12px', pad: '7px 13px' }),
+
+      readyTitle: openItems === 0 ? 'Ready to complete' : openItems + (openItems === 1 ? ' item needs attention' : ' items need attention'),
+      readyStyle: 'border-radius:18px;padding:20px 24px;background:#fff;border:1px solid ' + (openItems === 0 ? 'rgba(21,128,61,.22)' : 'rgba(194,65,12,.22)'),
+      checklist: checks.map(c => ({
+        key: c[0], label: c[0], icon: c[1] ? '✓' : '!', action: !!c[2], actionLabel: c[2] || '',
+        fix: () => this.setState({ step: 6 }),
+        iconStyle: 'width:18px;height:18px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:' +
+          (c[1] ? '#E8F5EC' : '#FDF0E7') + ';color:' + (c[1] ? '#15803D' : '#C2410C'),
+        labelStyle: 'font-size:13.5px;color:' + (c[1] ? '#3A3A42' : '#C2410C')
+      })),
+      summaryName: s.legalName,
+      summaryMeta: [s.age ? s.age : null, s.city && s.stateVal ? s.city + ', ' + s.stateVal : null].filter(Boolean).join(' · '),
+      summarySituation: s.story || ((s.c2Name || 'The caller') + ', the client\u2019s ' + (s.c2Rel || 'contact').toLowerCase() + ', called after ' + (s.prefName || s.legalName) + ' had a recent fall and has been having increased difficulty with bathing and mobility.'),
+      summaryHelp: helpList.length ? helpList.join(', ') + '.' : 'Not yet discussed.',
+      summaryNeeds: needLines.map(l => ({ key: l, label: l })),
+      summaryPayment: s.payment + (s.payment.indexOf('insurance') > 0 && s.ltcCompany ? ' · ' + s.ltcCompany : ''),
+      summaryAssessment: s.assess === 'Yes' ? 'August 25 · 10:30 AM · client home' : 'Not scheduled — follow up ' + s.followWhen.toLowerCase() + ' by ' + s.followHow.toLowerCase(),
+      summaryAttendees: s.assess === 'Yes' ? 'Meeting with ' + Object.keys(s.attendees).filter(k => s.attendees[k] && k.indexOf('+') !== 0).map(k => k.split(' — ')[0]).join(' and ') : (s.followReason || '')
     };
   }
 }
-
 </script>
 </body>
 </html>

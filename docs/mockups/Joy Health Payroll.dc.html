@@ -68,9 +68,13 @@ button{font-family:inherit}
   <main style="flex:1;min-width:0;display:flex;flex-direction:column">
 
     <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:13px 44px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:12.5px;color:#9B9BA3">Payroll</span>
-      <span style="font-size:12.5px;color:#C9C9D0">/</span>
-      <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ crumb }}</span>
+      <button onClick="{{ backToCurrent }}" style="background:transparent;border:none;padding:0;font-size:12.5px;color:#9B9BA3;cursor:pointer" style-hover="color:#191A2E">Payroll</button>
+      <sc-for list="{{ crumbs }}" as="c" hint-placeholder-count="1">
+        <span style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12.5px;color:#C9C9D0">/</span>
+          <button onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}</button>
+        </span>
+      </sc-for>
       <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
     </header>
 
@@ -79,7 +83,7 @@ button{font-family:inherit}
       <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;gap:5px;min-width:340px">
           <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Payroll</h1>
-          <p style="margin:0;font-size:13.5px;color:#5B6274;max-width:600px;text-wrap:pretty">Review payroll readiness, resolve exceptions, and prepare the cycle for Gusto.</p>
+          <p style="margin:0;font-size:13.5px;color:#5B6274;max-width:600px;text-wrap:pretty">Review employee pay and resolve exceptions before sending to Gusto.</p>
         </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
           <button onClick="{{ openExport }}" style="height:34px;padding:0 13px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid #ECECF1;background:#FFFFFF;color:#5B6274" style-hover="background:#FAFAFB;color:#191A2E">Preview export file</button>
@@ -116,6 +120,9 @@ button{font-family:inherit}
                   <td style="padding:13px 18px;font-size:12.5px;color:#5B6274">{{ r.exceptions }}</td>
                   <td style="padding:13px 18px;font-size:12.5px;color:#5B6274">{{ r.gusto }}</td>
                   <td style="padding:13px 18px;font-size:12.5px;color:#9B9BA3">{{ r.completed }}</td>
+                  <td style="padding:13px 18px;text-align:right">
+                    <button onClick="{{ r.view }}" style="height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#1407A2;cursor:pointer;white-space:nowrap" style-hover="background:#EEF0FE">View employees</button>
+                  </td>
                 </tr>
               </sc-for>
             </tbody>
@@ -123,16 +130,16 @@ button{font-family:inherit}
         </div>
       </sc-if>
 
+      <sc-if value="{{ showCycle }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:22px">
       <div style="display:flex;align-items:baseline;gap:28px;flex-wrap:wrap;padding-bottom:2px">
+        <sc-if value="{{ showLive }}" hint-placeholder-val="{{ true }}">
         <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">This Monday · Aug 10</span>
         <span style="display:flex;align-items:baseline;gap:9px">
-          <span style="font-size:13px;color:#8A8A92">Payroll week</span>
+          <span style="font-size:13px;color:#8A8A92">Payroll period</span>
           <span style="font-size:14px;font-weight:600;color:#191A2E">Aug 1 – 7</span>
         </span>
-        <span style="display:flex;align-items:baseline;gap:9px">
-          <span style="font-size:13px;color:#8A8A92">Billing week</span>
-          <span style="font-size:14px;font-weight:600;color:#191A2E">Aug 15 – 21</span>
-        </span>
+        </sc-if>
         <span style="margin-left:auto;display:flex;background:#F1F2F6;border-radius:9px;padding:3px;gap:2px">
           <sc-for list="{{ views }}" as="v" hint-placeholder-count="2">
             <button onClick="{{ v.click }}" style="{{ v.style }}">{{ v.label }}</button>
@@ -140,6 +147,36 @@ button{font-family:inherit}
         </span>
       </div>
 
+      <sc-if value="{{ isHistoric }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+          <span style="width:7px;height:7px;flex:none;border-radius:50%;background:#12B76A"></span>
+          <span style="font-size:12.5px;color:#5B6274">{{ histBanner }}</span>
+          <div style="margin-left:auto;flex:none;position:relative">
+            <button onClick="{{ toggleWeekMenu }}" style="display:flex;align-items:center;gap:9px;height:32px;padding:0 12px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:9px;font-size:12.5px;color:#191A2E;cursor:pointer" style-hover="background:#F1F2F6">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2.6 4.4h10.8M2.6 8h10.8M2.6 11.6h10.8"></path></svg>{{ histWeek }}<span style="color:#B9B9C1;font-size:10px">▾</span>
+            </button>
+            <sc-if value="{{ weekMenuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:38px;right:0;z-index:26;width:272px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:7px;display:flex;flex-direction:column;gap:1px">
+                <span style="padding:5px 9px 6px;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Processed weeks</span>
+                <sc-for list="{{ weekMenu }}" as="w" hint-placeholder-count="4">
+                  <button onClick="{{ w.click }}" style="{{ w.style }}" style-hover="background:#FAFAFB">
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:12.5px;color:#191A2E">{{ w.period }}</span>
+                      <span style="{{ w.checkStyle }}">✓</span>
+                    </span>
+                    <span style="font-size:11px;color:#9B9BA3">{{ w.meta }}</span>
+                  </button>
+                </sc-for>
+                <span style="height:1px;background:#F3F3F6;margin:5px 0"></span>
+                <button onClick="{{ exitHistoric }}" style="text-align:left;background:transparent;border:none;padding:8px 9px;border-radius:8px;font-size:12.5px;color:#1407A2;cursor:pointer" style-hover="background:#FAFAFB">← All payroll history</button>
+                <button onClick="{{ backToCurrent }}" style="text-align:left;background:transparent;border:none;padding:8px 9px;border-radius:8px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB">Return to current cycle · Aug 1 – 7</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showLive }}" hint-placeholder-val="{{ true }}">
       <div style="{{ heroStyle }}">
         <div style="display:flex;align-items:center;gap:32px">
           <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
@@ -164,12 +201,13 @@ button{font-family:inherit}
           </div>
         </sc-if>
       </div>
+      </sc-if>
 
       <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;flex-direction:column;gap:12px">
           <div style="display:flex;align-items:flex-end;gap:12px">
             <div style="display:flex;flex-direction:column;gap:3px">
-              <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">Week grid · Aug 1 – 7</span>
+              <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">{{ gridTitle }}</span>
               <span style="font-size:12.5px;color:#8A8A92">Hours logged per day, with what each person is earning so far.</span>
             </div>
             <span style="margin-left:auto;display:flex;align-items:center;gap:16px;font-size:12px;color:#8A8A92">
@@ -233,7 +271,7 @@ button{font-family:inherit}
               </table>
             </div>
             <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #ECECF1;background:#FCFCFD">
-              <span style="font-size:11.5px;color:#8A8A92">Showing 12 of 36 employees · totals below cover the 12 shown</span>
+              <span style="font-size:11.5px;color:#8A8A92">{{ gridShown }}</span>
               <span style="margin-left:auto;font-size:11.5px;color:#8A8A92">{{ gridNote }}</span>
             </div>
           </div>
@@ -241,15 +279,36 @@ button{font-family:inherit}
       </sc-if>
 
       <sc-if value="{{ isReview }}" hint-placeholder-val="{{ true }}">
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+      <div style="{{ reviewGridStyle }}">
 
         <div style="display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">Needs review</span>
-            <span style="font-size:12.5px;color:#8A8A92">Only payroll items requiring action appear here.</span>
+          <div style="display:flex;align-items:flex-end;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:15px;font-weight:600;letter-spacing:-.01em">{{ rosterTitle }}</span>
+              <span style="font-size:12.5px;color:#8A8A92">{{ rosterSub }}</span>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:216px">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
+              <input type="text" value="{{ rosterQ }}" onChange="{{ onRosterQ }}" placeholder="Search employee" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
+            </div>
+            <div style="position:relative;flex:none">
+              <button onClick="{{ toggleRosterExport }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.6v7.2M5.4 7.4L8 10l2.6-2.6M3 12.4h10"></path></svg>Export grid
+              </button>
+              <sc-if value="{{ rosterExportOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:40px;right:0;z-index:24;width:238px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                  <sc-for list="{{ rosterExportOptions }}" as="o" hint-placeholder-count="3">
+                    <button onClick="{{ o.click }}" style="{{ o.style }}" style-hover="background:#FAFAFB">
+                      <span style="font-size:12.5px;color:#191A2E">{{ o.label }}</span>
+                      <span style="font-size:11px;color:#9B9BA3">{{ o.sub }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
           </div>
           <div style="display:flex;align-items:center;gap:22px;border-bottom:1px solid #ECECF1">
-            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+            <sc-for list="{{ rosterTabs }}" as="t" hint-placeholder-count="2">
               <button onClick="{{ t.click }}" style="{{ t.style }}">
                 <span>{{ t.label }}</span>
                 <span style="{{ t.countStyle }}">{{ t.count }}</span>
@@ -257,70 +316,95 @@ button{font-family:inherit}
             </sc-for>
           </div>
 
+          <sc-if value="{{ hasFocus }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px">
+              <button onClick="{{ clearFocus }}" style="display:flex;align-items:center;gap:8px;height:28px;padding:0 11px;background:#F1F0FC;border:1px solid #E2E0F7;border-radius:999px;font-size:12px;color:#1407A2;cursor:pointer" style-hover="background:#E8E6FB">{{ focusLabel }}<span style="color:#8A85C4;font-size:11px">✕</span></button>
+            </div>
+          </sc-if>
           <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
-            <sc-for list="{{ queue }}" as="r" hint-placeholder-count="3">
-              <div onClick="{{ r.open }}" style="display:flex;align-items:center;gap:16px;padding:18px;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
-                <span style="width:34px;height:34px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
-                <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-                  <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.name }}</span>
-                  <span style="font-size:12.5px;color:#8A8A92">{{ r.summary }}</span>
-                </span>
-                <span style="margin-left:auto;display:flex;align-items:center;gap:14px;flex:none">
-                  <span style="{{ r.statusStyle }}">{{ r.status }}</span>
-                  <span style="font-size:13px;color:#B9B9C1">→</span>
-                </span>
-              </div>
-            </sc-for>
-            <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:44px;text-align:center;display:flex;flex-direction:column;gap:6px">
-                <span style="font-size:14px;font-weight:500;color:#191A2E">Nothing needs review</span>
-                <span style="font-size:12.5px;color:#8A8A92">{{ emptyNote }}</span>
-              </div>
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Employee</th>
+                  <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Hours</th>
+                  <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">OT</th>
+                  <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Rate</th>
+                  <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Gross</th>
+                  <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ rosterRows }}" as="r" hint-placeholder-count="8">
+                  <tr onClick="{{ r.open }}" style="border-top:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                    <td style="padding:12px 18px">
+                      <span style="display:flex;align-items:center;gap:10px">
+                        <span style="width:28px;height:28px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                        <span style="display:flex;flex-direction:column;line-height:1.35">
+                          <span style="font-size:13px;color:#191A2E">{{ r.name }}</span>
+                          <span style="font-size:11px;color:#9B9BA3">{{ r.role }}</span>
+                        </span>
+                      </span>
+                    </td>
+                    <td style="padding:12px 14px;text-align:right;font-size:12.5px;color:#191A2E">{{ r.hours }}</td>
+                    <td style="padding:12px 14px;text-align:right"><span style="{{ r.otStyle }}">{{ r.ot }}</span></td>
+                    <td style="padding:12px 14px;text-align:right;font-size:12px;color:#8A8A92;white-space:nowrap">{{ r.rate }}</td>
+                    <td style="padding:12px 14px;text-align:right;font-size:12.5px;color:#191A2E;white-space:nowrap">{{ r.gross }}</td>
+                    <td style="padding:12px 18px"><span style="{{ r.statusStyle }}">{{ r.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+              <tfoot>
+                <tr style="border-top:1px solid #ECECF1;background:#FCFCFD">
+                  <td style="padding:13px 18px;font-size:12.5px;font-weight:600;color:#191A2E;white-space:nowrap">Total · {{ rosterTotalLabel }}</td>
+                  <td style="padding:13px 14px;text-align:right;font-size:12.5px;font-weight:600;color:#191A2E">{{ rosterTotalHours }}</td>
+                  <td style="padding:13px 14px;text-align:right"><span style="{{ rosterTotalOtStyle }}">{{ rosterTotalOt }}</span></td>
+                  <td style="padding:13px 14px"></td>
+                  <td style="padding:13px 14px;text-align:right;font-size:12.5px;font-weight:600;color:#191A2E;white-space:nowrap">{{ rosterTotalGross }}</td>
+                  <td style="padding:13px 18px"></td>
+                </tr>
+              </tfoot>
+            </table>
+            <sc-if value="{{ rosterEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:40px;text-align:center;font-size:13px;color:#9B9BA3">{{ rosterEmptyCopy }}</div>
             </sc-if>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #ECECF1;background:#FCFCFD">
+              <span style="font-size:11.5px;color:#8A8A92">{{ rosterCount }}</span>
+              <span style="{{ exportNoteStyle }}">{{ exportNote }}</span>
+              <span style="margin-left:auto;font-size:11.5px;color:#8A8A92">{{ rosterOtNote }}</span>
+            </div>
           </div>
 
-          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;padding:13px 16px">
-            <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
-            <span style="font-size:13px;color:#191A2E;text-wrap:pretty">{{ joyNote }}</span>
-            <button style="margin-left:auto;flex:none;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Review with Joy →</button>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Payroll cycle</span>
-            <button onClick="{{ toggleDone }}" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;border:none;padding:0 0 4px;cursor:pointer">
-              <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#12B76A;color:#FFFFFF;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">✓</span>
-              <span style="font-size:13px;color:#8A8A92">{{ doneLabel }}</span>
-              <span style="{{ doneChevron }}">⌄</span>
-            </button>
-            <div style="display:flex;flex-direction:column">
-              <sc-for list="{{ cycle }}" as="s" hint-placeholder-count="5">
-                <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
-                  <span style="{{ s.markStyle }}">{{ s.mark }}</span>
-                  <span style="{{ s.labelStyle }}">{{ s.label }}</span>
-                  <span style="margin-left:auto;font-size:11.5px;color:#8A8A92;white-space:nowrap">{{ s.note }}</span>
-                </div>
+          <sc-if value="{{ showLive }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600;letter-spacing:-.01em">Payroll cycle · Aug 1 – 7</span>
+              <span style="font-size:12.5px;color:#8A8A92">{{ cycleSub }}</span>
+              <span style="{{ cycleReadyStyle }}">{{ cycleReady }}</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0;overflow-x:auto">
+              <sc-for list="{{ rail }}" as="r" hint-placeholder-count="7">
+                <span style="display:flex;align-items:flex-start;flex:0 0 auto">
+                  <button onClick="{{ r.click }}" style="{{ r.style }}">
+                    <span style="{{ r.markStyle }}">{{ r.mark }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                      <span style="{{ r.labelStyle }}">{{ r.label }}</span>
+                      <span style="{{ r.noteStyle }}">{{ r.note }}</span>
+                    </span>
+                  </button>
+                  <span style="{{ r.connectorStyle }}"></span>
+                </span>
               </sc-for>
             </div>
-          </div>
-
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Also on Monday</span>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <span style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:13px;color:#191A2E">LTI / paid invoice</span>
-                <span style="{{ ltiPillStyle }}">{{ ltiStatus }}</span>
-              </span>
-              <button style="align-self:flex-start;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:0">Review LTI package</button>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid #F3F3F6">
-              <span style="font-size:13px;color:#191A2E">Bill Aug 15 – 21</span>
-              <span style="font-size:12.5px;color:#8A8A92">12 client invoices ready for review</span>
-              <a href="./Joy%20Health%20Billing.dc.html" style="font-size:12.5px;padding-top:2px">Open Billing →</a>
+            <div style="display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #F3F3F6">
+              <span style="width:8px;height:8px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
+              <span style="font-size:12.5px;color:#5B6274;text-wrap:pretty">{{ joyNote }}</span>
             </div>
           </div>
+          </sc-if>
         </div>
+
+      </div>
+      </sc-if>
       </div>
       </sc-if>
     </div>
@@ -397,6 +481,101 @@ button{font-family:inherit}
           </span>
         </div>
       </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ empOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:62;display:flex;justify-content:flex-end">
+      <div onClick="{{ closeEmp }}" style="position:absolute;inset:0;background:rgba(25,26,46,.18)"></div>
+      <aside style="position:relative;width:452px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
+          <span style="width:40px;height:40px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ e.initials }}</span>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <span style="font-size:16.5px;font-weight:600;letter-spacing:-.01em">{{ e.name }}</span>
+            <span style="font-size:12.5px;color:#5B6274">{{ e.subtitle }}</span>
+            <span style="{{ e.statusStyle }}">{{ e.status }}</span>
+          </div>
+          <button onClick="{{ closeEmp }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:20px">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <sc-for list="{{ e.summary }}" as="k" hint-placeholder-count="3">
+              <div style="{{ k.style }}">
+                <span style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ k.label }}</span>
+                <span style="{{ k.valueStyle }}">{{ k.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ e.hasOt }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="{{ e.otStyle }}">
+                <span style="{{ e.otHeadStyle }}">{{ e.otHeadline }}</span>
+                <span style="{{ e.otBodyStyle }}">{{ e.otBody }}</span>
+              </div>
+              <sc-if value="{{ e.hasVariance }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Approved vs actual</span>
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ e.variance }}" as="v" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                        <span style="font-size:12.5px;color:#9B9BA3;width:170px;flex:none">{{ v.label }}</span>
+                        <span style="{{ v.valueStyle }}">{{ v.value }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Time detail</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ e.time }}" as="t" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:12.5px;color:#191A2E;width:38px;flex:none">{{ t.dow }}</span>
+                  <span style="font-size:11.5px;color:#9B9BA3">{{ t.date }}</span>
+                  <span style="{{ t.hoursStyle }}">{{ t.hours }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ e.hasException }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:11px;padding:13px 14px;border:1px solid #FCE8B6;border-radius:12px;background:#FFFAEB">
+              <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <span style="font-size:12.5px;font-weight:500;color:#93370D">{{ e.exceptionLabel }}</span>
+                <span style="font-size:11.5px;color:#B54708;line-height:1.4">{{ e.exceptionDetail }}</span>
+              </span>
+              <button onClick="{{ e.openException }}" style="margin-left:auto;flex:none;height:30px;padding:0 12px;border:1px solid #FCE8B6;background:#FFFFFF;border-radius:9px;font-size:12px;color:#B54708;cursor:pointer" style-hover="background:#FFFAEB">Review</button>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Audit trail</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ e.audit }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="width:6px;height:6px;flex:none;margin-top:6px;border-radius:50%;background:#D0D5DD"></span>
+                  <span style="font-size:12.5px;color:#191A2E;line-height:1.45;text-wrap:pretty">{{ a.label }}</span>
+                  <span style="margin-left:auto;flex:none;font-size:11.5px;color:#9B9BA3;white-space:nowrap">{{ a.when }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ e.needsOtAction }}" hint-placeholder-val="{{ false }}">
+          <div style="border-top:1px solid #ECECF1;padding:14px 22px;display:flex;flex-direction:column;gap:9px;background:#FCFCFD">
+            <button onClick="{{ e.approveOt }}" style="display:flex;align-items:center;justify-content:center;height:38px;background:#1407A2;border:none;border-radius:10px;font-size:13.5px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">{{ e.otActionLabel }}</button>
+            <span style="font-size:11px;color:#9B9BA3;text-align:center;text-wrap:pretty">Approvals and variances are recorded on this employee's payroll audit trail.</span>
+          </div>
+        </sc-if>
+      </aside>
     </div>
   </sc-if>
 
@@ -615,7 +794,6 @@ const CYCLE = [
   { key: 'c5', label: 'Mileage reviewed', state: 'open', note: null, count: 'mi' },
   { key: 'c6', label: 'Payroll approved', state: 'todo', note: '' },
   { key: 'c7', label: 'Prepared for Gusto', state: 'todo', note: '' },
-  { key: 'c8', label: 'LTI / paid invoice sent', state: 'todo', note: '' },
   { key: 'c9', label: 'Cycle complete', state: 'todo', note: '' }
 ];
 
@@ -648,23 +826,47 @@ const DAYS = [
   { dow: 'Tue', date: 'Aug 4' }, { dow: 'Wed', date: 'Aug 5' }, { dow: 'Thu', date: 'Aug 6' }, { dow: 'Fri', date: 'Aug 7' }
 ];
 
+// Scheduling approves projected OT; payroll validates the actual hours against it.
+const OT_APPROVALS = {
+  'David Okoro': { hours: 4.0, by: 'Joan Robinson', when: 'Aug 3 · 2:14 PM', why: 'Covered two call-out shifts for Ruth Alvarez and Dorothy Aiken', projected: 44.0 },
+  'Dana Whitfield': { hours: 2.0, by: 'Joan Robinson', when: 'Aug 5 · 8:40 AM', why: 'Office coverage during the Friday admissions push', projected: 42.0 }
+};
+
+const OT_STATE = {
+  approved: { label: 'OT approved', fg: '#12B76A', bg: '#ECFDF3' },
+  variance: { label: 'Above approved OT', fg: '#B54708', bg: '#FFFAEB' },
+  unexpected: { label: 'Unexpected OT', fg: '#B54708', bg: '#FFFAEB' },
+  confirm: { label: 'OT needs confirmation', fg: '#B54708', bg: '#FFFAEB' }
+};
+
 const GRID = [
   { key: 'g1', name: 'Kelly Kuhn', role: 'CNA', rate: 19.50, d: [0, 0, 8, 8, 8, 8, 6], ot: 0 },
   { key: 'g2', name: 'Emmet Bauch', role: 'HHA', rate: 18.25, d: [0, 0, 8, 8, 8, 8, 8], ot: 0 },
   { key: 'g3', name: 'Allison Archibald', role: 'CNA', rate: 19.00, d: [0, 0, 8, 8, 8, 6, 6], ot: 0 },
   { key: 'g4', name: 'Hassie Kohler', role: 'HHA', rate: 17.75, d: [6, 6, 4, 0, 4, 4, 0], ot: 0 },
-  { key: 'g5', name: 'David Okoro', role: 'CNA', rate: 19.50, d: [8, 4.5, 8, 8, 8, 8, 0], ot: 4.5, flagDay: 1 },
+  { key: 'g5', name: 'David Okoro', role: 'CNA', rate: 19.50, d: [8, 4.5, 8, 8, 8, 8, 0], ot: 4.5, flagDay: 1, scheduled: 44.0 },
   { key: 'g6', name: 'Maria Johnson', role: 'CNA', rate: 19.50, d: [0, 0, 8, 8, 7.5, 6, 6], ot: 0, flagDay: 4 },
   { key: 'g7', name: 'Samantha Chen', role: 'HHA', rate: 18.00, d: [0, 4, 6, 8, 6, 4, 4], ot: 0, flagDay: 3 },
   { key: 'g8', name: 'Priya Shah', role: 'LVN', rate: 37.50, d: [0, 0, 8, 8, 8, 8, 8], ot: 0 },
-  { key: 'g9', name: 'Dana Whitfield', role: 'Office', rate: 24.00, d: [0, 0, 8, 8, 8, 8, 10], ot: 2 },
+  { key: 'g9', name: 'Dana Whitfield', role: 'Office', rate: 24.00, d: [0, 0, 8, 8, 8, 8, 10], ot: 2, scheduled: 42.0 },
+  { key: 'g13', name: 'Priya Nair', role: 'CNA', rate: 19.75, d: [8, 0, 8, 8, 8, 8, 3], ot: 3, flagDay: 6, scheduled: 40.0, unexpected: 'Scheduled for 40 hours. A Friday shift was added after the schedule was approved, putting the week at 43 hours.' },
   { key: 'g10', name: 'Marcus Webb', role: 'CNA', rate: 19.00, d: [0, 0, 6, 6, 6, 6, 6], ot: 0 },
   { key: 'g11', name: 'Nia Coleman', role: 'HHA', rate: 17.50, d: [4, 4, 4, 4, 4, 4, 4], ot: 0 },
   { key: 'g12', name: 'Jamal Carter', role: 'HHA', rate: 17.75, d: [8, 8, 0, 0, 4, 4, 0], ot: 0 }
 ];
 
 class Component extends DCLogic {
-  state = { joyOpen: false, joyQ: '', joyMic: false, tab: 'All', sel: null, resolved: [], prepared: false, showHistory: false, showDone: false, showExport: false, view: 'review' };
+  state = { joyOpen: false, joyQ: '', joyMic: false, tab: 'All', sel: null, resolved: [], prepared: false, showHistory: false, showDone: false, showExport: false, view: 'review', roster: 'all', emp: null, otApproved: [], q: '', histWeek: null, rosterExport: false, exportNote: '', weekMenu: false, focus: null };
+
+  otFor(r) {
+    if (!r.ot) return null;
+    const appr = OT_APPROVALS[r.name];
+    const acknowledged = this.state.otApproved.indexOf(r.name) >= 0;
+    if (!appr) return { kind: acknowledged ? 'approved' : 'unexpected', actual: r.ot, approved: 0, variance: r.ot, why: r.unexpected || '' };
+    const variance = +(r.ot - appr.hours).toFixed(2);
+    if (variance > 0.01 && !acknowledged) return { kind: 'variance', actual: r.ot, approved: appr.hours, variance: variance, appr: appr };
+    return { kind: 'approved', actual: r.ot, approved: appr.hours, variance: variance > 0 ? variance : 0, appr: appr };
+  }
 
   isOpen(it) { return this.state.resolved.indexOf(it.id) < 0; }
   openItems() { return ITEMS.filter(it => this.isOpen(it)); }
@@ -677,12 +879,43 @@ class Component extends DCLogic {
     const s = this.state;
     const open = this.openItems();
     const byCat = (c) => open.filter(it => it.cat === c).length;
-    const cleared = TOTAL - open.length;
-    const pct = Math.round((cleared / TOTAL) * 100);
-    const ready = open.length === 0;
+    const cleared0 = TOTAL - open.length;
+    const ready0 = open.length === 0;
     const sel = ITEMS.find(x => x.id === s.sel);
 
-    const gridSum = GRID.reduce((acc, r) => {
+
+    // ---- employee roster
+    const money = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const exByName = {};
+    open.forEach(it => { exByName[it.name] = it; });
+    const historic = !!s.histWeek;
+    const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const MONTH_LEN = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const periodDays = (() => {
+      if (!historic) return DAYS;
+      const mm = s.histWeek.match(/([A-Z][a-z]{2})\s+(\d+)/);
+      if (!mm) return DAYS;
+      let mi = MONTHS[mm[1]], day = +mm[2];
+      return ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(dow => {
+        const label = { dow: dow, date: MONTH_NAMES[mi] + ' ' + day };
+        day += 1;
+        if (day > MONTH_LEN[mi]) { day = 1; mi = (mi + 1) % 12; }
+        return label;
+      });
+    })();
+    const histMeta = historic ? HISTORY.filter(h => h.period === s.histWeek)[0] : null;
+    // Completed weeks are filed: every employee cleared, overtime already validated.
+    const histShift = { 'Jul 25 – 31': 0, 'Jul 18 – 24': 1, 'Jul 11 – 17': 2, 'Jul 4 – 10': 3 }[s.histWeek] || 0;
+    const source = historic
+      ? GRID.slice(0, 12).map((r, i) => {
+          const d = r.d.map((h, j) => (h ? Math.max(0, +(h - ((i + j + histShift) % 3 === 0 ? 0.5 : 0)).toFixed(1)) : h));
+          const ot = i === 4 ? 2 : i === 8 ? 1.5 : 0;
+          return Object.assign({}, r, { d: d, ot: ot, flagDay: undefined, unexpected: undefined });
+        })
+      : GRID;
+
+    const gridSum = source.reduce((acc, r) => {
       const total = r.d.reduce((a, b) => a + b, 0);
       const reg = total - r.ot;
       acc.hrs += total; acc.ot += r.ot; acc.gross += reg * r.rate + r.ot * r.rate * 1.5;
@@ -694,6 +927,120 @@ class Component extends DCLogic {
       gridByName[r.name] = { regular: (total - r.ot).toFixed(1), ot: r.ot.toFixed(1) };
     });
 
+    const roster = source.map(r => {
+      const total = r.d.reduce((a, b) => a + b, 0);
+      const reg = total - r.ot;
+      const ot = historic ? (r.ot ? { kind: 'approved', actual: r.ot, approved: r.ot, variance: 0, filed: true } : null) : this.otFor(r);
+      const ex = historic ? null : exByName[r.name];
+      let status, tone;
+      if (historic) { status = ot ? 'OT approved · filed' : 'Paid'; tone = ot ? 'ok' : 'clear'; }
+      else if (ot && ot.kind !== 'approved') { status = OT_STATE[ot.kind].label; tone = 'warn'; }
+      else if (ex && ex.cat !== 'Overtime') { status = ex.status; tone = ex.tone; }
+      else if (ot) { status = OT_STATE.approved.label; tone = 'ok'; }
+      else { status = 'Cleared'; tone = 'clear'; }
+      return { r: r, total: total, reg: reg, ot: ot, ex: ex, status: status, tone: tone, gross: reg * r.rate + r.ot * r.rate * 1.5 };
+    });
+    const needsRows = roster.filter(x => x.tone === 'warn' || x.tone === 'bad');
+    const totalOt = roster.reduce((a, x) => a + x.r.ot, 0);
+    const rq = s.q.trim().toLowerCase();
+    const focusPred = {
+      ot: x => !!(x.ot && x.ot.kind !== 'approved'),
+      time: x => !!(x.ex && x.ex.cat === 'Time & EVV'),
+      mileage: x => !!(x.ex && x.ex.cat === 'Mileage')
+    }[s.focus];
+    const rosterShown = (s.roster === 'needs' ? needsRows : roster)
+      .filter(x => !focusPred || focusPred(x))
+      .filter(x => !rq || (x.r.name + ' ' + x.r.role).toLowerCase().indexOf(rq) >= 0);
+    const rosterRows = rosterShown
+      .map(x => ({
+        key: x.r.key, name: x.r.name, role: x.r.role, initials: initials(x.r.name),
+        hours: x.total.toFixed(1), ot: x.r.ot ? x.r.ot.toFixed(1) : '—',
+        otStyle: 'font-size:12.5px;' + (x.r.ot ? (x.ot && x.ot.kind !== 'approved' ? 'color:#B54708;font-weight:600' : 'color:#191A2E;font-weight:500') : 'color:#C9C9D0'),
+        rate: '$' + x.r.rate.toFixed(2), gross: money(x.gross),
+        status: x.status,
+        statusStyle: pillS(
+          x.tone === 'warn' ? '#B54708' : x.tone === 'bad' ? '#B42318' : x.tone === 'ok' ? '#12B76A' : '#8A8A92',
+          x.tone === 'warn' ? '#FFFAEB' : x.tone === 'bad' ? '#FEF3F2' : x.tone === 'ok' ? '#ECFDF3' : '#F3F3F6'
+        ),
+        open: () => this.setState({ emp: x.r.name })
+      }));
+
+    // ---- employee drawer
+    const empRow = s.emp ? roster.filter(x => x.r.name === s.emp)[0] : null;
+    const emp = empRow;
+    let ev = { time: [], summary: [], audit: [], actions: [] };
+    if (empRow) {
+      const ot = empRow.ot;
+      const appr = ot && ot.appr;
+      ev = {
+        name: empRow.r.name, initials: initials(empRow.r.name),
+        subtitle: empRow.r.role + ' · ' + (historic ? s.histWeek : 'Aug 1 – 7'),
+        status: empRow.status,
+        statusStyle: pillS(
+          empRow.tone === 'warn' ? '#B54708' : empRow.tone === 'bad' ? '#B42318' : empRow.tone === 'ok' ? '#12B76A' : '#8A8A92',
+          empRow.tone === 'warn' ? '#FFFAEB' : empRow.tone === 'bad' ? '#FEF3F2' : empRow.tone === 'ok' ? '#ECFDF3' : '#F3F3F6'
+        ),
+        summary: [
+          { key: 's1', label: 'Regular hours', value: empRow.reg.toFixed(1) },
+          { key: 's2', label: 'Overtime', value: empRow.r.ot ? empRow.r.ot.toFixed(1) : '—', warn: !!(ot && ot.kind !== 'approved') },
+          { key: 's3', label: 'Gross pay', value: money(empRow.gross) }
+        ].map(k => ({
+          key: k.key, label: k.label, value: k.value,
+          style: 'display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:11px;border:1px solid ' + (k.warn ? '#FCE8B6;background:#FFFAEB' : '#ECECF1;background:#FCFCFD'),
+          valueStyle: 'font-size:15px;font-weight:600;letter-spacing:-.01em;color:' + (k.warn ? '#B54708' : '#191A2E')
+        })),
+        time: periodDays.map((d, i) => ({
+          key: 'td' + i, dow: d.dow, date: d.date,
+          hours: empRow.r.d[i] ? empRow.r.d[i].toFixed(1).replace('.0', '') + ' hrs' : '—',
+          hoursStyle: 'margin-left:auto;font-size:12.5px;color:' + (empRow.r.flagDay === i ? '#B54708;font-weight:500' : empRow.r.d[i] ? '#191A2E' : '#C9C9D0')
+        })),
+        hasOt: !!ot,
+        otHeadline: ot ? ot.actual.toFixed(1) + ' overtime hours' : '',
+        otBody: !ot ? '' :
+          ot.filed ? 'Validated and paid with the ' + s.histWeek + ' cycle.' :
+          ot.kind === 'approved' && appr ? 'Approved during scheduling on ' + appr.when + ' by ' + appr.by + '. ' + appr.why + '.'
+          : ot.kind === 'variance' ? ot.variance.toFixed(1) + ' hr above the ' + ot.approved.toFixed(1) + ' hrs approved during scheduling on ' + appr.when + ' by ' + appr.by + '.'
+          : ot.kind === 'approved' ? 'Confirmed in payroll for this period.'
+          : (empRow.r.unexpected || 'These hours were not approved during scheduling.'),
+        otStyle: !ot ? 'display:none' : 'display:flex;flex-direction:column;gap:6px;padding:13px 14px;border-radius:12px;border:1px solid ' +
+          (ot.kind === 'approved' ? '#D3F0DF;background:#F4FDF7' : '#FCE8B6;background:#FFFAEB'),
+        otHeadStyle: 'font-size:13px;font-weight:600;color:' + (ot && ot.kind === 'approved' ? '#12B76A' : '#93370D'),
+        otBodyStyle: 'font-size:12.5px;line-height:1.5;text-wrap:pretty;color:' + (ot && ot.kind === 'approved' ? '#5B6274' : '#B54708'),
+        hasVariance: !historic && !!(ot && (ot.kind === 'variance' || ot.kind === 'unexpected')),
+        variance: ot ? [
+          { key: 'v1', label: 'Projected at assignment', value: appr ? appr.projected.toFixed(1) + ' hrs' : empRow.r.scheduled ? empRow.r.scheduled.toFixed(1) + ' hrs' : 'Not scheduled as OT' },
+          { key: 'v2', label: 'Approved OT', value: ot.approved ? ot.approved.toFixed(1) + ' hrs' : 'None' },
+          { key: 'v3', label: 'Actual OT', value: ot.actual.toFixed(1) + ' hrs' },
+          { key: 'v4', label: 'Variance', value: (ot.variance > 0 ? '+' : '') + ot.variance.toFixed(1) + ' hr', warn: ot.variance > 0 }
+        ].map(v => ({ key: v.key, label: v.label, value: v.value, valueStyle: 'font-size:12.5px;color:' + (v.warn ? '#B54708;font-weight:500' : '#191A2E') })) : [],
+        needsOtAction: !historic && !!(ot && ot.kind !== 'approved'),
+        otActionLabel: ot && ot.kind === 'variance' ? 'Approve ' + ot.variance.toFixed(1) + ' hr above approved OT' : 'Approve ' + (ot ? ot.actual.toFixed(1) : '') + ' hrs overtime',
+        approveOt: () => this.setState(st => {
+          const otItem = ITEMS.filter(it => it.name === empRow.r.name && it.cat === 'Overtime')[0];
+          return {
+            otApproved: st.otApproved.concat([empRow.r.name]),
+            resolved: otItem && st.resolved.indexOf(otItem.id) < 0 ? st.resolved.concat([otItem.id]) : st.resolved
+          };
+        }),
+        hasException: !historic && !!(empRow.ex && empRow.ex.cat !== 'Overtime'),
+        exceptionLabel: empRow.ex ? empRow.ex.kind : '',
+        exceptionDetail: empRow.ex ? empRow.ex.detail : '',
+        openException: () => { if (empRow.ex) this.setState({ emp: null, sel: empRow.ex.id }); },
+        audit: (historic
+          ? [
+              { label: 'Verified time imported from EVV', when: s.histWeek },
+              { label: 'Payroll approved · ' + empRow.total.toFixed(1) + ' hrs' + (empRow.r.ot ? ' · ' + empRow.r.ot.toFixed(1) + ' hrs OT' : ''), when: histMeta ? histMeta.completed : '' },
+              { label: 'Prepared for Gusto', when: histMeta ? histMeta.completed : '' }
+            ]
+          : (appr ? [{ label: 'Projected ' + appr.projected.toFixed(1) + ' hrs · ' + appr.hours.toFixed(1) + ' hrs OT approved by ' + appr.by, when: appr.when }] : [])
+            .concat([
+              { label: 'Verified time imported from EVV', when: 'Aug 8 · 6:00 AM' },
+              { label: 'Actual ' + empRow.total.toFixed(1) + ' hrs · ' + (empRow.r.ot ? empRow.r.ot.toFixed(1) + ' hrs OT' : 'no overtime'), when: 'Aug 8 · Payroll' }
+            ])
+        ).map((a, i) => ({ key: 'ea' + i, label: a.label, when: a.when }))
+      };
+    }
+
     const queue = open.filter(it => s.tab === 'All' || it.cat === s.tab).map(it => ({
       key: it.id, initials: initials(it.name), name: it.name, client: it.client,
       summary: it.kind + ' · ' + it.detail, status: it.status,
@@ -701,7 +1048,11 @@ class Component extends DCLogic {
       open: () => this.setState({ sel: it.id })
     }));
 
-    const counts = { ex: byCat('Time & EVV'), ot: byCat('Overtime'), mi: byCat('Mileage') };
+    const otNeeds = roster.filter(x => x.ot && x.ot.kind !== 'approved').length;
+    const counts = { ex: byCat('Time & EVV'), ot: otNeeds, mi: byCat('Mileage') };
+    const needsCount = needsRows.length;
+    const clearedCount = TOTAL - needsCount;
+    const allClear = needsCount === 0;
     const cycleAll = CYCLE.map(c => {
       let state = c.state, note = c.note;
       if (c.count) {
@@ -709,7 +1060,7 @@ class Component extends DCLogic {
         state = n === 0 ? 'done' : 'open';
         note = n === 0 ? 'Cleared' : n + ' remaining';
       }
-      if (ready && (c.key === 'c6')) { state = 'done'; note = 'Aug 10 · Joan Robinson'; }
+      if (allClear && (c.key === 'c6')) { state = 'done'; note = 'Aug 10 · Joan Robinson'; }
       if (s.prepared && (c.key === 'c7')) { state = 'done'; note = '10:42 AM'; }
       const color = state === 'done' ? '#12B76A' : state === 'open' ? '#F79009' : '#D0D5DD';
       return {
@@ -721,6 +1072,8 @@ class Component extends DCLogic {
         isDone: state === 'done'
       };
     });
+    const ready = allClear;
+    const pct = Math.round((clearedCount / TOTAL) * 100);
     const doneCount = cycleAll.filter(c => c.isDone).length;
     const cycle = s.showDone ? cycleAll : cycleAll.filter(c => !c.isDone);
 
@@ -735,12 +1088,12 @@ class Component extends DCLogic {
       dotStyle: 'width:7px;height:7px;border-radius:50%;background:' + b.tone
     }));
 
-    const heroTitle = s.prepared ? 'Prepared for Gusto' : ready ? 'Ready for Gusto' : open.length === TOTAL ? 'Payroll needs review' : 'Payroll is almost ready';
+    const heroTitle = s.prepared ? 'Prepared for Gusto' : ready ? 'Ready for Gusto' : 'Payroll is almost ready';
     const heroSub = s.prepared
       ? 'Joy generated the payroll file for Aug 1 – 7. Nothing further is required in Joy.'
       : ready
         ? 'Payroll review is complete for Aug 1 – 7.'
-        : open.length + ' item' + (open.length === 1 ? '' : 's') + ' need' + (open.length === 1 ? 's' : '') + ' review before this cycle is ready for Gusto.';
+        : needsCount + ' employee' + (needsCount === 1 ? '' : 's') + ' need' + (needsCount === 1 ? 's' : '') + ' review before this cycle is ready for Gusto.';
 
     return {
       joyOpen: s.joyOpen,
@@ -753,13 +1106,57 @@ class Component extends DCLogic {
       micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
         (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
       joySend: () => this.setState({ joyQ: '', joyMic: false }),
-      joyPrompts: ["What is holding up payroll?","Who has unreviewed overtime?","Summarize payroll before Gusto"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
-      crumb: s.showHistory ? 'History' : 'Aug 1 – 7 cycle',
+      joyPrompts: ["What is holding up payroll?","Who has unexpected overtime?","Summarize payroll before Gusto"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      crumbs: (historic
+        ? [{ label: 'Payroll history', go: () => this.setState({ histWeek: null, showHistory: true, weekMenu: false }) },
+           { label: s.histWeek, go: null }]
+        : s.showHistory
+          ? [{ label: 'Payroll history', go: null }]
+          : [{ label: 'Aug 1 – 7 cycle', go: null }]
+      ).map((c, i, arr) => ({
+        key: 'cr' + i, label: c.label,
+        click: () => { if (c.go) c.go(); },
+        style: 'background:transparent;border:none;padding:0;font-size:12.5px;' +
+          (i === arr.length - 1 ? 'color:#191A2E;font-weight:500;cursor:default' : 'color:#9B9BA3;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#E4E4EA')
+      })),
+      backToCurrent: () => this.setState({ histWeek: null, showHistory: false, weekMenu: false, view: 'review', roster: 'all', emp: null }),
+      weekMenuOpen: s.weekMenu,
+      toggleWeekMenu: () => this.setState({ weekMenu: !s.weekMenu }),
+      weekMenu: HISTORY.map(h => ({
+        key: h.key, period: h.period,
+        meta: h.employees + ' employees · ' + h.exceptions + ' exceptions · filed ' + h.completed,
+        checkStyle: s.histWeek === h.period ? 'font-size:10px;color:#1407A2' : 'display:none',
+        click: () => this.setState({ histWeek: h.period, weekMenu: false, emp: null, q: '', roster: 'all' }),
+        style: 'display:flex;flex-direction:column;gap:2px;text-align:left;background:' + (s.histWeek === h.period ? '#F1F0FC' : 'transparent') +
+          ';border:none;padding:8px 9px;border-radius:8px;cursor:pointer;width:100%'
+      })),
       toggleHistory: () => this.setState({ showHistory: !s.showHistory }),
       historyBtn: 'height:34px;padding:0 13px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid #ECECF1;background:' + (s.showHistory ? '#F1F2F6' : '#FFFFFF') + ';color:' + (s.showHistory ? '#191A2E' : '#5B6274'),
-      showHistory: s.showHistory,
-      historyCols: ['Period', 'Status', 'Employees', 'Exceptions', 'Gusto prep', 'Completed'].map((l, i) => ({ key: 'hc' + i, label: l })),
-      history: HISTORY.map(h => Object.assign({ dotStyle: 'width:7px;height:7px;border-radius:50%;background:#12B76A' }, h)),
+      showHistory: s.showHistory, showCycle: !s.showHistory,
+      historyCols: ['Period', 'Status', 'Employees', 'Exceptions', 'Gusto prep', 'Completed', ''].map((l, i) => ({ key: 'hc' + i, label: l })),
+      history: HISTORY.map(h => Object.assign({
+        dotStyle: 'width:7px;height:7px;border-radius:50%;background:#12B76A',
+        view: () => this.setState({ histWeek: h.period, showHistory: false, view: 'review', roster: 'all', q: '', emp: null })
+      }, h)),
+
+      isHistoric: !!s.histWeek,
+      histWeek: s.histWeek || '',
+      histBanner: s.histWeek ? 'Viewing processed payroll for ' + s.histWeek + ' · read only' : '',
+      exitHistoric: () => this.setState({ histWeek: null, showHistory: true }),
+
+      rosterExportOpen: s.rosterExport,
+      toggleRosterExport: () => this.setState({ rosterExport: !s.rosterExport }),
+      rosterExportOptions: [
+        ['Employee grid (CSV)', rosterRows.length + ' rows as shown'],
+        ['Employee grid (XLSX)', 'Formatted with totals'],
+        ['Week grid (CSV)', 'Daily hours per employee']
+      ].map(o => ({
+        key: o[0], label: o[0], sub: o[1],
+        click: () => this.setState({ rosterExport: false, exportNote: o[0] + ' downloaded · ' + (s.histWeek || 'Aug 1 – 7') }),
+        style: 'display:flex;flex-direction:column;gap:2px;text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:8px;cursor:pointer;width:100%'
+      })),
+      exportNote: s.exportNote,
+      exportNoteStyle: s.exportNote ? 'font-size:11.5px;color:#12B76A' : 'display:none',
 
       gustoLabel: s.prepared ? 'Prepared · view summary' : 'Prepare for Gusto',
       gustoBtn: 'display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:none;border-radius:9px;font-size:13px;font-weight:500;' +
@@ -767,14 +1164,17 @@ class Component extends DCLogic {
       prepare: () => { if (ready) this.setState({ prepared: true }); },
 
       heroStyle: 'background:#FFFFFF;border:1px solid ' + (ready ? '#D3F0DF' : '#ECECF1') + ';border-radius:16px;padding:24px 26px;display:flex;flex-direction:column',
-      heroTitle: heroTitle, heroCount: cleared + ' of ' + TOTAL + ' employees cleared', heroSub: heroSub,
+      heroTitle: heroTitle, heroCount: clearedCount + ' of ' + TOTAL + ' employees cleared', heroSub: heroSub,
       heroPct: pct + '%',
       heroPctStyle: 'font-size:15px;font-weight:600;color:' + (ready ? '#12B76A' : '#5B6274'),
       heroBarStyle: 'display:block;height:100%;width:' + pct + '%;border-radius:999px;background:' + (ready ? '#12B76A' : '#1407A2'),
-      heroBtn: ready ? 'View payroll summary' : 'Review items →',
+      heroBtn: ready ? 'View payroll summary' : 'Review ' + needsCount + ' items →',
       heroBtnStyle: 'height:36px;padding:0 16px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:' +
         (ready ? '1px solid #ECECF1;background:#FFFFFF;color:#191A2E' : 'none;background:#1407A2;color:#FFFFFF'),
-      heroAction: () => { if (!ready && open.length) this.setState({ tab: 'All', sel: open[0].id }); },
+      hasFocus: !!s.focus,
+      focusLabel: { ot: 'Overtime needing review', time: 'Time / EVV exceptions', mileage: 'Mileage documentation' }[s.focus] || '',
+      clearFocus: () => this.setState({ focus: null }),
+      heroAction: () => { if (!ready) this.setState({ view: 'review', roster: 'needs', focus: null, q: '', emp: null }); else this.setState({ showExport: true }); },
       hasBlockers: blockers.length > 0, blockers: blockers,
       prepared: s.prepared,
 
@@ -788,11 +1188,43 @@ class Component extends DCLogic {
         };
       }),
       queue: queue, queueEmpty: queue.length === 0,
-      emptyNote: open.length === 0 ? 'All 36 employees are cleared for Aug 1 – 7.' : 'Nothing in this category — check the other tabs.',
+      emptyNote: allClear ? 'All 36 employees are cleared for Aug 1 – 7.' : 'Nothing in this category — check the other tabs.',
       joyNote: ready
         ? 'Joy: Payroll for Aug 1 – 7 is clear. The Gusto file is ready to prepare, and the LTI package can go out today.'
-        : 'Joy: ' + open.length + ' employee' + (open.length === 1 ? '' : 's') + ' ' + (open.length === 1 ? 'is' : 'are') + ' holding payroll — ' + open.map(x => x.kind.toLowerCase()).join(', ') + '.',
+        : 'Joy: ' + needsCount + ' employee' + (needsCount === 1 ? '' : 's') + ' ' + (needsCount === 1 ? 'is' : 'are') + ' holding payroll — ' + needsRows.map(x => {
+            if (x.ot && x.ot.kind === 'unexpected') return 'unexpected OT';
+            if (x.ot && x.ot.kind === 'variance') return 'OT above the approved amount';
+            if (x.ot && x.ot.kind === 'confirm') return 'OT awaiting confirmation';
+            if (x.ex) return x.ex.kind.toLowerCase().replace('evv', 'EVV').replace('overtime', 'overtime');
+            return 'payroll exception';
+          }).join(', ') + '.',
 
+      cycleSub: clearedCount + ' of ' + TOTAL + ' employees cleared' + (allClear ? '' : ' · ' + needsCount + ' need review before payroll is ready'),
+      cycleReady: allClear ? 'Payroll ready' : '',
+      cycleReadyStyle: allClear ? pillS('#12B76A', '#ECFDF3') : 'display:none',
+      rail: [
+        { k: 'r1', label: 'Hours verified', state: 'done', note: '36 employees' },
+        { k: 'r2', label: 'Exceptions', state: counts.ex ? 'open' : 'done', note: counts.ex ? counts.ex + ' remaining' : 'Cleared', focus: 'time' },
+        { k: 'r3', label: 'Overtime', state: counts.ot ? 'open' : 'done', note: counts.ot ? counts.ot + ' need review' : 'Validated', focus: 'ot' },
+        { k: 'r4', label: 'Mileage', state: counts.mi ? 'open' : 'done', note: counts.mi ? counts.mi + ' remaining' : 'Cleared', focus: 'mileage' },
+        { k: 'r5', label: 'Payroll approved', state: allClear ? 'done' : 'todo', note: allClear ? 'Aug 10 · Joan Robinson' : 'Pending' },
+        { k: 'r6', label: 'Prepared for Gusto', state: s.prepared ? 'done' : 'todo', note: s.prepared ? '10:42 AM' : 'Pending' },
+        { k: 'r7', label: 'Complete', state: s.prepared ? 'done' : 'todo', note: s.prepared ? 'Cycle closed' : 'Pending' }
+      ].map((st, i, arr) => {
+        const color = st.state === 'done' ? '#12B76A' : st.state === 'open' ? '#F79009' : '#D0D5DD';
+        const actionable = st.state === 'open' && st.focus;
+        return {
+          key: st.k, label: st.label, note: st.note,
+          mark: st.state === 'done' ? '✓' : st.state === 'open' ? '!' : '',
+          markStyle: 'width:18px;height:18px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:' +
+            (st.state === 'todo' ? '#B9B9C1' : '#FFFFFF') + ';background:' + (st.state === 'todo' ? '#F1F2F6' : color),
+          labelStyle: 'font-size:12.5px;white-space:nowrap;color:' + (st.state === 'todo' ? '#B9B9C1' : st.state === 'open' ? '#191A2E;font-weight:500' : '#5B6274'),
+          noteStyle: 'font-size:11px;white-space:nowrap;color:' + (st.state === 'open' ? '#B54708' : '#9B9BA3'),
+          style: 'display:flex;align-items:flex-start;gap:9px;background:transparent;border:none;padding:0;text-align:left;flex:none;cursor:' + (actionable ? 'pointer' : 'default'),
+          click: () => { if (actionable) this.setState({ view: 'review', roster: 'needs', focus: st.focus, q: '', emp: null }); },
+          connectorStyle: i === arr.length - 1 ? 'display:none' : 'flex:1 1 auto;min-width:14px;height:1px;margin:9px 12px 0;background:#ECECF1'
+        };
+      }),
       cycle: cycle,
       doneLabel: doneCount + ' step' + (doneCount === 1 ? '' : 's') + ' complete',
       toggleDone: () => this.setState({ showDone: !s.showDone }),
@@ -800,20 +1232,50 @@ class Component extends DCLogic {
       ltiStatus: ready ? 'Ready to send' : 'Waiting on payroll review',
       ltiPillStyle: pillS(ready ? '#12B76A' : '#5B6274', ready ? '#ECFDF3' : '#F3F3F6'),
 
-      views: [['review', 'Review queue'], ['grid', 'Week grid']].map(v => ({
+      rosterTabs: (historic ? [['all', 'All employees']] : [['all', 'All employees'], ['needs', 'Needs review']]).map(t => ({
+        key: t[0], label: t[1],
+        count: t[0] === 'all' ? (historic && histMeta ? histMeta.employees : String(TOTAL)) : String(needsRows.length),
+        click: () => this.setState({ roster: t[0], focus: null }),
+        style: 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;' +
+          (s.roster === t[0] ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
+        countStyle: 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.roster === t[0] ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.roster === t[0] ? '#1407A2' : '#9B9BA3')
+      })),
+      rosterQ: s.q, onRosterQ: (e) => this.setState({ q: e.target.value }),
+      rosterRows: rosterRows,
+      rosterEmpty: rosterRows.length === 0,
+      rosterEmptyCopy: s.roster === 'needs' ? 'Every employee is cleared for Aug 1 – 7.' : 'No employees match this search.',
+      rosterTotalLabel: rosterRows.length + (s.roster === 'needs' && !historic ? ' needing review' : ' shown'),
+      rosterTotalHours: rosterShown.reduce((a, x) => a + x.total, 0).toFixed(1),
+      rosterTotalOt: rosterShown.reduce((a, x) => a + x.r.ot, 0).toFixed(1),
+      rosterTotalOtStyle: 'font-size:12.5px;font-weight:600;color:' + (rosterShown.some(x => x.r.ot) ? '#B54708' : '#C9C9D0'),
+      rosterTotalGross: money(rosterShown.reduce((a, x) => a + x.gross, 0)),
+
+      rosterTitle: s.histWeek ? 'Employees · ' + s.histWeek : 'Employees · Aug 1 – 7',
+      rosterSub: s.histWeek ? 'Processed payroll — hours, overtime and gross pay as filed.' : 'Verified hours, overtime and gross pay for every employee.',
+      rosterCount: rosterRows.length + ' of ' + (historic && histMeta ? histMeta.employees : TOTAL) + ' employees',
+      showLive: !historic,
+      reviewGridStyle: 'display:grid;grid-template-columns:1fr;gap:18px;align-items:start',
+      rosterOtNote: totalOt.toFixed(1) + ' overtime hrs this period',
+
+      empOpen: !!emp, closeEmp: () => this.setState({ emp: null }), e: ev,
+
+      showViews: true,
+      views: [['review', 'Employee roster'], ['grid', 'Week grid']].map(v => ({
         key: v[0], label: v[1], click: () => this.setState({ view: v[0] }),
         style: 'border:none;border-radius:7px;padding:0 14px;height:28px;font-size:12.5px;cursor:pointer;' +
           (s.view === v[0] ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92')
       })),
       isReview: s.view !== 'grid', isGrid: s.view === 'grid',
-      gridDays: DAYS.map((d, i) => ({
+      gridTitle: 'Week grid · ' + (historic ? s.histWeek : 'Aug 1 – 7'),
+      gridShown: 'Showing ' + source.length + ' of ' + (historic && histMeta ? histMeta.employees : TOTAL) + ' employees · totals below cover the ' + source.length + ' shown',
+      gridDays: periodDays.map((d, i) => ({
         key: 'gd' + i, dow: d.dow, date: d.date,
         style: 'text-align:center;padding:9px 10px;background:#FCFCFD;white-space:nowrap;line-height:1.35' + (i < 2 ? ';background:#FAFAFB' : '')
       })),
       gridTotalHrs: gridSum.hrs.toFixed(1),
       gridTotalOt: gridSum.ot.toFixed(1),
       gridTotalGross: '$' + gridSum.gross.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-      gridRows: GRID.map(r => {
+      gridRows: source.map(r => {
         const total = r.d.reduce((a, b) => a + b, 0);
         const reg = total - r.ot;
         const gross = reg * r.rate + r.ot * r.rate * 1.5;
@@ -834,11 +1296,11 @@ class Component extends DCLogic {
           gross: '$' + gross.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         };
       }),
-      gridFooter: DAYS.map((d, i) => ({
+      gridFooter: periodDays.map((d, i) => ({
         key: 'gf' + i,
-        value: GRID.reduce((a, r) => a + r.d[i], 0).toFixed(1).replace('.0', '')
+        value: source.reduce((a, r) => a + r.d[i], 0).toFixed(1).replace('.0', '')
       })),
-      gridNote: ready ? 'All hours reconciled' : open.length + ' cell' + (open.length === 1 ? '' : 's') + ' flagged for review',
+      gridNote: historic ? 'Filed ' + (histMeta ? histMeta.completed : '') : ready ? 'All hours reconciled' : needsCount + ' employee' + (needsCount === 1 ? '' : 's') + ' flagged for review',
 
       exportOpen: s.showExport,
       openExport: () => this.setState({ showExport: true }),
@@ -848,11 +1310,11 @@ class Component extends DCLogic {
         : 'Draft — regenerates as items are reviewed · Gusto time-import format',
       exportFootnote: ready
         ? 'Joy assembled these totals from verified visit data. Upload the file in Gusto to run payroll — Joy does not submit it for you.'
-        : '* Draft figures — items marked with an asterisk can still change as the ' + open.length + ' open exception' + (open.length === 1 ? '' : 's') + ' ' + (open.length === 1 ? 'is' : 'are') + ' resolved.',
-      exportState: ready ? 'Reconciled · 0 exceptions' : 'Draft · ' + open.length + ' exception' + (open.length === 1 ? '' : 's') + ' unresolved',
+        : '* Draft figures — items marked with an asterisk can still change as the ' + needsCount + ' open exception' + (needsCount === 1 ? '' : 's') + ' ' + (needsCount === 1 ? 'is' : 'are') + ' resolved.',
+      exportState: ready ? 'Reconciled · 0 exceptions' : 'Draft · ' + needsCount + ' exception' + (needsCount === 1 ? '' : 's') + ' unresolved',
       exportDotStyle: 'width:7px;height:7px;border-radius:50%;background:' + (ready ? '#12B76A' : '#F79009'),
       exportTotals: [
-        { key: 'e1', label: 'Employees cleared', value: cleared + ' of ' + TOTAL },
+        { key: 'e1', label: 'Employees cleared', value: clearedCount + ' of ' + TOTAL },
         { key: 'e2', label: 'Regular hrs', value: ready ? '1,284.5' : '1,284.5 *' },
         { key: 'e3', label: 'Overtime hrs', value: ready ? '18.0' : '18.0 *' },
         { key: 'e4', label: 'Reimbursements', value: ready ? '$472.06' : '$472.06 *' },

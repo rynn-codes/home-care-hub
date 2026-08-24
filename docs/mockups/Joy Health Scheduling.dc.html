@@ -74,7 +74,7 @@ input{font-family:inherit}
       <span style="font-size:12.5px;color:#9B9BA3">Scheduling</span>
       <span style="font-size:12.5px;color:#C9C9D0">/</span>
       <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ rangeLabel }}</span>
-      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:12 AM</span>
     </header>
 
     <div style="padding:28px 40px 90px;display:flex;flex-direction:column;gap:18px">
@@ -82,16 +82,33 @@ input{font-family:inherit}
       <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;gap:5px;min-width:300px">
           <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Scheduling</h1>
-          <p style="margin:0;font-size:13.5px;color:#5B6274">Manage client schedules, caregiver assignments, and open shifts.</p>
+          <p style="margin:0;font-size:13.5px;color:#5B6274">Manage client schedules, caregiver assignments, and coverage.</p>
         </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:9px">
           <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:196px">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
             <input type="text" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Client or caregiver" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
           </div>
-          <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round"><path d="M2.4 4h11.2M4.4 8h7.2M6.4 12h3.2"></path></svg>Filter
-          </button>
+          <div style="position:relative">
+            <button onClick="{{ toggleFilters }}" style="{{ filterBtnStyle }}">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.4" stroke-linecap="round"><path d="M2.4 4h11.2M4.4 8h7.2M6.4 12h3.2"></path></svg>Filter<span style="{{ filterCountStyle }}">{{ filterCount }}</span>
+            </button>
+            <sc-if value="{{ filterOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:40px;right:0;z-index:32;width:266px;max-height:420px;overflow-y:auto;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:10px;display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ filterGroups }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <span style="padding:2px 6px 5px;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ g.label }}</span>
+                    <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="4">
+                      <button onClick="{{ i.click }}" style="display:flex;align-items:center;gap:9px;width:100%;background:transparent;border:none;padding:6px;border-radius:8px;font-size:12.5px;color:#191A2E;cursor:pointer;text-align:left" style-hover="background:#FAFAFB">
+                        <span style="{{ i.boxStyle }}">{{ i.check }}</span>{{ i.label }}
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-for>
+                <button onClick="{{ clearFilters }}" style="height:30px;background:#FCFCFD;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Clear all filters</button>
+              </div>
+            </sc-if>
+          </div>
           <div style="position:relative">
             <button onClick="{{ toggleQuickAdd }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Quick add
@@ -117,48 +134,98 @@ input{font-family:inherit}
         </div>
         <span style="font-size:16px;font-weight:600;letter-spacing:-.015em">{{ rangeLabel }}</span>
         <div style="margin-left:auto;display:flex;background:#F1F2F6;border-radius:9px;padding:3px;gap:2px">
-          <sc-for list="{{ viewTabs }}" as="v" hint-placeholder-count="3">
+          <sc-for list="{{ viewTabs }}" as="v" hint-placeholder-count="4">
             <button onClick="{{ v.click }}" style="{{ v.style }}">{{ v.label }}</button>
           </sc-for>
         </div>
       </div>
 
+      <sc-if value="{{ hasChips }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+          <sc-for list="{{ chips }}" as="c" hint-placeholder-count="2">
+            <button onClick="{{ c.remove }}" style="display:flex;align-items:center;gap:7px;height:28px;padding:0 10px;background:#F1F0FC;border:1px solid #E2E0F7;border-radius:999px;font-size:12px;color:#1407A2;cursor:pointer" style-hover="background:#E8E6FB">{{ c.label }}<span style="color:#8A85C4;font-size:11px">✕</span></button>
+          </sc-for>
+          <button onClick="{{ clearFilters }}" style="height:28px;padding:0 8px;background:transparent;border:none;font-size:12px;color:#8A8A92;cursor:pointer;white-space:nowrap" style-hover="color:#191A2E">Clear all</button>
+        </div>
+      </sc-if>
+
       <div style="display:grid;grid-template-columns:252px 1fr;gap:16px;align-items:start">
 
         <div style="display:flex;flex-direction:column;gap:14px">
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Needs you</span>
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:11px">
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Needs you</span>
+              <span style="{{ needsCountStyle }}">{{ needsCount }}</span>
+            </span>
             <sc-if value="{{ hasNeeds }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex;flex-direction:column;gap:2px">
-                <sc-for list="{{ needs }}" as="n" hint-placeholder-count="3">
+                <sc-for list="{{ needs }}" as="n" hint-placeholder-count="1">
                   <button onClick="{{ n.click }}" style="{{ n.style }}">
                     <span style="{{ n.dotStyle }}"></span>
-                    <span style="display:flex;flex-direction:column;line-height:1.3;text-align:left">
-                      <span style="font-size:13px;color:#191A2E">{{ n.label }}</span>
-                      <span style="font-size:11.5px;color:#9B9BA3">{{ n.sub }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;text-align:left;min-width:0">
+                      <span style="font-size:13px;font-weight:500;color:#191A2E">{{ n.title }}</span>
+                      <span style="font-size:11.5px;color:#8A8A92;line-height:1.4">{{ n.sub }}</span>
+                      <span style="{{ n.metaStyle }}">{{ n.meta }}</span>
                     </span>
+                    <span style="{{ n.ctaStyle }}">{{ n.cta }}</span>
                   </button>
                 </sc-for>
               </div>
             </sc-if>
             <sc-if value="{{ noNeeds }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex;flex-direction:column;gap:4px;padding:6px 0 2px">
-                <span style="font-size:13.5px;font-weight:500;color:#191A2E">Schedule is covered.</span>
-                <span style="font-size:12px;color:#8A8A92">No open shifts or conflicts this week.</span>
-              </div>
+              <span style="font-size:12.5px;color:#8A8A92;padding:2px 0 4px">Joy has scheduling covered.</span>
             </sc-if>
           </div>
 
           <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:11px">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">This week</span>
-            <div style="display:flex;flex-direction:column">
-              <sc-for list="{{ weekStats }}" as="s" hint-placeholder-count="4">
-                <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F3F3F6">
-                  <span style="font-size:12.5px;color:#9B9BA3">{{ s.label }}</span>
-                  <span style="{{ s.valueStyle }}">{{ s.value }}</span>
-                </div>
-              </sc-for>
-            </div>
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Joy working</span>
+              <span style="{{ joyCountStyle }}">{{ joyCount }}</span>
+            </span>
+            <sc-if value="{{ hasJoyWork }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ joyWorking }}" as="n" hint-placeholder-count="2">
+                  <button onClick="{{ n.click }}" style="{{ n.style }}">
+                    <span style="{{ n.dotStyle }}"></span>
+                    <span style="display:flex;flex-direction:column;gap:2px;text-align:left;min-width:0">
+                      <span style="font-size:13px;font-weight:500;color:#191A2E">{{ n.title }}</span>
+                      <span style="font-size:11.5px;color:#8A8A92;line-height:1.4">{{ n.sub }}</span>
+                      <span style="{{ n.metaStyle }}">{{ n.meta }}</span>
+                    </span>
+                    <span style="{{ n.ctaStyle }}">{{ n.cta }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noJoyWork }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12.5px;color:#8A8A92;padding:2px 0 4px">Nothing is being worked right now.</span>
+            </sc-if>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:11px">
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Waiting</span>
+              <span style="{{ waitCountStyle }}">{{ waitCount }}</span>
+            </span>
+            <sc-if value="{{ hasWaiting }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ waiting }}" as="n" hint-placeholder-count="2">
+                  <button onClick="{{ n.click }}" style="{{ n.style }}">
+                    <span style="{{ n.dotStyle }}"></span>
+                    <span style="display:flex;flex-direction:column;gap:2px;text-align:left;min-width:0">
+                      <span style="font-size:13px;font-weight:500;color:#191A2E">{{ n.title }}</span>
+                      <span style="font-size:11.5px;color:#8A8A92;line-height:1.4">{{ n.sub }}</span>
+                      <span style="{{ n.metaStyle }}">{{ n.meta }}</span>
+                    </span>
+                    <span style="{{ n.ctaStyle }}">{{ n.cta }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noWaiting }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12.5px;color:#8A8A92;padding:2px 0 4px">Nobody is waiting on a reply.</span>
+            </sc-if>
           </div>
 
           <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
@@ -175,6 +242,10 @@ input{font-family:inherit}
         </div>
 
         <sc-if value="{{ isWeek }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-if value="{{ weekEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:20px;text-align:center;font-size:13px;color:#9B9BA3">{{ emptyCopy }}</div>
+          </sc-if>
           <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
             <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr))">
               <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
@@ -187,8 +258,8 @@ input{font-family:inherit}
                 <div onDragOver="{{ c.dragOver }}" onDrop="{{ c.drop }}" onDragLeave="{{ c.dragLeave }}" style="{{ c.style }}">
                   <sc-for list="{{ c.visits }}" as="v" hint-placeholder-count="2">
                     <div draggable="true" onDragStart="{{ v.dragStart }}" onDragEnd="{{ v.dragEnd }}" onClick="{{ v.open }}" style="{{ v.style }}">
-                      <span style="display:flex;align-items:center;gap:6px">
-                        <span style="font-size:11.5px;font-weight:600;color:#5B6274">{{ v.start }}</span>
+                      <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0">
+                        <span style="font-size:11.5px;font-weight:600;color:#5B6274;white-space:nowrap">{{ v.start }}</span>
                         <span style="{{ v.badgeStyle }}">{{ v.badge }}</span>
                       </span>
                       <span style="font-size:13px;font-weight:500;color:#191A2E;line-height:1.3;overflow-wrap:anywhere">{{ v.client }}</span>
@@ -207,51 +278,106 @@ input{font-family:inherit}
               </sc-for>
             </div>
           </div>
+          </div>
         </sc-if>
 
         <sc-if value="{{ isDay }}" hint-placeholder-val="{{ false }}">
           <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
-            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #ECECF1">
+            <div style="display:flex;align-items:baseline;gap:11px;padding:14px 18px;border-bottom:1px solid #ECECF1">
               <span style="font-size:14px;font-weight:600">{{ dayTitle }}</span>
+              <span style="font-size:11.5px;color:#9B9BA3">Dispatch · clock status</span>
               <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">{{ dayCount }}</span>
             </div>
             <sc-for list="{{ dayRows }}" as="r" hint-placeholder-count="5">
-              <div onClick="{{ r.open }}" style="display:flex;gap:18px;padding:15px 18px;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
-                <span style="width:96px;flex:none;display:flex;flex-direction:column;line-height:1.3">
-                  <span style="font-size:13px;font-weight:600;color:#191A2E">{{ r.start }}</span>
-                  <span style="font-size:11.5px;color:#9B9BA3">{{ r.end }}</span>
-                </span>
-                <span style="width:2px;flex:none;border-radius:2px;background:{{ r.rail }}"></span>
-                <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-                  <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.client }}</span>
-                  <span style="font-size:12.5px;color:#8A8A92">{{ r.service }} · {{ r.hours }}</span>
-                </span>
-                <span style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
-                  <span style="{{ r.badgeStyle }}">{{ r.badge }}</span>
-                  <span style="display:flex;align-items:center;gap:8px">
-                    <span style="{{ r.avatarStyle }}">{{ r.initials }}</span>
-                    <span style="{{ r.caregiverStyle }}">{{ r.caregiver }}</span>
+              <div>
+                <div style="{{ r.nowStyle }}">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#D92D20;flex:none"></span>
+                  <span style="font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#D92D20;white-space:nowrap">{{ nowLabel }}</span>
+                  <span style="flex:1;height:1px;background:#FBD9D3"></span>
+                </div>
+                <div onClick="{{ r.open }}" style="display:flex;gap:18px;padding:15px 18px;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                  <span style="width:96px;flex:none;display:flex;flex-direction:column;line-height:1.3">
+                    <span style="font-size:13px;font-weight:600;color:#191A2E">{{ r.start }}</span>
+                    <span style="font-size:11.5px;color:#9B9BA3">{{ r.end }}</span>
                   </span>
-                </span>
+                  <span style="width:2px;flex:none;border-radius:2px;background:{{ r.rail }}"></span>
+                  <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                    <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.client }}</span>
+                    <span style="font-size:12.5px;color:#8A8A92">{{ r.service }} · {{ r.hours }}</span>
+                    <span style="{{ r.clockStyle }}">{{ r.clock }}</span>
+                  </span>
+                  <span style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
+                    <span style="{{ r.badgeStyle }}">{{ r.badge }}</span>
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <span style="{{ r.avatarStyle }}">{{ r.initials }}</span>
+                      <span style="{{ r.caregiverStyle }}">{{ r.caregiver }}</span>
+                    </span>
+                  </span>
+                </div>
               </div>
             </sc-for>
+            <sc-if value="{{ dayEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:34px;text-align:center;font-size:13px;color:#9B9BA3">{{ emptyCopy }}</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isAgenda }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ agendaDays }}" as="d" hint-placeholder-count="4">
+              <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:10px;padding:11px 18px;background:#FCFCFD;border-bottom:1px solid #ECECF1">
+                  <span style="font-size:13px;font-weight:600;color:#191A2E">{{ d.label }}</span>
+                  <span style="margin-left:auto;font-size:12px;color:#9B9BA3">{{ d.count }}</span>
+                </div>
+                <sc-for list="{{ d.items }}" as="v" hint-placeholder-count="2">
+                  <div onClick="{{ v.open }}" style="display:flex;align-items:center;gap:16px;padding:13px 18px;border-bottom:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                    <span style="width:158px;flex:none;font-size:13px;font-weight:600;color:#191A2E">{{ v.window }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+                      <span style="font-size:13.5px;color:#191A2E">{{ v.headline }}</span>
+                      <span style="{{ v.caregiverStyle }}">{{ v.caregiver }}</span>
+                    </span>
+                    <span style="{{ v.statusStyle }}">{{ v.status }}</span>
+                    <span style="flex:none;color:#C9C9D0;font-size:14px">›</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:34px;text-align:center;font-size:13px;color:#9B9BA3">{{ emptyCopy }}</div>
+            </sc-if>
           </div>
         </sc-if>
 
         <sc-if value="{{ isMonth }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr))">
-              <sc-for list="{{ dow }}" as="w" hint-placeholder-count="7">
-                <div style="padding:9px 12px;background:#FCFCFD;border-bottom:1px solid #ECECF1;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3">{{ w.label }}</div>
-              </sc-for>
-              <sc-for list="{{ monthCells }}" as="m" hint-placeholder-count="35">
-                <div onClick="{{ m.open }}" style="{{ m.style }}">
-                  <span style="{{ m.numStyle }}">{{ m.num }}</span>
-                  <sc-for list="{{ m.lines }}" as="l" hint-placeholder-count="2">
-                    <span style="{{ l.style }}">{{ l.text }}</span>
-                  </sc-for>
-                </div>
-              </sc-for>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:0 2px">
+              <span style="display:flex;align-items:center;gap:7px">
+                <span style="width:12px;height:12px;border-radius:50%;background:#1407A2;flex:none"></span>
+                <span style="font-size:12px;color:#5B6274">Today · Monday, Aug 10</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:7px">
+                <span style="width:12px;height:12px;border-radius:3px;background:#E8E6FB;border:1px solid #CFCBF4;flex:none"></span>
+                <span style="font-size:12px;color:#5B6274">Billing week Aug 8–14 · Sat–Fri · payroll closes Mon, Aug 17</span>
+              </span>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr))">
+                <sc-for list="{{ dow }}" as="w" hint-placeholder-count="7">
+                  <div style="{{ w.style }}">{{ w.label }}<span style="{{ w.todayStyle }}">Today</span></div>
+                </sc-for>
+                <sc-for list="{{ monthCells }}" as="m" hint-placeholder-count="35">
+                  <div onClick="{{ m.open }}" style="{{ m.style }}">
+                    <span style="display:flex;align-items:center;gap:7px">
+                      <span style="{{ m.numStyle }}">{{ m.num }}</span>
+                      <span style="{{ m.tagStyle }}">{{ m.tag }}</span>
+                    </span>
+                    <sc-for list="{{ m.lines }}" as="l" hint-placeholder-count="2">
+                      <span style="{{ l.style }}">{{ l.text }}</span>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
             </div>
           </div>
         </sc-if>
@@ -331,7 +457,22 @@ input{font-family:inherit}
           </div>
         </div>
         <div style="padding:18px 22px;display:flex;flex-direction:column;gap:16px;max-height:56vh;overflow-y:auto">
-          <span style="font-size:13.5px;color:#191A2E">{{ ai.summary }}</span>
+          <span style="font-size:13.5px;color:#191A2E;line-height:1.5;text-wrap:pretty">{{ ai.summary }}</span>
+          <sc-if value="{{ ai.hasMatches }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <sc-for list="{{ ai.matches }}" as="m" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #ECECF1;border-radius:12px">
+                  <span style="width:28px;height:28px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ m.initials }}</span>
+                  <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                    <span style="font-size:13px;font-weight:500;color:#191A2E">{{ m.name }}</span>
+                    <span style="{{ m.whyStyle }}">{{ m.why }}</span>
+                  </span>
+                  <button onClick="{{ m.review }}" style="margin-left:auto;flex:none;height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:8px;font-size:12px;color:#1407A2;cursor:pointer" style-hover="background:#EEF0FE">Review</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ ai.hasChanges }}" hint-placeholder-val="{{ true }}">
           <div style="border:1px solid #ECECF1;border-radius:12px;overflow:hidden">
             <sc-for list="{{ ai.changes }}" as="c" hint-placeholder-count="5">
               <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #F3F3F6">
@@ -343,6 +484,7 @@ input{font-family:inherit}
               </div>
             </sc-for>
           </div>
+          </sc-if>
           <div style="display:flex;flex-direction:column">
             <sc-for list="{{ ai.facts }}" as="f" hint-placeholder-count="3">
               <div style="display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid #F3F3F6">
@@ -377,6 +519,22 @@ input{font-family:inherit}
 
         <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:20px">
 
+          <sc-if value="{{ d.hasCause }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid #FBD9D3;border-radius:12px;background:#FEF3F2">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B42318">Why this conflicts</span>
+                <span style="font-size:13px;color:#912018;line-height:1.5;text-wrap:pretty">{{ d.cause }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+                <span style="display:flex;align-items:center;gap:7px">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9B9BA3">Joy recommendation</span>
+                </span>
+                <span style="font-size:13px;color:#191A2E;line-height:1.5;text-wrap:pretty">{{ d.rec }}</span>
+              </div>
+            </div>
+          </sc-if>
+
           <div style="display:flex;align-items:center;gap:11px;padding:13px 14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
             <span style="{{ d.avatarStyle }}">{{ d.initials }}</span>
             <span style="display:flex;flex-direction:column;line-height:1.3">
@@ -386,22 +544,42 @@ input{font-family:inherit}
             <span style="margin-left:auto;font-size:12px;color:#8A8A92">{{ d.assignNote }}</span>
           </div>
 
-          <sc-if value="{{ d.isOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Operational status</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ d.statusChips }}" as="c" hint-placeholder-count="2">
+                <span style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ d.showMatches }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;flex-direction:column;gap:10px">
-              <span style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Suggested caregivers</span>
-                <span style="margin-left:auto;font-size:11.5px;color:#8A8A92">Availability, distance, hours</span>
+              <span style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ d.coverageLabel }}</span>
               </span>
+              <div style="display:flex;flex-direction:column;gap:5px;padding:12px 13px;border:1px solid #E2E0F7;border-radius:12px;background:#FBFBFE">
+                <span style="font-size:13px;font-weight:500;color:#1407A2">{{ d.coverageHeadline }}</span>
+                <span style="font-size:12px;color:#5B6274;line-height:1.45;text-wrap:pretty">{{ d.coverageNote }}</span>
+              </div>
               <sc-for list="{{ d.matches }}" as="m" hint-placeholder-count="3">
-                <div style="display:flex;align-items:center;gap:11px;padding:12px 13px;border:1px solid #ECECF1;border-radius:12px">
-                  <span style="width:30px;height:30px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ m.initials }}</span>
-                  <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
-                    <span style="font-size:13px;font-weight:500;color:#191A2E">{{ m.name }}</span>
-                    <span style="font-size:11.5px;color:#8A8A92;line-height:1.35">{{ m.why }}</span>
+                <div style="{{ m.cardStyle }}">
+                  <span style="display:flex;align-items:center;gap:10px">
+                    <span style="width:30px;height:30px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ m.initials }}</span>
+                    <span style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                      <span style="font-size:13px;font-weight:500;color:#191A2E">{{ m.name }}</span>
+                      <span style="{{ m.outreachStyle }}">{{ m.outreach }}</span>
+                    </span>
+                    <button onClick="{{ m.assign }}" style="{{ m.assignStyle }}">{{ m.assignLabel }}</button>
                   </span>
-                  <button onClick="{{ m.assign }}" style="margin-left:auto;flex:none;height:30px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:8px;font-size:12px;color:#1407A2;cursor:pointer" style-hover="background:#EEF0FE">Assign</button>
+                  <span style="display:flex;flex-direction:column;gap:2px;padding-left:40px">
+                    <sc-for list="{{ m.reasons }}" as="r" hint-placeholder-count="3">
+                      <span style="{{ r.style }}">{{ r.text }}</span>
+                    </sc-for>
+                  </span>
                 </div>
               </sc-for>
+              <span style="{{ d.outreachCtaStyle }}">{{ d.outreachCta }}</span>
             </div>
           </sc-if>
 
@@ -418,29 +596,58 @@ input{font-family:inherit}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:9px">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Quick actions</span>
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Actions</span>
             <div style="display:flex;flex-wrap:wrap;gap:7px">
-              <sc-for list="{{ d.actions }}" as="a" hint-placeholder-count="6">
+              <sc-for list="{{ d.actions }}" as="a" hint-placeholder-count="5">
                 <button onClick="{{ a.click }}" style="{{ a.style }}">{{ a.label }}</button>
               </sc-for>
             </div>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:9px">
-            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Activity</span>
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Joy activity</span>
             <div style="display:flex;flex-direction:column">
               <sc-for list="{{ d.activity }}" as="a" hint-placeholder-count="4">
-                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                <div style="display:flex;align-items:flex-start;gap:11px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:11.5px;color:#9B9BA3;width:58px;flex:none;padding-top:1px">{{ a.when }}</span>
                   <span style="{{ a.dotStyle }}"></span>
-                  <span style="font-size:12.5px;color:#191A2E;line-height:1.4">{{ a.label }}</span>
-                  <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3;white-space:nowrap">{{ a.when }}</span>
+                  <span style="font-size:12.5px;color:#191A2E;line-height:1.45;text-wrap:pretty">{{ a.label }}</span>
                 </div>
               </sc-for>
             </div>
+            <span style="font-size:11.5px;color:#9B9BA3;line-height:1.5">Every Joy action on this visit is written to the audit log.</span>
           </div>
 
         </div>
       </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ scopeOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:85;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ closeScope }}" style="position:absolute;inset:0;background:rgba(25,26,46,.24)"></div>
+      <div style="position:relative;width:100%;max-width:424px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 24px 60px rgba(25,26,46,.18);animation:sheetIn .16s ease-out;display:flex;flex-direction:column">
+        <div style="padding:20px 22px 2px;display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">Apply this change to</span>
+          <span style="font-size:13px;color:#5B6274">{{ scope.sub }}</span>
+        </div>
+        <div style="padding:14px 22px 18px;display:flex;flex-direction:column;gap:7px">
+          <sc-for list="{{ scope.options }}" as="o" hint-placeholder-count="3">
+            <button onClick="{{ o.click }}" style="{{ o.style }}">
+              <span style="{{ o.radioStyle }}"></span>
+              <span style="display:flex;flex-direction:column;gap:2px;text-align:left">
+                <span style="font-size:13.5px;font-weight:500;color:#191A2E">{{ o.label }}</span>
+                <span style="font-size:11.5px;color:#8A8A92;line-height:1.4">{{ o.sub }}</span>
+              </span>
+            </button>
+          </sc-for>
+          <span style="font-size:11.5px;color:#9B9BA3;line-height:1.5">Visits that have already been completed are never rewritten.</span>
+        </div>
+        <div style="padding:14px 22px;border-top:1px solid #ECECF1;display:flex;gap:9px;background:#FCFCFD;border-radius:0 0 16px 16px">
+          <button onClick="{{ closeScope }}" style="flex:1;height:38px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Cancel</button>
+          <button onClick="{{ applyScope }}" style="flex:1.4;height:38px;background:#1407A2;border:none;border-radius:10px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">Continue</button>
+        </div>
+      </div>
     </div>
   </sc-if>
 
@@ -502,30 +709,143 @@ const DAYS = [
 const LONG = ['Monday, Aug 10', 'Tuesday, Aug 11', 'Wednesday, Aug 12', 'Thursday, Aug 13', 'Friday, Aug 14', 'Saturday, Aug 15', 'Sunday, Aug 16'];
 
 const SEED = [
-  { id: 'v1', day: 0, start: '8:00 AM', end: '4:00 PM', hours: '8 hrs', client: 'Evelyn Carter', service: 'Personal Care', caregiver: 'Maria Johnson', status: 'confirmed' },
-  { id: 'v2', day: 0, start: '9:00 AM', end: '2:00 PM', hours: '5 hrs', client: 'Harold Whitaker', service: 'Personal Care', caregiver: 'Emmet Bauch', status: 'confirmed' },
+  { id: 'v1', day: 0, start: '8:00 AM', end: '4:00 PM', hours: '8 hrs', client: 'Evelyn Carter', service: 'Personal Care', caregiver: 'Maria Johnson', status: 'confirmed', clock: 'Clocked in 8:01 AM' },
+  { id: 'v2', day: 0, start: '9:00 AM', end: '2:00 PM', hours: '5 hrs', client: 'Harold Whitaker', service: 'Personal Care', caregiver: 'Emmet Bauch', status: 'confirmed', clock: 'Clocked in 9:04 AM', otRisk: true },
+  { id: 'v18', day: 0, start: '10:00 AM', end: '2:00 PM', hours: '4 hrs', client: 'Ruben Ortiz', service: 'Companion Care', caregiver: 'Nia Coleman', status: 'confirmed', clock: 'Not clocked in · 12 min late', workflow: 'joy_working', joyNote: 'Missed clock-in — contacting Nia Coleman', joyMeta: 'Texted 10:07 AM · client not yet notified' },
   { id: 'v3', day: 0, start: '1:00 PM', end: '5:00 PM', hours: '4 hrs', client: 'Maribel Santos', service: 'Companion Care', caregiver: 'Hassie Kohler', status: 'confirmed' },
-  { id: 'v4', day: 1, start: '7:00 AM', end: '3:00 PM', hours: '8 hrs', client: 'Lian Huang', service: 'Personal Care', caregiver: 'Kelly Kuhn', status: 'confirmed' },
+  { id: 'v4', day: 1, start: '7:00 AM', end: '3:00 PM', hours: '8 hrs', client: 'Lian Huang', service: 'Personal Care', caregiver: 'Kelly Kuhn', status: 'confirmed', otRisk: true },
   { id: 'v5', day: 1, start: '10:00 AM', end: '2:00 PM', hours: '4 hrs', client: 'Dorothy Aiken', service: 'Supervisory Visit', caregiver: 'Priya Shah', status: 'confirmed' },
-  { id: 'v6', day: 1, start: '2:00 PM', end: '6:00 PM', hours: '4 hrs', client: 'Ruth Alvarez', service: 'Companion Care', caregiver: null, status: 'open', matches: 3 },
-  { id: 'v7', day: 2, start: '8:00 AM', end: '2:00 PM', hours: '6 hrs', client: 'Dorothy Aiken', service: 'Personal Care', caregiver: 'Allison Archibald', status: 'confirmed' },
+  { id: 'v6', day: 1, start: '2:00 PM', end: '6:00 PM', hours: '4 hrs', client: 'Ruth Alvarez', service: 'Companion Care', caregiver: null, status: 'open', matches: 3, workflow: 'waiting', joyNote: 'Waiting on caregiver response', joyMeta: 'Requested 18 min ago', notes: 'Ruth prefers a caregiver she has worked with before.' },
+  { id: 'v7', day: 2, start: '8:00 AM', end: '2:00 PM', hours: '6 hrs', client: 'Dorothy Aiken', service: 'Personal Care', caregiver: 'Allison Archibald', status: 'confirmed', updated: 'Start moved 30 min earlier · family confirmed' },
   { id: 'v8', day: 2, start: '9:00 AM', end: '2:00 PM', hours: '5 hrs', client: 'Harold Whitaker', service: 'Personal Care', caregiver: 'Emmet Bauch', status: 'confirmed' },
-  { id: 'v9', day: 2, start: '3:00 PM', end: '7:00 PM', hours: '4 hrs', client: 'Evelyn Carter', service: 'Respite', caregiver: 'Samantha Chen', status: 'conflict', why: 'Samantha is already assigned 1:00–5:00 PM with Margaret Davis.' },
+  { id: 'v9', day: 2, start: '3:00 PM', end: '7:00 PM', hours: '4 hrs', client: 'Evelyn Carter', service: 'Respite', caregiver: 'Samantha Chen', status: 'conflict', workflow: 'needs_you', joyNote: 'Scheduling conflict', joyMeta: 'Joy cannot reassign without approval', why: 'Samantha Chen is assigned to Margaret Davis until 5:00 PM and Evelyn Carter\u2019s visit begins at 3:00 PM.', rec: 'Move Evelyn\u2019s visit to 5:30 PM, or assign one of 2 available caregivers.' },
   { id: 'v10', day: 3, start: '7:00 AM', end: '3:00 PM', hours: '8 hrs', client: 'Lian Huang', service: 'Personal Care', caregiver: 'Kelly Kuhn', status: 'confirmed' },
   { id: 'v11', day: 3, start: '10:00 AM', end: '12:00 PM', hours: '2 hrs', client: 'Ruben Ortiz', service: 'Assessment', caregiver: 'Priya Shah', status: 'confirmed' },
   { id: 'v12', day: 4, start: '8:00 AM', end: '2:00 PM', hours: '6 hrs', client: 'Dorothy Aiken', service: 'Personal Care', caregiver: 'Allison Archibald', status: 'confirmed' },
-  { id: 'v13', day: 4, start: '9:00 AM', end: '5:00 PM', hours: '8 hrs', client: 'Ruth Alvarez', service: 'Personal Care', caregiver: null, status: 'open', matches: 4, callout: 'Amani McClure called out' },
+  { id: 'v13', day: 4, start: '9:00 AM', end: '5:00 PM', hours: '8 hrs', client: 'Ruth Alvarez', service: 'Personal Care', caregiver: null, status: 'callout', matches: 4, callout: 'Amani McClure called out at 8:02 AM', workflow: 'joy_working', joyNote: 'Finding Friday coverage', joyMeta: '4 matches found · 3 contacted · 1 declined', notes: 'Two-person transfer assist required.' },
   { id: 'v14', day: 4, start: '10:00 AM', end: '2:00 PM', hours: '4 hrs', client: 'Maribel Santos', service: 'Companion Care', caregiver: 'Hassie Kohler', status: 'confirmed' },
-  { id: 'v15', day: 5, start: '9:00 AM', end: '1:00 PM', hours: '4 hrs', client: 'Margaret Davis', service: 'Companion Care', caregiver: 'Jamal Carter', status: 'confirmed' },
-  { id: 'v16', day: 5, start: '10:00 AM', end: '6:00 PM', hours: '8 hrs', client: 'Lian Huang', service: 'Personal Care', caregiver: 'Nia Coleman', status: 'confirmed' },
+  { id: 'v15', day: 5, start: '9:00 AM', end: '1:00 PM', hours: '4 hrs', client: 'Margaret Davis', service: 'Companion Care', caregiver: 'Jamal Carter', status: 'pending', workflow: 'waiting', joyNote: 'Waiting on family confirmation', joyMeta: 'Reminder sent 2 hrs ago' },
+  { id: 'v16', day: 5, start: '10:00 AM', end: '6:00 PM', hours: '8 hrs', client: 'Lian Huang', service: 'Personal Care', caregiver: 'Nia Coleman', status: 'confirmed', otRisk: true },
   { id: 'v17', day: 6, start: '9:00 AM', end: '1:00 PM', hours: '4 hrs', client: 'Harold Whitaker', service: 'Personal Care', caregiver: 'Marcus Webb', status: 'confirmed' }
 ];
 
-const MATCHES = [
-  { name: 'Maria Johnson', why: 'Available · 12 min away · qualified · 32 hrs this week' },
-  { name: 'Samantha Chen', why: 'Available · qualified · 28 hrs this week' },
-  { name: 'Danielle Carter', why: 'Available · qualified · 39 hrs — overtime risk', warn: true }
+const MATCH_POOL = {
+  v13: [
+    { name: 'Maria Johnson', reasons: ['Available · 4.2 mi away', 'Qualified for Personal Care', '32 scheduled hrs this week · no overtime', 'Previously worked with Ruth 8 times'], outreach: 'Contacted 8:04 AM · waiting' },
+    { name: 'Jamal Carter', reasons: ['Available · 6.8 mi away', 'Qualified for Personal Care', '24 scheduled hrs this week · no overtime'], outreach: 'Contacted 8:04 AM · waiting' },
+    { name: 'Nia Coleman', reasons: ['Available · 9.1 mi away', 'Qualified for Personal Care', '30 scheduled hrs this week · no overtime'], outreach: 'Contacted 8:04 AM · declined 8:11 AM', declined: true },
+    { name: 'Danielle Carter', reasons: ['Available · 11 mi away', 'Qualified for Personal Care', '39 scheduled hrs — assigning adds 7 overtime hrs', 'Requires your approval'], warn: true, outreach: 'Not contacted' }
+  ],
+  v6: [
+    { name: 'Hassie Kohler', reasons: ['Available · 3.4 mi away', 'Qualified for Companion Care', '26 scheduled hrs this week · no overtime', 'Ruth\u2019s regular weekend caregiver'], outreach: 'Contacted 9:54 AM · waiting' },
+    { name: 'Marcus Webb', reasons: ['Available · 7.5 mi away', 'Qualified for Companion Care', '20 scheduled hrs this week · no overtime'], outreach: 'Contacted 9:54 AM · waiting' },
+    { name: 'Priya Shah', reasons: ['Available · 12 mi away', 'Qualified for Companion Care', '34 scheduled hrs this week', 'Only 12 min between visits — travel is 27 min'], warn: true, outreach: 'Not contacted' }
+  ],
+  v9: [
+    { name: 'Jamal Carter', reasons: ['Available 3:00–7:00 PM', 'Qualified for Respite', '24 scheduled hrs this week · no overtime', 'Worked with Evelyn twice this month'], outreach: '' },
+    { name: 'Nia Coleman', reasons: ['Available 3:00–7:00 PM', 'Qualified for Respite', '30 scheduled hrs this week · no overtime'], outreach: '' }
+  ]
+};
+
+const JOY_LOG = {
+  v13: [
+    { t: '8:02 AM', label: 'Detected caregiver call-out — Amani McClure' },
+    { t: '8:03 AM', label: 'Found 4 eligible caregivers' },
+    { t: '8:04 AM', label: 'Contacted first 3 matches through Spruce' },
+    { t: '8:11 AM', label: 'Nia Coleman declined' },
+    { t: '8:14 AM', label: 'Waiting on 2 responses' }
+  ],
+  v6: [
+    { t: '9:52 AM', label: 'Detected uncovered Tuesday afternoon shift' },
+    { t: '9:53 AM', label: 'Found 3 eligible caregivers' },
+    { t: '9:54 AM', label: 'Contacted top 2 matches' },
+    { t: '10:12 AM', label: 'Waiting on 2 responses — no escalation needed yet' }
+  ],
+  v9: [
+    { t: '7:41 AM', label: 'Detected overlapping assignment for Samantha Chen' },
+    { t: '7:42 AM', label: 'Checked 6 caregivers for the 3:00 PM window' },
+    { t: '7:42 AM', label: 'Found 2 available alternatives' },
+    { t: '7:43 AM', label: 'Escalated — reassignment needs your approval' }
+  ],
+  v18: [
+    { t: '10:05 AM', label: 'Expected clock-in not received' },
+    { t: '10:07 AM', label: 'Texted Nia Coleman through Spruce' },
+    { t: '10:11 AM', label: 'Waiting on reply — client not yet notified' }
+  ],
+  v15: [
+    { t: 'Aug 8', label: 'Visit scheduled with Jamal Carter' },
+    { t: 'Aug 9', label: 'Confirmation request sent to the Davis family' },
+    { t: 'Today', label: 'Reminder sent — waiting on confirmation' }
+  ],
+  fallback: [
+    { t: 'Aug 8', label: 'Confirmation sent through Spruce' },
+    { t: 'Aug 7', label: 'Caregiver assigned' },
+    { t: 'Jul 28', label: 'Recurring series created' }
+  ]
+};
+
+const FILTER_GROUPS = [
+  { label: 'People', items: [
+    { k: 'cl:Ruth Alvarez', label: 'Client: Ruth Alvarez' },
+    { k: 'cl:Evelyn Carter', label: 'Client: Evelyn Carter' },
+    { k: 'cg:Maria Johnson', label: 'Caregiver: Maria Johnson' },
+    { k: 'cg:Emmet Bauch', label: 'Caregiver: Emmet Bauch' }
+  ] },
+  { label: 'Schedule', items: [
+    { k: 'sv:Personal Care', label: 'Personal Care' },
+    { k: 'sv:Companion Care', label: 'Companion Care' },
+    { k: 'as:assigned', label: 'Assigned' },
+    { k: 'as:unassigned', label: 'Open / unassigned' },
+    { k: 'st:pending', label: 'Awaiting confirmation' },
+    { k: 'st:conflict', label: 'Conflict' },
+    { k: 'st:callout', label: 'Call-out' }
+  ] },
+  { label: 'Operational', items: [
+    { k: 'wf:needs_you', label: 'Needs You' },
+    { k: 'wf:joy_working', label: 'Joy Working' },
+    { k: 'wf:waiting', label: 'Waiting' },
+    { k: 'ot:risk', label: 'Overtime risk' }
+  ] }
 ];
+const FILTER_LABEL = {};
+FILTER_GROUPS.forEach(g => g.items.forEach(i => { FILTER_LABEL[i.k] = i.label; }));
+const FILTER_PRED = {
+  'as:assigned': v => !!v.caregiver,
+  'as:unassigned': v => !v.caregiver,
+  'st:pending': v => v.status === 'pending',
+  'st:conflict': v => v.status === 'conflict',
+  'st:callout': v => !!v.callout,
+  'wf:needs_you': v => v.workflow === 'needs_you',
+  'wf:joy_working': v => v.workflow === 'joy_working',
+  'wf:waiting': v => v.workflow === 'waiting',
+  'ot:risk': v => !!v.otRisk
+};
+const filterPred = (keys) => {
+  if (!keys.length) return () => true;
+  const groups = {};
+  keys.forEach(k => { const p = k.split(':')[0]; (groups[p] = groups[p] || []).push(k); });
+  return (v) => Object.keys(groups).every(p => groups[p].some(k => {
+    if (FILTER_PRED[k]) return FILTER_PRED[k](v);
+    const val = k.slice(3);
+    if (p === 'cg') return v.caregiver === val;
+    if (p === 'cl') return v.client === val;
+    if (p === 'sv') return v.service === val;
+    return true;
+  }));
+};
+
+const toMin = (t) => { const m = t.match(/(\d+):(\d+)\s*(AM|PM)/); let h = (+m[1]) % 12; if (m[3] === 'PM') h += 12; return h * 60 + (+m[2]); };
+const NOW_MIN = 10 * 60 + 12;
+
+const agendaStatus = (v) => {
+  if (v.status === 'conflict') return { label: 'Needs review', fg: '#B42318', bg: '#FEF3F2' };
+  if (v.status === 'open' || v.status === 'callout') return v.workflow === 'waiting'
+    ? { label: 'Open · awaiting caregiver', fg: '#1407A2', bg: '#EEF0FE' }
+    : { label: 'Open · Joy working', fg: '#1407A2', bg: '#EEF0FE' };
+  if (v.status === 'pending') return { label: 'Awaiting confirmation', fg: '#B54708', bg: '#FFFAEB' };
+  if (v.clock && v.clock.indexOf('Not clocked in') === 0) return { label: 'Missed clock-in', fg: '#B42318', bg: '#FEF3F2' };
+  return { label: 'Confirmed', fg: '#8A8A92', bg: '#F7F7F9' };
+};
 
 const RECURRENCE = {
   'Personal Care': 'Weekly · Mon, Wed, Fri · no end date',
@@ -539,14 +859,15 @@ const QUICK_ADD = ['New shift', 'Recurring schedule', 'Client visit', 'Assessmen
 
 const PROMPTS = [
   { id: 'p1', label: 'Who can cover Ruth\u2019s Friday shift?' },
-  { id: 'p2', label: 'Move Evelyn\u2019s visits next week to 9 AM.' },
-  { id: 'p3', label: 'Show everyone approaching overtime.' }
+  { id: 'p2', label: 'Can we move Evelyn without creating overtime?' },
+  { id: 'p3', label: 'Show caregivers under 32 hrs who can cover Friday.' }
 ];
 
 class Component extends DCLogic {
   state = { joyOpen: false, joyQ: '', joyMic: false,
     view: 'week', visits: SEED, sel: null, dragId: null, over: null, weekOffset: 0,
-    confirm: null, ai: null, toast: null, quickAdd: false, q: '', dayIdx: 0
+    confirm: null, ai: null, toast: null, quickAdd: false, q: '', dayIdx: 0,
+    filters: [], filterOpen: false, scope: null, scopePick: 'this'
   };
 
   visit(id) { return this.state.visits.find(v => v.id === id); }
@@ -568,16 +889,27 @@ class Component extends DCLogic {
   }
 
   cardStyle(v, dragging) {
-    const open = v.status === 'open', conflict = v.status === 'conflict';
+    const open = v.status === 'open' || v.status === 'callout', conflict = v.status === 'conflict';
     return 'display:flex;flex-direction:column;gap:2px;padding:9px 10px;border-radius:10px;cursor:grab;background:#FFFFFF;border:1px solid ' +
       (open ? '#D6D8EA;border-style:dashed' : conflict ? '#FBD9D3' : '#ECECF1') +
       ';box-shadow:0 1px 2px rgba(25,26,46,.04);opacity:' + (dragging ? '.4' : '1') +
       (open ? ';background:#FBFBFE' : conflict ? ';background:#FFFBFA' : '');
   }
 
+  cardBadge(v) {
+    const mini = (fg, bg) => 'display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;font-size:9.5px;font-weight:600;letter-spacing:.02em;white-space:nowrap;color:' + fg + ';background:' + bg;
+    if (v.status === 'callout') return { label: 'CALL-OUT', style: mini('#B54708', '#FFFAEB') };
+    if (v.status === 'open') return { label: 'OPEN', style: mini('#1407A2', '#EEF0FE') };
+    if (v.status === 'conflict') return { label: 'CONFLICT', style: mini('#B42318', '#FEF3F2') };
+    return { label: '', style: 'display:none' };
+  }
+
   badgeFor(v) {
+    if (v.status === 'callout') return { label: 'CALL-OUT', style: pillS('#B54708', '#FFFAEB') };
     if (v.status === 'open') return { label: 'OPEN', style: pillS('#1407A2', '#EEF0FE') };
     if (v.status === 'conflict') return { label: 'CONFLICT', style: pillS('#B42318', '#FEF3F2') };
+    if (v.status === 'pending') return { label: 'AWAITING CONFIRMATION', style: pillS('#B54708', '#FFFAEB') };
+    if (v.updated) return { label: 'UPDATED', style: pillS('#5B6274', '#F1F2F6') };
     return { label: '', style: 'display:none' };
   }
 
@@ -586,7 +918,10 @@ class Component extends DCLogic {
     const q = s.q.trim().toLowerCase();
     const match = (v) => !q || ((v.client + ' ' + (v.caregiver || 'open') + ' ' + v.service).toLowerCase().includes(q));
     const thisWeekView = s.weekOffset === 0;
-    const visible = thisWeekView ? s.visits.filter(match) : [];
+    const pass = filterPred(s.filters);
+    const visible = thisWeekView ? s.visits.filter(match).filter(pass) : [];
+    const narrowed = !!q || s.filters.length > 0;
+    const emptyCopy = narrowed ? 'No schedule items match these filters.' : 'No visits scheduled this week.';
 
     const AUG = (n) => n <= 31 ? 'Aug ' + n : 'Sep ' + (n - 31);
     const startNum = 10 + s.weekOffset * 7;
@@ -597,9 +932,25 @@ class Component extends DCLogic {
     });
 
     const inWeek = thisWeekView ? s.visits : [];
-    const opens = inWeek.filter(v => v.status === 'open');
+    const opens = inWeek.filter(v => v.status === 'open' || v.status === 'callout');
     const conflicts = inWeek.filter(v => v.status === 'conflict');
     const callouts = inWeek.filter(v => v.callout);
+
+    const wf = (k) => inWeek.filter(v => v.workflow === k);
+    const needsList = wf('needs_you'), joyList = wf('joy_working'), waitList = wf('waiting');
+    const countStyle = (n, fg, bg) => 'min-width:18px;height:18px;padding:0 5px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:' +
+      (n ? fg : '#9B9BA3') + ';background:' + (n ? bg : '#F3F3F6');
+    const railRow = (tone, cta) => (v) => ({
+      key: v.id, title: v.client, sub: v.joyNote || '', meta: v.joyMeta || '',
+      metaStyle: 'font-size:11.5px;line-height:1.4;color:' + tone + (v.joyMeta ? '' : ';display:none'),
+      cta: cta, ctaStyle: cta ? 'flex:none;margin-left:auto;align-self:center;height:26px;padding:0 10px;border-radius:8px;display:inline-flex;align-items:center;font-size:11.5px;color:#1407A2;background:#EEF0FE' : 'display:none',
+      dotStyle: 'width:7px;height:7px;flex:none;border-radius:50%;margin-top:5px;background:' + tone,
+      style: 'display:flex;align-items:flex-start;gap:10px;width:100%;background:transparent;border:none;padding:8px;border-radius:9px;cursor:pointer',
+      click: () => this.setState({ sel: v.id, weekOffset: 0 })
+    });
+
+    const dayList = visible.filter(v => v.day === s.dayIdx);
+    const nowIdx = s.dayIdx === 0 && thisWeekView ? dayList.findIndex(v => toMin(v.start) > NOW_MIN) : -1;
 
     const workingSet = {};
     inWeek.forEach(v => { if (v.caregiver) workingSet[v.caregiver] = 1; });
@@ -610,11 +961,11 @@ class Component extends DCLogic {
       : 'width:20px;height:20px;flex:none;border-radius:50%;border:1px dashed #C9C9D0;color:#B9B9C1;font-size:9px;display:flex;align-items:center;justify-content:center';
 
     const cardVisit = (v) => {
-      const b = this.badgeFor(v);
+      const b = this.cardBadge(v);
       return {
         key: v.id, start: v.start, client: v.client, service: v.service,
         window: v.start + ' – ' + v.end,
-        caregiver: v.caregiver || (v.matches ? 'Open · ' + v.matches + ' matches' : 'Unassigned'),
+        caregiver: v.caregiver || (v.matches ? 'Joy found ' + v.matches + ' matches' : 'Unassigned'),
         caregiverStyle: 'font-size:11.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (v.caregiver ? 'color:#5B6274' : 'color:#1407A2;font-weight:500'),
         initials: v.caregiver ? initials(v.caregiver) : '?',
         avatarStyle: avatar(v),
@@ -696,43 +1047,81 @@ class Component extends DCLogic {
     let d = {};
     if (sel) {
       const b = this.badgeFor(sel);
-      const isOpen = sel.status === 'open';
+      const needsCoverage = sel.status === 'open' || sel.status === 'callout';
+      const isConflict = sel.status === 'conflict';
+      const pool = MATCH_POOL[sel.id] || MATCH_POOL.v6;
+      const contacted = pool.filter(m => m.outreach && m.outreach.indexOf('Contacted') === 0).length;
+      const recurrence = RECURRENCE[sel.service] || 'One-time visit';
+      const recurring = recurrence.indexOf('Weekly') === 0 || recurrence.indexOf('Every') === 0;
+      const chips = [];
+      if (needsCoverage) chips.push(['Coverage needed', '#1407A2', '#EEF0FE']);
+      if (sel.callout) chips.push(['Call-out', '#B54708', '#FFFAEB']);
+      if (isConflict) chips.push(['Conflict', '#B42318', '#FEF3F2']);
+      if (sel.status === 'pending') chips.push(['Awaiting confirmation', '#B54708', '#FFFAEB']);
+      if (sel.status === 'confirmed') chips.push(['Confirmed', '#12B76A', '#ECFDF3']);
+      if (sel.clock) chips.push([sel.clock, sel.clock.indexOf('Not clocked in') === 0 ? '#B42318' : '#12B76A', sel.clock.indexOf('Not clocked in') === 0 ? '#FEF3F2' : '#ECFDF3']);
+      if (sel.workflow === 'joy_working') chips.push(['Joy working', '#1407A2', '#F1F0FC']);
+      if (sel.workflow === 'waiting') chips.push(['Waiting on response', '#5B6274', '#F1F2F6']);
+      if (sel.workflow === 'needs_you') chips.push(['Needs you', '#B42318', '#FEF3F2']);
+      if (sel.updated) chips.push(['Updated', '#5B6274', '#F1F2F6']);
+      const actionList = isConflict ? ['Review matches', 'Change time', 'Contact caregiver', 'Open client', 'Cancel visit']
+        : needsCoverage ? ['Change time', 'Contact client', 'Open client', 'Cancel visit']
+        : sel.status === 'pending' ? ['Resend confirmation', 'Contact client', 'Edit visit', 'Cancel visit']
+        : ['Edit visit', 'Reassign', 'Contact caregiver', 'Contact client', 'Open client', 'Cancel visit'];
       d = {
         client: sel.client, service: sel.service, when: LONG[sel.day] + ' · ' + sel.start + ' – ' + sel.end,
-        badge: isOpen ? 'OPEN SHIFT' : sel.status === 'conflict' ? 'CONFLICT' : 'CONFIRMED',
-        badgeStyle: 'align-self:flex-start;' + (isOpen ? pillS('#1407A2', '#EEF0FE') : sel.status === 'conflict' ? pillS('#B42318', '#FEF3F2') : pillS('#12B76A', '#ECFDF3')),
+        badge: b.label, badgeStyle: 'align-self:flex-start;' + b.style,
         caregiver: sel.caregiver || 'Unassigned',
         caregiverStyle: 'font-size:13.5px;font-weight:500;color:' + (sel.caregiver ? '#191A2E' : '#1407A2'),
         initials: sel.caregiver ? initials(sel.caregiver) : '?',
         avatarStyle: sel.caregiver
           ? 'width:32px;height:32px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center'
           : 'width:32px;height:32px;flex:none;border-radius:50%;border:1px dashed #C9C9D0;color:#B9B9C1;font-size:13px;display:flex;align-items:center;justify-content:center',
-        assignNote: sel.callout ? sel.callout : isOpen ? sel.matches + ' matches' : 'Confirmed',
-        isOpen: isOpen,
-        matches: MATCHES.map(m => ({
-          key: m.name, name: m.name, initials: initials(m.name), why: m.why,
-          assign: () => this.setState({ confirm: { kind: 'assign', id: sel.id, name: m.name } })
+        assignNote: isConflict ? 'Overlapping assignment' : sel.callout ? 'Called out 8:02 AM' : needsCoverage ? 'Coverage in progress' : sel.status === 'pending' ? 'Awaiting confirmation' : 'Confirmed',
+        hasCause: isConflict, cause: sel.why || '', rec: sel.rec || '',
+        statusChips: chips.map((c, i) => ({ key: 'sc' + i, label: c[0], style: pillS(c[1], c[2]) })),
+        showMatches: needsCoverage || isConflict,
+        coverageLabel: isConflict ? 'Available alternatives' : 'Coverage',
+        coverageHeadline: 'Joy found ' + pool.length + ' eligible caregiver' + (pool.length === 1 ? '' : 's') + '.',
+        coverageNote: contacted
+          ? 'Joy contacted ' + contacted + ' of them' + (sel.joyMeta ? ' · ' + sel.joyMeta.toLowerCase() : '') + '. Ranked by availability, qualification, hours, travel and continuity.'
+          : 'No outreach sent yet. Ranked by availability, qualification, hours, travel and continuity.',
+        outreachCta: contacted ? '' : 'Have Joy contact these matches',
+        outreachCtaStyle: contacted ? 'display:none' : 'align-self:flex-start;height:32px;padding:0 13px;display:inline-flex;align-items:center;border-radius:9px;border:1px solid #E2E0F7;background:#F1F0FC;font-size:12.5px;color:#1407A2;cursor:pointer',
+        matches: pool.map((m, i) => ({
+          key: m.name, name: m.name, initials: initials(m.name),
+          reasons: m.reasons.map((r, j) => ({ key: 'r' + j, text: r, style: 'font-size:11.5px;line-height:1.45;color:' + (/overtime hrs|travel is|approval/.test(r) ? '#B54708' : '#8A8A92') })),
+          outreach: m.outreach || 'Not contacted yet',
+          outreachStyle: 'font-size:11px;color:' + (m.declined ? '#B42318' : m.outreach ? '#1407A2' : '#9B9BA3'),
+          assignLabel: m.declined ? 'Declined' : m.warn ? 'Needs approval' : 'Assign',
+          assignStyle: 'margin-left:auto;flex:none;height:30px;padding:0 12px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid ' +
+            (m.declined ? '#F3F3F6;background:#FCFCFD;color:#B9B9C1' : m.warn ? '#FEDF89;background:#FFFAEB;color:#B54708' : '#ECECF1;background:#FFFFFF;color:#1407A2'),
+          cardStyle: 'display:flex;flex-direction:column;gap:7px;padding:12px 13px;border-radius:12px;border:1px solid ' +
+            (m.declined ? '#F3F3F6' : '#ECECF1') + ';background:' + (m.declined ? '#FCFCFD' : '#FFFFFF') + (i === 0 && !m.declined ? ';box-shadow:0 1px 2px rgba(25,26,46,.04)' : ''),
+          assign: () => { if (!m.declined) this.setState({ confirm: { kind: 'assign', id: sel.id, name: m.name } }); }
         })),
         details: [
           { key: 'd1', label: 'Client', value: sel.client, valueStyle: 'font-size:13px;color:#191A2E' },
           { key: 'd2', label: 'Service', value: sel.service, valueStyle: 'font-size:13px;color:#191A2E' },
           { key: 'd3', label: 'Date', value: LONG[sel.day], valueStyle: 'font-size:13px;color:#191A2E' },
           { key: 'd4', label: 'Time', value: sel.start + ' – ' + sel.end + ' · ' + sel.hours, valueStyle: 'font-size:13px;color:#191A2E' },
-          { key: 'd5', label: 'Recurrence', value: RECURRENCE[sel.service] || 'One-time visit', valueStyle: 'font-size:13px;color:#191A2E' },
-          { key: 'd6', label: 'Conflict check', value: sel.status === 'conflict' ? sel.why : 'No conflicts found', valueStyle: 'font-size:13px;text-wrap:pretty;color:' + (sel.status === 'conflict' ? '#B42318' : '#12B76A') },
-          { key: 'd7', label: 'Last notification', value: isOpen ? 'None sent yet' : 'Schedule confirmed via Spruce', valueStyle: 'font-size:13px;color:#5B6274' }
+          { key: 'd5', label: 'Recurrence', value: recurrence, valueStyle: 'font-size:13px;color:#191A2E' },
+          { key: 'd6', label: 'Authorized hours', value: '40 hrs per week · 32 scheduled', valueStyle: 'font-size:13px;color:#5B6274' },
+          { key: 'd7', label: 'Scheduling notes', value: sel.notes || sel.updated || '—', valueStyle: 'font-size:13px;text-wrap:pretty;color:#5B6274' }
         ],
-        actions: ['Change time', 'Change caregiver', 'Mark open', 'Cancel visit', 'Add note', 'View client'].map((l, i) => ({
+        actions: actionList.map(l => ({
           key: l, label: l,
-          click: () => {},
+          click: () => {
+            if ((l === 'Edit visit' || l === 'Change time' || l === 'Reassign') && recurring) this.setState({ scope: { id: sel.id, action: l } });
+            else if (l === 'Resend confirmation') this.setState({ toast: { title: 'Confirmation resent', sub: 'Sent to the Davis family through Spruce' } });
+          },
           style: 'height:32px;padding:0 12px;border-radius:9px;font-size:12.5px;cursor:pointer;border:1px solid ' +
             (l === 'Cancel visit' ? '#FBD9D3;background:#FFFFFF;color:#B42318' : '#ECECF1;background:#FFFFFF;color:#5B6274')
         })),
-        activity: [
-          { key: 'a1', label: sel.callout ? sel.callout + ' — shift reopened' : 'Confirmation sent through Spruce', when: 'Aug 8', dotStyle: 'width:6px;height:6px;flex:none;border-radius:50%;background:' + (sel.callout ? '#F79009' : '#12B76A') },
-          { key: 'a2', label: sel.caregiver ? sel.caregiver + ' assigned' : 'Shift marked open', when: 'Aug 7', dotStyle: 'width:6px;height:6px;flex:none;border-radius:50%;background:#1407A2' },
-          { key: 'a3', label: 'Recurring series created', when: 'Jul 28', dotStyle: 'width:6px;height:6px;flex:none;border-radius:50%;background:#D0D5DD' }
-        ]
+        activity: (JOY_LOG[sel.id] || JOY_LOG.fallback).map((a, i) => ({
+          key: 'a' + i, label: a.label, when: a.t,
+          dotStyle: 'width:6px;height:6px;flex:none;margin-top:6px;border-radius:50%;background:' + (i === 0 ? '#1407A2' : '#D0D5DD')
+        }))
       };
     }
 
@@ -752,52 +1141,61 @@ class Component extends DCLogic {
       micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
         (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
       joySend: () => this.setState({ joyQ: '', joyMic: false }),
-      joyPrompts: ["Who can cover Ruth’s Friday shift?","Show scheduling conflicts next week","Find coverage for open shifts"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
+      joyPrompts: ["Who can cover Ruth’s Friday shift?","Which visits still need confirmation?","Who is available Thursday afternoon?"].map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
       rangeLabel: s.view === 'month' ? 'August 2026' : s.view === 'day' ? LONG[s.dayIdx] : weekLabel,
       q: s.q, onSearch: (e) => this.setState({ q: e.target.value }),
-      viewTabs: ['Day', 'Week', 'Month'].map(l => ({
+      viewTabs: ['Agenda', 'Day', 'Week', 'Month'].map(l => ({
         key: l, label: l, click: () => this.setState({ view: l.toLowerCase() }),
         style: 'border:none;border-radius:7px;padding:0 14px;height:28px;font-size:12.5px;cursor:pointer;' +
           (s.view === l.toLowerCase() ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92')
       })),
-      isWeek: s.view === 'week', isDay: s.view === 'day', isMonth: s.view === 'month',
+      isWeek: s.view === 'week', isDay: s.view === 'day', isMonth: s.view === 'month', isAgenda: s.view === 'agenda',
+      emptyCopy: emptyCopy,
+      weekEmpty: visible.length === 0,
+      agendaEmpty: visible.length === 0,
+      agendaDays: DAYS.map((day, i) => {
+        const items = visible.filter(v => v.day === i);
+        if (!items.length) return null;
+        return {
+          key: 'ag' + i, label: LONG[i],
+          count: items.length + ' visit' + (items.length === 1 ? '' : 's'),
+          items: items.map(v => {
+            const st = agendaStatus(v);
+            const normal = st.label === 'Confirmed';
+            return {
+              key: v.id,
+              window: v.start + ' – ' + v.end,
+              headline: v.client + ' · ' + v.service,
+              caregiver: v.caregiver || (v.matches ? 'Unassigned · Joy found ' + v.matches + ' matches' : 'Unassigned'),
+              caregiverStyle: 'font-size:12px;' + (v.caregiver ? 'color:#9B9BA3' : 'color:#1407A2'),
+              status: st.label,
+              statusStyle: 'flex:none;' + pillS(st.fg, st.bg) + (normal ? ';font-weight:500' : ''),
+              open: () => this.setState({ sel: v.id })
+            };
+          })
+        };
+      }).filter(Boolean),
       prev: () => this.setState({ weekOffset: s.weekOffset - 1, sel: null }),
       next: () => this.setState({ weekOffset: s.weekOffset + 1, sel: null }),
-      today: () => this.setState({ view: 'week', weekOffset: 0, dayIdx: 0 }),
+      today: () => this.setState({ weekOffset: 0, dayIdx: 0 }),
 
       quickAddOpen: s.quickAdd,
       toggleQuickAdd: () => this.setState({ quickAdd: !s.quickAdd }),
       quickAddItems: QUICK_ADD.map(l => ({ key: l, label: l, click: () => this.setState({ quickAdd: false }) })),
 
-      hasNeeds: opens.length + conflicts.length > 0,
-      noNeeds: opens.length + conflicts.length === 0,
-      needs: [].concat(
-        opens.length ? [{
-          key: 'n1', label: opens.length + ' open shift' + (opens.length === 1 ? '' : 's'),
-          sub: opens.map(v => DAYS[v.day].dow + ' · ' + v.client).join(' · '),
-          tone: '#1407A2', id: opens[0].id
-        }] : [],
-        callouts.length ? [{
-          key: 'n2', label: callouts.length + ' caregiver call-out',
-          sub: callouts[0].callout, tone: '#F79009', id: callouts[0].id
-        }] : [],
-        conflicts.length ? [{
-          key: 'n3', label: conflicts.length + ' scheduling conflict',
-          sub: conflicts[0].caregiver + ' · ' + DAYS[conflicts[0].day].dow, tone: '#D92D20', id: conflicts[0].id
-        }] : []
-      ).map(n => ({
-        key: n.key, label: n.label, sub: n.sub,
-        dotStyle: 'width:7px;height:7px;flex:none;border-radius:50%;margin-top:5px;background:' + n.tone,
-        style: 'display:flex;align-items:flex-start;gap:10px;width:100%;background:transparent;border:none;padding:8px 8px;border-radius:9px;cursor:pointer',
-        click: () => this.setState({ sel: n.id, view: 'week', weekOffset: 0 })
-      })),
-
-      weekStats: [
-        { key: 'w1', label: 'Scheduled visits', value: String(inWeek.filter(v => v.status !== 'open').length), valueStyle: 'margin-left:auto;font-size:12.5px;font-weight:500;color:#191A2E' },
-        { key: 'w2', label: 'Open shifts', value: String(opens.length), valueStyle: 'margin-left:auto;font-size:12.5px;font-weight:500;color:' + (opens.length ? '#1407A2' : '#191A2E') },
-        { key: 'w3', label: 'Caregivers working', value: String(workingCount), valueStyle: 'margin-left:auto;font-size:12.5px;font-weight:500;color:#191A2E' },
-        { key: 'w4', label: 'Approaching overtime', value: thisWeekView ? '2' : '0', valueStyle: 'margin-left:auto;font-size:12.5px;font-weight:500;color:' + (thisWeekView ? '#B54708' : '#191A2E') }
-      ],
+      hasNeeds: needsList.length > 0,
+      noNeeds: needsList.length === 0,
+      needsCount: String(needsList.length),
+      needsCountStyle: countStyle(needsList.length, '#B42318', '#FEF3F2'),
+      needs: needsList.map(railRow('#D92D20', 'Review')),
+      hasJoyWork: joyList.length > 0, noJoyWork: joyList.length === 0,
+      joyCount: String(joyList.length),
+      joyCountStyle: countStyle(joyList.length, '#1407A2', '#EEF0FE'),
+      joyWorking: joyList.map(railRow('#8FA0FF', '')),
+      hasWaiting: waitList.length > 0, noWaiting: waitList.length === 0,
+      waitCount: String(waitList.length),
+      waitCountStyle: countStyle(waitList.length, '#5B6274', '#F1F2F6'),
+      waiting: waitList.map(railRow('#B4B4BC', '')),
 
       prompts: PROMPTS.map(p => ({ key: p.id, label: p.label, click: () => this.setState({ ai: p.id }) })),
       askJoy: () => this.setState({ ai: 'p2' }),
@@ -810,9 +1208,12 @@ class Component extends DCLogic {
       weekCols: weekCols,
 
       dayTitle: LONG[s.dayIdx],
-      dayCount: visible.filter(v => v.day === s.dayIdx).length + ' visits',
-      dayRows: visible.filter(v => v.day === s.dayIdx).map(v => {
+      dayCount: dayList.length + ' visit' + (dayList.length === 1 ? '' : 's'),
+      dayEmpty: dayList.length === 0,
+      nowLabel: 'Now · 10:12 AM',
+      dayRows: dayList.map((v, i) => {
         const b = this.badgeFor(v);
+        const late = v.clock && v.clock.indexOf('Not clocked in') === 0;
         return {
           key: v.id, start: v.start, end: v.end, client: v.client, service: v.service, hours: v.hours,
           caregiver: v.caregiver || 'Unassigned',
@@ -820,20 +1221,33 @@ class Component extends DCLogic {
           initials: v.caregiver ? initials(v.caregiver) : '?',
           avatarStyle: avatar(v),
           badge: b.label, badgeStyle: b.style,
-          rail: v.status === 'open' ? '#C9CEF2' : v.status === 'conflict' ? '#FBD9D3' : '#E4E4EA',
+          clock: v.clock || (v.caregiver ? 'Not started' : 'No caregiver assigned'),
+          clockStyle: 'font-size:11.5px;color:' + (late ? '#B42318' : v.clock ? '#12B76A' : '#B4B4BC'),
+          nowStyle: i === nowIdx ? 'display:flex;align-items:center;gap:9px;padding:6px 18px;background:#FFFBFA' : 'display:none',
+          rail: v.status === 'open' || v.status === 'callout' ? '#C9CEF2' : v.status === 'conflict' ? '#FBD9D3' : '#E4E4EA',
           open: () => this.setState({ sel: v.id })
         };
       }),
 
-      dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(l => ({ key: l, label: l })),
+      dow: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((l, i) => ({
+        key: l, label: l,
+        style: 'display:flex;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid #ECECF1;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;' +
+          (i === 2 ? 'background:#F1F0FC;color:#1407A2;box-shadow:inset 0 -2px 0 #1407A2' : 'background:#FCFCFD;color:#9B9BA3'),
+        todayStyle: i === 2
+          ? 'font-size:9px;font-weight:700;letter-spacing:.06em;color:#FFFFFF;background:#1407A2;border-radius:999px;padding:2px 6px'
+          : 'display:none'
+      })),
       monthCells: Array.apply(null, { length: 42 }).map((_, i) => {
-        const num = i - 5;
+        const num = i + 1;
         const inMonth = num >= 1 && num <= 31;
         const thisWeek = num >= 10 && num <= 16;
+        const billing = num >= 8 && num <= 14;
+        const isToday = num === 10;
+        const isMonday = i % 7 === 2;
         const dayIdx = num - 10;
         const dayVisits = thisWeek ? s.visits.filter(v => v.day === dayIdx) : [];
-        const visits = thisWeek ? dayVisits.filter(v => v.status !== 'open').length : 0;
-        const openN = thisWeek ? dayVisits.filter(v => v.status === 'open').length : 0;
+        const visits = thisWeek ? dayVisits.filter(v => v.status !== 'open' && v.status !== 'callout').length : 0;
+        const openN = thisWeek ? dayVisits.filter(v => v.status === 'open' || v.status === 'callout').length : 0;
         const special = thisWeek ? dayVisits.filter(v => v.service === 'Assessment' || v.service === 'Supervisory Visit') : [];
         const lines = [];
         if (thisWeek) {
@@ -846,9 +1260,19 @@ class Component extends DCLogic {
         return {
           key: 'm' + i, num: inMonth ? String(num) : '',
           lines: lines,
-          style: 'min-height:96px;padding:9px 10px;display:flex;flex-direction:column;gap:3px;cursor:pointer;border-right:1px solid #F3F3F6;border-bottom:1px solid #F3F3F6;background:' +
-            (num === 10 ? '#FBFBFE' : thisWeek && inMonth ? '#FCFCFD' : inMonth ? '#FFFFFF' : '#FCFCFD'),
-          numStyle: 'font-size:12px;' + (num === 10 ? 'font-weight:600;color:#1407A2' : inMonth ? 'color:#5B6274' : 'color:#D8D8DE'),
+          tag: isToday ? 'TODAY' : '',
+          tagStyle: isToday
+            ? 'font-size:9px;font-weight:700;letter-spacing:.05em;color:#1407A2;background:#E8E6FB;border-radius:999px;padding:2px 6px;white-space:nowrap'
+            : 'display:none',
+          style: 'min-height:96px;padding:9px 10px;display:flex;flex-direction:column;gap:4px;cursor:pointer;box-sizing:border-box;border-right:1px solid ' +
+            (billing && num !== 14 ? '#DFDCF7' : '#F3F3F6') + ';border-bottom:1px solid #F3F3F6;background:' +
+            (billing ? '#F4F3FE' : inMonth ? '#FFFFFF' : '#FCFCFD') +
+            (billing ? ';border-top:1px solid #DFDCF7' : '') +
+            (isMonday && billing ? ';box-shadow:inset 0 0 0 1px #CFCBF4' : '') +
+            (isToday ? ';background:#E9E7FB' : ''),
+          numStyle: isToday
+            ? 'display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;flex:none;border-radius:50%;background:#1407A2;color:#FFFFFF;font-size:12px;font-weight:600'
+            : 'font-size:12px;' + (billing ? 'font-weight:600;color:#3F3A78' : inMonth ? 'color:#5B6274' : 'color:#D8D8DE'),
           open: () => { if (thisWeek) this.setState({ view: 'day', dayIdx: dayIdx, weekOffset: 0 }); }
         };
       }),
@@ -858,17 +1282,24 @@ class Component extends DCLogic {
       aiOpen: !!s.ai, closeAi: () => this.setState({ ai: null }),
       ai: s.ai === 'p1' ? {
         request: 'Who can cover Ruth\u2019s Friday shift?',
-        summary: 'Three caregivers are available for Friday, Aug 14 · 9:00 AM – 5:00 PM.',
-        changes: MATCHES.map((m, i) => ({ key: 'm' + i, day: m.name, from: 'Available', to: i === 2 ? 'OT risk' : 'Qualified', who: m.why.split(' · ').slice(-1)[0] })),
+        summary: 'I found 4 qualified caregivers for Friday, Aug 14 · 9:00 AM – 5:00 PM. Three can cover the full shift without overtime.',
+        hasMatches: true, hasChanges: false,
+        matches: MATCH_POOL.v13.slice(0, 3).map((m, i) => ({
+          key: m.name, name: m.name, initials: initials(m.name), why: m.reasons.slice(0, 2).join(' · '),
+          whyStyle: 'font-size:11.5px;color:#8A8A92;line-height:1.35',
+          review: () => this.setState({ ai: null, sel: 'v13' })
+        })),
+        changes: [],
         facts: [
           { key: 'f1', label: 'Shift', value: 'Ruth Alvarez · Personal Care · 8 hrs', valueStyle: 'font-size:13px;color:#191A2E' },
-          { key: 'f2', label: 'Recommended', value: 'Maria Johnson — closest, no overtime', valueStyle: 'font-size:13px;color:#191A2E' },
-          { key: 'f3', label: 'Notifications', value: 'Caregiver and family, through Spruce', valueStyle: 'font-size:13px;color:#5B6274' }
+          { key: 'f2', label: 'Recommended', value: 'Maria Johnson — closest, no overtime, worked with Ruth 8 times', valueStyle: 'font-size:13px;text-wrap:pretty;color:#191A2E' },
+          { key: 'f3', label: 'Joy status', value: '3 contacted · 1 declined · waiting on 2 replies', valueStyle: 'font-size:13px;color:#5B6274' }
         ],
-        confirmLabel: 'Assign Maria Johnson'
+        confirmLabel: 'Review matches'
       } : s.ai === 'p3' ? {
-        request: 'Show everyone approaching overtime.',
-        summary: 'Two caregivers are within 2 hours of the 40-hour threshold this week.',
+        request: 'Show caregivers under 32 hrs who can cover Friday.',
+        hasMatches: false, hasChanges: true, matches: [],
+        summary: 'Four caregivers are under 32 hours this week. Two are also qualified for Ruth\u2019s Friday shift.',
         changes: [
           { key: 'o1', day: 'Emmet Bauch', from: '40.0 hrs', to: 'At threshold', who: 'Whitaker case' },
           { key: 'o2', day: 'Kelly Kuhn', from: '38.0 hrs', to: '2 hrs left', who: 'Huang, Aiken' }
@@ -880,8 +1311,9 @@ class Component extends DCLogic {
         ],
         confirmLabel: 'Open week grid'
       } : {
-        request: 'Move Evelyn Carter\u2019s visits next week from 8 AM to 9 AM.',
-        summary: '5 visits will change. No conflicts found.',
+        request: 'Can we move Evelyn without creating overtime?',
+        hasMatches: false, hasChanges: true, matches: [],
+        summary: 'Yes — moving next week\u2019s visits from 8 AM to 9 AM keeps both caregivers under 40 hours. 5 visits will change.',
         changes: aiChanges,
         facts: [
           { key: 'f1', label: 'Affected', value: '1 client · 2 caregivers', valueStyle: 'font-size:13px;color:#191A2E' },
@@ -893,10 +1325,60 @@ class Component extends DCLogic {
       },
       confirmAi: () => this.setState({
         ai: null,
-        toast: { title: 'Schedule updated', sub: 'Prepared by Joy AI · 3 people notified through Spruce' }
+        sel: s.ai === 'p1' ? 'v13' : null,
+        toast: s.ai === 'p1' ? null : { title: 'Schedule updated', sub: 'Prepared by Joy AI · 3 people notified through Spruce' }
       }),
 
       drawerOpen: !!sel, closeDrawer: () => this.setState({ sel: null }), d: d,
+
+      filterOpen: s.filterOpen,
+      toggleFilters: () => this.setState({ filterOpen: !s.filterOpen, quickAdd: false }),
+      filterCount: String(s.filters.length),
+      filterCountStyle: s.filters.length
+        ? 'min-width:17px;height:17px;padding:0 5px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;color:#1407A2;background:#EEF0FE'
+        : 'display:none',
+      filterBtnStyle: 'display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid ' +
+        (s.filters.length ? '#D9DCF3' : '#ECECF1') + ';border-radius:9px;font-size:13px;color:' + (s.filters.length ? '#1407A2' : '#5B6274') + ';cursor:pointer',
+      filterGroups: FILTER_GROUPS.map(g => ({
+        key: g.label, label: g.label,
+        items: g.items.map(it => {
+          const on = s.filters.indexOf(it.k) >= 0;
+          return {
+            key: it.k, label: it.label, check: on ? '✓' : '',
+            boxStyle: 'width:15px;height:15px;flex:none;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;border:1px solid ' +
+              (on ? '#1407A2;background:#1407A2;color:#FFFFFF' : '#D8D8DE;background:#FFFFFF;color:transparent'),
+            click: () => this.setState({ filters: on ? s.filters.filter(k => k !== it.k) : s.filters.concat([it.k]) })
+          };
+        })
+      })),
+      hasChips: s.filters.length > 0,
+      chips: s.filters.map(k => ({
+        key: k, label: FILTER_LABEL[k] || k,
+        remove: () => this.setState({ filters: s.filters.filter(x => x !== k) })
+      })),
+      clearFilters: () => this.setState({ filters: [], filterOpen: false }),
+
+      scopeOpen: !!s.scope,
+      closeScope: () => this.setState({ scope: null }),
+      applyScope: () => this.setState({
+        scope: null,
+        toast: { title: (s.scope ? s.scope.action : 'Change') + ' applied', sub: s.scopePick === 'series' ? 'Entire series updated · completed visits untouched' : s.scopePick === 'future' ? 'This and future visits updated' : 'This visit only · series unchanged' }
+      }),
+      scope: {
+        sub: s.scope ? (this.visit(s.scope.id) || {}).client + ' · ' + (RECURRENCE[(this.visit(s.scope.id) || {}).service] || 'Recurring visit') : '',
+        options: [
+          { k: 'this', label: 'This visit only', sub: 'The rest of the series stays as scheduled' },
+          { k: 'future', label: 'This and future visits', sub: 'Applies from this date forward' },
+          { k: 'series', label: 'Entire series', sub: 'Every upcoming visit in the recurrence' }
+        ].map(o => ({
+          key: o.k, label: o.label, sub: o.sub,
+          click: () => this.setState({ scopePick: o.k }),
+          radioStyle: 'width:15px;height:15px;flex:none;margin-top:2px;border-radius:50%;box-sizing:border-box;border:' +
+            (s.scopePick === o.k ? '5px solid #1407A2' : '1px solid #D8D8DE'),
+          style: 'display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border-radius:12px;cursor:pointer;background:' +
+            (s.scopePick === o.k ? '#FBFBFE' : '#FFFFFF') + ';border:1px solid ' + (s.scopePick === o.k ? '#D9DCF3' : '#ECECF1')
+        }))
+      },
 
       toastOpen: !!s.toast, toast: s.toast || {}, closeToast: () => this.setState({ toast: null })
     };
