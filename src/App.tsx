@@ -13,6 +13,7 @@ import { DataProvider } from "@/context/DataProvider";
 import { AppShell } from "@/components/layout/AppShell";
 import { RequireAuth } from "@/components/layout/RequireAuth";
 import { DemoDataProvider } from "@/context/DemoDataProvider";
+import Home from "./pages/Home";
 import TheBrain from "./pages/TheBrain";
 import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
@@ -101,7 +102,9 @@ const App = () => (
             <Route element={<RequireAuth />}>
             <Route element={<AppShell />}>
               {/* Joy navigation, section 6. Home keeps "/" as its path; /home redirects to it. */}
-              <Route path="/" element={<TheBrain />} />
+              <Route path="/" element={<Home />} />
+              {/* The Brain sits under Home, per the design's own breadcrumb. */}
+              <Route path="/brain" element={<TheBrain />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
 
               <Route path="/operations" element={<Operations />} />

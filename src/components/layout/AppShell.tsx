@@ -6,11 +6,11 @@ import { CommandCenter } from "@/components/command-center/CommandCenter";
 import { AskJoy } from "@/components/home/AskJoy";
 
 export function AppShell() {
-  // The Brain carries its own Ask-the-Brain dot in its header — the updated
-  // design is explicit that home's AI door is that dot, not a floating panel.
-  // Every other screen keeps the Ask Joy pill. The Command Center itself stays
-  // mounted everywhere, because it is what a typed question opens.
-  const onBrain = useLocation().pathname === "/";
+  // The Brain carries its own Ask-the-Brain dot in its header, so the floating
+  // pill would be a second door on one screen. Every other screen — Home
+  // included — keeps the pill. The Command Center stays mounted everywhere,
+  // because it is what a typed question opens.
+  const onBrain = useLocation().pathname === "/brain";
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

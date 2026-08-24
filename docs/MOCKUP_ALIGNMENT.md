@@ -9,6 +9,21 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
 
 ## Done
 
+- **Correction, 24 Aug: Home and The Brain are two screens.** The Brain was
+  built as the home screen at `/`, and the Home dashboard was deleted, on the
+  handoff README's line that The Brain "supersedes" the Command Center. That
+  reading was wrong, and the design file says so plainly: The Brain's own
+  sidebar lists **Home** and **The Brain** as separate items, and its
+  breadcrumb reads **"Home / The Brain / Overview"** — The Brain sits *under*
+  Home. (The README itself defers to the HTML over anything else; this is a
+  case where it should have deferred to its own designs.) Karynn caught it.
+  Home is restored at `/` — the morning: greeting, Morning Brief, My Tasks,
+  Today's Schedule, deadlines, Joy Assistant — and The Brain lives at `/brain`
+  with the design's breadcrumb above its title. The sidebar carries both, Home
+  first. The floating Ask Joy pill shows everywhere except The Brain, which has
+  its own Ask-the-Brain dot; a second door on one screen was the only reason it
+  was ever hidden.
+
 - **Two of the README's open questions, ruled by Karynn 24 Aug and built the
   same day.**
 

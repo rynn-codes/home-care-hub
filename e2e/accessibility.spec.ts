@@ -75,6 +75,7 @@ function describeViolations(results: Awaited<ReturnType<typeof scan>>): string {
 test.describe("the admin app", () => {
   for (const [path, name] of [
     ["/", "Home"],
+    ["/brain", "The Brain"],
     ["/operations", "Operations"],
     ["/operations/portal", "Portal activity"],
     ["/operations/incidents", "Incidents"],

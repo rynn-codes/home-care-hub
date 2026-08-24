@@ -58,9 +58,12 @@ function useNav(): NavItem[] {
   const hiringCount = seedApplicants.filter((a) => a.track !== "no_fit" && a.track !== "hired").length;
 
   return [
-    // Home is The Brain now — the updated design's name for the operator's
-    // landing screen, and the sidebar calls it what the screen calls itself.
-    { title: "The Brain", url: "/", icon: Brain },
+    // Home and The Brain are two screens, in this order — the updated design's
+    // own sidebar lists both, and The Brain's breadcrumb reads
+    // "Home / The Brain / …". Home is the morning; The Brain is the agency at
+    // a glance. They were briefly collapsed into one; Karynn caught it.
+    { title: "Home", url: "/", icon: Home },
+    { title: "The Brain", url: "/brain", icon: Brain },
     {
       title: "Operations",
       url: "/operations",

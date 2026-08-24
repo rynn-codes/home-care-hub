@@ -25,7 +25,16 @@ import {
 } from "@/lib/brainSeed";
 
 /**
- * The Brain — home, rebuilt to the updated design
+ * The Brain — the agency at a glance, one level under Home.
+ *
+ * Not the home screen: the design's sidebar carries Home AND The Brain, and
+ * this page's own breadcrumb reads "Home / The Brain / Overview". Home is the
+ * morning — today's queue and what needs doing. The Brain is the wider read:
+ * the written brief, what Joy is handling, the calendar and the log. The two
+ * were briefly collapsed into one and Home was deleted; Karynn caught it on
+ * 24 August, and both screens exist again.
+ *
+ * Rebuilt to the updated design
  * (docs/mockups/Joy Health The Brain.dc.html), which supersedes the Brief Band
  * dashboard. Karynn uploaded the design 24 Aug and confirmed the rebuild.
  *
@@ -333,6 +342,18 @@ export default function TheBrain() {
 
   return (
     <div className="mx-auto flex max-w-[1240px] flex-col gap-[22px]">
+      {/* The design's own breadcrumb: Home / The Brain / {tab}. It is the line
+          that says The Brain sits under Home rather than replacing it. */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2.5 text-[13px]">
+        <Link to="/" className="text-muted-foreground hover:text-primary">Home</Link>
+        <span className="text-muted-foreground/40" aria-hidden="true">/</span>
+        <span className="text-muted-foreground">The Brain</span>
+        <span className="text-muted-foreground/40" aria-hidden="true">/</span>
+        <span className="font-medium">
+          {view === "overview" ? "Overview" : view === "mywork" ? "My Work" : view === "operations" ? "Joy Operations" : view === "calendar" ? "Calendar" : "Activity"}
+        </span>
+      </nav>
+
       {/* ------------------------------------------------------- header -- */}
       <section className="flex flex-wrap items-start gap-6">
         <div className="flex min-w-[280px] flex-1 flex-col gap-[5px]">

@@ -17,6 +17,7 @@ const PROJECT_REF = process.env.VITE_SUPABASE_PROJECT_ID ?? "xembwxgilrsjeybuwxw
 
 const ADMIN_ROUTES: Array<[string, string]> = [
   ["/", "Home"],
+  ["/brain", "The Brain"],
   ["/operations", "Operations"],
   ["/operations/hiring", "Hiring"],
   ["/operations/portal", "Portal activity"],
