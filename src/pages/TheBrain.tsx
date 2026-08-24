@@ -1421,7 +1421,18 @@ export default function TheBrain() {
               },
               {
                 label: "CLIENTS",
-                body: urgent.length === 0 ? "No open client escalations. One family conference today (Dolores Vance, 2:00 PM)." : `${urgent.map((u) => u.label).join(" · ")}. One family conference today (Dolores Vance, 2:00 PM).`,
+                // Client matters only. An earlier version listed every urgent
+                // signal here, which filed payroll and billing under CLIENTS —
+                // the full list has its own section at the top of this drawer.
+                body: (() => {
+                  const clientKeys = new Set(["incidents", "care-plans", "supervision", "portal"]);
+                  const mine = urgent.filter((u) => clientKeys.has(u.key));
+                  const lead =
+                    mine.length === 0
+                      ? "No open client escalations."
+                      : `${mine.map((u) => `${u.label.toLowerCase()} (${u.detail ?? u.value})`).join(", ")}.`;
+                  return `${lead} One family conference today (Dolores Vance, 2:00 PM).`;
+                })(),
                 link: ["View clients", "/clients"],
               },
             ].map((s) => (
