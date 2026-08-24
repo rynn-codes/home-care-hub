@@ -703,7 +703,7 @@ export default function Payroll() {
                   <span
                     className={cn(
                       "inline-flex items-center whitespace-nowrap rounded-full px-[11px] py-1 text-[11.5px] font-medium",
-                      ready ? "bg-[#ECFDF3] text-[#12B76A]" : "bg-[#F3F3F6] text-[#5B6274]",
+                      ready ? "bg-[#ECFDF3] text-[#027A48]" : "bg-[#F3F3F6] text-[#5B6274]",
                     )}
                   >
                     {ready ? "Ready to send" : "Waiting on payroll review"}

@@ -194,8 +194,25 @@ describe("what counts as urgent", () => {
   it("reads the portal queue from the same entries payroll did", () => {
     // The input carries time entries once. Passing them twice — as an earlier
     // version did — is two chances for Home to disagree with itself.
-    const withException = build();
-    expect(withException.find((s) => s.key === "portal")?.value).not.toBe("0");
+    //
+    // An explicit clock-out exception rather than `seedTimeEntries`: the seed
+    // is derived from the schedule board relative to the real clock, so before
+    // Monday's first visit it holds no exception and this asserted nothing.
+    // One deterministic entry keeps the test about the wiring, not the wall
+    // clock.
+    const withGap = build({
+      timeEntries: [
+        {
+          id: "te-gap",
+          visitId: "v-gap",
+          caregiverPersonId: "p-chanelp",
+          clockedInAt: `${TODAY}T09:00:00`,
+          clockedOutAt: `${TODAY}T13:00:00`,
+          exceptionReason: "Clocked out with the visit note outstanding",
+        },
+      ],
+    });
+    expect(withGap.find((s) => s.key === "portal")?.value).not.toBe("0");
     expect(build({ timeEntries: [] }).find((s) => s.key === "portal")?.value).toBe("0");
   });
 

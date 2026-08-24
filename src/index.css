@@ -4,11 +4,14 @@
 
 @layer base {
   :root {
-    /* Surfaces — warm white ground, white content surfaces (Joy visual constitution) */
-    --background: 40 20% 98%;
+    /* Surfaces — the approved mocks' cool neutrals: #FCFCFC ground, white
+     * content surfaces, #FAFAFB hover wash. The earlier warm-white ground
+     * survived only on screens without a mock, which split the app into two
+     * slightly different colour worlds; one set of neutrals, everywhere. */
+    --background: 0 0% 98.8%;
     --foreground: 240 7% 11%;
     --surface: 0 0% 100%;
-    --surface-muted: 40 14% 96%;
+    --surface-muted: 240 11% 98%;
 
     --card: 0 0% 100%;
     --card-foreground: 240 7% 11%;
@@ -21,10 +24,10 @@
     --primary-foreground: 0 0% 100%;
     --primary-soft: 245 88% 95%;
 
-    --secondary: 40 14% 95%;
+    --secondary: 228 22% 95%;
     --secondary-foreground: 240 7% 20%;
 
-    --muted: 40 12% 94%;
+    --muted: 240 10% 96%;
     /* Secondary text, and therefore most of the words on any screen: every
      * helper line, every "expires in 28 days", every explanation under a
      * heading. It measured 4.44:1 against the warm background — close enough to
@@ -61,11 +64,14 @@
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --border: 40 10% 90%;
-    --input: 40 10% 90%;
+    /* #ECECF1, the mocks' card border. */
+    --border: 240 15% 93.5%;
+    --input: 240 15% 93.5%;
     --ring: 245 92% 33%;
 
-    --radius: 1.25rem;
+    /* The mocks' control geometry: buttons and inputs sit at 9–10px, not
+     * pills. shadcn's rounded-md derives from this (radius − 2px). */
+    --radius: 0.75rem;
 
     --shadow-sm: 0 1px 2px 0 hsl(240 20% 15% / 0.04);
     --shadow-md: 0 8px 24px -8px hsl(245 40% 25% / 0.08);

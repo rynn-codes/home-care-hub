@@ -762,7 +762,7 @@ export default function Scheduling() {
                       : moveChecks.length > 0
                         ? moveChecks[0].message
                         : "Availability and double-booking clear",
-                    moveBlocked ? "text-[#B42318]" : moveChecks.length > 0 ? "text-[#B54708]" : "text-[#12B76A]",
+                    moveBlocked ? "text-[#B42318]" : moveChecks.length > 0 ? "text-[#B54708]" : "text-[#027A48]",
                   ],
                 ].map(([label, value, tone]) => (
                   <div key={label} className="flex items-baseline gap-3.5 border-b border-[#F3F3F6] py-2">
@@ -947,7 +947,7 @@ function VisitDrawer({
                       ? "text-[#B42318]"
                       : conflicts.length > 0
                         ? "text-[#B54708]"
-                        : "text-[#12B76A]",
+                        : "text-[#027A48]",
                   ],
                   ["Last notification", "None — Spruce is not wired in the prototype", "text-muted-foreground"],
                 ].map(([label, value, tone]) => (

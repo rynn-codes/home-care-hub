@@ -359,7 +359,7 @@ export function ClientRecordView({ client, onBack }: { client: ClientRecord; onB
               <SectionLabel>Decisions on record</SectionLabel>
               {refused.length === 0 ? (
                 <p className="m-0 mt-2.5 flex items-center gap-2 text-[13px] text-muted-foreground">
-                  <Check className="h-4 w-4 text-[#12B76A]" aria-hidden="true" />
+                  <Check className="h-4 w-4 text-[#027A48]" aria-hidden="true" />
                   Agreed to everything in the packet.
                 </p>
               ) : (
@@ -596,7 +596,7 @@ function ClientServicesTab({ client }: { client: ClientRecord }) {
                 <span className="text-[11.5px] text-muted-foreground">
                   {active.effectiveFrom ? `Effective ${active.effectiveFrom.slice(0, 10)}` : "Not yet effective"}
                 </span>
-                <span className="ml-auto rounded-full bg-[#ECFDF3] px-2 py-0.5 text-[11px] font-medium text-[#12B76A]">
+                <span className="ml-auto rounded-full bg-[#ECFDF3] px-2 py-0.5 text-[11px] font-medium text-[#027A48]">
                   Active
                 </span>
               </div>

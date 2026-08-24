@@ -9,6 +9,28 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
 
 ## Done
 
+- **Design tokens & the last unaligned screens (24 Aug).** A consistency
+  pass so the whole app speaks the mocks' visual language, not just the
+  screens that had a mock. The neutral tokens moved from the old warm-white
+  world to the mocks' cool set — #FCFCFC ground, #ECECF1 card border,
+  #FAFAFB hover — and the control radius dropped from 20px to the mocks'
+  ~10–12px, so every shadcn button, input and card that reads `rounded-lg`
+  now matches the hand-built cards. Checked against the V1 Design Brief:
+  calm, spacious, rounded, soft, minimal, #1407A2 primary — all held, and
+  the muted-foreground / green / amber contrast tokens are unchanged (still
+  the accessible values the axe suite gates). **Settings** was the last
+  screen on somebody else's scaffold — "CareHub Home Care", a teal brand,
+  QuickBooks/Slack, a "$199/mo plan"; it now shows Joy Health's real
+  identity, the #1407A2 brand, the domain's real roles, and the brief's
+  four integrations (GHL / Gusto / Spruce / Stripe) each marked
+  not-connected. The old `<title>CareHub…>` and OG tags are Joy Health now.
+  A pre-existing date-fragile portal-signal unit test (it leaned on the
+  seed's floating clock) was made deterministic in passing.
+
+  Approval simplicity preserved, per Karynn's 24 Aug note ("I do like how
+  simple it was to approve things"): Billing keeps its one-click Approve →
+  Send per card and the batch Send-all — untouched by this pass.
+
 - **01/11 — Dashboard (Brief Band).** Exact-match pass completed 23 Aug from
   the design source (`Joy Health Dashboard - Brief Band.dc.html`), to the
   mock's own values throughout: Public Sans everywhere; the gradient greeting
