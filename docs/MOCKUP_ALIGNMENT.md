@@ -9,6 +9,48 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
 
 ## Done
 
+- **Updated mockups reconciled (24 Aug).** Karynn uploaded refreshed designs —
+  Admissions, Assessment, Billing, Clients — plus a rewritten handoff README
+  (`docs/mockups/HANDOFF-README.md`), and asked to diff them against what's
+  built and reconcile. The vendored `docs/mockups/*.dc.html` are refreshed to
+  those uploads. What changed in the build:
+
+  - **Business rules, enforced app-wide.** The refreshed README states the
+    agency's hard constraints as enumerations, not examples: payer sources are
+    exactly *Private Pay* and *Private Pay + LTC Insurance* (no Medicaid,
+    Medicare, VA, or third-party billing anywhere), and the service catalog is
+    exactly *Personal Care*, *Post-Surgical*, *Respite*. The demo cast still
+    carried Live-In and Evening Care (schedules, not services), Companion Care
+    (a Respite framing) and Dementia Care (a Personal Care population); all are
+    mapped to the three real lines across every seed a screen reads. Theo
+    Nakamura (post-surgical recovery) becomes the one Post-Surgical client;
+    Ruth's relief coverage becomes Respite; Dolores now carries the second
+    payer value so the directory shows both. The assessment payer question, the
+    phone-intake payment sources and the referral service picker are narrowed to
+    the real options. The consent packet's verbatim assignment-of-payment clause
+    is left as-is — it is fixed legal text, and only the field the RN actually
+    sets now offers just what Joy accepts.
+
+  - **Admissions — Quick Add flexible entry.** The single "New referral" button
+    is replaced by the mock's + menu: New lead (quick capture, DOB removed, now
+    with both Save lead and Save & start intake), Start phone intake and Start
+    assessment (each behind a person picker with "start with a new person"
+    always available, and the non-blocking intake-outstanding notice on an
+    assessment), Schedule (the three-step what → who → details modal, wired to
+    the real scheduleAssessment service), and Upload document. Nothing blocks on
+    a missing earlier step. The mock's kanban Board view stays deliberately
+    unbuilt for the reasons already recorded below.
+
+  - **Assessment — the mock dropped its standalone "Education provided"
+    section** (the refreshed README's prose still lists it, so README and HTML
+    disagree; trusting the concrete design, it is gone). Joy's assessment is not
+    organised around the mock's illustrative 15-section list — it is built from
+    the real Joy intake PDF and 26-page consent packet, and has no separate
+    Education section to remove. Education-to-family is delivered where the
+    README itself puts the weight: the signing walkthrough's plain-language
+    "what caregivers can and cannot do" callouts. No build change; noted here so
+    the divergence is on the record rather than silent.
+
 - **Design tokens & the last unaligned screens (24 Aug).** A consistency
   pass so the whole app speaks the mocks' visual language, not just the
   screens that had a mock. The neutral tokens moved from the old warm-white
@@ -195,7 +237,7 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   JH-number → Outstanding → audit trail all behave exactly as before, and
   the same four e2e specs prove it.
 
-## Conflicts — both resolved by Karynn
+## Conflicts
 
 1. **Hiring: mock 02's job board vs the newer roadmap's candidate queue —
    RESOLVED 24 Aug: keep the candidate queue, do not build the job board.**
@@ -209,8 +251,19 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
    ruling confirms it, so nothing changed. The job board is not a Joy
    surface.
 
-2. **Billing: mock 09's "To send | Sent | Profitability" framing —
-   RESOLVED 23 Aug: adopt it.** Built over the Saturday-run engine; see the
-   Billing entry above. Profitability honestly refuses a net figure until
-   real pay rates exist, and the mock's "due Wednesday" gave way to the
-   Saturday-run answers.
+2. **Billing: "To send | Sent | Profitability" (built) vs the updated mock's
+   "Invoices | Payers | Profitability" — OPEN, awaiting Karynn.** On 23 Aug
+   Karynn ruled "adopt the mock's To send | Sent | Profitability framing," and
+   Billing was built exactly that way over the Saturday-run engine (see the
+   Billing entry above). The 24 Aug updated Billing mock has moved past that:
+   it now shows a single **Invoices** tab with a status-filter dropdown
+   (Needs review · Ready · Sent · Paid · Past due · Adjusted), a new **Payers**
+   tab, and Profitability. This reverses her explicit earlier ruling and bears
+   on the thing she asked us to protect — "I do like how simple it was to
+   approve things. Make sure we keep that simplicity" — because folding To
+   send and Sent into one filtered table is arguably busier than the clean
+   two-tab split. So this one is **not** reframed silently: it is put to Karynn.
+   Until she decides, Billing stays on the built To send | Sent | Profitability
+   framing with its one-click approve. (Profitability still honestly refuses a
+   net figure until real pay rates exist; the mock's "due Wednesday" remains
+   superseded by the Saturday-run answers regardless of the tab framing.)

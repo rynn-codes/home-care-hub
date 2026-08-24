@@ -574,17 +574,14 @@ const pillS = (fg, bg) => 'display:inline-flex;align-items:center;padding:3px 9p
 
 const PAYERS = {
   'Private Pay': ['#1407A2', '#EEF0FE'],
-  'Medicaid · STAR+PLUS': ['#0E9384', '#ECFDF7'],
-  'LTC Insurance': ['#B54708', '#FFFAEB'],
-  'VA Community Care': ['#5B6274', '#F3F3F6'],
-  'Medicare': ['#5B6274', '#F3F3F6']
+  'Private Pay + LTC Insurance': ['#B54708', '#FFFAEB']
 };
 const STATUS = { Active: 'done', 'On hold': 'warn', Discharged: 'none' };
 
 const CLIENTS = [
   { id: 'c1', name: 'Lian Huang', age: 78, status: 'Active', location: 'Houston · Memorial', payer: 'Private Pay',
     payerLine: 'Johnathan Huang · son · weekly invoicing',
-    services: ['Personal Care', 'Companionship Care'], caregiver: 'Kelly Kuhn', nextVisit: 'Tue, Aug 11 · 7:00 AM',
+    services: ['Personal Care', 'Respite'], caregiver: 'Kelly Kuhn', nextVisit: 'Tue, Aug 11 · 7:00 AM',
     last: 'Care plan signed · Aug 4', since: 'Apr 27, 2024', phone: '(713) 555-0170', email: 'huang.family@gmail.com',
     address: '4212 Chatsworth Dr, Houston, TX 77027', kin: 'Johnathan Huang', kinLine: 'Son · (713) 555-0188 · primary contact',
     condition: "Parkinson's disease", coordinator: 'Steve Cook', hours: '40 hrs / week',
@@ -594,19 +591,19 @@ const CLIENTS = [
       { key: 'cg', label: 'Care team', value: 'Kelly Kuhn', sub: 'Primary · +3 backup caregivers' },
       { key: 'p', label: 'Care plan', value: 'Signed Aug 4', sub: '6 versions · Steve Cook' }
     ] },
-  { id: 'c2', name: 'Harold Whitaker', age: 84, status: 'Active', location: 'Katy', payer: 'Medicaid · STAR+PLUS',
-    payerLine: 'Authorization through Dec 2026', services: ['Personal Care'], caregiver: 'Emmet Bauch', nextVisit: 'Mon, Aug 10 · 9:00 AM',
+  { id: 'c2', name: 'Harold Whitaker', age: 84, status: 'Active', location: 'Katy', payer: 'Private Pay',
+    payerLine: 'Denise Whitaker · wife · ACH on file · weekly invoicing', services: ['Personal Care'], caregiver: 'Emmet Bauch', nextVisit: 'Mon, Aug 10 · 9:00 AM',
     last: 'Visit note filed · Aug 8', since: 'Feb 3, 2025', phone: '(281) 555-0119', email: 'whitaker.h@gmail.com',
     address: '908 Kingsland Blvd, Katy, TX 77450', kin: 'Denise Whitaker', kinLine: 'Daughter · (281) 555-0143',
     condition: 'Congestive heart failure', coordinator: 'Steve Cook', hours: '25 hrs / week',
-    summary: 'Harold is a Medicaid STAR+PLUS client with congestive heart failure. Authorized hours are steady through December; weight and fluid checks are logged at every visit.',
+    summary: 'Harold is a private pay client with congestive heart failure. Hours have been steady since February; weight and fluid checks are logged at every visit.',
     highlights: [
       { key: 'v', label: 'Next visit', value: 'Today', sub: '9:00 AM – 2:00 PM · Emmet Bauch' },
       { key: 'cg', label: 'Care team', value: 'Emmet Bauch', sub: 'Primary · +1 backup' },
-      { key: 'p', label: 'Authorization', value: 'Through Dec 2026', sub: '25 hrs / week approved' }
+      { key: 'p', label: 'Billing', value: 'Weekly · ACH', sub: '25 hrs / week' }
     ] },
-  { id: 'c3', name: 'Dorothy Aiken', age: 91, status: 'Active', location: 'Houston · Heights', payer: 'LTC Insurance',
-    payerLine: 'Genworth policy · monthly reimbursement', services: ['Personal Care', 'Respite'], caregiver: 'Allison Archibald', nextVisit: 'Wed, Aug 12 · 8:00 AM',
+  { id: 'c3', name: 'Dorothy Aiken', age: 91, status: 'Active', location: 'Houston · Heights', payer: 'Private Pay + LTC Insurance',
+    payerLine: 'Genworth policy · family pays, LTC reimburses', services: ['Personal Care', 'Respite'], caregiver: 'Allison Archibald', nextVisit: 'Wed, Aug 12 · 8:00 AM',
     last: 'Assessment updated · Aug 2', since: 'Sep 12, 2023', phone: '(713) 555-0131', email: 'aiken.family@gmail.com',
     address: '1140 Yale St, Houston, TX 77008', kin: 'Margaret Rowe', kinLine: 'Niece · (713) 555-0156',
     condition: 'Dementia, moderate', coordinator: 'Priya Shah', hours: '30 hrs / week',
@@ -616,30 +613,30 @@ const CLIENTS = [
       { key: 'cg', label: 'Care team', value: 'Allison Archibald', sub: 'Primary · consistency requested' },
       { key: 'p', label: 'Assessment', value: 'Updated Aug 2', sub: '7 versions · Priya Shah' }
     ] },
-  { id: 'c4', name: 'Ruben Ortiz', age: 69, status: 'On hold', location: 'Sugar Land', payer: 'VA Community Care',
-    payerLine: 'Referral pending renewal', services: ['Personal Care'], caregiver: 'Unassigned', nextVisit: '—',
+  { id: 'c4', name: 'Ruben Ortiz', age: 69, status: 'On hold', location: 'Sugar Land', payer: 'Private Pay + LTC Insurance',
+    payerLine: 'Carrier not yet confirmed with the family', services: ['Post-Surgical'], caregiver: 'Unassigned', nextVisit: '—',
     last: 'Placed on hold · Aug 1', since: 'Jan 20, 2026', phone: '(832) 555-0164', email: 'r.ortiz@gmail.com',
     address: '2203 Austin Pkwy, Sugar Land, TX 77479', kin: 'Elena Ortiz', kinLine: 'Wife · (832) 555-0165',
     condition: 'Post-surgical recovery', coordinator: 'Steve Cook', hours: 'Paused',
-    summary: 'Ruben is on hold while the VA renews his community care referral. No visits are scheduled; reactivate as soon as the authorization returns.',
+    summary: 'Ruben is on hold while the family confirms his long-term care carrier. No visits are scheduled; reactivate once the policy details are confirmed.',
     highlights: [
       { key: 'v', label: 'Next visit', value: 'None scheduled', sub: 'On hold since Aug 1' },
       { key: 'cg', label: 'Care team', value: 'Unassigned', sub: 'Reassign on reactivation' },
-      { key: 'p', label: 'Authorization', value: 'Pending', sub: 'VA referral renewal' }
+      { key: 'p', label: 'LTC policy', value: 'Unconfirmed', sub: 'Waiting on the family' }
     ] },
   { id: 'c5', name: 'Maribel Santos', age: 76, status: 'Active', location: 'Pearland', payer: 'Private Pay',
-    payerLine: 'Card on file · weekly invoicing', services: ['Companionship Care'], caregiver: 'Hassie Kohler', nextVisit: 'Thu, Aug 13 · 10:00 AM',
+    payerLine: 'Card on file · weekly invoicing', services: ['Respite'], caregiver: 'Hassie Kohler', nextVisit: 'Thu, Aug 13 · 10:00 AM',
     last: 'Invoice paid · Aug 7', since: 'Nov 5, 2025', phone: '(346) 555-0177', email: 'm.santos@gmail.com',
     address: '3305 Broadway St, Pearland, TX 77581', kin: 'Carlos Santos', kinLine: 'Son · (346) 555-0178',
     condition: 'Type 2 diabetes', coordinator: 'Priya Shah', hours: '12 hrs / week',
-    summary: 'Maribel is a companionship-only client — errands, meal prep, and social visits three mornings a week. Blood sugar logs go to her daughter after each visit.',
+    summary: 'Maribel is a respite client — her son is the primary caregiver and Joy Health covers three mornings a week so he can work. Blood sugar logs go to him after each visit.',
     highlights: [
       { key: 'v', label: 'Next visit', value: 'Thu, Aug 13', sub: '10:00 AM – 2:00 PM · Hassie Kohler' },
       { key: 'cg', label: 'Care team', value: 'Hassie Kohler', sub: 'Primary · 3 mornings weekly' },
       { key: 'p', label: 'Billing', value: 'Paid Aug 7', sub: 'Weekly · card on file' }
     ] },
-  { id: 'c6', name: 'Frank Delgado', age: 88, status: 'Discharged', location: 'Houston · Bellaire', payer: 'Medicare',
-    payerLine: 'Transitioned to hospice care', services: ['Personal Care'], caregiver: '—', nextVisit: '—',
+  { id: 'c6', name: 'Frank Delgado', age: 88, status: 'Discharged', location: 'Houston · Bellaire', payer: 'Private Pay',
+    payerLine: 'Closed · transitioned to hospice care', services: ['Personal Care'], caregiver: '—', nextVisit: '—',
     last: 'Discharged · Jul 12', since: 'Mar 8, 2024', phone: '(713) 555-0193', email: 'delgado.family@gmail.com',
     address: '5401 Bissonnet St, Bellaire, TX 77401', kin: 'Rita Delgado', kinLine: 'Daughter · (713) 555-0194',
     condition: 'Hospice transition', coordinator: 'Steve Cook', hours: '—',
@@ -666,7 +663,10 @@ const TABS = ['Profile', 'Activity', 'Schedule', 'Docs', 'Services', 'Billing & 
 class Component extends DCLogic {
   state = { joyOpen: false, joyQ: '', joyMic: false, view: 'directory', id: null, tab: 'Profile', q: '', clientsCollapsed: false, service: 'Personal Care' };
 
-  openClient(id) { this.setState({ view: 'client', id: id, tab: 'Profile', service: 'Personal Care' }); }
+  openClient(id) {
+    const c = CLIENTS.filter(x => x.id === id)[0];
+    this.setState({ view: 'client', id: id, tab: 'Profile', service: c ? c.services[0] : 'Personal Care' });
+  }
 
   calendar() {
     const names = ['Kelly Kuhn', 'Hassie Kohler', 'Kelly Kuhn', 'Amani McClure', 'Kelly Kuhn', 'Allison Archibald', 'Emmet Bauch'];
@@ -695,7 +695,9 @@ class Component extends DCLogic {
   }
 
   serviceData(c) {
-    const isPC = this.state.service === 'Personal Care';
+    const svc = this.state.service;
+    const isPC = svc === 'Personal Care';
+    const isPS = svc === 'Post-Surgical';
     return {
       name: this.state.service,
       status: isPC ? 'In Progress' : 'Active',
@@ -721,10 +723,19 @@ class Component extends DCLogic {
           { key: 'l6', text: 'Short-term: improve sleep quality and steady morning routine.' },
           { key: 'l7', text: 'Long-term: maintain mobility and independence at home.' }
         ] }
+      ] : isPS ? [
+        { key: 'p1', title: 'Recovery focus', lines: [
+          { key: 'l1', text: 'Short-term recovery support following surgery, with a defined end date.' },
+          { key: 'l2', text: 'Watch the incision site, mobility limits, and pain levels at every visit.' }
+        ] },
+        { key: 'p2', title: 'Risks & precautions', lines: [
+          { key: 'l3', text: 'Weight-bearing restrictions per discharge instructions.' },
+          { key: 'l4', text: 'Report swelling, redness, or fever to the coordinator the same day.' }
+        ] }
       ] : [
         { key: 'p1', title: 'Focus', lines: [
-          { key: 'l1', text: 'Social engagement, light errands, and meal companionship.' },
-          { key: 'l2', text: 'No hands-on personal care under this service line.' }
+          { key: 'l1', text: 'Scheduled relief for the family caregiver so they can rest or work.' },
+          { key: 'l2', text: 'Supervision, meals, and companionship during the covered hours.' }
         ] }
       ],
       tasks: isPC ? [
@@ -732,14 +743,18 @@ class Component extends DCLogic {
         { key: 't2', label: 'Grocery store', when: 'Perform Wednesdays — AM' },
         { key: 't3', label: 'Prepare meals', when: 'Assist 3 times every day' },
         { key: 't4', label: 'Medication reminders', when: 'Morning and evening' }
+      ] : isPS ? [
+        { key: 't1', label: 'Incision check and dressing', when: 'Every visit' },
+        { key: 't2', label: 'Mobility and transfer assist', when: 'Per discharge instructions' },
+        { key: 't3', label: 'Medication reminders', when: 'Morning and evening' }
       ] : [
-        { key: 't1', label: 'Morning walk', when: 'Perform Tue / Thu — AM' },
-        { key: 't2', label: 'Errands and appointments', when: 'As scheduled' }
+        { key: 't1', label: 'Supervision while family is away', when: 'Covered hours' },
+        { key: 't2', label: 'Meal prep and companionship', when: 'Each visit' }
       ],
       rail: [
         { key: 'r1', title: 'Payer', action: 'Manage', rows: [
-          { key: 'x1', label: c.kin, value: c.payer },
-          { key: 'x2', label: 'Payer type', value: c.payer === 'Private Pay' ? 'Private Pay' : 'Third party' }
+          { key: 'x1', label: c.kin, value: c.kinLine.split(' · ')[0] },
+          { key: 'x2', label: 'Payer type', value: c.payer }
         ] },
         { key: 'r2', title: 'Billing', action: 'Edit', rows: [
           { key: 'x3', label: 'Invoice method', value: 'Electronic & online payment' },

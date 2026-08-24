@@ -21,6 +21,8 @@ input{font-family:inherit}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
 ::-webkit-scrollbar-track{background:transparent}
 @keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+@keyframes drawerIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes sheetIn{from{transform:translateY(10px) scale(.99);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
 @keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -70,15 +72,15 @@ input{font-family:inherit}
       <span style="font-size:12.5px;color:#9B9BA3">Billing</span>
       <span style="font-size:12.5px;color:#C9C9D0">/</span>
       <span style="font-size:12.5px;color:#191A2E;font-weight:500">{{ tabLabel }}</span>
-      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:03 AM</span>
+      <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">Mon, August 10 · 10:12 AM</span>
     </header>
 
-    <div style="padding:28px 40px 90px;display:flex;flex-direction:column;gap:20px;max-width:1360px">
+    <div style="padding:28px 40px 90px;display:flex;flex-direction:column;gap:18px;max-width:1400px">
 
       <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap">
-        <div style="display:flex;flex-direction:column;gap:5px;min-width:300px">
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:320px">
           <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Billing</h1>
-          <p style="margin:0;font-size:13.5px;color:#5B6274">Review this week's invoices, then send. Due Wednesday.</p>
+          <p style="margin:0;font-size:13.5px;color:#5B6274">Aug 1 – 7 · Billing Week 2 of 2 · payment due Wednesday, Aug 12</p>
         </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:9px">
           <button onClick="{{ togglePrivate }}" style="{{ privateBtnStyle }}" title="Hide amounts">
@@ -89,8 +91,23 @@ input{font-family:inherit}
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8s2.4-3.6 6-3.6S14 8 14 8s-2.4 3.6-6 3.6S2 8 2 8z"></path><circle cx="8" cy="8" r="1.6"></circle></svg>
             </sc-if>{{ privateLabel }}
           </button>
-          <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;background:#1407A2;border:none;border-radius:9px;font-size:13px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#2A1BD1">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Create invoice
+          <div style="position:relative">
+            <button onClick="{{ toggleExport }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.6v7.2M5.4 7.4L8 10l2.6-2.6M3 12.4h10"></path></svg>Export
+            </button>
+            <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:40px;right:0;z-index:32;width:244px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                <sc-for list="{{ exportOptions }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.click }}" style="{{ o.style }}" style-hover="background:#FAFAFB">
+                    <span style="font-size:12.5px;color:#191A2E">{{ o.label }}</span>
+                    <span style="font-size:11px;color:#9B9BA3">{{ o.sub }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <button onClick="{{ createInvoice }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#FAFAFB;color:#191A2E">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Create invoice
           </button>
         </div>
       </div>
@@ -104,203 +121,170 @@ input{font-family:inherit}
         </sc-for>
       </div>
 
-      <sc-if value="{{ isReview }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid;grid-template-columns:1fr 296px;gap:18px;align-items:start">
+      <sc-if value="{{ isInvoices }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
 
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="{{ batchStyle }}">
-              <div style="display:flex;align-items:center;gap:16px">
-                <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
-                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">This week's batch</span>
-                  <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ batchTitle }}</span>
-                  <span style="font-size:13px;color:#5B6274">{{ batchSub }}</span>
-                </div>
-                <div style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
-                  <span style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-                    <span style="{{ batchTotalStyle }}">{{ batchTotal }}</span>
-                    <span style="font-size:11.5px;color:#8A8A92">{{ batchHours }}</span>
-                  </span>
-                  <button onClick="{{ sendAll }}" style="{{ sendAllStyle }}">{{ sendAllLabel }}</button>
-                </div>
-              </div>
+          <div style="{{ summaryStyle }}">
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-size:18px;font-weight:600;letter-spacing:-.015em">{{ summaryTitle }}</span>
+              <span style="font-size:13px;color:#5B6274">{{ summarySub }}</span>
             </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:16px;flex:none">
+              <span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                <span style="{{ periodTotalStyle }}">{{ periodTotal }}</span>
+                <span style="font-size:11.5px;color:#8A8A92">{{ periodHours }}</span>
+              </span>
+              <button onClick="{{ primaryAction }}" style="{{ primaryStyle }}">{{ primaryLabel }}</button>
+            </div>
+          </div>
 
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <sc-for list="{{ queue }}" as="r" hint-placeholder-count="3">
-                <div style="{{ r.cardStyle }}">
-                  <div onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer">
-                    <span style="width:34px;height:34px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
-                    <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
-                      <span style="display:flex;align-items:center;gap:9px">
-                        <span style="font-size:14px;font-weight:500;color:#191A2E">{{ r.client }}</span>
-                        <span style="{{ r.statusStyle }}">{{ r.status }}</span>
-                      </span>
-                      <span style="font-size:12.5px;color:#8A8A92">{{ r.line }}</span>
-                    </span>
-                    <span style="margin-left:auto;display:flex;align-items:center;gap:16px;flex:none">
-                      <span style="{{ r.amountStyle }}">{{ r.amount }}</span>
-                      <span style="{{ r.caretStyle }}">⌄</span>
-                    </span>
-                  </div>
+          <button onClick="{{ openLtci }}" style="{{ ltciTeaserStyle }}" style-hover="background:#FAFAFB">
+            <span style="width:26px;height:26px;flex:none;border-radius:8px;background:#F1F0FC;display:flex;align-items:center;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.6h5.2L12 5.4v8H4z"></path><path d="M6.2 8.4h3.6M6.2 10.6h2.4"></path></svg>
+            </span>
+            <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <span style="font-size:13.5px;font-weight:500;color:#191A2E">Prepare prior week LTCI packets</span>
+              <span style="font-size:12.5px;color:#5B6274">{{ ltciTeaser }}</span>
+            </span>
+            <span style="margin-left:auto;flex:none;font-size:12.5px;color:#1407A2">Open workspace ›</span>
+          </button>
 
-                  <sc-if value="{{ r.hasFlags }}" hint-placeholder-val="{{ true }}">
-                    <div style="display:flex;flex-direction:column;gap:1px;padding:0 18px 14px">
-                      <sc-for list="{{ r.flags }}" as="fl" hint-placeholder-count="2">
-                        <div style="{{ fl.style }}">
-                          <span style="{{ fl.dotStyle }}"></span>
-                          <span style="display:flex;flex-direction:column;gap:1px;line-height:1.4">
-                            <span style="font-size:12.5px;color:#191A2E">{{ fl.label }}</span>
-                            <span style="font-size:11.5px;color:#8A8A92">{{ fl.detail }}</span>
-                          </span>
-                          <span style="{{ fl.amountStyle }}">{{ fl.amount }}</span>
-                        </div>
-                      </sc-for>
-                    </div>
-                  </sc-if>
+          <sc-if value="{{ showAlert }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid #FBD9D3;border-radius:12px;background:#FEF3F2">
+              <span style="width:7px;height:7px;flex:none;border-radius:50%;background:#D92D20"></span>
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:13px;font-weight:500;color:#912018">1 payment needs attention</span>
+                <span style="font-size:12.5px;color:#B42318">{{ alertLine }}</span>
+              </span>
+              <button onClick="{{ openAlert }}" style="margin-left:auto;flex:none;height:32px;padding:0 13px;border:1px solid #FBD9D3;background:#FFFFFF;border-radius:9px;font-size:12.5px;color:#B42318;cursor:pointer" style-hover="background:#FEF3F2">Retry payment</button>
+            </div>
+          </sc-if>
 
-                  <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}">
-                    <div style="border-top:1px solid #F3F3F6;background:#FCFCFD;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
-                      <div style="display:flex;flex-direction:column;gap:7px">
-                        <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Lines on this invoice</span>
-                        <div style="display:flex;flex-direction:column">
-                          <sc-for list="{{ r.lines }}" as="l" hint-placeholder-count="4">
-                            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F3F3F6">
-                              <span style="font-size:12.5px;color:#5B6274">{{ l.label }}</span>
-                              <span style="font-size:11.5px;color:#B9B9C1">{{ l.note }}</span>
-                              <span style="{{ l.amountStyle }}">{{ l.amount }}</span>
-                            </div>
-                          </sc-for>
-                        </div>
-                      </div>
-                      <div style="display:flex;align-items:center;gap:9px">
-                        <button onClick="{{ r.approve }}" style="{{ r.approveStyle }}">{{ r.approveLabel }}</button>
-                        <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Edit invoice</button>
-                        <a href="./Joy%20Health%20Scheduling.dc.html" style="font-size:12.5px;color:#1407A2;padding:0 6px">Open schedule →</a>
-                      </div>
-                    </div>
-                  </sc-if>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:236px">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
+              <input type="text" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search client or responsible party" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
+            </div>
+            <div style="position:relative">
+              <button onClick="{{ togglePeriod }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:13px;color:#191A2E;cursor:pointer" style-hover="background:#FAFAFB">{{ periodLabel }}<span style="color:#B9B9C1;font-size:11px">▾</span></button>
+              <sc-if value="{{ periodOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:40px;left:0;z-index:32;width:212px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                  <sc-for list="{{ periodOptions }}" as="p" hint-placeholder-count="3">
+                    <button onClick="{{ p.click }}" style="{{ p.style }}">{{ p.label }}</button>
+                  </sc-for>
                 </div>
+              </sc-if>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ statusFilters }}" as="f" hint-placeholder-count="7">
+                <button onClick="{{ f.click }}" style="{{ f.style }}">{{ f.label }}<span style="{{ f.countStyle }}">{{ f.count }}</span></button>
               </sc-for>
             </div>
           </div>
 
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
-              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">The week</span>
-              <div style="display:flex;flex-direction:column">
-                <sc-for list="{{ cycle }}" as="c" hint-placeholder-count="4">
-                  <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
-                    <span style="{{ c.dotStyle }}"></span>
-                    <span style="display:flex;flex-direction:column;line-height:1.3">
-                      <span style="{{ c.dayStyle }}">{{ c.day }}</span>
-                      <span style="font-size:11.5px;color:#9B9BA3">{{ c.what }}</span>
-                    </span>
-                  </div>
-                </sc-for>
-              </div>
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:1060px">
+                <thead>
+                  <tr>
+                    <sc-for list="{{ invCols }}" as="c" hint-placeholder-count="6">
+                      <th onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}<span style="{{ c.arrowStyle }}">{{ c.arrow }}</span></th>
+                    </sc-for>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ invoices }}" as="r" hint-placeholder-count="8">
+                    <tr onClick="{{ r.open }}" style="border-top:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
+                      <td style="padding:13px 18px">
+                        <span style="display:flex;align-items:center;gap:10px">
+                          <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                          <span style="display:flex;flex-direction:column;line-height:1.35">
+                            <span style="font-size:13px;color:#191A2E">{{ r.client }}</span>
+                            <span style="font-size:11px;color:#9B9BA3">{{ r.payer }}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.period }}</td>
+                      <td style="padding:13px 16px"><span style="{{ r.statusStyle }}">{{ r.status }}</span></td>
+                      <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.method }}</td>
+                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.amountStyle }}">{{ r.amount }}</span></td>
+                      <td style="padding:13px 18px;font-size:12.5px;color:#9B9BA3;white-space:nowrap">{{ r.paid }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
             </div>
-
-            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
-              <span style="display:flex;align-items:center;gap:8px">
-                <span style="width:7px;height:7px;border-radius:50%;background:#F79009;flex:none"></span>
-                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Behind on payment</span>
-              </span>
-              <div style="display:flex;flex-direction:column">
-                <sc-for list="{{ behind }}" as="b" hint-placeholder-count="3">
-                  <div style="display:flex;flex-direction:column;gap:3px;padding:10px 0;border-bottom:1px solid #F3F3F6">
-                    <span style="display:flex;align-items:center;gap:9px">
-                      <span style="font-size:13px;color:#191A2E">{{ b.client }}</span>
-                      <span style="{{ b.amountStyle }}">{{ b.amount }}</span>
-                    </span>
-                    <span style="{{ b.stateStyle }}">{{ b.state }}</span>
-                  </div>
-                </sc-for>
-              </div>
-              <button style="align-self:flex-start;background:transparent;border:none;font-size:12.5px;color:#1407A2;cursor:pointer;padding:2px 0">Send notices →</button>
-            </div>
-
-            <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
-              <span style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Stripe</span>
-                <span style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;background:#ECFDF3;color:#12B76A;font-weight:500">Connected</span>
-              </span>
-              <div style="display:flex;flex-direction:column">
-                <sc-for list="{{ stripe }}" as="r" hint-placeholder-count="3">
-                  <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F3F6">
-                    <span style="font-size:12.5px;color:#9B9BA3">{{ r.label }}</span>
-                    <span style="{{ r.valueStyle }}">{{ r.value }}</span>
-                  </div>
-                </sc-for>
-              </div>
+            <sc-if value="{{ noInvoices }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:34px;text-align:center;font-size:13px;color:#9B9BA3">{{ emptyCopy }}</div>
+            </sc-if>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #ECECF1;background:#FCFCFD">
+              <span style="font-size:12px;color:#9B9BA3">{{ invoiceCount }}</span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:#5B6274">Outstanding<span style="{{ unpaidStyle }}">{{ unpaidTotal }}</span></span>
             </div>
           </div>
         </div>
       </sc-if>
 
-      <sc-if value="{{ isInvoices }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
-          <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;min-width:1060px">
+      <sc-if value="{{ isPayers }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;padding:0 11px;height:34px;width:236px">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9B9BA3" stroke-width="1.4" stroke-linecap="round" style="flex:none"><circle cx="7.2" cy="7.2" r="4.4"></circle><path d="M10.6 10.6L13.6 13.6"></path></svg>
+              <input type="text" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search client" style="border:none;outline:none;background:transparent;font-size:13px;color:#191A2E;width:100%"/>
+            </div>
+            <span style="margin-left:auto;font-size:12px;color:#9B9BA3">Pay type, rate and billing method. Everything else lives in the client record.</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
               <thead>
                 <tr>
-                  <sc-for list="{{ invCols }}" as="c">
+                  <sc-for list="{{ payerCols }}" as="c" hint-placeholder-count="4">
                     <th style="{{ c.style }}">{{ c.label }}</th>
                   </sc-for>
                 </tr>
               </thead>
               <tbody>
-                <sc-for list="{{ invoices }}" as="r" hint-placeholder-count="0">
-                  <tr style="border-top:1px solid #F3F3F6" style-hover="background:#FAFAFB">
+                <sc-for list="{{ payerRows }}" as="r" hint-placeholder-count="8">
+                  <tr onClick="{{ r.open }}" style="border-top:1px solid #F3F3F6;cursor:pointer" style-hover="background:#FAFAFB">
                     <td style="padding:13px 18px">
                       <span style="display:flex;align-items:center;gap:10px">
                         <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
                         <span style="display:flex;flex-direction:column;line-height:1.35">
                           <span style="font-size:13px;color:#191A2E">{{ r.client }}</span>
-                          <span style="font-size:11px;color:#9B9BA3">{{ r.payer }}</span>
+                          <span style="font-size:11px;color:#9B9BA3">{{ r.responsible }}</span>
                         </span>
                       </span>
                     </td>
-                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274">{{ r.period }}</td>
-                    <td style="padding:13px 16px"><span style="{{ r.statusStyle }}">{{ r.status }}</span></td>
-                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274">{{ r.method }}</td>
-                    <td style="padding:13px 16px;text-align:right"><span style="{{ r.amountStyle }}">{{ r.amount }}</span></td>
-                    <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;white-space:nowrap">{{ r.due }}</td>
-                    <td style="padding:13px 18px;font-size:12.5px;color:#9B9BA3;white-space:nowrap">{{ r.paid }}</td>
+                    <td style="padding:13px 16px"><span style="{{ r.typeStyle }}">{{ r.payType }}</span><span style="{{ r.ltcStyle }}">{{ r.ltc }}</span></td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ r.rateStyle }}">{{ r.rate }}</span></td>
+                    <td style="padding:13px 18px;font-size:12.5px;color:#5B6274">{{ r.method }}</td>
                   </tr>
                 </sc-for>
               </tbody>
             </table>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #ECECF1;background:#FCFCFD">
-            <span style="font-size:12px;color:#9B9BA3">{{ invoiceCount }}</span>
-            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:#5B6274">Unpaid<span style="{{ unpaidStyle }}">{{ unpaidTotal }}</span></span>
           </div>
         </div>
       </sc-if>
 
       <sc-if value="{{ isProfit }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;flex-direction:column;gap:14px">
-          <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px 18px">
-            <span style="display:flex;flex-direction:column;gap:3px">
-              <span style="display:flex;align-items:center;gap:9px">
-                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Net profit · {{ weekLabel }}</span>
-                <span style="display:flex;align-items:center;gap:4px">
-                  <button onClick="{{ prevWeek }}" style="{{ prevWeekStyle }}">‹</button>
-                  <button onClick="{{ nextWeek }}" style="{{ nextWeekStyle }}">›</button>
-                </span>
-                <span style="font-size:11.5px;color:#B9B9C1">{{ weekSub }}</span>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <div style="display:flex;gap:2px;padding:3px;background:#F1F2F6;border-radius:9px">
+              <sc-for list="{{ profPeriods }}" as="p" hint-placeholder-count="5">
+                <button onClick="{{ p.click }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+            <span style="font-size:12.5px;color:#5B6274">{{ profRange }}</span>
+          </div>
+
+          <div style="display:flex;align-items:stretch;gap:0;background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;padding:16px 4px">
+            <sc-for list="{{ profSummary }}" as="k" hint-placeholder-count="4">
+              <span style="{{ k.style }}">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">{{ k.label }}</span>
+                <span style="{{ k.valueStyle }}">{{ k.value }}</span>
+                <span style="{{ k.noteStyle }}">{{ k.note }}</span>
               </span>
-              <span style="display:flex;align-items:baseline;gap:10px">
-                <span style="{{ netStyle }}">{{ netValue }}</span>
-                <span style="font-size:14px;font-weight:500;color:#B54708">{{ netPct }}</span>
-              </span>
-            </span>
-            <span style="margin-left:auto;display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none">
-              <span style="font-size:12px;color:#8A8A92">Against a 12% target</span>
-              <span style="display:block;width:190px;height:5px;border-radius:999px;background:#F1F2F6;overflow:hidden">
-                <span style="{{ netBarStyle }}"></span>
-              </span>
-            </span>
+            </sc-for>
           </div>
 
           <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:14px;overflow:hidden">
@@ -308,13 +292,13 @@ input{font-family:inherit}
               <table style="width:100%;border-collapse:collapse;min-width:980px">
                 <thead>
                   <tr>
-                    <sc-for list="{{ profitCols }}" as="c">
-                      <th style="{{ c.style }}">{{ c.label }}</th>
+                    <sc-for list="{{ profitCols }}" as="c" hint-placeholder-count="6">
+                      <th onClick="{{ c.click }}" style="{{ c.style }}">{{ c.label }}<span style="{{ c.arrowStyle }}">{{ c.arrow }}</span></th>
                     </sc-for>
                   </tr>
                 </thead>
                 <tbody>
-                  <sc-for list="{{ profitRows }}" as="r" hint-placeholder-count="0">
+                  <sc-for list="{{ profitRows }}" as="r" hint-placeholder-count="8">
                     <tr style="border-top:1px solid #F3F3F6" style-hover="background:#FAFAFB">
                       <td style="padding:13px 18px">
                         <span style="display:flex;align-items:center;gap:10px">
@@ -322,22 +306,22 @@ input{font-family:inherit}
                           <span style="font-size:13px;color:#191A2E">{{ r.name }}</span>
                         </span>
                       </td>
-                      <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;text-align:right">{{ r.billableHrs }}</td>
-                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.billableStyle }}">{{ r.billable }}</span></td>
+                      <td style="padding:13px 16px;font-size:12.5px;color:#5B6274;text-align:right">{{ r.hrs }}</td>
+                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.invoicedStyle }}">{{ r.invoiced }}</span></td>
                       <td style="padding:13px 16px;text-align:right"><span style="{{ r.costStyle }}">{{ r.cost }}</span></td>
-                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.netStyle }}">{{ r.net }}</span></td>
-                      <td style="padding:13px 18px;text-align:right"><span style="{{ r.pctStyle }}">{{ r.pct }}</span></td>
+                      <td style="padding:13px 16px;text-align:right"><span style="{{ r.profitStyle }}">{{ r.profit }}</span></td>
+                      <td style="padding:13px 18px;text-align:right"><span style="{{ r.marginStyle }}">{{ r.margin }}</span></td>
                     </tr>
                   </sc-for>
                 </tbody>
                 <tfoot>
                   <tr style="border-top:1px solid #ECECF1;background:#FCFCFD">
-                    <td style="padding:13px 18px;font-size:12.5px;font-weight:600;color:#191A2E">Total · {{ totalHrs }}</td>
-                    <td style="padding:13px 16px"></td>
-                    <td style="padding:13px 16px;text-align:right"><span style="{{ totalMoneyStyle }}">{{ totalBilled }}</span></td>
-                    <td style="padding:13px 16px;text-align:right"><span style="{{ totalMoneyStyle }}">{{ totalCost }}</span></td>
-                    <td style="padding:13px 16px;text-align:right"><span style="{{ totalMoneyStyle }}">{{ totalNet }}</span></td>
-                    <td style="padding:13px 18px;text-align:right"><span style="{{ totalPctStyle }}">{{ totalPct }}</span></td>
+                    <td style="padding:13px 18px;font-size:12.5px;font-weight:600;color:#191A2E">{{ profClients }}</td>
+                    <td style="padding:13px 16px;text-align:right;font-size:12.5px;color:#5B6274">{{ profHours }}</td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ profTotalStyle }}">{{ profInvoiced }}</span></td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ profTotalStyle }}">{{ profCost }}</span></td>
+                    <td style="padding:13px 16px;text-align:right"><span style="{{ profTotalStyle }}">{{ profProfit }}</span></td>
+                    <td style="padding:13px 18px;text-align:right"><span style="{{ profMarginStyle }}">{{ profMargin }}</span></td>
                   </tr>
                 </tfoot>
               </table>
@@ -348,6 +332,611 @@ input{font-family:inherit}
 
     </div>
   </main>
+
+  <sc-if value="{{ reviewOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ closeReview }}" style="position:absolute;inset:0;background:rgba(25,26,46,.28)"></div>
+      <div style="position:relative;width:100%;max-width:596px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 24px 60px rgba(25,26,46,.18);animation:sheetIn .16s ease-out;display:flex;flex-direction:column;max-height:86vh">
+
+        <div style="padding:18px 22px 14px;border-bottom:1px solid #ECECF1;display:flex;align-items:center;gap:12px">
+          <span style="font-size:12px;color:#8A8A92">{{ rv.step }}</span>
+          <span style="{{ rv.progressStyle }}"><span style="{{ rv.progressFill }}"></span></span>
+          <button onClick="{{ closeReview }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+
+          <sc-if value="{{ rv.isDone }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ rv.doneTitle }}</span>
+                <span style="font-size:13.5px;color:#5B6274">{{ rv.doneSub }}</span>
+              </div>
+              <div style="border:1px solid #ECECF1;border-radius:12px;overflow:hidden">
+                <sc-for list="{{ rv.doneList }}" as="l" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #F3F3F6">
+                    <span style="font-size:12.5px;color:#191A2E">{{ l.client }}</span>
+                    <span style="{{ l.statusStyle }}">{{ l.status }}</span>
+                    <span style="{{ l.amountStyle }}">{{ l.amount }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ rv.isInvoice }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;align-items:flex-start;gap:14px">
+                <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                  <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ rv.client }}</span>
+                  <span style="font-size:13px;color:#5B6274">{{ rv.meta }}</span>
+                </div>
+                <span style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none">
+                  <span style="{{ rv.amountStyle }}">{{ rv.amount }}</span>
+                  <span style="{{ rv.statusStyle }}">{{ rv.status }}</span>
+                </span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <sc-for list="{{ rv.checks }}" as="c" hint-placeholder-count="3">
+                  <div style="{{ c.style }}">
+                    <span style="{{ c.iconStyle }}">{{ c.icon }}</span>
+                    <span style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                      <span style="font-size:13px;color:#191A2E;line-height:1.4;text-wrap:pretty">{{ c.label }}</span>
+                      <span style="{{ c.detailStyle }}">{{ c.detail }}</span>
+                    </span>
+                    <span style="{{ c.amountStyle }}">{{ c.amount }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Invoice lines</span>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ rv.lines }}" as="l" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                      <span style="font-size:12.5px;color:#191A2E">{{ l.label }}</span>
+                      <span style="font-size:11.5px;color:#B9B9C1">{{ l.note }}</span>
+                      <span style="{{ l.amountStyle }}">{{ l.amount }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <sc-if value="{{ rv.hasRec }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+                  <span style="display:flex;align-items:center;gap:7px">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite;flex:none"></span>
+                    <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9B9BA3">Joy recommends</span>
+                  </span>
+                  <span style="font-size:13px;color:#191A2E;line-height:1.5;text-wrap:pretty">{{ rv.rec }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <div style="padding:14px 22px;border-top:1px solid #ECECF1;display:flex;align-items:center;gap:9px;background:#FCFCFD;border-radius:0 0 16px 16px">
+          <sc-for list="{{ rv.secondary }}" as="a" hint-placeholder-count="2">
+            <button onClick="{{ a.click }}" style="{{ a.style }}">{{ a.label }}</button>
+          </sc-for>
+          <button onClick="{{ rv.primary }}" style="{{ rv.primaryStyle }}">{{ rv.primaryLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ ciOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:84;display:flex;justify-content:flex-end">
+      <div onClick="{{ closeCi }}" style="position:absolute;inset:0;background:rgba(25,26,46,.2)"></div>
+      <aside style="position:relative;width:484px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.1);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+
+        <div style="padding:20px 24px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">Create invoice</span>
+            <span style="font-size:12.5px;color:#5B6274">Create an additional or one-time client charge.</span>
+          </div>
+          <button onClick="{{ closeCi }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <sc-if value="{{ ci.isDraft }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="flex:1;overflow-y:auto;padding:22px 24px;display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;align-items:center;gap:9px">
+                <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:500;color:#5B6274;background:#F1F2F6">Draft</span>
+                <span style="font-size:11.5px;color:#9B9BA3">Marked manually created · not sent yet</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid #ECECF1;border-radius:14px">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:16px;font-weight:600;letter-spacing:-.01em">{{ ci.draft.client }}</span>
+                  <span style="font-size:12.5px;color:#5B6274">{{ ci.draft.when }}</span>
+                  <span style="font-size:12.5px;color:#5B6274">Bill to {{ ci.draft.billTo }} · {{ ci.draft.method }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ ci.draft.lines }}" as="l" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                      <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                        <span style="font-size:12.5px;color:#191A2E">{{ l.label }}</span>
+                        <span style="font-size:11.5px;color:#9B9BA3">{{ l.desc }}</span>
+                      </span>
+                      <span style="{{ l.amountStyle }}">{{ l.amount }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:12px">
+                  <span style="font-size:12.5px;font-weight:600;color:#191A2E">Invoice total</span>
+                  <span style="margin-left:auto"><span style="{{ ci.draft.totalStyle }}">{{ ci.draft.total }}</span></span>
+                </div>
+              </div>
+              <span style="{{ ci.draft.ltcStyle }}">{{ ci.draft.ltc }}</span>
+              <span style="font-size:11.5px;color:#9B9BA3;line-height:1.5">This is what the client will see. Nothing is sent and no card is charged until you approve it.</span>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #ECECF1;background:#FCFCFD;display:flex;align-items:center;gap:9px">
+              <button onClick="{{ ci.draft.back }}" style="flex:none;white-space:nowrap;height:40px;padding:0 15px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Edit charges</button>
+              <button onClick="{{ ci.draft.send }}" style="margin-left:auto;flex:none;white-space:nowrap;height:40px;padding:0 18px;border:none;border-radius:10px;background:#1407A2;color:#FFFFFF;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">Approve &amp; send</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ ciFormOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="flex:1;overflow-y:auto;padding:20px 24px 26px;display:flex;flex-direction:column;gap:20px">
+
+              <div style="display:flex;flex-direction:column;gap:8px;position:relative">
+                <span style="font-size:12.5px;font-weight:500;color:#191A2E">Client <span style="color:#B42318">*</span></span>
+                <button onClick="{{ ci.toggleClient }}" style="{{ ci.clientStyle }}">{{ ci.client }}<span style="margin-left:auto;color:#B9B9C1;font-size:11px">▾</span></button>
+                <sc-if value="{{ ci.clientOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:70px;left:0;right:0;z-index:14;max-height:264px;overflow-y:auto;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ ci.clientOptions }}" as="o" hint-placeholder-count="6">
+                      <button onClick="{{ o.click }}" style="{{ o.style }}">
+                        <span style="font-size:12.5px;color:#191A2E">{{ o.label }}</span>
+                        <span style="font-size:11px;color:#9B9BA3">{{ o.sub }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ci.hasClient }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px 18px;padding:11px 13px;border-radius:11px;background:#FAFAFB">
+                    <sc-for list="{{ ci.profile }}" as="p" hint-placeholder-count="4">
+                      <span style="display:flex;flex-direction:column;gap:1px">
+                        <span style="font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3">{{ p.label }}</span>
+                        <span style="font-size:12px;color:#191A2E">{{ p.value }}</span>
+                      </span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <span style="font-size:12.5px;font-weight:500;color:#191A2E">When was this charge incurred?</span>
+                <div style="display:flex;gap:2px;padding:3px;background:#F1F2F6;border-radius:10px;align-self:flex-start">
+                  <sc-for list="{{ ci.modes }}" as="mo" hint-placeholder-count="2">
+                    <button onClick="{{ mo.click }}" style="{{ mo.style }}">{{ mo.label }}</button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ ci.isSingle }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:11.5px;color:#8A8A92">Service / expense date</span>
+                    <input type="text" value="{{ ci.date }}" onChange="{{ ci.onDate }}" style="height:38px;padding:0 12px;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#191A2E;outline:none;background:#FFFFFF"/>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ci.isPeriod }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:6px;position:relative">
+                    <span style="font-size:11.5px;color:#8A8A92">Service period</span>
+                    <button onClick="{{ ci.togglePeriod }}" style="display:flex;align-items:center;gap:9px;width:100%;height:38px;padding:0 12px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF;font-size:13px;color:#191A2E;cursor:pointer;text-align:left" style-hover="background:#FAFAFB">{{ ci.period }}<span style="margin-left:auto;color:#B9B9C1;font-size:11px">▾</span></button>
+                    <sc-if value="{{ ci.periodOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;top:66px;left:0;right:0;z-index:14;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                        <sc-for list="{{ ci.periods }}" as="p" hint-placeholder-count="5">
+                          <button onClick="{{ p.click }}" style="{{ p.style }}" style-hover="background:#FAFAFB">{{ p.label }}</button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <span style="font-size:11px;color:#9B9BA3">Service weeks run Saturday through Friday.</span>
+                  </div>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{ ci.hasDup }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:9px;padding:14px;border:1px solid #FCE8B6;border-radius:12px;background:#FFFAEB">
+                  <span style="display:flex;align-items:center;gap:9px">
+                    <span style="width:18px;height:18px;flex:none;border-radius:50%;background:#FEF0C7;color:#B54708;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">!</span>
+                    <span style="font-size:13px;font-weight:500;color:#93370D">Possible duplicate invoice</span>
+                  </span>
+                  <span style="font-size:12.5px;color:#B54708;line-height:1.5;text-wrap:pretty">{{ ci.dupLine }}</span>
+                  <span style="font-size:12px;color:#93370D">{{ ci.dupMeta }}</span>
+                  <span style="display:flex;gap:8px;padding-top:2px">
+                    <button onClick="{{ ci.viewDup }}" style="height:32px;padding:0 12px;border:1px solid #FCE8B6;background:#FFFFFF;border-radius:9px;font-size:12.5px;color:#B54708;cursor:pointer" style-hover="background:#FFFAEB">View existing invoice</button>
+                    <button onClick="{{ ci.ackDup }}" style="height:32px;padding:0 12px;border:none;background:transparent;font-size:12.5px;color:#93370D;cursor:pointer" style-hover="text-decoration:underline">Continue anyway</button>
+                  </span>
+                </div>
+              </sc-if>
+
+              <div style="display:flex;flex-direction:column;gap:9px;position:relative">
+                <span style="font-size:12.5px;font-weight:500;color:#191A2E">Charges</span>
+
+                <sc-for list="{{ ci.items }}" as="it" hint-placeholder-count="1">
+                  <div style="display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #ECECF1;border-radius:12px;background:#FFFFFF">
+                    <span style="display:flex;align-items:center;gap:9px">
+                      <span style="font-size:12.5px;font-weight:500;color:#191A2E">{{ it.typeLabel }}</span>
+                      <span style="margin-left:auto"><span style="{{ it.amountStyle }}">{{ it.amount }}</span></span>
+                      <button onClick="{{ it.remove }}" style="flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#B9B9C1;font-size:12px;cursor:pointer" style-hover="background:#F1F2F6;color:#B42318">✕</button>
+                    </span>
+                    <input type="text" value="{{ it.desc }}" onChange="{{ it.onDesc }}" placeholder="{{ it.descPlaceholder }}" style="height:36px;padding:0 11px;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#191A2E;outline:none;background:#FCFCFD"/>
+                    <span style="display:flex;gap:9px">
+                      <sc-if value="{{ it.showQty }}" hint-placeholder-val="{{ true }}">
+                        <span style="display:flex;flex-direction:column;gap:5px;flex:1">
+                          <span style="font-size:11px;color:#9B9BA3">{{ it.qtyLabel }}</span>
+                          <input type="text" value="{{ it.qty }}" onChange="{{ it.onQty }}" style="width:100%;box-sizing:border-box;height:34px;padding:0 11px;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#191A2E;outline:none"/>
+                        </span>
+                      </sc-if>
+                      <sc-if value="{{ it.showRate }}" hint-placeholder-val="{{ true }}">
+                        <span style="display:flex;flex-direction:column;gap:5px;flex:1">
+                          <span style="font-size:11px;color:#9B9BA3">{{ it.rateLabel }}</span>
+                          <input type="text" value="{{ it.rate }}" onChange="{{ it.onRate }}" style="width:100%;box-sizing:border-box;height:34px;padding:0 11px;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#191A2E;outline:none"/>
+                        </span>
+                      </sc-if>
+                      <sc-if value="{{ it.showAmountInput }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:flex;flex-direction:column;gap:5px;flex:1">
+                          <span style="font-size:11px;color:#9B9BA3">Amount</span>
+                          <input type="text" value="{{ it.amountInput }}" onChange="{{ it.onAmount }}" style="width:100%;box-sizing:border-box;height:34px;padding:0 11px;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#191A2E;outline:none"/>
+                        </span>
+                      </sc-if>
+                    </span>
+                    <span style="{{ it.overrideStyle }}">{{ it.override }}</span>
+                    <button onClick="{{ it.attachClick }}" style="{{ it.attachStyle }}">{{ it.attach }}</button>
+                  </div>
+                </sc-for>
+
+                <button onClick="{{ ci.toggleTypes }}" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;background:#FFFFFF;border:1px dashed #D8D8DE;border-radius:10px;font-size:12.5px;color:#1407A2;cursor:pointer" style-hover="background:#FAFAFB">{{ ci.addLabel }}</button>
+                <sc-if value="{{ ci.typeOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 8px 24px rgba(25,26,46,.08);padding:6px;display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ ci.types }}" as="t" hint-placeholder-count="6">
+                      <button onClick="{{ t.click }}" style="{{ t.style }}" style-hover="background:#FAFAFB">
+                        <span style="font-size:12.5px;color:#191A2E">{{ t.label }}</span>
+                        <span style="font-size:11px;color:#9B9BA3">{{ t.hint }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{ ci.hasUnbilled }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+                  <span style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:12.5px;color:#191A2E">{{ ci.unbilledLine }}</span>
+                    <button onClick="{{ ci.toggleExpenses }}" style="margin-left:auto;flex:none;height:30px;padding:0 12px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:9px;font-size:12px;color:#1407A2;cursor:pointer" style-hover="background:#EEF0FE">Review &amp; include</button>
+                  </span>
+                  <sc-if value="{{ ci.expenseOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <sc-for list="{{ ci.unbilled }}" as="u" hint-placeholder-count="2">
+                        <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid #ECECF1;border-radius:10px;background:#FFFFFF">
+                          <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                            <span style="font-size:12.5px;color:#191A2E">{{ u.label }}</span>
+                            <span style="font-size:11px;color:#9B9BA3">{{ u.date }} · {{ u.amount }}</span>
+                          </span>
+                          <button onClick="{{ u.include }}" style="margin-left:auto;flex:none;height:28px;padding:0 11px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;font-size:11.5px;color:#1407A2;cursor:pointer" style-hover="background:#EEF0FE">Include</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ ci.hasItems }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Invoice summary</span>
+                  <div style="display:flex;flex-direction:column;gap:3px;padding:14px;border:1px solid #ECECF1;border-radius:12px">
+                    <span style="font-size:13px;color:#191A2E">{{ ci.summaryClient }}</span>
+                    <span style="font-size:11.5px;color:#9B9BA3;padding-bottom:6px">{{ ci.summaryWhen }}</span>
+                    <sc-for list="{{ ci.summaryLines }}" as="l" hint-placeholder-count="2">
+                      <span style="display:flex;align-items:baseline;gap:12px;padding:5px 0;border-top:1px solid #F3F3F6">
+                        <span style="font-size:12.5px;color:#5B6274">{{ l.label }}</span>
+                        <span style="margin-left:auto;font-size:12.5px;color:#191A2E">{{ l.amount }}</span>
+                      </span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+            </div>
+
+            <div style="padding:16px 24px;border-top:1px solid #ECECF1;background:#FCFCFD;display:flex;flex-direction:column;gap:11px">
+              <span style="display:flex;align-items:baseline;gap:12px">
+                <span style="font-size:12.5px;font-weight:500;color:#191A2E">Invoice total</span>
+                <span style="margin-left:auto"><span style="{{ ci.totalStyle }}">{{ ci.total }}</span></span>
+              </span>
+              <button onClick="{{ ci.create }}" style="{{ ci.createStyle }}">Create draft invoice</button>
+              <span style="font-size:11px;color:#9B9BA3;text-align:center">Nothing is sent and no payment is collected until you approve the draft.</span>
+            </div>
+          </div>
+        </sc-if>
+
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ ltciOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:82;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ closeLtci }}" style="position:absolute;inset:0;background:rgba(25,26,46,.28)"></div>
+      <div style="position:relative;width:100%;max-width:720px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 24px 60px rgba(25,26,46,.18);animation:sheetIn .16s ease-out;display:flex;flex-direction:column;max-height:88vh">
+
+        <div style="padding:18px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+            <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">LTCI reimbursement packets</span>
+            <span style="display:flex;align-items:center;gap:9px">
+              <span style="font-size:13px;font-weight:600;color:#1407A2">Service period: {{ lv.period }}</span>
+              <span style="font-size:12px;color:#9B9BA3">{{ lv.step }}</span>
+            </span>
+          </div>
+          <button onClick="{{ closeLtci }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+
+          <sc-if value="{{ lv.isList }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <span style="font-size:12.5px;color:#5B6274;line-height:1.5;text-wrap:pretty">{{ lv.sub }}</span>
+
+              <div style="border:1px solid #ECECF1;border-radius:12px;overflow:hidden">
+                <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+                  <thead>
+                    <tr>
+                      <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD">Client</th>
+                      <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD">Carrier</th>
+                      <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD">Paid invoice</th>
+                      <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD">Care notes</th>
+                      <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD">Packet</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ lv.rows }}" as="r" hint-placeholder-count="3">
+                      <tr onClick="{{ r.open }}" style="{{ r.rowStyle }}" style-hover="background:#FAFAFB">
+                        <td style="padding:12px 16px">
+                          <span style="display:flex;align-items:center;gap:10px">
+                            <span style="width:26px;height:26px;flex:none;border-radius:50%;background:#EEF0FE;color:#1407A2;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.initials }}</span>
+                            <span style="display:flex;flex-direction:column;line-height:1.35">
+                              <span style="font-size:13px;color:#191A2E">{{ r.client }}</span>
+                              <span style="{{ r.amountStyle }}">{{ r.amount }}</span>
+                            </span>
+                          </span>
+                        </td>
+                        <td style="padding:12px;font-size:12.5px;color:#5B6274">{{ r.carrier }}</td>
+                        <td style="padding:12px"><span style="{{ r.invoiceStyle }}">{{ r.invoiceLabel }}</span></td>
+                        <td style="padding:12px"><span style="{{ r.notesStyle }}">{{ r.notes }}</span></td>
+                        <td style="padding:12px 16px"><span style="{{ r.packetStyle }}">{{ r.packet }}</span></td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+
+              <sc-if value="{{ lv.hasExceptions }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ lv.exceptions }}" as="e" hint-placeholder-count="1">
+                    <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 14px;border:1px solid #FCE8B6;border-radius:12px;background:#FFFAEB">
+                      <span style="width:18px;height:18px;flex:none;margin-top:1px;border-radius:50%;background:#FEF0C7;color:#B54708;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">!</span>
+                      <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                        <span style="font-size:13px;font-weight:500;color:#93370D">{{ e.title }}</span>
+                        <span style="font-size:12.5px;color:#B54708;line-height:1.5;text-wrap:pretty">{{ e.body }}</span>
+                      </span>
+                      <button onClick="{{ e.click }}" style="margin-left:auto;flex:none;height:32px;padding:0 13px;border:1px solid #FCE8B6;background:#FFFFFF;border-radius:9px;font-size:12.5px;color:#B54708;cursor:pointer" style-hover="background:#FFFAEB">{{ e.action }}</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ lv.isReview }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;align-items:flex-start;gap:14px">
+                <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                  <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ lv.client }}</span>
+                  <span style="font-size:13px;color:#5B6274">{{ lv.carrier }}</span>
+                </div>
+                <span style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none">
+                  <span style="{{ lv.amountStyle }}">{{ lv.amount }}</span>
+                  <span style="font-size:11.5px;color:#8A8A92">{{ lv.pages }}</span>
+                </span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <sc-for list="{{ lv.checks }}" as="c" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:10px;background:#FAFAFB">
+                    <span style="width:17px;height:17px;flex:none;border-radius:50%;background:#ECFDF3;color:#12B76A;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+                    <span style="font-size:12.5px;color:#191A2E;line-height:1.4;text-wrap:pretty">{{ c.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Packet assembly</span>
+                <div style="border:1px solid #ECECF1;border-radius:12px;overflow:hidden">
+                  <sc-for list="{{ lv.assembly }}" as="a" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid #F3F3F6">
+                      <span style="width:19px;height:19px;flex:none;border-radius:50%;background:#F1F2F6;color:#5B6274;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ a.num }}</span>
+                      <span style="font-size:12.5px;color:#191A2E">{{ a.label }}</span>
+                      <span style="margin-left:auto;font-size:11.5px;color:#9B9BA3">{{ a.note }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ lv.isDone }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ lv.doneTitle }}</span>
+                <span style="font-size:13.5px;color:#5B6274">{{ lv.doneSub }}</span>
+              </div>
+              <div style="border:1px solid #ECECF1;border-radius:12px;overflow:hidden">
+                <sc-for list="{{ lv.doneRows }}" as="r" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #F3F3F6">
+                    <span style="font-size:12.5px;color:#191A2E;white-space:nowrap">{{ r.client }}</span>
+                    <span style="font-size:11.5px;color:#9B9BA3;white-space:nowrap">{{ r.carrier }}</span>
+                    <span style="{{ r.statusStyle }}">{{ r.status }}</span>
+                    <span style="{{ r.amountStyle }}">{{ r.amount }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <div style="padding:14px 22px;border-top:1px solid #ECECF1;display:flex;align-items:center;gap:9px;background:#FCFCFD;border-radius:0 0 16px 16px">
+          <sc-if value="{{ lv.isList }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:9px;width:100%">
+              <span style="font-size:12px;color:#9B9BA3">Delivery method: fax + email</span>
+              <button onClick="{{ lv.startReview }}" style="margin-left:auto;height:38px;padding:0 18px;border:none;border-radius:10px;background:#1407A2;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">{{ lv.listPrimaryLabel }}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ lv.isReview }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;width:100%">
+              <button onClick="{{ lv.backToList }}" style="height:38px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">All packets</button>
+              <button onClick="{{ lv.preview }}" style="height:38px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Preview packet</button>
+              <button onClick="{{ lv.approve }}" style="margin-left:auto;height:38px;padding:0 18px;border:none;border-radius:10px;background:#1407A2;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">{{ lv.approveLabel }}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ lv.isDone }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;width:100%">
+              <button onClick="{{ closeLtci }}" style="height:38px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Back to billing</button>
+              <button onClick="{{ lv.send }}" style="{{ lv.sendStyle }}">{{ lv.sendLabel }}</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:70;display:flex;justify-content:flex-end">
+      <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(25,26,46,.18)"></div>
+      <aside style="position:relative;width:452px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+            <span style="{{ dv.statusStyle }}">{{ dv.status }}</span>
+            <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">{{ dv.client }}</span>
+            <span style="font-size:12.5px;color:#5B6274">{{ dv.meta }}</span>
+          </div>
+          <button onClick="{{ closeDrawer }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:20px">
+
+          <div style="display:flex;align-items:flex-end;gap:12px;padding:14px 16px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9B9BA3">Amount due</span>
+              <span style="{{ dv.amountStyle }}">{{ dv.amount }}</span>
+            </span>
+            <span style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+              <span style="font-size:11.5px;color:#8A8A92">{{ dv.dueLabel }}</span>
+              <span style="font-size:12.5px;color:#191A2E">{{ dv.method }}</span>
+            </span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Invoice</span>
+              <div style="margin-left:auto;position:relative">
+                <button onClick="{{ toggleActions }}" style="display:flex;align-items:center;gap:7px;height:30px;padding:0 11px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Actions<span style="color:#B9B9C1;font-size:10px">▾</span></button>
+                <sc-if value="{{ actionsOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:36px;right:0;z-index:12;width:206px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:12px;box-shadow:0 12px 32px rgba(25,26,46,.12);padding:6px;display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ dv.actions }}" as="a" hint-placeholder-count="6">
+                      <button onClick="{{ a.click }}" style="{{ a.style }}">{{ a.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ dv.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:12.5px;color:#191A2E">{{ l.label }}</span>
+                  <span style="font-size:11.5px;color:#B9B9C1">{{ l.note }}</span>
+                  <span style="{{ l.amountStyle }}">{{ l.amount }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:baseline;gap:12px;padding:11px 0 0">
+                <span style="font-size:12.5px;font-weight:600;color:#191A2E">Total</span>
+                <span style="{{ dv.totalStyle }}">{{ dv.amount }}</span>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ dv.hasLedger }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Financial history</span>
+              <div style="display:flex;flex-direction:column;gap:0;padding:13px 14px;border:1px solid #ECECF1;border-radius:12px;background:#FCFCFD">
+                <sc-for list="{{ dv.ledger }}" as="l" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:baseline;gap:12px;padding:6px 0">
+                    <span style="font-size:12.5px;color:#9B9BA3;width:132px;flex:none">{{ l.label }}</span>
+                    <span style="{{ l.valueStyle }}">{{ l.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Payment history</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ dv.payments }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:11.5px;color:#9B9BA3;width:62px;flex:none;padding-top:1px">{{ p.when }}</span>
+                  <span style="{{ p.dotStyle }}"></span>
+                  <span style="font-size:12.5px;color:#191A2E;line-height:1.45;text-wrap:pretty">{{ p.label }}</span>
+                  <span style="{{ p.amountStyle }}">{{ p.amount }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <span style="font-size:11.5px;color:#9B9BA3;line-height:1.5">Payments settle through Stripe. Corrections keep the original amount on record.</span>
+          </div>
+
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ payerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:70;display:flex;justify-content:flex-end">
+      <div onClick="{{ closePayer }}" style="position:absolute;inset:0;background:rgba(25,26,46,.18)"></div>
+      <aside style="position:relative;width:424px;height:100vh;background:#FFFFFF;border-left:1px solid #ECECF1;box-shadow:-12px 0 40px rgba(25,26,46,.08);display:flex;flex-direction:column;animation:drawerIn .18s ease-out">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #ECECF1;display:flex;align-items:flex-start;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">{{ pv.client }}</span>
+            <span style="font-size:12.5px;color:#5B6274">{{ pv.sub }}</span>
+          </div>
+          <button onClick="{{ closePayer }}" style="margin-left:auto;flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:15px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ pv.fields }}" as="f" hint-placeholder-count="8">
+              <div style="display:flex;align-items:baseline;gap:14px;padding:9px 0;border-bottom:1px solid #F3F3F6">
+                <span style="font-size:12.5px;color:#9B9BA3;width:146px;flex:none">{{ f.label }}</span>
+                <span style="{{ f.valueStyle }}">{{ f.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#9B9BA3">Rate history</span>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ pv.history }}" as="h" hint-placeholder-count="2">
+                <div style="display:flex;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid #F3F3F6">
+                  <span style="font-size:11.5px;color:#9B9BA3;width:96px;flex:none">{{ h.when }}</span>
+                  <span style="font-size:12.5px;color:#191A2E">{{ h.what }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <button onClick="{{ pv.edit }}" style="align-self:flex-start;height:34px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">Edit payer setup</button>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
 
   <sc-if value="{{ joyOpen }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;right:28px;bottom:80px;z-index:45;width:344px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:16px;box-shadow:0 16px 44px rgba(25,26,46,.16);display:flex;flex-direction:column;overflow:hidden">
@@ -360,12 +949,12 @@ input{font-family:inherit}
         <button onClick="{{ toggleJoy }}" style="margin-left:auto;flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:7px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
       </div>
       <div style="padding:8px;display:flex;flex-direction:column;gap:1px">
-        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="3">
+        <sc-for list="{{ joyPrompts }}" as="p" hint-placeholder-count="4">
           <button onClick="{{ p.click }}" style="text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:9px;font-size:12.5px;color:#5B6274;cursor:pointer;line-height:1.4" style-hover="background:#FAFAFB;color:#191A2E">{{ p.label }}</button>
         </sc-for>
       </div>
       <div style="padding:10px 12px;border-top:1px solid #F3F3F6;display:flex;align-items:center;gap:8px;background:#FCFCFD">
-        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about anything on this page" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
+        <input type="text" value="{{ joyQ }}" onChange="{{ onJoyQ }}" placeholder="Ask about this billing period" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;color:#191A2E"/>
         <button onClick="{{ toggleMic }}" style="{{ micStyle }}" title="Speak to Joy">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="2" width="4" height="7" rx="2"></rect><path d="M4 7.4a4 4 0 008 0M8 11.4V14"></path></svg>
         </button>
@@ -396,293 +985,799 @@ input{font-family:inherit}
 </div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;targetMargin&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:12,&quot;min&quot;:0,&quot;max&quot;:30,&quot;step&quot;:0.5,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Profitability&quot;},&quot;showPaymentAlert&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Invoices&quot;},&quot;ltciOffsetWeeks&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;min&quot;:1,&quot;max&quot;:4,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;LTCI packets&quot;}}">
 const initials = (n) => n.split(/[ ,]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 const pillS = (fg, bg) => 'display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:500;white-space:nowrap;color:' + fg + ';background:' + bg;
 const TH = 'text-align:left;padding:11px 18px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#9B9BA3;background:#FCFCFD;white-space:nowrap';
 const THR = TH + ';text-align:right';
 
-// This week's batch — invoiced Monday for the Sat–Fri week just ended, due Wednesday.
-const BATCH = [
-  {
-    id: 'b1', client: 'Huang, Lian', payer: 'Huang, Johnathan', hours: '122h 30m',
-    lines: [
-      { key: 'reg', label: 'Regular care', qty: '113 hrs', rate: 37.50, amount: 4237.50 },
-      { key: 'ot', label: 'Overtime', qty: '4.5 hrs', rate: 56.25, amount: 253.13 },
-      { key: 'added', label: 'Shifts added Aug 8–9', qty: '2 visits', rate: null, amount: 480.00 },
-      { key: 'mi', label: 'Mileage', qty: '84.2 mi', rate: 0.65, amount: 54.73 },
-      { key: 'cr', label: 'Prior credit applied', qty: 'Aug 5 partial payment', rate: null, amount: -260.06 }
-    ],
-    flags: [
-      { kind: 'ot', from: 'ot', label: 'Overtime captured', detail: '4.5 hrs on Aug 6–7 · billed at 1.5×' },
-      { kind: 'added', from: 'added', label: '2 shifts added after the schedule was set', detail: 'Aug 8 and Aug 9 · not in the advance estimate' }
-    ]
-  },
-  {
-    id: 'b2', client: 'Whitaker, Harold', payer: 'Whitaker, Denise', hours: '98h 0m',
-    lines: [
-      { key: 'reg', label: 'Regular care', qty: '98 hrs', rate: 37.00, amount: 3626.00 },
-      { key: 'mi', label: 'Mileage', qty: '46.0 mi', rate: 0.65, amount: 29.90 },
-      { key: 'sup', label: 'Supply reimbursement', qty: 'Aug 5', rate: null, amount: 30.10 }
-    ],
-    flags: [
-      { kind: 'ot', from: null, label: 'No overtime this week', detail: 'All shifts under 40 hrs' }
-    ]
-  },
-  {
-    id: 'b3', client: 'Aiken, Dorothy', payer: 'Rowe, Margaret', hours: '114h 45m',
-    lines: [
-      { key: 'reg', label: 'Regular care', qty: '108.75 hrs', rate: 34.00, amount: 3697.50 },
-      { key: 'ot', label: 'Overtime (pending approval)', qty: '6 hrs', rate: 51.00, amount: 306.00 },
-      { key: 'added', label: 'Weekend visit Aug 9', qty: '1 visit', rate: null, amount: 240.00 }
-    ],
-    flags: [
-      { kind: 'ot', from: 'ot', label: 'Overtime needs review', detail: '6 hrs logged Aug 7 — approve in payroll before billing' },
-      { kind: 'added', from: 'added', label: '1 weekend visit added Aug 9', detail: 'Respite cover · weekend rate applies' }
-    ]
-  }
-];
-
-BATCH.forEach(b => { b.amount = b.lines.reduce((a, l) => a + l.amount, 0); });
-
-const SENT = [
-  { client: 'Santos, Maribel', payer: 'Santos, Carlos', period: 'Jul 27 – Aug 2', status: 'Late fee applied', method: 'Card · Stripe', amount: 2180.00, due: 'Wed, Aug 5', paid: '—' },
-  { client: 'Ortiz, Ruben', payer: 'Ortiz, Elena', period: 'Jul 27 – Aug 2', status: 'Notice sent', method: 'ACH · Stripe', amount: 588.00, due: 'Wed, Aug 5', paid: '—' },
-  { client: 'Delgado, Frank', payer: 'Delgado, Rita', period: 'Jul 13 – Jul 19', status: 'Service hold', method: 'ACH · Stripe', amount: 2482.00, due: 'Wed, Jul 22', paid: '—' },
-  { client: 'Huang, Lian', payer: 'Huang, Johnathan', period: 'Jul 27 – Aug 2', status: 'Partially paid', method: 'ACH · Stripe', amount: 3700.00, due: 'Wed, Aug 5', paid: 'Aug 5' },
-  { client: 'Whitaker, Harold', payer: 'Whitaker, Denise', period: 'Jul 20 – Jul 26', status: 'Paid', method: 'ACH · Stripe', amount: 1501.00, due: 'Wed, Jul 29', paid: 'Jul 28' },
-  { client: 'Santos, Maribel', payer: 'Santos, Carlos', period: 'Jul 20 – Jul 26', status: 'Paid', method: 'Card · Stripe', amount: 3585.00, due: 'Wed, Jul 29', paid: 'Jul 29' },
-  { client: 'Aiken, Dorothy', payer: 'Rowe, Margaret', period: 'Jul 20 – Jul 26', status: 'Paid', method: 'Card · Stripe', amount: 3686.00, due: 'Wed, Jul 29', paid: 'Jul 29' }
-];
-
 const STATUS = {
   'Needs review': ['#B54708', '#FFFAEB'],
-  Approved: ['#12B76A', '#ECFDF3'],
-  Sent: ['#1407A2', '#EEF0FE'],
-  'Notice sent': ['#B54708', '#FFFAEB'],
-  'Late fee applied': ['#B42318', '#FEF3F2'],
-  'Service hold': ['#B42318', '#FEF3F2'],
-  'Partially paid': ['#B54708', '#FFFAEB'],
-  Paid: ['#12B76A', '#ECFDF3']
+  Ready: ['#1407A2', '#EEF0FE'],
+  Sent: ['#5B6274', '#F1F2F6'],
+  Paid: ['#12B76A', '#ECFDF3'],
+  'Past due': ['#B42318', '#FEF3F2'],
+  Adjusted: ['#5B6274', '#F1F2F6'],
+  Refunded: ['#5B6274', '#F1F2F6'],
+  Void: ['#9B9BA3', '#F3F3F6']
 };
 
-const PROFIT_WEEKS = [
-  { label: 'Aug 3 – 9', rows: [
-    { name: 'Huang, Lian', hrs: '122h 30m', billable: 4765.30, cost: 4419.88 },
-    { name: 'Whitaker, Harold', hrs: '98h 0m', billable: 3686.00, cost: 3482.78 },
-    { name: 'Aiken, Dorothy', hrs: '114h 45m', billable: 4243.50, cost: 4050.90 }
-  ] },
-  { label: 'Jul 27 – Aug 2', rows: [
-    { name: 'Huang, Lian', hrs: '96h 0m', billable: 3700.00, cost: 3432.12 },
-    { name: 'Santos, Maribel', hrs: '54h 30m', billable: 2180.00, cost: 2112.02 },
-    { name: 'Ortiz, Ruben', hrs: '14h 0m', billable: 588.00, cost: 565.66 },
-    { name: 'Aiken, Dorothy', hrs: '108h 0m', billable: 3686.00, cost: 3566.77 }
-  ] },
-  { label: 'Jul 20 – 26', rows: [
-    { name: 'Whitaker, Harold', hrs: '39h 30m', billable: 1501.00, cost: 1457.47 },
-    { name: 'Santos, Maribel', hrs: '92h 30m', billable: 3585.00, cost: 3317.12 },
-    { name: 'Aiken, Dorothy', hrs: '98h 0m', billable: 3686.00, cost: 3482.78 }
-  ] }
+// Invoices are generated Monday for the Sat–Fri care week just ended.
+const RAW = [
+  { id: 'i1', client: 'Huang, Lian', payer: 'Johnathan Huang', hrs: 113, rate: 37.5, cost: 4419.88, base: 'Needs review', method: 'ACH · Stripe',
+    extras: [
+      { label: 'Overtime', note: '4.5 hrs × $56.25', amount: 253.13 },
+      { label: 'Shifts added Aug 6–7', note: '2 visits', amount: 480 },
+      { label: 'Mileage', note: '84.2 mi × $0.65', amount: 54.73 },
+      { label: 'Prior credit applied', note: 'Aug 5 adjustment credit', amount: -260.06 }
+    ],
+    exceptions: [
+      { label: '4.5 overtime hours', detail: 'Aug 6–7 · billed at 1.5× · payroll approved', amount: 253.13 },
+      { label: '2 visits added after the original schedule', detail: 'Aug 6 and Aug 7 · not in the advance estimate', amount: 480 }
+    ],
+    rec: 'The added visits match two confirmed schedule changes and the overtime is already approved in payroll. Approving is safe.' },
+  { id: 'i2', client: 'Aiken, Dorothy', payer: 'Margaret Rowe', hrs: 108.75, rate: 34, cost: 4050.9, base: 'Needs review', method: 'Card · Stripe',
+    extras: [
+      { label: 'Overtime (pending payroll approval)', note: '6 hrs × $51.00', amount: 306 },
+      { label: 'Weekend respite visit', note: 'Aug 7 · 1 visit', amount: 240 }
+    ],
+    exceptions: [
+      { label: '6 overtime hours are not yet approved in payroll', detail: 'Logged Aug 5 by Allison Archibald', amount: 306 }
+    ],
+    rec: 'Hold this invoice until payroll approves the 6 overtime hours, or bill 108.75 hours now and invoice the overtime next period.' },
+  { id: 'i3', client: 'Delgado, Frank', payer: 'Rita Delgado', hrs: 62, rate: 40, cost: 2306.14, base: 'Needs review', method: 'ACH · Stripe',
+    extras: [{ label: 'Mileage', note: '3.1 mi × $0.65', amount: 2 }],
+    exceptions: [
+      { label: 'One visit has no recorded time', detail: 'Aug 4 · 4 scheduled hours are missing a clock-out', amount: 0 }
+    ],
+    rec: 'Ask the caregiver to complete the Aug 4 time entry before billing. Joy left the 4 hours off this invoice.' },
+  { id: 'i4', client: 'Davis, Margaret', payer: 'Margaret Davis', hrs: 71, rate: 40, cost: 2506.4, base: 'Ready', method: 'Card · Stripe', extras: [] },
+  { id: 'i5', client: 'Whitaker, Harold', payer: 'Denise Whitaker', hrs: 98, rate: 37, cost: 3482.78, base: 'Ready', method: 'ACH · Stripe', extras: [] },
+  { id: 'i6', client: 'Santos, Maribel', payer: 'Carlos Santos', hrs: 54.5, rate: 40, cost: 2019.2, base: 'Ready', method: 'Card · Stripe', extras: [] },
+  { id: 'i7', client: 'Ortiz, Ruben', payer: 'Elena Ortiz', hrs: 14, rate: 42, cost: 565.66, base: 'Ready', method: 'ACH · Stripe', extras: [] },
+  { id: 'i8', client: 'Carter, Evelyn', payer: 'Sonia Carter', hrs: 37, rate: 40, cost: 1298.6, base: 'Ready', method: 'ACH · Stripe', extras: [] },
+  { id: 'i9', client: 'Alvarez, Ruth', payer: 'Ruth Alvarez', hrs: 32, rate: 37, cost: 1085.28, base: 'Ready', method: 'Card · Stripe', extras: [] },
+  { id: 'i10', client: 'Reese, Harold', payer: 'Gail Reese', hrs: 24, rate: 40, cost: 856.8, base: 'Ready', method: 'ACH · Stripe', extras: [] },
+  { id: 'i11', client: 'Lopez, Anita', payer: 'Anita Lopez', hrs: 32, rate: 41.75, cost: 1225.12, base: 'Ready', method: 'Card · Stripe', extras: [] },
+  { id: 'i12', client: 'Whitfield, Grace', payer: 'Terrence Whitfield', hrs: 56, rate: 37, cost: 1937.3, base: 'Ready', method: 'ACH · Stripe', extras: [] },
+
+  { id: 'p1', client: 'Davis, Margaret', payer: 'Margaret Davis', period: 'Jul 25 – 31', pOrder: 1, hrs: 21, rate: 40, base: 'Past due', method: 'Card · Stripe',
+    extras: [], due: 'Wed, Aug 5', paid: 'Card declined Aug 5',
+    payments: [
+      { when: 'Aug 5', label: 'Card payment failed — insufficient funds', amount: 0, bad: true },
+      { when: 'Aug 1', label: 'Invoice sent to Margaret Davis', amount: 0 }
+    ] },
+  { id: 'p2', client: 'Santos, Maribel', payer: 'Carlos Santos', period: 'Jul 25 – 31', pOrder: 1, hrs: 54.5, rate: 40, base: 'Past due', method: 'Card · Stripe',
+    extras: [], due: 'Wed, Aug 5', paid: 'Unpaid since Aug 5',
+    payments: [
+      { when: 'Aug 6', label: 'Payment reminder sent to Carlos Santos', amount: 0 },
+      { when: 'Aug 1', label: 'Invoice sent to Carlos Santos', amount: 0 }
+    ] },
+  { id: 'p3', client: 'Huang, Lian', payer: 'Johnathan Huang', period: 'Jul 25 – 31', pOrder: 1, hrs: 58, rate: 37.5, base: 'Adjusted', method: 'ACH · Stripe',
+    extras: [{ label: 'Adjustment — 4 service hours removed', note: 'Aug 3 · approved by Karynn', amount: -115 }],
+    due: 'Wed, Aug 5', paid: 'Aug 5',
+    ledger: { original: 2175, adjustment: -115, reason: '4 service hours removed after a caregiver correction', actor: 'Karynn Alvarez', at: 'Aug 3 · 9:14 AM' },
+    payments: [
+      { when: 'Aug 5', label: 'ACH payment received in full', amount: 2060 },
+      { when: 'Aug 3', label: 'Adjusted invoice reissued', amount: 0 }
+    ] },
+  { id: 'p7', client: 'Lopez, Anita', payer: 'Anita Lopez', period: 'Jul 25 – 31', pOrder: 1, hrs: 32, rate: 41.75, base: 'Paid', method: 'Card · Stripe',
+    extras: [], due: 'Wed, Aug 5', paid: 'Aug 4',
+    payments: [{ when: 'Aug 4', label: 'Card payment received in full', amount: 1336 }] },
+  { id: 'p4', client: 'Whitaker, Harold', payer: 'Denise Whitaker', period: 'Jul 18 – 24', pOrder: 2, hrs: 40.5, rate: 37, base: 'Paid', method: 'ACH · Stripe',
+    extras: [], due: 'Wed, Jul 29', paid: 'Jul 28',
+    payments: [{ when: 'Jul 28', label: 'ACH payment received in full', amount: 1498.5 }] },
+  { id: 'p5', client: 'Aiken, Dorothy', payer: 'Margaret Rowe', period: 'Jul 18 – 24', pOrder: 2, hrs: 108, rate: 34, base: 'Paid', method: 'Card · Stripe',
+    extras: [], due: 'Wed, Jul 29', paid: 'Jul 29',
+    payments: [{ when: 'Jul 29', label: 'Card payment received in full', amount: 3672 }] },
+  { id: 'p6', client: 'Ortiz, Ruben', payer: 'Elena Ortiz', period: 'Jul 18 – 24', pOrder: 2, hrs: 14, rate: 42, base: 'Refunded', method: 'ACH · Stripe',
+    extras: [{ label: 'Refund issued', note: 'Jul 30 · 2 hrs billed in error', amount: -88 }],
+    due: 'Wed, Jul 29', paid: 'Jul 28',
+    ledger: { original: 588, adjustment: -88, reason: '2 hours billed in error · refund txn re_1P8x', actor: 'Karynn Alvarez', at: 'Jul 30 · 2:05 PM' },
+    payments: [
+      { when: 'Jul 30', label: 'Refund sent to Elena Ortiz · re_1P8x', amount: -88 },
+      { when: 'Jul 28', label: 'ACH payment received in full', amount: 588 }
+    ] }
 ];
 
-const UNRESOLVED = ['Needs review'];
+RAW.forEach(r => {
+  if (!r.period) { r.period = 'Aug 1 – 7'; r.pOrder = 0; }
+  if (!r.due) r.due = 'Wed, Aug 12';
+  if (!r.paid) r.paid = '—';
+  if (!r.extras) r.extras = [];
+  if (!r.exceptions) r.exceptions = [];
+  if (!r.payments) r.payments = [];
+  r.lines = [{ label: 'Regular care', note: r.hrs + ' hrs × $' + r.rate.toFixed(2), amount: r.hrs * r.rate }].concat(r.extras);
+  r.amount = r.lines.reduce((a, l) => a + l.amount, 0);
+});
+
+const CURRENT = RAW.filter(r => r.pOrder === 0);
+
+const PAYERS = [
+  { client: 'Huang, Lian', responsible: 'Johnathan Huang · Son', type: 'Private Pay + LTC', ltc: 'Genworth', rate: 37.5, method: 'ACH', auth: 'LTC assignment on file · expires Mar 2027' },
+  { client: 'Aiken, Dorothy', responsible: 'Margaret Rowe · Daughter', type: 'Private Pay', ltc: '', rate: 34, method: 'Card', auth: 'Card authorization on file' },
+  { client: 'Davis, Margaret', responsible: 'Self', type: 'Private Pay', ltc: '', rate: 40, method: 'Card', auth: 'Card authorization on file · retry pending' },
+  { client: 'Whitaker, Harold', responsible: 'Denise Whitaker · Wife', type: 'Private Pay', ltc: '', rate: 37, method: 'ACH', auth: 'ACH authorization on file' },
+  { client: 'Santos, Maribel', responsible: 'Carlos Santos · Son', type: 'Private Pay + LTC', ltc: 'John Hancock', rate: 40, method: 'Card', auth: 'LTC claim active · reimbursement to family' },
+  { client: 'Delgado, Frank', responsible: 'Rita Delgado · Wife', type: 'Private Pay', ltc: '', rate: 40, method: 'ACH', auth: 'ACH authorization on file' },
+  { client: 'Ortiz, Ruben', responsible: 'Elena Ortiz · Daughter', type: 'Unsure', ltc: 'Carrier not yet confirmed', rate: 42, method: 'ACH', auth: 'Pay type needs confirming with the family' },
+  { client: 'Carter, Evelyn', responsible: 'Sonia Carter · Daughter', type: 'Private Pay', ltc: '', rate: 40, method: 'ACH', auth: 'ACH authorization on file' },
+  { client: 'Alvarez, Ruth', responsible: 'Self', type: 'Private Pay', ltc: '', rate: 37, method: 'Card', auth: 'Card authorization on file' },
+  { client: 'Reese, Harold', responsible: 'Gail Reese · Wife', type: 'Private Pay', ltc: '', rate: 40, method: 'ACH', auth: 'ACH authorization on file' },
+  { client: 'Lopez, Anita', responsible: 'Self', type: 'Private Pay + LTC', ltc: 'Mutual of Omaha', rate: 41.75, method: 'Card', auth: 'LTC assignment on file' },
+  { client: 'Whitfield, Grace', responsible: 'Terrence Whitfield · Son', type: 'Private Pay', ltc: '', rate: 37, method: 'ACH', auth: 'ACH authorization on file' }
+];
+
+const RATE_HISTORY = {
+  'Huang, Lian': [{ when: 'Mar 1, 2026', what: '$36.00 → $37.50 · annual rate review' }, { when: 'Aug 12, 2025', what: 'Opened at $36.00' }],
+  'Aiken, Dorothy': [{ when: 'Jan 1, 2026', what: '$32.00 → $34.00 · annual rate review' }]
+};
+
+// LTCI reimbursement runs one week behind billing so the invoice in the packet is already paid.
+const LTCI_PERIOD = 'Jul 25 – 31';
+const LTCI = [
+  { client: 'Huang, Lian', carrier: 'Genworth', policy: 'Claim GNW-448120', invoiceId: 'p3', invoiceStatus: 'Paid Aug 5', amount: 2060,
+    notes: ['Jul 25', 'Jul 26', 'Jul 27', 'Jul 28', 'Jul 29', 'Jul 30', 'Jul 31'], fax: '(866) 442-0093', email: 'claims@genworth.example',
+    state: 'Ready' },
+  { client: 'Lopez, Anita', carrier: 'Mutual of Omaha', policy: 'Policy MOO-77Q1', invoiceId: 'p7', invoiceStatus: 'Paid Aug 4', amount: 1336,
+    notes: ['Jul 27', 'Jul 28', 'Jul 29', 'Jul 30', 'Jul 31'], fax: '(800) 775-8112', email: 'ltcclaims@mutualofomaha.example',
+    state: 'Ready' },
+  { client: 'Santos, Maribel', carrier: 'John Hancock', policy: 'Claim JH-90114', invoiceId: 'p2', invoiceStatus: 'Unpaid', amount: 2180,
+    notes: ['Jul 25', 'Jul 26', 'Jul 28', 'Jul 29', 'Jul 30', 'Jul 31'], fax: '(800) 377-7311', email: 'ltcclaims@johnhancock.example',
+    state: 'Needs review',
+    exception: 'Expected paid invoice for Jul 25 – 31 was not found. The $2,180.00 invoice is past due since Aug 5, so no packet can be assembled yet.',
+    exceptionAction: 'Review billing record' }
+];
+
+// Create Invoice is an exception tool — routine weekly invoices come from Joy's automated run.
+const CHARGE_TYPES = [
+  { k: 'hours', label: 'Service hours', hint: 'Missed or additional care hours', qtyLabel: 'Hours', rated: true },
+  { k: 'mileage', label: 'Transportation / mileage', hint: 'Trips, mileage or transport time', qtyLabel: 'Miles', rated: true },
+  { k: 'expense', label: 'Expense / reimbursement', hint: 'Money a caregiver fronted', qtyLabel: '', rated: false },
+  { k: 'service', label: 'Additional service', hint: 'One-time service outside the care plan', qtyLabel: 'Quantity', rated: true },
+  { k: 'fee', label: 'Fee / adjustment', hint: 'Contractual fee or one-off adjustment', qtyLabel: '', rated: false },
+  { k: 'custom', label: 'Custom item', hint: 'Anything the types above do not cover', qtyLabel: 'Quantity', rated: false }
+];
+const CHARGE_TYPE = {};
+CHARGE_TYPES.forEach(t => { CHARGE_TYPE[t.k] = t; });
+
+// Service weeks run Sat–Fri.
+const SERVICE_PERIODS = [
+  'August 15 – 21, 2026', 'August 8 – 14, 2026', 'August 1 – 7, 2026',
+  'July 25 – 31, 2026', 'July 18 – 24, 2026'
+];
+
+const MILEAGE_RATE = 0.65;
+const UNBILLED = {
+  'Davis, Margaret': [
+    { key: 'u1', label: 'Prescription pickup · Walgreens', date: 'Aug 19, 2026', amount: 42.31 },
+    { key: 'u2', label: 'Grocery run · reimbursed to caregiver', date: 'Aug 20, 2026', amount: 42.31 }
+  ],
+  'Huang, Lian': [{ key: 'u3', label: 'Adult briefs · caregiver purchase', date: 'Aug 18, 2026', amount: 28.94 }]
+};
+const EXISTING_INVOICE = {
+  'Davis, Margaret': { id: '#1048', period: 'August 15 – 21, 2026', amount: 1360, status: 'Paid' }
+};
+
+const FILTERS = ['All', 'Needs review', 'Ready', 'Sent', 'Paid', 'Past due', 'Adjusted'];
+const PROF_PERIODS = ['This week', 'Last week', 'Billing period', 'Month', 'Custom'];
+const PROF_RANGE = {
+  'This week': 'Aug 8 – 14 · in progress',
+  'Last week': 'Aug 1 – 7 · Billing Week 2 of 2',
+  'Billing period': 'Aug 1 – 7 · Billing Week 2 of 2',
+  Month: 'Aug 1 – 31 · month to date',
+  Custom: 'Pick any date range'
+};
 
 class Component extends DCLogic {
   state = {
-    tab: 'review', priv: false, open: null, week: 0,
-    approved: {}, sent: false, toast: null,
-    joyOpen: false, joyQ: '', joyMic: false
+    tab: 'invoices', priv: false, q: '', period: 'Aug 1 – 7', periodOpen: false,
+    filter: 'All', sort: { key: 'status', dir: 1 },
+    review: null, approved: {}, sent: false,
+    sel: null, actionsOpen: false, payer: null,
+    profPeriod: 'Billing period', profSort: { key: 'margin', dir: 1 },
+    ltciOpen: false, ltciIdx: null, ltciApproved: {}, ltciSent: false,
+    ci: null, ciClientOpen: false, ciTypeOpen: false, ciExpenseOpen: false, ciDupAck: false, ciDraft: null, ciPeriodOpen: false,
+    joyOpen: false, joyQ: '', joyMic: false, toast: null, exportOpen: false
   };
 
   money(n) {
     if (this.state.priv) return '••••••';
     const neg = n < 0;
     const v = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    return (neg ? '($' : '$') + v + (neg ? ')' : '');
+    return (neg ? '−$' : '$') + v;
   }
 
-  statusOf(b) {
+  statusOf(r) {
+    if (r.pOrder !== 0) return r.base;
     if (this.state.sent) return 'Sent';
-    if (this.state.approved[b.id]) return 'Approved';
-    return 'Needs review';
+    if (this.state.approved[r.id]) return 'Ready';
+    return r.base;
+  }
+
+  needsReview() { return CURRENT.filter(r => this.statusOf(r) === 'Needs review'); }
+
+  approve(id, msg) {
+    this.setState(s => ({
+      approved: Object.assign({}, s.approved, { [id]: true }),
+      review: s.review === null ? null : s.review + 1,
+      toast: msg ? { title: msg, sub: 'Recorded against this billing period' } : s.toast
+    }));
   }
 
   renderVals() {
     const s = this.state;
     const m = (n) => this.money(n);
-    const moneyStyle = (size, color) => 'font-size:' + size + ';color:' + (s.priv ? '#B9B9C1' : color) + ';letter-spacing:' + (s.priv ? '.1em' : '-.01em') + ';white-space:nowrap';
+    const target = this.props.targetMargin != null ? this.props.targetMargin : 12;
+    const moneyStyle = (size, color, weight) => 'font-size:' + size + ';font-weight:' + (weight || 400) + ';color:' + (s.priv ? '#B9B9C1' : color) + ';letter-spacing:' + (s.priv ? '.1em' : '-.01em') + ';white-space:nowrap';
 
-    const pending = BATCH.filter(b => UNRESOLVED.indexOf(this.statusOf(b)) >= 0).length;
-    const batchTotal = BATCH.reduce((a, b) => a + b.amount, 0);
-    const allClear = pending === 0;
+    const needs = this.needsReview();
+    const readyCount = CURRENT.filter(r => this.statusOf(r) === 'Ready').length;
+    const periodTotal = CURRENT.reduce((a, r) => a + r.amount, 0);
+    const periodHrs = CURRENT.reduce((a, r) => a + r.hrs, 0);
 
-    const queue = BATCH.map(b => {
-      const status = this.statusOf(b);
-      const isOpen = s.open === b.id;
-      const needsOt = b.flags.some(f => f.kind === 'ot' && f.label.indexOf('needs review') > 0);
-      return {
-        key: b.id, client: b.client, initials: initials(b.client),
-        line: b.hours + ' · ' + b.payer,
-        status: status, statusStyle: pillS(STATUS[status][0], STATUS[status][1]),
-        amount: m(b.amount), amountStyle: moneyStyle('15px', '#191A2E') + ';font-weight:600',
-        cardStyle: 'background:#FFFFFF;border:1px solid ' + (status === 'Needs review' ? '#FCE8B6' : '#ECECF1') + ';border-radius:14px;overflow:hidden',
-        caretStyle: 'display:inline-block;color:#B9B9C1;font-size:13px;transition:transform .16s ease;transform:rotate(' + (isOpen ? '180deg' : '0deg') + ')',
-        toggle: () => this.setState({ open: isOpen ? null : b.id }),
-        open: isOpen,
-        hasFlags: b.flags.length > 0,
-        flags: b.flags.map((f, i) => {
-          const warn = f.kind === 'added' || f.label.indexOf('needs review') > 0;
-          const src = f.from ? b.lines.filter(l => l.key === f.from) : [];
-          const amt = src.length ? src[0].amount : 0;
-          return {
-            key: b.id + 'f' + i, label: f.label, detail: f.detail,
-            amount: amt ? '+' + m(amt) : '',
-            amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', warn ? '#B54708' : '#5B6274'),
-            dotStyle: 'width:6px;height:6px;flex:none;border-radius:50%;background:' + (warn ? '#F79009' : '#12B76A'),
-            style: 'display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;background:' + (warn ? '#FFFAEB' : '#FAFAFB')
-          };
-        }),
-        lines: b.lines.map((l, i) => ({
-          key: b.id + 'l' + i, label: l.label,
-          note: l.rate ? l.qty + ' × ' + m(l.rate) : l.qty,
-          amount: m(l.amount),
-          amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', l.amount < 0 ? '#B42318' : '#191A2E')
-        })),
-        approveLabel: status === 'Needs review' ? (needsOt ? 'Approve with overtime' : 'Approve invoice') : status === 'Approved' ? 'Approved' : 'Sent',
-        approveStyle: 'height:34px;padding:0 14px;border:none;border-radius:9px;font-size:12.5px;font-weight:500;cursor:' + (status === 'Needs review' ? 'pointer' : 'default') +
-          ';background:' + (status === 'Needs review' ? '#1407A2' : '#ECFDF3') + ';color:' + (status === 'Needs review' ? '#FFFFFF' : '#12B76A'),
-        approve: () => {
-          if (this.statusOf(b) !== 'Needs review') return;
-          this.setState(st => ({
-            approved: Object.assign({}, st.approved, { [b.id]: true }),
-            open: null,
-            toast: { title: b.client + ' approved', sub: 'Overtime and added shifts confirmed' }
-          }));
-        }
-      };
+    const q = s.q.trim().toLowerCase();
+    const inPeriod = RAW.filter(r => s.period === 'All periods' || r.period === s.period);
+    const rows = inPeriod
+      .filter(r => s.filter === 'All' || this.statusOf(r) === s.filter)
+      .filter(r => !q || (r.client + ' ' + r.payer).toLowerCase().indexOf(q) >= 0);
+
+    const ORDER = ['Needs review', 'Ready', 'Sent', 'Past due', 'Adjusted', 'Refunded', 'Paid', 'Void'];
+    const sortVal = (r) => {
+      if (s.sort.key === 'amount') return r.amount;
+      if (s.sort.key === 'period') return r.pOrder;
+      if (s.sort.key === 'status') return ORDER.indexOf(this.statusOf(r));
+      if (s.sort.key === 'method') return r.method;
+      return r.client;
+    };
+    const sorted = rows.slice().sort((a, b) => {
+      const av = sortVal(a), bv = sortVal(b);
+      if (av === bv) return a.client.localeCompare(b.client);
+      return (av > bv ? 1 : -1) * s.sort.dir;
     });
 
-    const behind = [
-      { client: 'Delgado, Frank', amount: 2482.00, state: 'Unpaid since Jul 22 · service hold decision due Friday', tone: '#B42318' },
-      { client: 'Santos, Maribel', amount: 2180.00, state: 'Late fee applied Aug 7 · second notice Thursday', tone: '#B54708' },
-      { client: 'Ortiz, Ruben', amount: 588.00, state: 'Notice sent Aug 6 · awaiting payment', tone: '#B54708' }
-    ].map((b, i) => ({
-      key: 'bh' + i, client: b.client,
-      amount: m(b.amount), amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E') + ';font-weight:500',
-      state: b.state, stateStyle: 'font-size:11.5px;line-height:1.4;color:' + b.tone
-    }));
+    const outstanding = inPeriod.filter(r => ['Paid', 'Refunded', 'Void'].indexOf(this.statusOf(r)) < 0)
+      .reduce((a, r) => a + r.amount, 0);
 
-    const cycle = [
-      { day: 'Monday', what: 'Review and send — today', at: true },
-      { day: 'Wednesday', what: 'Payment due', at: false },
-      { day: 'Thursday', what: 'Notice if unpaid', at: false },
-      { day: 'Friday', what: 'Late fee · service hold decision', at: false }
-    ].map((c, i) => ({
-      key: 'c' + i, day: c.day, what: c.what,
-      dayStyle: 'font-size:12.5px;font-weight:' + (c.at ? '600' : '400') + ';color:' + (c.at ? '#1407A2' : '#191A2E'),
-      dotStyle: 'width:7px;height:7px;flex:none;border-radius:50%;background:' + (c.at ? '#1407A2' : '#E4E4EA')
-    }));
+    const col = (key, label, right) => {
+      const on = s.sort.key === key;
+      return {
+        key: key, label: label,
+        arrow: on ? (s.sort.dir === 1 ? '↑' : '↓') : '',
+        arrowStyle: on ? 'padding-left:5px;color:#1407A2' : 'display:none',
+        style: (right ? THR : TH) + ';cursor:pointer;user-select:none;color:' + (on ? '#5B6274' : '#9B9BA3'),
+        click: () => this.setState({ sort: { key: key, dir: on ? -s.sort.dir : 1 } })
+      };
+    };
 
-    const unpaid = SENT.filter(r => r.status !== 'Paid').reduce((a, r) => a + r.amount, 0);
-    const week = PROFIT_WEEKS[Math.min(s.week, PROFIT_WEEKS.length - 1)];
-    const PROFIT = week.rows;
-    const profitBilled = PROFIT.reduce((a, r) => a + r.billable, 0);
-    const profitCost = PROFIT.reduce((a, r) => a + r.cost, 0);
-    const profitNet = profitBilled - profitCost;
-    const profitPct = profitBilled ? (profitNet / profitBilled) * 100 : 0;
+    // ---- review queue
+    const queue = needs;
+    const rIdx = s.review;
+    const cur = rIdx !== null && rIdx < queue.length ? queue[rIdx] : null;
+    const reviewedCount = Object.keys(s.approved).length;
+    const doneRows = CURRENT.filter(r => this.statusOf(r) === 'Ready');
+    const rv = cur ? {
+      step: 'Invoice ' + (rIdx + 1) + ' of ' + queue.length,
+      progressStyle: 'display:block;flex:1;height:4px;border-radius:999px;background:#F1F2F6;overflow:hidden;max-width:220px',
+      progressFill: 'display:block;height:100%;border-radius:999px;background:#1407A2;width:' + Math.round(((rIdx + 1) / queue.length) * 100) + '%',
+      isInvoice: true, isDone: false,
+      client: cur.client, meta: cur.period + ' · ' + cur.hrs + ' hrs · $' + cur.rate.toFixed(2) + '/hr · ' + cur.payer,
+      amount: m(cur.amount), amountStyle: moneyStyle('22px', '#191A2E', 600),
+      status: 'Needs review', statusStyle: pillS('#B54708', '#FFFAEB'),
+      checks: [
+        { key: 'c1', ok: true, label: 'Hours verified against recorded time', detail: cur.hrs + ' hrs across the care week', amount: '' },
+        { key: 'c2', ok: true, label: 'Rate verified', detail: '$' + cur.rate.toFixed(2) + '/hr · ' + (PAYERS.filter(p => p.client === cur.client)[0] || {}).type, amount: '' }
+      ].concat(cur.exceptions.map((e, i) => ({ key: 'e' + i, ok: false, label: e.label, detail: e.detail, amount: e.amount ? '+' + m(e.amount) : '' })))
+        .map(c => ({
+          key: c.key, label: c.label, detail: c.detail,
+          icon: c.ok ? '✓' : '!',
+          iconStyle: 'width:18px;height:18px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:' +
+            (c.ok ? '#12B76A;background:#ECFDF3' : '#B54708;background:#FEF0C7'),
+          detailStyle: 'font-size:11.5px;color:#8A8A92;line-height:1.4',
+          amount: c.amount,
+          amountStyle: c.amount ? 'margin-left:auto;flex:none;' + moneyStyle('12.5px', '#B54708') : 'display:none',
+          style: 'display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border-radius:12px;background:' + (c.ok ? '#FAFAFB' : '#FFFAEB')
+        })),
+      lines: cur.lines.map((l, i) => ({
+        key: 'rl' + i, label: l.label, note: l.note,
+        amount: m(l.amount),
+        amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', l.amount < 0 ? '#B42318' : '#191A2E')
+      })),
+      hasRec: !!cur.rec, rec: cur.rec || '',
+      secondary: [
+        { key: 's1', label: 'Edit invoice', click: () => this.setState({ toast: { title: 'Invoice editor opened', sub: cur.client + ' · ' + cur.period } }) },
+        { key: 's2', label: 'Hold invoice', click: () => this.setState({ review: rIdx + 1, toast: { title: cur.client + ' held', sub: 'Excluded from this send · stays in Needs review' } }) }
+      ].map(a => ({
+        key: a.key, label: a.label, click: a.click,
+        style: 'height:38px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer'
+      })),
+      primaryLabel: rIdx + 1 < queue.length ? 'Approve & next' : 'Approve & finish',
+      primaryStyle: 'margin-left:auto;height:38px;padding:0 18px;border:none;border-radius:10px;background:#1407A2;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer',
+      primary: () => this.approve(cur.id, cur.client + ' approved')
+    } : {
+      step: 'Review complete',
+      progressStyle: 'display:block;flex:1;height:4px;border-radius:999px;background:#ECFDF3;overflow:hidden;max-width:220px',
+      progressFill: 'display:block;height:100%;border-radius:999px;background:#12B76A;width:100%',
+      isInvoice: false, isDone: true,
+      doneTitle: reviewedCount + ' invoice' + (reviewedCount === 1 ? '' : 's') + ' reviewed',
+      doneSub: doneRows.length + ' ready to send · ' + m(doneRows.reduce((a, r) => a + r.amount, 0)) + ' total · due Wednesday, Aug 12',
+      doneList: doneRows.map(r => ({
+        key: r.id, client: r.client, status: 'Ready', statusStyle: pillS('#1407A2', '#EEF0FE'),
+        amount: m(r.amount), amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E', 500)
+      })),
+      checks: [], lines: [], secondary: [{
+        key: 'd1', label: 'Back to invoices', click: () => this.setState({ review: null }),
+        style: 'height:38px;padding:0 14px;background:#FFFFFF;border:1px solid #ECECF1;border-radius:10px;font-size:13px;color:#5B6274;cursor:pointer'
+      }],
+      primaryLabel: 'Send all invoices',
+      primaryStyle: 'margin-left:auto;height:38px;padding:0 18px;border:none;border-radius:10px;background:#1407A2;color:#FFFFFF;font-size:13px;font-weight:500;cursor:pointer',
+      primary: () => this.setState({ sent: true, review: null, toast: { title: doneRows.length + ' invoices sent', sub: 'Payment links delivered through Stripe · due Aug 12' } })
+    };
+
+    // ---- create invoice slide-over
+    const c = s.ci;
+    const ciSet = (patch) => this.setState(st => ({ ci: Object.assign({}, st.ci, patch) }));
+    const cPayer = c && c.client ? PAYERS.filter(p => p.client === c.client)[0] : null;
+    const cWhen = c ? (c.mode === 'single' ? c.date : c.period) : '';
+    const itemAmount = (it) => {
+      if (it.type === 'mileage') return (Number(it.qty) || 0) * MILEAGE_RATE;
+      if (CHARGE_TYPE[it.type].rated) return (Number(it.qty) || 0) * (Number(it.rate) || 0);
+      return Number(it.amount) || 0;
+    };
+    const cTotal = c ? c.items.reduce((a, it) => a + itemAmount(it), 0) : 0;
+    const unbilled = c && c.client ? (UNBILLED[c.client] || []).filter(u => !c.items.some(it => it.fromExpense === u.key)) : [];
+    const unbilledTotal = unbilled.reduce((a, u) => a + u.amount, 0);
+    const dupCandidate = c && c.client ? EXISTING_INVOICE[c.client] : null;
+    const dup = dupCandidate && c.mode === 'period' && c.period === dupCandidate.period && !s.ciDupAck ? dupCandidate : null;
+    const addItem = (t) => {
+      const base = { id: 'ci' + c.nextId, type: t.k, desc: '', qty: t.k === 'hours' ? 4 : t.k === 'mileage' ? 12 : 1, rate: t.k === 'hours' && cPayer ? cPayer.rate : t.k === 'mileage' ? MILEAGE_RATE : 0, amount: 0, rateOverride: false };
+      ciSet({ items: c.items.concat([base]), nextId: c.nextId + 1 });
+      this.setState({ ciTypeOpen: false });
+    };
+    const ci = c ? {
+      client: c.client || 'Select client',
+      clientStyle: 'display:flex;align-items:center;gap:9px;width:100%;height:40px;padding:0 13px;border-radius:10px;background:#FFFFFF;font-size:13.5px;cursor:pointer;text-align:left;border:1px solid ' +
+        (c.client ? '#ECECF1;color:#191A2E' : '#D9DCF3;color:#8A8A92'),
+      clientOpen: s.ciClientOpen,
+      toggleClient: () => this.setState({ ciClientOpen: !s.ciClientOpen, ciTypeOpen: false }),
+      clientOptions: PAYERS.map(p => ({
+        key: p.client, label: p.client, sub: p.responsible + ' · $' + p.rate.toFixed(2) + '/hr',
+        click: () => { ciSet({ client: p.client }); this.setState({ ciClientOpen: false, ciDupAck: false }); },
+        style: 'display:flex;flex-direction:column;gap:2px;text-align:left;background:' + (c.client === p.client ? '#F1F0FC' : 'transparent') +
+          ';border:none;padding:8px 10px;border-radius:8px;cursor:pointer;width:100%'
+      })),
+      hasClient: !!c.client, noClient: !c.client,
+      profile: cPayer ? [
+        { key: 'pr1', label: 'Rate on file', value: '$' + cPayer.rate.toFixed(2) + ' / hr' },
+        { key: 'pr2', label: 'Pay type', value: cPayer.type },
+        { key: 'pr3', label: 'Bill to', value: cPayer.responsible },
+        { key: 'pr4', label: 'Billing method', value: cPayer.method }
+      ] : [],
+      modes: [['single', 'Single date'], ['period', 'Service period']].map(mo => ({
+        key: mo[0], label: mo[1],
+        click: () => { ciSet({ mode: mo[0] }); this.setState({ ciDupAck: false }); },
+        style: 'border:none;border-radius:8px;padding:0 15px;height:32px;font-size:12.5px;cursor:pointer;' +
+          (c.mode === mo[0] ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92')
+      })),
+      isSingle: c.mode === 'single', isPeriod: c.mode === 'period',
+      date: c.date, onDate: (e) => ciSet({ date: e.target.value }),
+      period: c.period,
+      periodOpen: s.ciPeriodOpen,
+      togglePeriod: () => this.setState({ ciPeriodOpen: !s.ciPeriodOpen, ciClientOpen: false, ciTypeOpen: false }),
+      periods: SERVICE_PERIODS.map(p => ({
+        key: p, label: p,
+        click: () => { ciSet({ period: p }); this.setState({ ciPeriodOpen: false, ciDupAck: false }); },
+        style: 'text-align:left;background:' + (c.period === p ? '#F1F0FC' : 'transparent') + ';border:none;padding:9px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;width:100%;color:' + (c.period === p ? '#1407A2' : '#191A2E')
+      })),
+      typeOpen: s.ciTypeOpen,
+      toggleTypes: () => this.setState({ ciTypeOpen: !s.ciTypeOpen, ciClientOpen: false }),
+      types: CHARGE_TYPES.map(t => ({
+        key: t.k, label: t.label, hint: t.hint,
+        click: () => addItem(t),
+        style: 'display:flex;flex-direction:column;gap:2px;text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:8px;cursor:pointer;width:100%'
+      })),
+      hasItems: c.items.length > 0, noItems: c.items.length === 0,
+      items: c.items.map(it => {
+        const t = CHARGE_TYPE[it.type];
+        const set = (patch) => ciSet({ items: c.items.map(x => x.id === it.id ? Object.assign({}, x, patch) : x) });
+        return {
+          key: it.id, typeLabel: t.label,
+          desc: it.desc, onDesc: (e) => set({ desc: e.target.value }),
+          descPlaceholder: it.type === 'expense' ? 'Prescription pickup' : it.type === 'mileage' ? 'Round trip to dialysis' : it.type === 'fee' ? 'Reason for this fee' : 'Description',
+          showQty: !!t.qtyLabel, qtyLabel: t.qtyLabel,
+          qty: it.qty, onQty: (e) => set({ qty: e.target.value }),
+          showRate: t.rated, rateLabel: it.type === 'mileage' ? 'Rate / mile' : 'Rate',
+          rate: it.rate, onRate: (e) => set({ rate: e.target.value, rateOverride: it.type === 'hours' && cPayer ? Number(e.target.value) !== cPayer.rate : false }),
+          showAmountInput: !t.rated,
+          amountInput: it.amount, onAmount: (e) => set({ amount: e.target.value }),
+          override: it.rateOverride ? 'Rate override will be logged · the client profile rate is unchanged' : '',
+          overrideStyle: it.rateOverride ? 'font-size:11.5px;color:#B54708' : 'display:none',
+          attach: it.type === 'expense' ? 'Attach receipt' : '',
+          attachStyle: it.type === 'expense'
+            ? 'align-self:flex-start;height:28px;padding:0 11px;border-radius:8px;border:1px dashed #D8D8DE;background:#FFFFFF;font-size:11.5px;color:#5B6274;cursor:pointer'
+            : 'display:none',
+          attachClick: () => this.setState({ toast: { title: 'Receipt attached', sub: 'Stored with this charge for auditing' } }),
+          amount: m(itemAmount(it)), amountStyle: moneyStyle('13px', '#191A2E', 500),
+          remove: () => ciSet({ items: c.items.filter(x => x.id !== it.id) })
+        };
+      }),
+      addLabel: c.items.length ? '+ Add another charge' : '+ Add a charge',
+      hasUnbilled: unbilled.length > 0,
+      unbilledLine: unbilled.length + ' unbilled expense' + (unbilled.length === 1 ? '' : 's') + ' found · ' + m(unbilledTotal),
+      expenseOpen: s.ciExpenseOpen,
+      toggleExpenses: () => this.setState({ ciExpenseOpen: !s.ciExpenseOpen }),
+      unbilled: unbilled.map(u => ({
+        key: u.key, label: u.label, date: u.date, amount: m(u.amount),
+        include: () => { ciSet({ items: c.items.concat([{ id: 'ci' + c.nextId, type: 'expense', desc: u.label, qty: 1, rate: 0, amount: u.amount, fromExpense: u.key }]), nextId: c.nextId + 1 }); }
+      })),
+      hasDup: !!dup,
+      dupLine: dup ? 'An invoice already exists for ' + c.client + ' for ' + dup.period + '.' : '',
+      dupMeta: dup ? 'Invoice ' + dup.id + ' · ' + m(dup.amount) + ' · ' + dup.status : '',
+      viewDup: () => { this.setState({ ci: null, tab: 'invoices', period: 'All periods', filter: 'All' }); },
+      ackDup: () => this.setState({ ciDupAck: true, toast: { title: 'Duplicate warning overridden', sub: 'Recorded on the invoice audit trail' } }),
+      summaryClient: c.client || '—', summaryWhen: cWhen,
+      summaryLines: c.items.map(it => ({ key: 'sl' + it.id, label: CHARGE_TYPE[it.type].label, amount: m(itemAmount(it)) })),
+      total: m(cTotal), totalStyle: moneyStyle('20px', '#191A2E', 600),
+      canCreate: !!c.client && c.items.length > 0,
+      createStyle: 'width:100%;height:42px;border:none;border-radius:10px;font-size:13.5px;font-weight:500;cursor:' + (c.client && c.items.length ? 'pointer' : 'default') +
+        ';background:' + (c.client && c.items.length ? '#1407A2' : '#F1F2F6') + ';color:' + (c.client && c.items.length ? '#FFFFFF' : '#B9B9C1'),
+      create: () => {
+        if (!c.client || !c.items.length) return;
+        this.setState({
+          ciDraft: {
+            client: c.client, when: cWhen, total: cTotal, payer: cPayer,
+            lines: c.items.map(it => ({ label: CHARGE_TYPE[it.type].label, desc: it.desc, amount: itemAmount(it) }))
+          }
+        });
+      },
+      // draft preview
+      isDraft: !!s.ciDraft,
+      draft: s.ciDraft ? {
+        client: s.ciDraft.client, when: s.ciDraft.when,
+        billTo: s.ciDraft.payer ? s.ciDraft.payer.responsible : '',
+        method: s.ciDraft.payer ? s.ciDraft.payer.method : '',
+        ltc: s.ciDraft.payer && s.ciDraft.payer.type.indexOf('LTC') >= 0
+          ? 'Once the family pays this invoice, Joy will include it in the next LTCI reimbursement packet.' : '',
+        ltcStyle: s.ciDraft.payer && s.ciDraft.payer.type.indexOf('LTC') >= 0 ? 'font-size:12px;color:#5B6274;line-height:1.5;text-wrap:pretty' : 'display:none',
+        lines: s.ciDraft.lines.map((l, i) => ({
+          key: 'dr' + i, label: l.label, desc: l.desc || '—', amount: m(l.amount),
+          amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E')
+        })),
+        total: m(s.ciDraft.total), totalStyle: moneyStyle('20px', '#191A2E', 600),
+        back: () => this.setState({ ciDraft: null }),
+        send: () => this.setState({ ci: null, ciDraft: null, toast: { title: 'Invoice approved and sent', sub: s.ciDraft.client + ' · ' + m(s.ciDraft.total) + ' · marked manually created' } })
+      } : {}
+    } : { items: [], types: [], clientOptions: [], modes: [], summaryLines: [], unbilled: [], profile: [], draft: {} };
+
+    // ---- invoice drawer
+    const sel = s.sel ? RAW.filter(r => r.id === s.sel)[0] : null;
+    let dv = { actions: [], lines: [], payments: [], ledger: [] };
+    if (sel) {
+      const st = this.statusOf(sel);
+      const led = sel.ledger;
+      dv = {
+        client: sel.client, meta: sel.period + ' · ' + sel.hrs + ' hrs · ' + sel.payer,
+        status: st, statusStyle: 'align-self:flex-start;' + pillS(STATUS[st][0], STATUS[st][1]),
+        amount: m(sel.amount), amountStyle: moneyStyle('22px', '#191A2E', 600),
+        totalStyle: 'margin-left:auto;' + moneyStyle('13px', '#191A2E', 600),
+        dueLabel: st === 'Paid' ? 'Paid ' + sel.paid : st === 'Past due' ? 'Was due ' + sel.due : 'Due ' + sel.due,
+        method: sel.method,
+        lines: sel.lines.map((l, i) => ({
+          key: 'dl' + i, label: l.label, note: l.note, amount: m(l.amount),
+          amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', l.amount < 0 ? '#B42318' : '#191A2E')
+        })),
+        hasLedger: !!led,
+        ledger: led ? [
+          { key: 'g1', label: 'Original invoice', value: m(led.original), valueStyle: moneyStyle('12.5px', '#5B6274') },
+          { key: 'g2', label: 'Adjustment', value: m(led.adjustment), valueStyle: moneyStyle('12.5px', '#B42318') },
+          { key: 'g3', label: 'Revised balance', value: m(led.original + led.adjustment), valueStyle: moneyStyle('12.5px', '#191A2E', 600) },
+          { key: 'g4', label: 'Reason', value: led.reason, valueStyle: 'font-size:12.5px;color:#5B6274;text-wrap:pretty' },
+          { key: 'g5', label: 'Changed by', value: led.actor + ' · ' + led.at, valueStyle: 'font-size:12.5px;color:#5B6274' }
+        ] : [],
+        payments: (sel.payments.length ? sel.payments : [{ when: 'Not sent', label: 'Invoice has not been sent yet', amount: 0 }]).map((p, i) => ({
+          key: 'pm' + i, when: p.when, label: p.label,
+          amount: p.amount ? m(p.amount) : '',
+          amountStyle: p.amount ? 'margin-left:auto;flex:none;' + moneyStyle('12.5px', p.amount < 0 ? '#B42318' : '#191A2E') : 'display:none',
+          dotStyle: 'width:6px;height:6px;flex:none;margin-top:6px;border-radius:50%;background:' + (p.bad ? '#D92D20' : p.amount ? '#12B76A' : '#D0D5DD')
+        })),
+        actions: ['Edit invoice', 'Add adjustment', 'Record payment', 'Record refund', 'Resend invoice', 'Void invoice'].map(l => ({
+          key: l, label: l,
+          click: () => this.setState({ actionsOpen: false, toast: { title: l, sub: sel.client + ' · ' + sel.period + ' · original amount stays on record' } }),
+          style: 'text-align:left;background:transparent;border:none;padding:8px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;color:' + (l === 'Void invoice' ? '#B42318' : '#191A2E')
+        }))
+      };
+    }
+
+    // ---- payers
+    const payer = s.payer ? PAYERS.filter(p => p.client === s.payer)[0] : null;
+    const pv = payer ? {
+      client: payer.client, sub: payer.responsible + ' · ' + payer.type,
+      fields: [
+        { key: 'f1', label: 'Responsible party', value: payer.responsible },
+        { key: 'f2', label: 'Pay type', value: payer.type },
+        { key: 'f3', label: 'LTC carrier', value: payer.ltc || '—' },
+        { key: 'f4', label: 'Billing rate', value: '$' + payer.rate.toFixed(2) + ' / hr' },
+        { key: 'f5', label: 'Billing method', value: payer.method },
+        { key: 'f6', label: 'Invoice recipient', value: payer.responsible.split(' · ')[0] },
+        { key: 'f7', label: 'Billing contact', value: 'Spruce · email and text' },
+        { key: 'f8', label: 'Authorization', value: payer.auth }
+      ].map(f => ({ key: f.key, label: f.label, value: f.value, valueStyle: 'font-size:13px;color:#191A2E;text-wrap:pretty' })),
+      history: (RATE_HISTORY[payer.client] || [{ when: 'On file', what: 'Opened at $' + payer.rate.toFixed(2) + ' · no changes since' }])
+        .map((h, i) => ({ key: 'rh' + i, when: h.when, what: h.what })),
+      edit: () => this.setState({ toast: { title: 'Payer setup', sub: payer.client + ' · rate changes take effect on the next billing period' } })
+    } : { fields: [], history: [] };
+
+    // ---- profitability
+    const profRows = CURRENT.map(r => {
+      const invoiced = r.amount, cost = r.cost || invoiced * 0.93;
+      return { name: r.client, hrs: r.hrs, invoiced: invoiced, cost: cost, profit: invoiced - cost, margin: invoiced ? ((invoiced - cost) / invoiced) * 100 : 0 };
+    });
+    const pSorted = profRows.slice().sort((a, b) => {
+      const k = s.profSort.key;
+      if (k === 'name') return a.name.localeCompare(b.name) * s.profSort.dir;
+      return (a[k] - b[k]) * s.profSort.dir;
+    });
+    const pInv = profRows.reduce((a, r) => a + r.invoiced, 0);
+    const pCost = profRows.reduce((a, r) => a + r.cost, 0);
+    const pProfit = pInv - pCost;
+    const pMargin = pInv ? (pProfit / pInv) * 100 : 0;
+    const pcol = (key, label, right) => {
+      const on = s.profSort.key === key;
+      return {
+        key: key, label: label,
+        arrow: on ? (s.profSort.dir === 1 ? '↑' : '↓') : '',
+        arrowStyle: on ? 'padding-left:5px;color:#1407A2' : 'display:none',
+        style: (right ? THR : TH) + ';cursor:pointer;user-select:none;color:' + (on ? '#5B6274' : '#9B9BA3'),
+        click: () => this.setState({ profSort: { key: key, dir: on ? -s.profSort.dir : 1 } })
+      };
+    };
+    const marginTone = (pct) => pct >= target ? '#12B76A' : pct >= target * 0.5 ? '#B54708' : '#D92D20';
+
+    // ---- LTCI prior-week packets
+    const packetState = (p) => s.ltciApproved[p.client] ? (s.ltciSent ? 'Sent' : 'Approved') : p.state;
+    const ltciReady = LTCI.filter(p => p.state === 'Ready');
+    const ltciExceptions = LTCI.filter(p => p.state !== 'Ready');
+    const ltciQueue = ltciReady;
+    const lIdx = s.ltciIdx;
+    const lcur = lIdx !== null && lIdx >= 0 && lIdx < ltciQueue.length ? ltciQueue[lIdx] : null;
+    const approvedPackets = LTCI.filter(p => s.ltciApproved[p.client]);
+    const pState = { Ready: ['#1407A2', '#EEF0FE'], Approved: ['#12B76A', '#ECFDF3'], Sent: ['#12B76A', '#ECFDF3'], 'Needs review': ['#B54708', '#FFFAEB'] };
+    const lv = {
+      period: LTCI_PERIOD,
+      sub: 'Joy prepares LTCI packets one week behind billing so the invoice is already paid. Joy chose this period from the ' +
+        (this.props.ltciOffsetWeeks != null ? this.props.ltciOffsetWeeks : 1) + '-week offset and each client\u2019s LTC payer setup.',
+      isList: lIdx === null && !s.ltciSent,
+      isReview: !!lcur,
+      isDone: (lIdx !== null && !lcur) || s.ltciSent,
+      rows: LTCI.map(p => {
+        const st = packetState(p);
+        const qi = ltciQueue.indexOf(p);
+        return {
+          key: p.client, client: p.client, initials: initials(p.client), carrier: p.carrier,
+          invoice: '✓ ' + p.invoiceStatus, invoiceStyle: 'font-size:12.5px;color:' + (p.state === 'Ready' ? '#12B76A' : '#B54708'),
+          invoiceLabel: p.state === 'Ready' ? '✓ ' + p.invoiceStatus : '! ' + p.invoiceStatus,
+          notes: p.notes.length + ' notes', notesStyle: 'font-size:12.5px;color:#5B6274',
+          packet: st, packetStyle: pillS(pState[st][0], pState[st][1]),
+          amount: m(p.amount), amountStyle: moneyStyle('12.5px', '#191A2E'),
+          open: () => { if (qi >= 0) this.setState({ ltciIdx: qi }); else this.setState({ ltciOpen: false, tab: 'invoices', period: LTCI_PERIOD, filter: 'All', sel: p.invoiceId }); },
+          rowStyle: 'border-top:1px solid #F3F3F6;cursor:pointer' + (p.state === 'Ready' ? '' : ';background:#FFFDF7')
+        };
+      }),
+      hasExceptions: ltciExceptions.length > 0,
+      exceptions: ltciExceptions.map(p => ({
+        key: p.client, title: p.client + ' · needs review', body: p.exception, action: p.exceptionAction,
+        click: () => this.setState({ ltciOpen: false, tab: 'invoices', period: LTCI_PERIOD, filter: 'All', sel: p.invoiceId })
+      })),
+      listPrimaryLabel: 'Review ' + ltciQueue.length + ' ready packets',
+      startReview: () => this.setState({ ltciIdx: 0 }),
+
+      step: lcur ? 'Packet ' + (lIdx + 1) + ' of ' + ltciQueue.length : (lIdx === null && !s.ltciSent ? LTCI.length + ' clients' : 'Review complete'),
+      progressStyle: 'display:block;flex:1;height:4px;border-radius:999px;background:' + (lcur ? '#F1F2F6' : '#ECFDF3') + ';overflow:hidden;max-width:220px',
+      progressFill: 'display:block;height:100%;border-radius:999px;background:' + (lcur ? '#1407A2' : '#12B76A') +
+        ';width:' + (lcur ? Math.round(((lIdx + 1) / ltciQueue.length) * 100) : 100) + '%',
+      client: lcur ? lcur.client : '', carrier: lcur ? lcur.carrier + ' · ' + lcur.policy : '',
+      amount: lcur ? m(lcur.amount) : '', amountStyle: moneyStyle('20px', '#191A2E', 600),
+      checks: lcur ? [
+        'Paid invoice matched · ' + lcur.invoiceStatus + ' · ' + LTCI_PERIOD,
+        'Care notes matched to service period · ' + lcur.notes.length + ' finalized notes',
+        'Invoice and care notes cover the same dates',
+        'Cover fax letter prepared',
+        'Fax destination verified · ' + lcur.fax,
+        'Email destination verified · ' + lcur.email
+      ].map((c, i) => ({ key: 'lc' + i, label: c })) : [],
+      assembly: lcur ? [{ key: 'a0', num: '1', label: 'Cover fax letter', note: 'Generated from payer setup' },
+        { key: 'a1', num: '2', label: 'Paid invoice — ' + LTCI_PERIOD, note: m(lcur.amount) + ' · ' + lcur.invoiceStatus }]
+        .concat(lcur.notes.map((n, i) => ({ key: 'an' + i, num: String(i + 3), label: 'Care notes — ' + n, note: 'Finalized' }))) : [],
+      pages: lcur ? (2 + lcur.notes.length) + ' pages · fax + email' : '',
+      preview: () => this.setState({ toast: { title: 'Packet preview', sub: (lcur ? lcur.client : '') + ' · cover letter, paid invoice, care notes' } }),
+      approveLabel: lcur && lIdx + 1 < ltciQueue.length ? 'Approve & next' : 'Approve & finish',
+      approve: () => { if (lcur) this.setState(st => ({ ltciApproved: Object.assign({}, st.ltciApproved, { [lcur.client]: true }), ltciIdx: lIdx + 1 })); },
+
+      doneTitle: s.ltciSent ? approvedPackets.length + ' LTCI reimbursement packets sent.' : 'LTCI packets ready — ' + LTCI_PERIOD,
+      doneSub: s.ltciSent
+        ? 'Delivered by fax and email on Mon, Aug 10 · recorded in billing history'
+        : approvedPackets.length + ' client' + (approvedPackets.length === 1 ? '' : 's') + ' · ' + approvedPackets.length + ' packets ready · delivery method: fax + email',
+      doneRows: approvedPackets.map(p => ({
+        key: p.client, client: p.client, carrier: p.carrier,
+        status: s.ltciSent ? 'Sent · fax + email' : 'Ready',
+        statusStyle: pillS(s.ltciSent ? '#12B76A' : '#1407A2', s.ltciSent ? '#ECFDF3' : '#EEF0FE'),
+        amount: m(p.amount), amountStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E', 500)
+      })),
+      sendLabel: s.ltciSent ? 'Sent ✓' : 'Send ' + approvedPackets.length + ' ready packets',
+      sendStyle: 'margin-left:auto;height:38px;padding:0 18px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:' +
+        (s.ltciSent ? 'default' : 'pointer') + ';background:' + (s.ltciSent ? '#ECFDF3' : '#1407A2') + ';color:' + (s.ltciSent ? '#12B76A' : '#FFFFFF'),
+      send: () => { if (!s.ltciSent) this.setState({ ltciSent: true, toast: { title: approvedPackets.length + ' LTCI packets sent', sub: 'Fax and email · ' + LTCI_PERIOD + ' · transmission recorded' } }); },
+      backToList: () => this.setState({ ltciIdx: null })
+    };
 
     return {
+      isPrivate: s.priv, notPrivate: !s.priv,
+      privateLabel: s.priv ? 'Amounts hidden' : 'Hide amounts',
+      privateBtnStyle: 'display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid ' +
+        (s.priv ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#5B6274'),
+      togglePrivate: () => this.setState({ priv: !s.priv }),
+      exportOpen: s.exportOpen,
+      toggleExport: () => this.setState({ exportOpen: !s.exportOpen, periodOpen: false }),
+      exportOptions: (s.tab === 'payers'
+        ? [['Payer list (CSV)', PAYERS.length + ' clients'], ['Rate sheet (PDF)', 'Current rates and pay types']]
+        : s.tab === 'profit'
+        ? [['Profitability (CSV)', s.profPeriod + ' · ' + profRows.length + ' clients'], ['Margin summary (PDF)', 'Totals and per-client margin']]
+        : [['Invoices (CSV)', sorted.length + ' shown · ' + s.period], ['Invoice PDFs (ZIP)', 'One file per invoice'], ['Accounting export (QBO)', 'Journal entries for ' + s.period]]
+      ).map(o => ({
+        key: o[0], label: o[0], sub: o[1],
+        click: () => this.setState({ exportOpen: false, toast: { title: o[0] + ' ready', sub: o[1] + ' · download started' } }),
+        style: 'display:flex;flex-direction:column;gap:2px;text-align:left;background:transparent;border:none;padding:9px 10px;border-radius:8px;cursor:pointer;width:100%'
+      })),
+
+      createInvoice: () => this.setState({
+        ci: { client: '', mode: 'single', date: 'Aug 19, 2026', period: SERVICE_PERIODS[0], items: [], nextId: 1 },
+        ciClientOpen: false, ciTypeOpen: false, ciExpenseOpen: false, ciDupAck: false, ciDraft: null, ciPeriodOpen: false
+      }),
+
+      tabs: [['invoices', 'Invoices', RAW.length], ['payers', 'Payers', PAYERS.length], ['profit', 'Profitability', '']].map(t => ({
+        key: t[0], label: t[1], count: t[2],
+        click: () => this.setState({ tab: t[0], sel: null, payer: null, q: '' }),
+        style: 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;' +
+          (s.tab === t[0] ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
+        countStyle: t[2] === '' ? 'display:none' : 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.tab === t[0] ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.tab === t[0] ? '#1407A2' : '#9B9BA3')
+      })),
+      tabLabel: s.tab === 'invoices' ? 'Invoices' : s.tab === 'payers' ? 'Payers' : 'Profitability',
+      isInvoices: s.tab === 'invoices', isPayers: s.tab === 'payers', isProfit: s.tab === 'profit',
+
+      summaryStyle: 'display:flex;align-items:center;gap:16px;background:#FFFFFF;border:1px solid ' +
+        (needs.length ? '#FCE8B6' : s.sent ? '#D3F0DF' : '#ECECF1') + ';border-radius:16px;padding:18px 22px',
+      summaryTitle: s.sent ? 'You\u2019re done for this billing period.'
+        : needs.length ? CURRENT.length + ' invoices · Aug 1 – 7'
+        : 'Billing is ready.',
+      summarySub: s.sent ? readyCount + ' invoices sent · ' + m(periodTotal) + ' · due Wednesday, Aug 12'
+        : needs.length ? needs.length + ' need review · ' + readyCount + ' ready to send'
+        : 'All ' + CURRENT.length + ' invoices for Aug 1 – 7 have been reviewed.',
+      periodTotal: m(periodTotal), periodTotalStyle: moneyStyle('20px', '#191A2E', 600),
+      periodHours: periodHrs.toFixed(2).replace(/\.00$/, '') + ' billable hrs',
+      primaryLabel: s.sent ? 'Sent ✓' : needs.length ? 'Review invoices' : 'Send ' + readyCount + ' invoices',
+      primaryStyle: 'height:38px;padding:0 18px;border:none;border-radius:10px;font-size:13.5px;font-weight:500;cursor:' + (s.sent ? 'default' : 'pointer') +
+        ';background:' + (s.sent ? '#ECFDF3' : '#1407A2') + ';color:' + (s.sent ? '#12B76A' : '#FFFFFF'),
+      primaryAction: () => {
+        if (s.sent) return;
+        if (needs.length) this.setState({ review: 0 });
+        else this.setState({ sent: true, toast: { title: readyCount + ' invoices sent', sub: 'Payment links delivered through Stripe · due Aug 12' } });
+      },
+
+      showAlert: (this.props.showPaymentAlert !== false) && !s.priv,
+      alertLine: 'Margaret Davis · ' + m(840) + ' · card declined Aug 5 · Jul 25 – 31 invoice',
+      openAlert: () => this.setState({ tab: 'invoices', period: 'All periods', filter: 'Past due', sel: 'p1' }),
+
+      q: s.q, onSearch: (e) => this.setState({ q: e.target.value }),
+      periodLabel: s.period, periodOpen: s.periodOpen,
+      togglePeriod: () => this.setState({ periodOpen: !s.periodOpen }),
+      periodOptions: ['Aug 1 – 7', 'Jul 25 – 31', 'Jul 18 – 24', 'All periods'].map(p => ({
+        key: p, label: p,
+        click: () => this.setState({ period: p, periodOpen: false }),
+        style: 'text-align:left;background:' + (s.period === p ? '#F1F0FC' : 'transparent') + ';border:none;padding:8px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;color:' + (s.period === p ? '#1407A2' : '#191A2E')
+      })),
+      statusFilters: FILTERS.map(f => {
+        const n = f === 'All' ? inPeriod.length : inPeriod.filter(r => this.statusOf(r) === f).length;
+        const on = s.filter === f;
+        return {
+          key: f, label: f, count: n,
+          countStyle: n ? 'font-size:10.5px;padding:1px 6px;border-radius:999px;margin-left:6px;background:' + (on ? 'rgba(255,255,255,.22)' : '#F3F3F6') + ';color:' + (on ? '#FFFFFF' : '#9B9BA3') : 'display:none',
+          click: () => this.setState({ filter: f }),
+          style: 'display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:999px;font-size:12.5px;cursor:pointer;white-space:nowrap;border:1px solid ' +
+            (on ? '#1407A2;background:#1407A2;color:#FFFFFF' : '#ECECF1;background:#FFFFFF;color:#5B6274')
+        };
+      }),
+
+      invCols: [col('client', 'Client'), col('period', 'Service period'), col('status', 'Status'), col('method', 'Pay method'), col('amount', 'Amount', true),
+        { key: 'paid', label: 'Paid', arrow: '', arrowStyle: 'display:none', style: TH, click: () => {} }],
+      invoices: sorted.map(r => {
+        const st = this.statusOf(r);
+        return {
+          key: r.id, client: r.client, initials: initials(r.client), payer: r.payer,
+          period: r.period, status: st, statusStyle: pillS(STATUS[st][0], STATUS[st][1]),
+          method: r.method, amount: m(r.amount),
+          amountStyle: moneyStyle('13px', '#191A2E', st === 'Needs review' ? 600 : 400),
+          paid: r.paid,
+          open: () => this.setState({ sel: r.id, actionsOpen: false })
+        };
+      }),
+      noInvoices: sorted.length === 0,
+      emptyCopy: s.filter === 'Past due' ? 'No past-due invoices.' : 'No invoices match these filters.',
+      invoiceCount: sorted.length + ' of ' + inPeriod.length + ' invoices',
+      unpaidTotal: m(outstanding), unpaidStyle: moneyStyle('12.5px', '#191A2E', 600),
+
+      reviewOpen: s.review !== null, closeReview: () => this.setState({ review: null }), rv: rv,
+
+      ciOpen: !!s.ci, ciFormOpen: !!s.ci && !s.ciDraft, closeCi: () => this.setState({ ci: null, ciDraft: null }), ci: ci,
+
+      ltciPeriod: LTCI_PERIOD,
+      ltciTeaser: LTCI_PERIOD + ' · ' + LTCI.length + ' LTCI clients · ' +
+        (s.ltciSent ? LTCI.filter(p => s.ltciApproved[p.client]).length + ' sent' : ltciReady.length + ' ready to prepare' + (ltciExceptions.length ? ' · ' + ltciExceptions.length + ' needs review' : '')),
+      ltciTeaserStyle: 'display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;cursor:pointer;text-align:left;width:100%;background:#FFFFFF;border:1px solid ' +
+        (s.ltciSent ? '#D3F0DF' : ltciExceptions.length ? '#FCE8B6' : '#ECECF1'),
+      openLtci: () => this.setState({ ltciOpen: true, ltciIdx: null }),
+      ltciOpen: s.ltciOpen,
+      closeLtci: () => this.setState({ ltciOpen: false, ltciIdx: null }),
+      lv: lv,
+
+      drawerOpen: !!sel, closeDrawer: () => this.setState({ sel: null, actionsOpen: false }), dv: dv,
+      actionsOpen: s.actionsOpen, toggleActions: () => this.setState({ actionsOpen: !s.actionsOpen }),
+
+      payerCols: [['Client', TH], ['Pay type', TH], ['Rate', THR], ['Billing method', TH]].map((c, i) => ({ key: 'pc' + i, label: c[0], style: c[1] })),
+      payerRows: PAYERS.filter(p => !q || p.client.toLowerCase().indexOf(q) >= 0).map(p => ({
+        key: p.client, client: p.client, initials: initials(p.client), responsible: p.responsible,
+        payType: p.type, typeStyle: pillS(p.type === 'Unsure' ? '#B54708' : '#5B6274', p.type === 'Unsure' ? '#FFFAEB' : '#F1F2F6'),
+        ltc: p.ltc, ltcStyle: p.ltc ? 'display:block;padding-top:4px;font-size:11px;color:#9B9BA3' : 'display:none',
+        rate: '$' + p.rate.toFixed(2) + '/hr', rateStyle: moneyStyle('12.5px', '#191A2E'),
+        method: p.method,
+        open: () => this.setState({ payer: p.client })
+      })),
+      payerOpen: !!payer, closePayer: () => this.setState({ payer: null }), pv: pv,
+
+      profPeriods: PROF_PERIODS.map(p => ({
+        key: p, label: p,
+        click: () => this.setState({ profPeriod: p }),
+        style: 'border:none;border-radius:7px;padding:0 13px;height:28px;font-size:12.5px;cursor:pointer;' +
+          (s.profPeriod === p ? 'background:#FFFFFF;color:#191A2E;font-weight:500;box-shadow:0 1px 2px rgba(25,26,46,.08)' : 'background:transparent;color:#8A8A92')
+      })),
+      profRange: PROF_RANGE[s.profPeriod],
+      profSummary: [
+        { key: 'k1', label: 'Total invoiced', value: m(pInv), note: '', color: '#191A2E' },
+        { key: 'k2', label: 'Caregiver cost', value: m(pCost), note: '', color: '#191A2E' },
+        { key: 'k3', label: 'Gross profit', value: m(pProfit), note: '', color: '#191A2E' },
+        { key: 'k4', label: 'Margin', value: s.priv ? '••••' : pMargin.toFixed(2) + '%', note: target + '% target', color: marginTone(pMargin) }
+      ].map((k, i) => ({
+        key: k.key, label: k.label, value: k.value, note: k.note,
+        valueStyle: 'font-size:19px;font-weight:600;letter-spacing:-.015em;color:' + (s.priv ? '#B9B9C1' : k.color),
+        noteStyle: k.note ? 'font-size:11.5px;color:#9B9BA3' : 'display:none',
+        style: 'flex:1;display:flex;flex-direction:column;gap:5px;padding:2px 18px' + (i ? ';border-left:1px solid #F3F3F6' : '')
+      })),
+      profitCols: [pcol('name', 'Client'), pcol('hrs', 'Billable hours', true), pcol('invoiced', 'Invoiced', true), pcol('cost', 'Caregiver cost', true), pcol('profit', 'Gross profit', true), pcol('margin', 'Margin', true)],
+      profitRows: pSorted.map((r, i) => ({
+        key: 'p' + i, name: r.name, initials: initials(r.name), hrs: r.hrs,
+        invoiced: m(r.invoiced), invoicedStyle: moneyStyle('13px', '#191A2E'),
+        cost: m(r.cost), costStyle: moneyStyle('12.5px', '#5B6274'),
+        profit: m(r.profit), profitStyle: moneyStyle('13px', '#191A2E'),
+        margin: s.priv ? '••••' : r.margin.toFixed(2) + '%',
+        marginStyle: 'font-size:12.5px;font-weight:500;color:' + (s.priv ? '#B9B9C1' : marginTone(r.margin))
+      })),
+      profClients: profRows.length + ' clients',
+      profHours: periodHrs.toFixed(2).replace(/\.00$/, '') + ' hrs',
+      profInvoiced: m(pInv), profCost: m(pCost), profProfit: m(pProfit),
+      profTotalStyle: moneyStyle('13px', '#191A2E', 600),
+      profMargin: s.priv ? '••••' : pMargin.toFixed(2) + '%',
+      profMarginStyle: 'font-size:12.5px;font-weight:600;color:' + (s.priv ? '#B9B9C1' : marginTone(pMargin)),
+
       joyOpen: s.joyOpen,
       toggleJoy: () => this.setState({ joyOpen: !s.joyOpen, joyMic: false }),
-      joyQ: s.joyQ,
-      onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
+      joyQ: s.joyQ, onJoyQ: (e) => this.setState({ joyQ: e.target.value }),
       joyStatus: s.joyMic ? 'Listening…' : '',
       joyStatusStyle: 'font-size:11px;color:#1407A2;' + (s.joyMic ? '' : 'display:none'),
       toggleMic: () => this.setState({ joyMic: !s.joyMic }),
       micStyle: 'width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border:1px solid ' +
         (s.joyMic ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#8A8A92'),
       joySend: () => this.setState({ joyQ: '', joyMic: false }),
-      joyPrompts: ['What changed since I set the schedule?', 'Which invoices have unapproved overtime?', 'Who is at risk of a service hold?']
+      joyPrompts: ['What needs my review?', 'Which LTCI packets are ready to send?', 'Why was Lian\u2019s invoice flagged?', 'Who has the lowest margin this billing period?']
         .map(l => ({ key: l, label: l, click: () => this.setState({ joyQ: l }) })),
-
-      isPrivate: s.priv, notPrivate: !s.priv,
-      privateLabel: s.priv ? 'Amounts hidden' : 'Hide amounts',
-      privateBtnStyle: 'display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:9px;font-size:13px;cursor:pointer;border:1px solid ' +
-        (s.priv ? '#1407A2;background:#EEF0FE;color:#1407A2' : '#ECECF1;background:#FFFFFF;color:#5B6274'),
-      togglePrivate: () => this.setState({ priv: !s.priv }),
-
-      tabs: [['review', 'To send', pending || BATCH.length], ['invoices', 'Sent', SENT.length], ['profit', 'Profitability', '']].map(t => ({
-        key: t[0], label: t[1], count: t[2],
-        click: () => this.setState({ tab: t[0], open: null }),
-        style: 'display:flex;align-items:center;gap:7px;background:transparent;border:none;padding:0 0 11px;margin-bottom:-1px;font-size:13.5px;cursor:pointer;' +
-          (s.tab === t[0] ? 'color:#191A2E;font-weight:500;border-bottom:2px solid #1407A2' : 'color:#8A8A92;font-weight:400;border-bottom:2px solid transparent'),
-        countStyle: t[2] === '' ? 'display:none' : 'font-size:11px;padding:1px 7px;border-radius:999px;background:' + (s.tab === t[0] ? '#EEF0FE' : '#F3F3F6') + ';color:' + (s.tab === t[0] ? '#1407A2' : '#9B9BA3')
-      })),
-      tabLabel: s.tab === 'review' ? 'To send' : s.tab === 'invoices' ? 'Sent' : 'Profitability',
-      isReview: s.tab === 'review', isInvoices: s.tab === 'invoices', isProfit: s.tab === 'profit',
-
-      batchStyle: 'background:#FFFFFF;border:1px solid ' + (allClear ? '#D3F0DF' : '#ECECF1') + ';border-radius:16px;padding:20px 22px',
-      batchTitle: s.sent ? '3 invoices sent' : allClear ? 'Ready to send' : pending + ' of ' + BATCH.length + ' need review',
-      batchSub: s.sent ? 'Sent this morning · due Wednesday, Aug 12'
-        : 'Care week Aug 3 – 9 · due Wednesday, Aug 12 · check overtime and any shifts added after the schedule was set',
-      batchTotal: m(batchTotal), batchTotalStyle: moneyStyle('21px', '#191A2E') + ';font-weight:600',
-      batchHours: '335h 15m billed',
-      sendAllLabel: s.sent ? 'Sent ✓' : allClear ? 'Send 3 invoices' : 'Review first',
-      sendAllStyle: 'height:38px;padding:0 18px;border:none;border-radius:10px;font-size:13.5px;font-weight:500;cursor:' + (allClear && !s.sent ? 'pointer' : 'not-allowed') +
-        ';background:' + (s.sent ? '#ECFDF3' : allClear ? '#1407A2' : '#F1F2F6') + ';color:' + (s.sent ? '#12B76A' : allClear ? '#FFFFFF' : '#B9B9C1'),
-      sendAll: () => {
-        if (!allClear || s.sent) return;
-        this.setState({ sent: true, toast: { title: '3 invoices sent', sub: 'Due Wednesday · payment links through Stripe' } });
-      },
-
-      queue: queue, cycle: cycle, behind: behind,
-      stripe: [
-        { key: 'st1', label: 'Next payout', value: m(8412.60) + ' · Aug 11' },
-        { key: 'st2', label: 'In transit', value: m(3585.00) },
-        { key: 'st3', label: 'Failed payments', value: '1 · Delgado ACH' }
-      ].map(r => ({ key: r.key, label: r.label, value: r.value, valueStyle: 'margin-left:auto;' + moneyStyle('12.5px', '#191A2E') })),
-
-      invCols: [['Client', TH], ['Period', TH], ['Status', TH], ['Pay method', TH], ['Amount', THR], ['Due', TH], ['Paid', TH]]
-        .map((c, i) => ({ key: 'ic' + i, label: c[0], style: c[1] })),
-      invoices: SENT.map((r, i) => ({
-        key: 'sv' + i, client: r.client, initials: initials(r.client), payer: r.payer,
-        period: r.period, status: r.status, statusStyle: pillS(STATUS[r.status][0], STATUS[r.status][1]),
-        method: r.method, amount: m(r.amount), amountStyle: moneyStyle('13px', '#191A2E'),
-        due: r.due, paid: r.paid
-      })),
-      invoiceCount: SENT.length + ' invoices',
-      unpaidTotal: m(unpaid), unpaidStyle: moneyStyle('12.5px', '#191A2E') + ';font-weight:600',
-
-      netValue: m(profitNet), netStyle: moneyStyle('24px', '#191A2E') + ';font-weight:600',
-      netPct: s.priv ? '••••' : profitPct.toFixed(1) + '%',
-      netBarStyle: 'display:block;height:100%;width:' + Math.min(100, Math.round((profitPct / 12) * 100)) + '%;border-radius:999px;background:#F79009',
-      weekLabel: week.label,
-      weekSub: s.week === 0 ? 'Invoiced this Monday' : s.week === 1 ? 'Invoiced Aug 3' : 'Invoiced Jul 27',
-      canPrevWeek: s.week < PROFIT_WEEKS.length - 1,
-      canNextWeek: s.week > 0,
-      prevWeek: () => { if (s.week < PROFIT_WEEKS.length - 1) this.setState({ week: s.week + 1 }); },
-      nextWeek: () => { if (s.week > 0) this.setState({ week: s.week - 1 }); },
-      prevWeekStyle: 'width:28px;height:28px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;cursor:' + (s.week < PROFIT_WEEKS.length - 1 ? 'pointer' : 'not-allowed') + ';color:' + (s.week < PROFIT_WEEKS.length - 1 ? '#5B6274' : '#D8D8DE'),
-      nextWeekStyle: 'width:28px;height:28px;border:1px solid #ECECF1;background:#FFFFFF;border-radius:8px;cursor:' + (s.week > 0 ? 'pointer' : 'not-allowed') + ';color:' + (s.week > 0 ? '#5B6274' : '#D8D8DE'),
-      totalHrs: PROFIT.length + (PROFIT.length === 1 ? ' client' : ' clients'),
-      totalBilled: m(profitBilled), totalCost: m(profitCost), totalNet: m(profitNet),
-      totalPct: s.priv ? '••••' : profitPct.toFixed(2) + '%',
-      totalPctStyle: 'font-size:12.5px;font-weight:600;color:' + (s.priv ? '#B9B9C1' : profitPct >= 6 ? '#12B76A' : profitPct >= 4 ? '#B54708' : '#D92D20'),
-      totalMoneyStyle: moneyStyle('13px', '#191A2E') + ';font-weight:600',
-      profitCols: [['Client', TH], ['Billable hrs', THR], ['Billed', THR], ['Caregiver cost', THR], ['Net', THR], ['Net %', THR]]
-        .map((c, i) => ({ key: 'pc' + i, label: c[0], style: c[1] })),
-      profitRows: PROFIT.map((r, i) => {
-        const pct = r.billable ? ((r.billable - r.cost) / r.billable) * 100 : 0;
-        const tone = pct >= 6 ? '#12B76A' : pct >= 4 ? '#B54708' : '#D92D20';
-        return {
-          key: 'pr' + i, name: r.name, initials: initials(r.name), billableHrs: r.hrs,
-          billable: m(r.billable), billableStyle: moneyStyle('13px', '#191A2E'),
-          cost: m(r.cost), costStyle: moneyStyle('12.5px', '#5B6274'),
-          net: m(r.billable - r.cost), netStyle: moneyStyle('13px', '#191A2E'),
-          pct: s.priv ? '••••' : pct.toFixed(2) + '%',
-          pctStyle: 'font-size:12.5px;font-weight:500;color:' + (s.priv ? '#B9B9C1' : tone)
-        };
-      }),
 
       toastOpen: !!s.toast, toast: s.toast || {}, closeToast: () => this.setState({ toast: null })
     };
