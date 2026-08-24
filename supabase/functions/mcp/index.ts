@@ -37,28 +37,22 @@ function setTime(d, h, m = 0) {
   return x;
 }
 var employees = [
-  ["Maya Patel", "RN"],
-  ["Jordan Lee", "Caregiver"],
-  ["Sofia Ramirez", "Caregiver"],
-  ["Daniel Kim", "Caregiver"],
-  ["Aisha Bello", "LPN"],
-  ["Liam O'Connor", "Caregiver"],
-  ["Priya Singh", "Caregiver"],
-  ["Marcus Chen", "Coordinator"],
-  ["Elena Rossi", "Caregiver"],
-  ["Noah Williams", "Caregiver"],
-  ["Hana Suzuki", "RN"],
-  ["Diego Martinez", "Caregiver"],
-  ["Grace Olusanya", "LPN"],
-  ["Tom\xE1s Herrera", "Caregiver"],
-  ["Isabelle Dubois", "Caregiver"]
+  ["Chanel P", "Caregiver"],
+  ["Bedjine Cupidon", "Caregiver"],
+  ["Heather Gonzales", "Caregiver"],
+  ["Tanya Robinson", "Caregiver"],
+  ["Vanessa", "Caregiver"],
+  ["Thylia", "Caregiver"],
+  ["Emone", "Caregiver"],
+  ["Kelsey Westley", "RN"],
+  ["John Segura", "Coordinator"]
 ].map(([name, role], i) => ({
   id: uid(),
   name,
   role,
   status: i === 4 ? "on-leave" : "active",
   hoursThisWeek: 18 + i * 7 % 24,
-  email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@homecare.co",
+  email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@joyhealthcare.example",
   phone: `555-01${(20 + i).toString().padStart(2, "0")}`,
   hireDate: iso(addDays(today, -300 - i * 40)),
   credentials: [
@@ -68,31 +62,14 @@ var employees = [
   assignedClientIds: []
 }));
 var clientNames = [
-  "Eleanor Whitfield",
-  "Harold Stein",
-  "Margaret O'Hara",
-  "Walter Nakamura",
-  "Beatrice Coleman",
-  "Frank Delgado",
-  "Doris Kapoor",
-  "Arthur Brennan",
-  "Vivian Cho",
-  "Stanley Park",
-  "Ruth Abernathy",
-  "George Mwangi",
-  "Helen Petrov",
-  "Samuel Greene",
-  "Joyce Tanaka",
-  "Edwin Foster",
-  "Mildred Sanchez",
-  "Roy Bauer",
-  "Pearl Jackson",
-  "Norman Wells",
-  "Iris Thompson",
-  "Clarence Fox",
-  "Estelle Romano",
-  "Henry M\xFCller",
-  "Nora Bryant"
+  "Lian Huang",
+  "Edward Pham",
+  "Dolores Vance",
+  "Susan Miller",
+  "Ruth Alvarez",
+  "Evelyn Carter",
+  "Theo Nakamura",
+  "Augustin Vandermeer"
 ];
 var clients = clientNames.map((name, i) => ({
   id: uid(),
@@ -101,7 +78,7 @@ var clients = clientNames.map((name, i) => ({
   primaryCaregiverId: employees[i % employees.length].id,
   carePlan: ["Standard Care", "Memory Care", "Post-Op Recovery", "Companion Care", "Skilled Nursing"][i % 5],
   hoursPerWeek: 8 + i * 5 % 40,
-  address: `${100 + i * 7} ${["Maple", "Oak", "Cedar", "Pine", "Birch"][i % 5]} St, Springfield`,
+  address: `${100 + i * 7} ${["Maple", "Oak", "Cedar", "Pine", "Birch"][i % 5]} St, Houston`,
   phone: `555-02${(10 + i).toString().padStart(2, "0")}`,
   email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@example.com",
   dob: iso(addDays(today, -365 * (65 + i % 25))),
@@ -244,7 +221,7 @@ var sops = sopTitles.map(([title, category], i) => ({
 var activity = [
   { id: uid(), kind: "client", message: "New client Eleanor Whitfield admitted", at: iso(addHours(today, -1)) },
   { id: uid(), kind: "shift", message: "Jordan Lee completed shift with Harold Stein", at: iso(addHours(today, -2)) },
-  { id: uid(), kind: "document", message: "Maya Patel uploaded Care Plan Template.docx", at: iso(addHours(today, -4)) },
+  { id: uid(), kind: "document", message: "Kelsey Westley uploaded Care Plan Template.docx", at: iso(addHours(today, -4)) },
   { id: uid(), kind: "goal", message: "Goal 'Reduce overtime by 20%' updated to 55%", at: iso(addHours(today, -7)) },
   { id: uid(), kind: "sop", message: "SOP 'Fall Prevention' was revised", at: iso(addHours(today, -10)) },
   { id: uid(), kind: "shift", message: "Sofia Ramirez clocked in for Margaret O'Hara", at: iso(addHours(today, -12)) },
@@ -255,7 +232,7 @@ var alerts = [
   { id: uid(), severity: "warning", title: "Credential expiring", detail: "Aisha Bello's CPR cert expires in 12 days", createdAt: iso(addHours(today, -3)) },
   { id: uid(), severity: "warning", title: "Unassigned shift", detail: "Tomorrow 2:00 PM \u2014 Beatrice Coleman has no caregiver", createdAt: iso(addHours(today, -5)) },
   { id: uid(), severity: "info", title: "Care plan renewal", detail: "Frank Delgado's care plan expires in 7 days", createdAt: iso(addHours(today, -8)) },
-  { id: uid(), severity: "warning", title: "Overtime risk", detail: "Maya Patel will exceed 40h this week", createdAt: iso(addHours(today, -12)) }
+  { id: uid(), severity: "warning", title: "Overtime risk", detail: "Tanya Robinson will exceed 40h this week", createdAt: iso(addHours(today, -12)) }
 ];
 var mockDB = {
   clients,

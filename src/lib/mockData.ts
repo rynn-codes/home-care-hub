@@ -122,19 +122,21 @@ function addDays(d: Date, n: number) { const x = new Date(d); x.setDate(x.getDat
 function addHours(d: Date, n: number) { const x = new Date(d); x.setHours(x.getHours() + n); return x; }
 function setTime(d: Date, h: number, m = 0) { const x = new Date(d); x.setHours(h, m, 0, 0); return x; }
 
+// Joy's real team — one cast across the whole app, including the Ask Joy
+// chat and Documents that read this store. This used to be fifteen invented
+// people (Maya Patel, Jordan Lee…), a second staff list that contradicted
+// the Employees directory the moment anyone asked Joy about it.
 const employees: Employee[] = [
-  ["Maya Patel", "RN"], ["Jordan Lee", "Caregiver"], ["Sofia Ramirez", "Caregiver"],
-  ["Daniel Kim", "Caregiver"], ["Aisha Bello", "LPN"], ["Liam O'Connor", "Caregiver"],
-  ["Priya Singh", "Caregiver"], ["Marcus Chen", "Coordinator"], ["Elena Rossi", "Caregiver"],
-  ["Noah Williams", "Caregiver"], ["Hana Suzuki", "RN"], ["Diego Martinez", "Caregiver"],
-  ["Grace Olusanya", "LPN"], ["Tomás Herrera", "Caregiver"], ["Isabelle Dubois", "Caregiver"],
+  ["Chanel P", "Caregiver"], ["Bedjine Cupidon", "Caregiver"], ["Heather Gonzales", "Caregiver"],
+  ["Tanya Robinson", "Caregiver"], ["Vanessa", "Caregiver"], ["Thylia", "Caregiver"],
+  ["Emone", "Caregiver"], ["Kelsey Westley", "RN"], ["John Segura", "Coordinator"],
 ].map(([name, role], i) => ({
   id: uid(),
   name: name as string,
   role: role as Employee["role"],
   status: i === 4 ? "on-leave" : "active",
   hoursThisWeek: 18 + ((i * 7) % 24),
-  email: (name as string).toLowerCase().replace(/[^a-z]+/g, ".") + "@homecare.co",
+  email: (name as string).toLowerCase().replace(/[^a-z]+/g, ".") + "@joyhealthcare.example",
   phone: `555-01${(20 + i).toString().padStart(2, "0")}`,
   hireDate: iso(addDays(today, -300 - i * 40)),
   credentials: [
@@ -144,14 +146,12 @@ const employees: Employee[] = [
   assignedClientIds: [],
 }));
 
+// The same fictional clients the directory carries — see clientsSeed.ts. This
+// was a separate list of twenty-five invented names; asking Joy "show me
+// clients" then answered with people who did not exist anywhere else.
 const clientNames = [
-  "Eleanor Whitfield", "Harold Stein", "Margaret O'Hara", "Walter Nakamura",
-  "Beatrice Coleman", "Frank Delgado", "Doris Kapoor", "Arthur Brennan",
-  "Vivian Cho", "Stanley Park", "Ruth Abernathy", "George Mwangi",
-  "Helen Petrov", "Samuel Greene", "Joyce Tanaka", "Edwin Foster",
-  "Mildred Sanchez", "Roy Bauer", "Pearl Jackson", "Norman Wells",
-  "Iris Thompson", "Clarence Fox", "Estelle Romano", "Henry Müller",
-  "Nora Bryant",
+  "Lian Huang", "Edward Pham", "Dolores Vance", "Susan Miller",
+  "Ruth Alvarez", "Evelyn Carter", "Theo Nakamura", "Augustin Vandermeer",
 ];
 
 const clients: Client[] = clientNames.map((name, i) => ({
@@ -161,7 +161,7 @@ const clients: Client[] = clientNames.map((name, i) => ({
   primaryCaregiverId: employees[i % employees.length].id,
   carePlan: ["Standard Care", "Memory Care", "Post-Op Recovery", "Companion Care", "Skilled Nursing"][i % 5],
   hoursPerWeek: 8 + ((i * 5) % 40),
-  address: `${100 + i * 7} ${["Maple", "Oak", "Cedar", "Pine", "Birch"][i % 5]} St, Springfield`,
+  address: `${100 + i * 7} ${["Maple", "Oak", "Cedar", "Pine", "Birch"][i % 5]} St, Houston`,
   phone: `555-02${(10 + i).toString().padStart(2, "0")}`,
   email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@example.com",
   dob: iso(addDays(today, -365 * (65 + (i % 25)))),
@@ -316,7 +316,7 @@ const sops: Sop[] = sopTitles.map(([title, category], i) => ({
 const activity: ActivityItem[] = [
   { id: uid(), kind: "client", message: "New client Eleanor Whitfield admitted", at: iso(addHours(today, -1)) },
   { id: uid(), kind: "shift", message: "Jordan Lee completed shift with Harold Stein", at: iso(addHours(today, -2)) },
-  { id: uid(), kind: "document", message: "Maya Patel uploaded Care Plan Template.docx", at: iso(addHours(today, -4)) },
+  { id: uid(), kind: "document", message: "Kelsey Westley uploaded Care Plan Template.docx", at: iso(addHours(today, -4)) },
   { id: uid(), kind: "goal", message: "Goal 'Reduce overtime by 20%' updated to 55%", at: iso(addHours(today, -7)) },
   { id: uid(), kind: "sop", message: "SOP 'Fall Prevention' was revised", at: iso(addHours(today, -10)) },
   { id: uid(), kind: "shift", message: "Sofia Ramirez clocked in for Margaret O'Hara", at: iso(addHours(today, -12)) },
@@ -328,7 +328,7 @@ const alerts: AlertItem[] = [
   { id: uid(), severity: "warning", title: "Credential expiring", detail: "Aisha Bello's CPR cert expires in 12 days", createdAt: iso(addHours(today, -3)) },
   { id: uid(), severity: "warning", title: "Unassigned shift", detail: "Tomorrow 2:00 PM — Beatrice Coleman has no caregiver", createdAt: iso(addHours(today, -5)) },
   { id: uid(), severity: "info", title: "Care plan renewal", detail: "Frank Delgado's care plan expires in 7 days", createdAt: iso(addHours(today, -8)) },
-  { id: uid(), severity: "warning", title: "Overtime risk", detail: "Maya Patel will exceed 40h this week", createdAt: iso(addHours(today, -12)) },
+  { id: uid(), severity: "warning", title: "Overtime risk", detail: "Tanya Robinson will exceed 40h this week", createdAt: iso(addHours(today, -12)) },
 ];
 
 export const mockDB = {
