@@ -105,6 +105,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               {/* The Brain sits under Home, per the design's own breadcrumb. */}
               <Route path="/brain" element={<TheBrain />} />
+              <Route path="/brain/my-work" element={<TheBrain />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
 
               <Route path="/operations" element={<Operations />} />

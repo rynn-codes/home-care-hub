@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Plus, Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -106,7 +106,10 @@ interface AddedEvent {
 export default function TheBrain() {
   const signals = useHomeSignals();
 
-  const [view, setView] = useState<View>("overview");
+  // /brain/my-work lands straight on the My Work tab — the current canvas
+  // promotes My Work to its own nav item while it still lives inside The Brain.
+  const startOnMyWork = useLocation().pathname.endsWith("/my-work");
+  const [view, setView] = useState<View>(startOnMyWork ? "mywork" : "overview");
   const [range, setRange] = useState<Range>("week");
   const [filter, setFilter] = useState<"All" | BrainEvent["cat"]>("All");
   const [actFilter, setActFilter] = useState<"All" | (typeof brainActivity)[number]["cat"]>("All");

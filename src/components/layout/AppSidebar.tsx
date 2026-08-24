@@ -62,7 +62,11 @@ function useNav(): NavItem[] {
     // own sidebar lists both, and The Brain's breadcrumb reads
     // "Home / The Brain / …". Home is the morning; The Brain is the agency at
     // a glance. They were briefly collapsed into one; Karynn caught it.
+    // The current canvas carries three separate screens at the top: Home (the
+    // morning), My Work (your own day) and The Brain (the agency at a glance).
+    // My Work is still a tab inside The Brain, so its nav row deep-links there.
     { title: "Home", url: "/", icon: Home },
+    { title: "My Work", url: "/brain/my-work", icon: ClipboardCheck },
     { title: "The Brain", url: "/brain", icon: Brain },
     {
       title: "Operations",
