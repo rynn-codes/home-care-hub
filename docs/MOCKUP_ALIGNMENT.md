@@ -9,6 +9,43 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
 
 ## Done
 
+- **00 — The Brain (24 Aug).** Karynn uploaded the home screen's design
+  (`Joy Health The Brain.dc.html`, vendored) and confirmed the rebuild; the
+  handoff README marks the Brief Band dashboard as a superseded exploration.
+  Home is The Brain now: the gradient title over the range tray and the
+  Add-task / Ask-the-Brain controls; five tabs — **Overview** (the Brain Brief
+  as a written paragraph with a "See why →" drawer of the records behind each
+  sentence, What's Going On with its category filters, the mini calendar with
+  the Sat–Fri billing-week band, Recent Activity, and the Joy Operations
+  snapshot), **My Work** (day navigation over My Schedule / Needs Me with
+  ticking strikethrough checkboxes and the all-caught-up empty state / Waiting
+  on Others), **Joy Operations** (the four state cards — Handled · Working ·
+  Waiting · Needs You — over their lists, each Working row opening the audit
+  drawer: current status, why Joy acted, the activity timeline, next action,
+  source records), **Calendar** (Sat-first month grid with the billing-week
+  band and today ring, day-click drawer, Agenda view, Add-event and Subscribe
+  modals, Add task modal from the header), and **Activity** (the filtered
+  log). The old Brief Band components are deleted; the sidebar's first entry
+  is "The Brain".
+
+  Deviations, recorded: (1) counts derive from the seed lists, not the mock's
+  static 12/3/4/1; (2) the mock's cast is replaced by the one cast — each Joy
+  Operations item anchors to a fact another screen already shows (Bedjine's
+  CPR really is the expiring one, Dolores's records authorization really is
+  lapsed, Brandon's background check really is the pending one); (3) the
+  mock's **rate-change approval is an hours change** — Susan Miller's real
+  "asked about increased hours" — because client rates are e-mailed privately
+  and never stored; (4) the brief's urgent signals render as live links under
+  the paragraph (the e2e stories that walk Home → incidents / care plans
+  depend on them); (5) Ask-the-Brain's scoped prompts answer inline per the
+  mock, and a free-typed question opens the real Command Center — on home the
+  header dot is the single AI door, so the floating Ask Joy pill is hidden
+  there and kept everywhere else; (6) "Spruce" claims read "not wired yet",
+  the calendar Subscribe modal says plainly the feed isn't live, and tasks and
+  events added here save to this device with the toast saying so; (7) light
+  grays sit at the accessible muted token, and the disabled Custom range /
+  month navigation say why in their tooltips.
+
 - **Updated mockups reconciled (24 Aug).** Karynn uploaded refreshed designs —
   Admissions, Assessment, Billing, Clients — plus a rewritten handoff README
   (`docs/mockups/HANDOFF-README.md`), and asked to diff them against what's

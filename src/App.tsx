@@ -13,7 +13,7 @@ import { DataProvider } from "@/context/DataProvider";
 import { AppShell } from "@/components/layout/AppShell";
 import { RequireAuth } from "@/components/layout/RequireAuth";
 import { DemoDataProvider } from "@/context/DemoDataProvider";
-import Dashboard from "./pages/Dashboard";
+import TheBrain from "./pages/TheBrain";
 import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
 import PortalActivity from "./pages/PortalActivity";
@@ -101,7 +101,7 @@ const App = () => (
             <Route element={<RequireAuth />}>
             <Route element={<AppShell />}>
               {/* Joy navigation, section 6. Home keeps "/" as its path; /home redirects to it. */}
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<TheBrain />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
 
               <Route path="/operations" element={<Operations />} />

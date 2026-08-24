@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCFCFC;font-family:'Public Sans',-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;color:#1B1B1F}
+a{color:#1407A2;text-decoration:none}
+a:hover{color:#2A1BD1}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes joyGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.06)}}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#FCFCFC;min-width:1280px">
+
+  <aside style="width:230px;flex:none;background:#FFFFFF;border-right:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 18px;margin-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06)">
+      <span style="width:22px;height:22px;border-radius:50%;background:#1407A2;flex:none"></span>
+      <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Joy Health</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 7.4L8 3l5 4.4V13H3z"></path></svg>Home</a>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#191A2E;font-size:13px;font-weight:500;background:#F1F2F6"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M6.6 2.6a2 2 0 00-2 2 2 2 0 00-1.2 3.5A2.1 2.1 0 005 11.6a2 2 0 003.6 1.1V3.9a1.9 1.9 0 00-2-1.3z"></path><path d="M9.4 3.4a1.9 1.9 0 013.4 1.2 2 2 0 011.2 3.5 2.1 2.1 0 01-1.6 3.5"></path></svg>The Brain</span>
+      <div style="height:14px"></div>
+      <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 13.6S2.6 10.4 2.6 6.6A2.9 2.9 0 018 5.1a2.9 2.9 0 015.4 1.5c0 3.8-5.4 7-5.4 7z"></path></svg>Clients</a>
+      <a href="./Joy%20Health%20Employees.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.2" cy="5.6" r="2.4"></circle><path d="M2.2 13c0-2.2 1.8-3.6 4-3.6s4 1.4 4 3.6"></path><path d="M10.6 4.2a2.2 2.2 0 010 3.4M11.6 9.8c1.4.5 2.3 1.6 2.3 3.2"></path></svg>Employees</a>
+      <a href="./Joy%20Health%20Scheduling.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2.4" y="3.2" width="11.2" height="10.4" rx="2"></rect><path d="M2.4 6.4h11.2M5.6 2v2.4M10.4 2v2.4"></path></svg>Scheduling</a>
+      <a href="./Joy%20Health%20Billing.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8v6.4M9.8 6.4H7.2a1.3 1.3 0 000 2.6h1.6a1.3 1.3 0 010 2.6H6.2"></path></svg>Billing</a>
+      <a href="./Joy%20Health%20Payroll.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="2.4" width="10" height="11.2" rx="2"></rect><path d="M5.6 6h4.8M5.6 9h3.2"></path></svg>Payroll</a>
+      <a href="./Joy%20Health%20Admissions.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13V6.5L8 3l5 3.5V13"></path><path d="M6.5 13V9.5h3V13"></path></svg>Admissions</a>
+      <a href="./Joy%20Health%20Hiring.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#6E6E76;font-size:13px;font-weight:400" style-hover="background:#FAFAFB;color:#1B1B1F"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A92" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="6.4" cy="5.4" r="2.5"></circle><path d="M2 13.2c0-2.3 2-3.7 4.4-3.7 1 0 2 .2 2.8.7"></path><path d="M11.8 9.4v4.2M9.7 11.5h4.2"></path></svg>Hiring</a>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#FCFCFD">
+      <div style="width:28px;height:28px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6E6E76">KR</div>
+      <div style="display:flex;flex-direction:column;line-height:1.25">
+        <span style="font-size:12.5px;font-weight:500">Karynn Reed</span>
+        <span style="font-size:11px;color:#9B9BA3">Chief Executive</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header style="position:sticky;top:0;z-index:20;background:rgba(252,252,252,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:14px 44px;display:flex;align-items:center;gap:10px">
+      <a href="./Joy%20Health%20Dashboard%20-%20Command%20Center.dc.html" style="font-size:13px;color:#8A8A92" style-hover="color:#1407A2">Home</a>
+      <span style="font-size:13px;color:#C8C8D0">/</span>
+      <span style="font-size:13px;color:#8A8A92">The Brain</span>
+      <span style="font-size:13px;color:#C8C8D0">/</span>
+      <span style="font-size:13.5px;font-weight:500">{{ viewLabel }}</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+        <div style="width:34px;height:34px;border-radius:50%;background:#F0F0F2;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#6E6E76">KR</div>
+      </div>
+    </header>
+
+    <div style="padding:34px 44px 90px;max-width:1240px;display:flex;flex-direction:column;gap:22px">
+
+      <section style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
+        <div style="flex:1;min-width:340px;display:flex;flex-direction:column;gap:5px">
+          <h1 style="margin:0;font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.15;background:linear-gradient(96deg,#1B1B1F 0%,#3B2FB8 52%,#1407A2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">The Brain</h1>
+          <p style="margin:0;font-size:14px;color:#8A8A92">Your agency at a glance. Joy is monitoring the details.</p>
+          <p style="margin:2px 0 0;font-size:13px;color:#6E6E76">Sunday, Aug 23</p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:392px;flex:none">
+          <div style="display:flex;gap:2px;padding:4px;background:#F7F7F9;border-radius:12px">
+            <button onClick="{{ setToday }}" style="{{ rangeTodayStyle }}">Today</button>
+            <button onClick="{{ setWeek }}" style="{{ rangeWeekStyle }}">This Week</button>
+            <button onClick="{{ setMonth }}" style="{{ rangeMonthStyle }}">This Month</button>
+            <button onClick="{{ setCustom }}" style="{{ rangeCustomStyle }}">Custom</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button onClick="{{ openTask }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 15px;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#1B1B1F" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Add task</button>
+            <button onClick="{{ toggleAsk }}" title="Ask the Brain" style="{{ askButtonStyle }}">
+              <span style="width:9px;height:9px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section style="display:flex;align-items:center;gap:26px;border-bottom:1px solid rgba(0,0,0,.07)">
+        <button onClick="{{ showOverview }}" style="{{ tabOverviewStyle }}">Overview</button>
+        <button onClick="{{ showMyWork }}" style="{{ tabMyWorkStyle }}">My Work</button>
+        <button onClick="{{ showOperations }}" style="{{ tabOperationsStyle }}">Joy Operations</button>
+        <button onClick="{{ showCalendar }}" style="{{ tabCalendarStyle }}">Calendar</button>
+        <button onClick="{{ showActivity }}" style="{{ tabActivityStyle }}">Activity</button>
+      </section>
+
+      <sc-if value="{{ askAnswered }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:18px;box-shadow:0 1px 2px rgba(20,7,162,.05);padding:20px 24px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="width:22px;height:22px;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center;flex:none">
+              <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+            </span>
+            <span style="font-size:12.5px;color:#6E6E76">{{ askQuestion }}</span>
+            <button onClick="{{ askClear }}" style="margin-left:auto;background:transparent;border:none;font-family:inherit;font-size:12.5px;color:#9B9BA3;cursor:pointer">Clear</button>
+          </div>
+          <p style="margin:0;font-size:15px;line-height:1.7;color:#1B1B1F;text-wrap:pretty;max-width:800px">{{ askAnswer }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:16px">
+            <sc-for list="{{ askLinks }}" as="l" hint-placeholder-count="2">
+              <a href="{{ l.href }}" style="font-size:12.5px;font-weight:500">{{ l.label }}</a>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ overviewActive }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:22px">
+
+          <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:24px 26px;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">BRAIN BRIEF</span>
+            <p style="margin:0;font-size:19px;font-weight:500;letter-spacing:-.018em;line-height:1.5">Operations are in good shape.</p>
+            <p style="margin:0;font-size:15px;line-height:1.75;color:#3A3A42;max-width:800px;text-wrap:pretty">All of today's scheduled visits are covered. Payroll closes tomorrow with two timecards outstanding — Joy followed up with both caregivers at 7:42 AM. Billing is on schedule for the Aug 22–28 period, and no client issues currently require escalation.</p>
+            <button onClick="{{ openWhy }}" style="align-self:flex-start;background:transparent;border:none;padding:0;font-family:inherit;font-size:13px;font-weight:500;color:#1407A2;cursor:pointer;white-space:nowrap">See why →</button>
+          </section>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(360px,1fr);gap:18px;align-items:stretch">
+
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px;display:flex;flex-direction:column;min-width:0">
+              <div style="display:flex;align-items:center;gap:18px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3;white-space:nowrap">WHAT'S GOING ON</span>
+                <div style="margin-left:auto;display:flex;gap:12px;flex:none">
+                  <sc-for list="{{ eventFilters }}" as="f" hint-placeholder-count="5">
+                    <button onClick="{{ f.click }}" style="{{ f.style }}">{{ f.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <sc-for list="{{ events }}" as="e" hint-placeholder-count="5">
+                <div style="display:flex;gap:20px;align-items:flex-start;padding:14px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <span style="width:58px;flex:none;font-size:12.5px;color:#8A8A92;font-weight:500">{{ e.date }}</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">{{ e.title }}</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ e.meta }}</span>
+                  </div>
+                  <span style="{{ e.tagStyle }}">{{ e.tag }}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ eventsEmpty }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:24px 0;font-size:13.5px;color:#9B9BA3;text-align:center">Nothing notable is scheduled for this period.</p>
+              </sc-if>
+            </section>
+
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px;display:flex;flex-direction:column;gap:14px;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:12px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CALENDAR</span>
+                <span style="margin-left:auto;font-size:12.5px;color:#8A8A92">August 2026</span>
+              </div>
+              <div style="flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:auto;grid-auto-rows:1fr;gap:5px">
+                <sc-for list="{{ dowMini }}" as="d" hint-placeholder-count="7">
+                  <span style="text-align:center;font-size:10px;font-weight:600;letter-spacing:.06em;color:#B4B4BC">{{ d.label }}</span>
+                </sc-for>
+                <sc-for list="{{ miniDays }}" as="d" hint-placeholder-count="35">
+                  <span style="{{ d.style }}">{{ d.label }}</span>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px">
+                <span style="width:22px;height:10px;border-radius:5px;background:#DCE0FB;flex:none"></span>
+                <span style="font-size:12px;color:#8A8A92">Aug 22–28 · Billing Week 2 of 2</span>
+              </div>
+              <button onClick="{{ showCalendar }}" style="align-self:flex-start;background:transparent;border:none;padding:0;font-family:inherit;font-size:12.5px;font-weight:500;color:#1407A2;cursor:pointer">View calendar →</button>
+            </section>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(360px,1fr);gap:18px;align-items:stretch">
+
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px;display:flex;flex-direction:column;min-width:0">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3;margin-bottom:8px">RECENT ACTIVITY</span>
+              <sc-for list="{{ activityPreview }}" as="a" hint-placeholder-count="5">
+                <div style="display:flex;gap:18px;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <span style="width:74px;flex:none;font-size:12.5px;color:#9B9BA3">{{ a.time }}</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="font-size:14px;font-weight:500;letter-spacing:-.01em;line-height:1.45">{{ a.label }}</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ a.meta }}</span>
+                  </div>
+                </div>
+              </sc-for>
+              <button onClick="{{ showActivity }}" style="align-self:flex-start;margin-top:14px;background:transparent;border:none;padding:0;font-family:inherit;font-size:12.5px;font-weight:500;color:#1407A2;cursor:pointer">View activity →</button>
+            </section>
+
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px;display:flex;flex-direction:column;gap:14px;min-width:0">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">JOY OPERATIONS</span>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px">
+                <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:22px;font-weight:500;letter-spacing:-.03em;line-height:1">12</span><span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#15803D">HANDLED</span></div>
+                <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:22px;font-weight:500;letter-spacing:-.03em;line-height:1">3</span><span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#1407A2">WORKING</span></div>
+                <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:22px;font-weight:500;letter-spacing:-.03em;line-height:1">4</span><span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#8A8A92">WAITING</span></div>
+                <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:22px;font-weight:500;letter-spacing:-.03em;line-height:1;color:#C2410C">1</span><span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#C2410C">NEEDS YOU</span></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;padding-top:6px">
+                <div style="display:flex;gap:14px;align-items:flex-start;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <span style="font-size:10.5px;font-weight:600;letter-spacing:.1em;color:#1407A2;width:64px;flex:none;padding-top:2px">WORKING</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Missing clock-out · Danielle Carter</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">Caregiver contacted 7:48 AM · follow-up 10:00 AM</span>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start;padding:13px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <span style="font-size:10.5px;font-weight:600;letter-spacing:.1em;color:#C2410C;width:64px;flex:none;padding-top:2px">NEEDS YOU</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:13.5px;font-weight:500;letter-spacing:-.01em">Susan Miller rate change</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">$18.00 → $19.50/hr · waiting on your approval</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick="{{ showOperations }}" style="align-self:flex-start;background:transparent;border:none;padding:0;font-family:inherit;font-size:12.5px;font-weight:500;color:#1407A2;cursor:pointer">View Joy Operations →</button>
+            </section>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ myWorkActive }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em">My Work</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">Your schedule, decisions, and items you're tracking.</p>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:10px">
+              <button onClick="{{ prevDay }}" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#6E6E76;cursor:pointer;font-family:inherit;font-size:13px">‹</button>
+              <span style="font-size:14px;font-weight:500;letter-spacing:-.01em;min-width:150px;text-align:center">{{ myDateLabel }}</span>
+              <button onClick="{{ nextDay }}" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#6E6E76;cursor:pointer;font-family:inherit;font-size:13px">›</button>
+              <button onClick="{{ goToday }}" style="{{ myTodayStyle }}">Today</button>
+            </div>
+            <div style="display:flex;gap:2px;padding:4px;background:#F7F7F9;border-radius:12px;margin-left:6px">
+              <button onClick="{{ showMySchedule }}" style="{{ myScheduleTabStyle }}">My Schedule</button>
+              <button onClick="{{ showMyNeeds }}" style="{{ myNeedsTabStyle }}">Needs Me</button>
+              <button onClick="{{ showMyWaiting }}" style="{{ myWaitingTabStyle }}">Waiting on Others</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ myScheduleActive }}" hint-placeholder-val="{{ true }}">
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">{{ myScheduleHeading }}</span>
+              <sc-for list="{{ myEvents }}" as="ev" hint-placeholder-count="3">
+                <button onClick="{{ ev.open }}" style="{{ ev.rowStyle }}">
+                  <div style="width:88px;flex:none;display:flex;flex-direction:column;gap:2px;text-align:left">
+                    <span style="{{ ev.timeStyle }}">{{ ev.time }}</span>
+                    <span style="{{ ev.durStyle }}">{{ ev.duration }}</span>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left">
+                    <span style="{{ ev.titleStyle }}">{{ ev.title }}</span>
+                    <span style="{{ ev.metaStyle }}">{{ ev.meta }}</span>
+                    <span style="{{ ev.joyStyle }}">{{ ev.joyNote }}</span>
+                  </div>
+                  <span style="{{ ev.tagStyle }}">{{ ev.tag }}</span>
+                </button>
+              </sc-for>
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">TOMORROW · MONDAY, AUGUST 24</span>
+                <div style="display:flex;gap:22px;font-size:13.5px;color:#6E6E76"><span style="width:88px;flex:none;color:#9B9BA3">9:30 AM</span>Payroll review</div>
+                <div style="display:flex;gap:22px;font-size:13.5px;color:#6E6E76"><span style="width:88px;flex:none;color:#9B9BA3">1:00 PM</span>Client assessment · Patricia Green</div>
+                <button onClick="{{ nextDay }}" style="align-self:flex-start;background:transparent;border:none;padding:0;font-family:inherit;font-size:12.5px;font-weight:500;color:#1407A2;cursor:pointer">View tomorrow →</button>
+              </div>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ myNeedsActive }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">NEEDS ME</span>
+                <span style="margin-left:auto;font-size:12.5px;color:#9B9BA3">{{ myNeedsCountLabel }}</span>
+              </div>
+              <sc-if value="{{ myNeedsEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:44px 0 40px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center">
+                  <span style="width:34px;height:34px;border-radius:50%;background:#F1F2F6;display:flex;align-items:center;justify-content:center">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1407A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 8.4l2.8 2.8 6-6.4"></path></svg>
+                  </span>
+                  <span style="font-size:16px;font-weight:500;letter-spacing:-.015em">You're all caught up.</span>
+                  <span style="font-size:13.5px;color:#9B9BA3">Joy doesn't need any decisions from you right now.</span>
+                </div>
+              </sc-if>
+              <sc-for list="{{ myNeedsItems }}" as="n" hint-placeholder-count="2">
+                <div style="display:flex;gap:20px;padding:20px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <button onClick="{{ n.toggle }}" style="{{ n.boxStyle }}" aria-label="Mark done">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ n.checkStyle }}"><path d="M2.4 6.2l2.4 2.4 4.8-5.2"></path></svg>
+                  </button>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                    <span style="{{ n.titleStyle }}">{{ n.title }}</span>
+                    <span style="{{ n.subStyle }}">{{ n.subject }}</span>
+                    <span style="{{ n.metaStyle }}">{{ n.joyNote }}</span>
+                  </div>
+                  <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:9px">
+                    <span style="{{ n.dueStyle }}">{{ n.due }}</span>
+                    <a href="{{ n.href }}" style="{{ n.ctaStyle }}">{{ n.cta }}</a>
+                  </div>
+                </div>
+              </sc-for>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ myWaitingActive }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">WAITING ON OTHERS</span>
+                <span style="margin-left:auto;font-size:12.5px;color:#9B9BA3">4 items</span>
+              </div>
+              <sc-for list="{{ myWaitingItems }}" as="w" hint-placeholder-count="4">
+                <div style="display:flex;gap:20px;padding:20px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                    <span style="font-size:15px;font-weight:500;letter-spacing:-.01em">{{ w.title }}</span>
+                    <span style="font-size:13px;color:#6E6E76">{{ w.state }}</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ w.next }}</span>
+                  </div>
+                  <a href="{{ w.href }}" style="flex:none;align-self:center;font-size:12.5px;font-weight:500">{{ w.cta }}</a>
+                </div>
+              </sc-for>
+            </section>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ operationsActive }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em">Joy Operations</h2>
+            <p style="margin:0;font-size:13.5px;color:#8A8A92">Everything Joy is handling across your agency.</p>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <button onClick="{{ showHandled }}" style="{{ handledCardStyle }}">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#15803D">HANDLED</span>
+              <span style="font-size:24px;font-weight:500;letter-spacing:-.03em;line-height:1">12</span>
+              <span style="font-size:12px;color:#9B9BA3;text-align:left">Joy completed the approved action.</span>
+            </button>
+            <button onClick="{{ showWorking }}" style="{{ workingCardStyle }}">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#1407A2">WORKING</span>
+              <span style="font-size:24px;font-weight:500;letter-spacing:-.03em;line-height:1">3</span>
+              <span style="font-size:12px;color:#9B9BA3;text-align:left">Joy is progressing the workflow.</span>
+            </button>
+            <button onClick="{{ showWaitingOps }}" style="{{ waitingCardStyle }}">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#8A8A92">WAITING</span>
+              <span style="font-size:24px;font-weight:500;letter-spacing:-.03em;line-height:1">4</span>
+              <span style="font-size:12px;color:#9B9BA3;text-align:left">Acted; waiting on an outside party.</span>
+            </button>
+            <button onClick="{{ showNeedsOps }}" style="{{ needsCardStyle }}">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#C2410C">NEEDS YOU</span>
+              <span style="font-size:24px;font-weight:500;letter-spacing:-.03em;line-height:1;color:#C2410C">1</span>
+              <span style="font-size:12px;color:#9B9BA3;text-align:left">Human judgment required.</span>
+            </button>
+          </div>
+
+          <sc-if value="{{ opsWorking }}" hint-placeholder-val="{{ true }}">
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">WORKING · 3</span>
+              <sc-for list="{{ working }}" as="w" hint-placeholder-count="3">
+                <div style="display:flex;gap:22px;padding:20px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:15px;font-weight:500;letter-spacing:-.01em">{{ w.title }}</span>
+                    <span style="font-size:12px;color:#9B9BA3">{{ w.area }}</span>
+                    <span style="font-size:13.5px;color:#3A3A42;line-height:1.6;text-wrap:pretty">{{ w.summary }}</span>
+                    <span style="display:block;margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">NEXT ACTION</span>
+                    <span style="font-size:13px;color:#6E6E76">{{ w.next }}</span>
+                  </div>
+                  <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+                    <span style="font-size:12px;color:#B4B4BC">Updated {{ w.updated }}</span>
+                    <button onClick="{{ w.openAudit }}" style="font-family:inherit;font-size:12.5px;font-weight:500;color:#1407A2;background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:20px;padding:6px 13px;cursor:pointer" style-hover="background:#FAFAFB">{{ w.cta }}</button>
+                  </div>
+                </div>
+              </sc-for>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ opsHandled }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">HANDLED · 12</span>
+              <sc-for list="{{ handled }}" as="h" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#15803D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3.4 8.4l2.8 2.8 6.4-6.6"></path></svg>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">{{ h.title }}</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ h.meta }}</span>
+                  </div>
+                  <span style="flex:none;font-size:12px;color:#B4B4BC">{{ h.time }}</span>
+                </div>
+              </sc-for>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ opsWaiting }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">WAITING · 4</span>
+              <sc-for list="{{ waiting }}" as="w" hint-placeholder-count="4">
+                <div style="display:flex;gap:22px;padding:18px 0;border-top:1px solid rgba(0,0,0,.05)">
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:15px;font-weight:500;letter-spacing:-.01em">{{ w.title }}</span>
+                    <span style="font-size:13px;color:#6E6E76">{{ w.state }}</span>
+                    <span style="font-size:12.5px;color:#9B9BA3">{{ w.next }}</span>
+                  </div>
+                  <a href="{{ w.href }}" style="flex:none;align-self:center;font-size:12.5px;font-weight:500">{{ w.cta }}</a>
+                </div>
+              </sc-for>
+              <p style="margin:14px 0 0;font-size:12.5px;color:#9B9BA3">Nothing here needs you — Joy acted and knows what happens next.</p>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ opsNeeds }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid rgba(194,65,12,.18);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:20px 24px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">NEEDS YOU · 1</span>
+              <div style="display:flex;gap:20px;padding:20px 0 6px;border-top:1px solid rgba(0,0,0,.05)">
+                <button onClick="{{ toggleOpsNeed }}" style="{{ opsNeedBoxStyle }}" aria-label="Mark handled">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ opsNeedCheckStyle }}"><path d="M2.4 6.2l2.4 2.4 4.8-5.2"></path></svg>
+                </button>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+                  <span style="{{ opsNeedTitleStyle }}">Rate change · Susan Miller</span>
+                  <span style="font-size:13.5px;color:#6E6E76">$18.00/hr → $19.50/hr beginning Aug 29</span>
+                  <span style="font-size:13.5px;color:#3A3A42;line-height:1.65;max-width:580px;text-wrap:pretty">This affects estimated weekly payroll by roughly $45 based on the current schedule. Joy prepared the change and calculated the impact; the workflow paused at the approval boundary.</span>
+                  <span style="font-size:13px;color:#6E6E8A">Joy recommends: approve based on the documented rate adjustment.</span>
+                </div>
+                <div style="flex:none;display:flex;flex-direction:column;gap:9px;align-self:center">
+                  <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;justify-content:center;height:36px;padding:0 18px;border-radius:11px;background:#1407A2;color:#fff;font-size:13px;font-weight:500" style-hover="background:#2A1BD1;color:#fff">Approve</a>
+                  <a href="#needs" style="display:flex;align-items:center;justify-content:center;height:36px;padding:0 18px;border-radius:11px;border:1px solid rgba(0,0,0,.08);color:#1B1B1F;font-size:13px;font-weight:500" style-hover="background:#FAFAFB;color:#1B1B1F">Review details</a>
+                </div>
+              </div>
+              <p style="margin:14px 0 0;font-size:12.5px;color:#9B9BA3">A short list here is the goal — everything else Joy is authorized to carry forward.</p>
+            </section>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ calendarActive }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:20px">
+          <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:22px 24px">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <button onClick="{{ prevMonth }}" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#6E6E76;cursor:pointer;font-family:inherit;font-size:13px">‹</button>
+                <h2 style="margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap">August 2026</h2>
+                <button onClick="{{ nextMonth }}" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#6E6E76;cursor:pointer;font-family:inherit;font-size:13px">›</button>
+                <button onClick="{{ calToday }}" style="font-family:inherit;font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:9px;cursor:pointer;border:1px solid rgba(0,0,0,.08);background:#F1F2F6;color:#1407A2">Today</button>
+              </div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+                <div style="display:flex;gap:2px;padding:4px;background:#F7F7F9;border-radius:12px">
+                  <button onClick="{{ showMonthView }}" style="{{ monthViewStyle }}">Month</button>
+                  <button onClick="{{ showAgendaView }}" style="{{ agendaViewStyle }}">Agenda</button>
+                </div>
+                <button onClick="{{ openSubscribe }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 15px;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#6E6E76" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.8"></circle><circle cx="4" cy="8" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><path d="M5.6 7.1l4.8-2.2M5.6 8.9l4.8 2.2"></path></svg>Subscribe</button>
+                <button onClick="{{ openAddEvent }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:11px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 3.4v9.2M3.4 8h9.2"></path></svg>Add event</button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px">
+              <span style="font-size:12.5px;color:#8A8A92">Aug 22–28 · Billing Week 2 of 2 · payroll closes Aug 24</span>
+              <div style="margin-left:auto;display:flex;gap:14px">
+                <sc-for list="{{ eventFilters }}" as="f" hint-placeholder-count="5">
+                  <button onClick="{{ f.click }}" style="{{ f.style }}">{{ f.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ monthViewActive }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+              <sc-for list="{{ dowFull }}" as="d" hint-placeholder-count="7">
+                <span style="padding-bottom:4px;font-size:10.5px;font-weight:600;letter-spacing:.09em;color:#B4B4BC">{{ d.label }}</span>
+              </sc-for>
+              <sc-for list="{{ monthDays }}" as="d" hint-placeholder-count="35">
+                <button onClick="{{ d.click }}" style="{{ d.cellStyle }}">
+                  <span style="{{ d.numStyle }}">{{ d.label }}</span>
+                  <sc-for list="{{ d.marks }}" as="m" hint-placeholder-count="2">
+                    <span style="{{ m.style }}">{{ m.label }}</span>
+                  </sc-for>
+                </button>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ agendaViewActive }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ agendaDays }}" as="d" hint-placeholder-count="4">
+                  <div style="border:1px solid rgba(0,0,0,.06);border-radius:14px;overflow:hidden">
+                    <div style="padding:11px 16px;background:#F7F7F9;font-size:12.5px;font-weight:500;color:#3A3A42">{{ d.label }}</div>
+                    <sc-for list="{{ d.items }}" as="i" hint-placeholder-count="2">
+                      <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-top:1px solid rgba(0,0,0,.05)">
+                        <span style="width:32px;height:32px;flex:none;border-radius:9px;background:#F1F0FC;display:flex;align-items:center;justify-content:center;font-size:14px">{{ i.icon }}</span>
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                          <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">{{ i.title }}</span>
+                          <span style="font-size:12.5px;color:#9B9BA3">{{ i.meta }}</span>
+                        </div>
+                        <span style="{{ i.tagStyle }}">{{ i.tag }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin:26px 0;font-size:13.5px;color:#9B9BA3;text-align:center">Nothing notable is scheduled for this period.</p>
+                </sc-if>
+              </div>
+            </sc-if>
+          </section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ activityActive }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:22px 24px">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <h2 style="margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em">Activity</h2>
+              <p style="margin:0;font-size:13px;color:#8A8A92">What happened across Joy Health.</p>
+            </div>
+            <div style="margin-left:auto;display:flex;flex-wrap:wrap;gap:12px">
+              <sc-for list="{{ activityFilters }}" as="f" hint-placeholder-count="5">
+                <button onClick="{{ f.click }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <sc-for list="{{ activity }}" as="a" hint-placeholder-count="6">
+            <div style="display:flex;gap:20px;padding:16px 0;border-top:1px solid rgba(0,0,0,.05)">
+              <span style="width:74px;flex:none;font-size:12.5px;color:#9B9BA3">{{ a.time }}</span>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">{{ a.title }}</span>
+                <span style="font-size:12.5px;color:#9B9BA3">{{ a.meta }}</span>
+              </div>
+              <a href="{{ a.href }}" style="flex:none;align-self:center;font-size:12.5px;font-weight:500">{{ a.cta }}</a>
+            </div>
+          </sc-for>
+          <sc-if value="{{ activityEmpty }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:30px 0;font-size:13.5px;color:#9B9BA3;text-align:center">No activity in this time range.</p>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ payrollDegraded }}" hint-placeholder-val="{{ false }}">
+        <section style="background:#FFFDF9;border:1px solid rgba(194,65,12,.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:13.5px;font-weight:500">Payroll data is temporarily unavailable.</span>
+            <span style="font-size:12.5px;color:#8A8A92">Other agency information is current. The brief above excludes payroll.</span>
+          </div>
+          <button onClick="{{ retryPayroll }}" style="flex:none;font-family:inherit;font-size:12.5px;font-weight:500;color:#C2410C;background:#fff;border:1px solid rgba(194,65,12,.24);border-radius:20px;padding:7px 15px;cursor:pointer">Retry</button>
+        </section>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ askOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeAsk }}" style="position:fixed;inset:0;z-index:48"></div>
+  </sc-if>
+  <sc-if value="{{ askOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;z-index:52;top:150px;right:56px;width:400px;background:#fff;border:1px solid rgba(20,7,162,.14);border-radius:18px;box-shadow:0 20px 50px rgba(20,20,30,.16);padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="width:22px;height:22px;border-radius:50%;background:#191A2E;display:flex;align-items:center;justify-content:center;flex:none">
+          <span style="width:6px;height:6px;border-radius:50%;background:#8FA0FF;animation:joyGlow 2.6s ease-in-out infinite"></span>
+        </span>
+        <span style="font-size:14px;font-weight:600;letter-spacing:-.01em;white-space:nowrap">Ask the Brain</span>
+        <button onClick="{{ closeAsk }}" style="margin-left:auto;width:26px;height:26px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:13px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid rgba(20,7,162,.14);border-radius:13px;padding:7px 7px 7px 13px">
+        <input type="text" value="{{ askQ }}" onChange="{{ onAskQ }}" placeholder="Ask the Brain anything…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:inherit;font-size:13px;color:#1B1B1F"/>
+        <button onClick="{{ askSend }}" style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;background:#1407A2;border:none;border-radius:50%;color:#fff;cursor:pointer" style-hover="background:#2A1BD1">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3.4M4.2 7.2L8 3.4l3.8 3.8"></path></svg>
+        </button>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:7px">
+        <sc-for list="{{ askPrompts }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.click }}" style="font-family:inherit;font-size:12px;color:#1407A2;background:#fff;border:1px solid rgba(20,7,162,.16);border-radius:20px;padding:6px 12px;cursor:pointer;text-align:left" style-hover="background:#FAFAFB">{{ p.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ taskOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:50;background:rgba(20,20,30,.28)"></div>
+  </sc-if>
+  <sc-if value="{{ taskOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;z-index:55;top:96px;left:50%;transform:translateX(-50%);width:430px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:18px;box-shadow:0 24px 60px rgba(20,20,30,.18);padding:22px 24px;display:flex;flex-direction:column;gap:15px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:16px;font-weight:600;letter-spacing:-.015em;white-space:nowrap">New task</span>
+        <button onClick="{{ closeModal }}" style="margin-left:auto;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Title</span>
+        <input type="text" value="{{ tTitle }}" onChange="{{ onTTitle }}" placeholder="Call Susan Miller about increased hours" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none"/>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Category</span>
+        <select value="{{ tCategory }}" onChange="{{ onTCategory }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 10px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none;background:#fff">
+          <sc-for list="{{ taskCategories }}" as="c" hint-placeholder-count="6">
+            <option value="{{ c.value }}">{{ c.label }}</option>
+          </sc-for>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Description</span>
+        <textarea value="{{ tDesc }}" onChange="{{ onTDesc }}" rows="3" placeholder="What needs to happen, and any context Joy should keep with the task." style="border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none;resize:vertical"></textarea>
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;font-weight:500;color:#6E6E76">Priority</span>
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ taskPriorities }}" as="p" hint-placeholder-count="3">
+              <button onClick="{{ p.click }}" style="{{ p.style }}">{{ p.label }}</button>
+            </sc-for>
+          </div>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;font-weight:500;color:#6E6E76">Due date</span>
+          <input type="date" value="{{ tDue }}" onChange="{{ onTDue }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none"/>
+        </label>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Assigned to</span>
+        <select value="{{ tAssignee }}" onChange="{{ onTAssignee }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 10px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none;background:#fff">
+          <sc-for list="{{ taskAssignees }}" as="a" hint-placeholder-count="6">
+            <option value="{{ a.value }}">{{ a.label }}</option>
+          </sc-for>
+        </select>
+      </label>
+      <div style="display:flex;gap:10px;padding-top:2px">
+        <button onClick="{{ closeModal }}" style="flex:1;height:38px;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Cancel</button>
+        <button onClick="{{ closeModal }}" style="flex:1.6;height:38px;border-radius:11px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">Create task</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:50;background:rgba(20,20,30,.28);display:flex;align-items:flex-start;justify-content:center"></div>
+  </sc-if>
+  <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;z-index:55;top:96px;left:50%;transform:translateX(-50%);width:420px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:18px;box-shadow:0 24px 60px rgba(20,20,30,.18);padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:16px;font-weight:600;letter-spacing:-.015em">New calendar event</span>
+        <button onClick="{{ closeModal }}" style="margin-left:auto;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Title</span>
+        <input type="text" value="{{ evTitle }}" onChange="{{ onEvTitle }}" placeholder="Dr. Li PCP appointment" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none"/>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Date</span>
+        <input type="date" value="{{ evDate }}" onChange="{{ onEvDate }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none"/>
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;font-weight:500;color:#6E6E76">Start</span>
+          <input type="time" value="{{ evStart }}" onChange="{{ onEvStart }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none"/>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;font-weight:500;color:#6E6E76">End</span>
+          <input type="time" value="{{ evEnd }}" onChange="{{ onEvEnd }}" style="height:38px;border:1px solid rgba(0,0,0,.1);border-radius:11px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#1B1B1F;outline:none"/>
+        </label>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Type</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ evTypes }}" as="t" hint-placeholder-count="6">
+            <button onClick="{{ t.click }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button onClick="{{ closeModal }}" style="flex:1;height:38px;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Cancel</button>
+        <button onClick="{{ closeModal }}" style="flex:1;height:38px;border-radius:11px;border:none;background:#1407A2;color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#2A1BD1">Add event</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ subOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;z-index:55;top:150px;left:50%;transform:translateX(-50%);width:420px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:18px;box-shadow:0 24px 60px rgba(20,20,30,.18);padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:16px;font-weight:600;letter-spacing:-.015em">Subscribe to the Joy Health calendar</span>
+          <span style="font-size:13px;color:#6E6E76;line-height:1.55">Add this calendar to Apple, Google, or Outlook. Events keep syncing automatically.</span>
+        </div>
+        <button onClick="{{ closeModal }}" style="flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Apple Calendar</button>
+        <button style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#1B1B1F;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:#FAFAFB">Google Calendar</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6E76">Or copy the subscribe link</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="flex:1;min-width:0;height:38px;display:flex;align-items:center;padding:0 12px;border:1px solid rgba(20,7,162,.35);border-radius:11px;background:#F7F7FE;font-size:12.5px;color:#1407A2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://joyhealth.app/cal/feed/karynn-reed.ics</span>
+          <button onClick="{{ copyLink }}" style="width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:11px;border:1px solid rgba(0,0,0,.08);background:#fff;color:#6E6E76;cursor:pointer" style-hover="background:#FAFAFB" title="Copy link">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.4" y="5.4" width="8" height="8" rx="2"></rect><path d="M10.6 5.4V4a1.4 1.4 0 00-1.4-1.4H4A1.4 1.4 0 002.6 4v5.2A1.4 1.4 0 004 10.6h1.4"></path></svg>
+          </button>
+        </div>
+        <span style="font-size:12px;color:#9B9BA3;line-height:1.5">{{ copyNote }}</span>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:40;background:rgba(20,20,30,.14)"></div>
+  </sc-if>
+  <sc-if value="{{ auditOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:0;right:0;bottom:0;z-index:45;width:420px;background:#fff;border-left:1px solid rgba(0,0,0,.08);box-shadow:-12px 0 40px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow-y:auto">
+      <div style="padding:22px 24px 16px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:17px;font-weight:600;letter-spacing:-.02em">{{ auditTitle }}</span>
+          <span style="font-size:13px;color:#6E6E76">{{ auditSubtitle }}</span>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CURRENT STATUS</span>
+        <span style="font-size:14px;font-weight:500">{{ auditStatus }}</span>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">WHY JOY ACTED</span>
+        <span style="font-size:13.5px;color:#3A3A42;line-height:1.6;text-wrap:pretty">{{ auditWhy }}</span>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:11px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">JOY ACTIVITY</span>
+        <sc-for list="{{ auditTimeline }}" as="t" hint-placeholder-count="3">
+          <div style="display:flex;gap:14px">
+            <span style="width:66px;flex:none;font-size:12.5px;color:#9B9BA3">{{ t.time }}</span>
+            <span style="flex:1;font-size:13.5px;color:#3A3A42">{{ t.label }}</span>
+          </div>
+        </sc-for>
+        <span style="font-size:12.5px;color:#9B9BA3">Channel · {{ auditChannel }}</span>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">NEXT ACTION</span>
+        <span style="font-size:13.5px;color:#3A3A42;line-height:1.6;text-wrap:pretty">{{ auditNext }}</span>
+        <span style="font-size:13px;color:#6E6E8A;margin-top:4px">No action needed from you.</span>
+      </div>
+      <div style="padding:20px 24px;display:flex;flex-direction:column;gap:9px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">SOURCE RECORDS</span>
+        <sc-for list="{{ auditSources }}" as="s" hint-placeholder-count="3">
+          <span style="font-size:13px;color:#6E6E76">{{ s.label }}</span>
+        </sc-for>
+        <a href="{{ auditHref }}" style="margin-top:6px;display:flex;align-items:center;justify-content:center;height:38px;border-radius:11px;background:#1407A2;color:#fff;font-size:13px;font-weight:500" style-hover="background:#2A1BD1;color:#fff">{{ auditCta }}</a>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ dayOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:0;right:0;bottom:0;z-index:45;width:400px;background:#fff;border-left:1px solid rgba(0,0,0,.08);box-shadow:-12px 0 40px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow-y:auto">
+      <div style="padding:22px 24px 16px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:17px;font-weight:600;letter-spacing:-.02em">{{ dayTitle }}</span>
+          <span style="font-size:13px;color:#6E6E76">{{ dayBilling }}</span>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:8px 24px 20px;display:flex;flex-direction:column">
+        <sc-for list="{{ dayEntries }}" as="e" hint-placeholder-count="3">
+          <div style="display:flex;gap:13px;padding:16px 0;border-bottom:1px solid rgba(0,0,0,.05)">
+            <span style="font-size:15px;line-height:1.3;flex:none">{{ e.icon }}</span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">{{ e.title }}</span>
+              <span style="font-size:12.5px;color:#9B9BA3">{{ e.meta }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ dayEmpty }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:28px 0;font-size:13.5px;color:#9B9BA3;text-align:center">Nothing notable is scheduled for this day.</p>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ schedOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:0;right:0;bottom:0;z-index:45;width:400px;background:#fff;border-left:1px solid rgba(0,0,0,.08);box-shadow:-12px 0 40px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow-y:auto">
+      <div style="padding:22px 24px 16px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:17px;font-weight:600;letter-spacing:-.02em">Mrs. Davis</span>
+          <span style="font-size:13px;color:#6E6E76">Family care conference · client home</span>
+          <span style="font-size:12.5px;color:#9B9BA3">Today · 2:00–2:45 PM</span>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">STATUS</span>
+        <span style="font-size:14px;font-weight:500">Family confirmed</span>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">JOY PREPARED</span>
+        <sc-for list="{{ schedPrepared }}" as="p" hint-placeholder-count="4">
+          <span style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:#3A3A42">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#15803D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3.4 8.4l2.8 2.8 6.4-6.6"></path></svg>{{ p.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">ATTENDEES</span>
+        <span style="font-size:13.5px;color:#3A3A42">Joan Robinson, RN</span>
+        <span style="font-size:13.5px;color:#3A3A42">Mrs. Davis's daughter</span>
+      </div>
+      <div style="padding:20px 24px;display:flex;flex-direction:column;gap:9px">
+        <a href="./Joy%20Health%20Clients.dc.html" style="display:flex;align-items:center;justify-content:center;height:38px;border-radius:11px;background:#1407A2;color:#fff;font-size:13px;font-weight:500" style-hover="background:#2A1BD1;color:#fff">Open client</a>
+        <a href="./Joy%20Health%20Assessment.dc.html" style="display:flex;align-items:center;justify-content:center;height:38px;border-radius:11px;border:1px solid rgba(0,0,0,.08);color:#1B1B1F;font-size:13px;font-weight:500" style-hover="background:#FAFAFB;color:#1B1B1F">View care plan</a>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ whyOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:0;right:0;bottom:0;z-index:45;width:400px;background:#fff;border-left:1px solid rgba(0,0,0,.08);box-shadow:-12px 0 40px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow-y:auto">
+      <div style="padding:22px 24px 16px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:17px;font-weight:600;letter-spacing:-.02em">Behind the brief</span>
+          <span style="font-size:13px;color:#6E6E76">Sunday, Aug 23 · records supporting today's summary</span>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="flex:none;width:28px;height:28px;border:none;background:transparent;border-radius:8px;color:#9B9BA3;font-size:14px;cursor:pointer" style-hover="background:#F1F2F6;color:#191A2E">✕</button>
+      </div>
+      <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">VISIT COVERAGE</span>
+          <span style="font-size:13.5px;color:#3A3A42;line-height:1.6">14 scheduled visits today · all assigned and confirmed.</span>
+          <a href="./Joy%20Health%20Scheduling.dc.html" style="font-size:12.5px;font-weight:500">View scheduling →</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">PAYROLL</span>
+          <span style="font-size:13.5px;color:#3A3A42;line-height:1.6">Closes Aug 24. Two timecards outstanding — Danielle Carter and Ruben Ortiz. Joy sent reminders at 7:42 AM.</span>
+          <a href="./Joy%20Health%20Payroll.dc.html" style="font-size:12.5px;font-weight:500">View payroll →</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">BILLING</span>
+          <span style="font-size:13.5px;color:#3A3A42;line-height:1.6">Aug 22–28 invoices generate Aug 28. No exceptions outstanding.</span>
+          <a href="./Joy%20Health%20Billing.dc.html" style="font-size:12.5px;font-weight:500">View billing →</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:10.5px;font-weight:600;letter-spacing:.13em;color:#9B9BA3">CLIENTS</span>
+          <span style="font-size:13.5px;color:#3A3A42;line-height:1.6">No open client escalations. One family conference today (Mrs. Davis, 2:00 PM).</span>
+          <a href="./Joy%20Health%20Clients.dc.html" style="font-size:12.5px;font-weight:500">View clients →</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1120},&quot;showPayrollOutage&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;States&quot;}}">
+const WORKING = [
+  {
+    title: 'Background check · Sarah Johnson', area: 'Hiring / Employee onboarding',
+    summary: 'Joy checked provider status at 8:04 AM. Status remains processing.',
+    next: 'Joy will check again tomorrow morning.', updated: '8:04 AM', cta: 'View employee',
+    audit: { title: 'Background check', subtitle: 'Sarah Johnson · onboarding', status: 'Waiting on provider response',
+      why: 'A background check must clear before Sarah can be scheduled. The provider has not returned a result within the expected 48-hour window.',
+      timeline: [['Aug 20', 'Check submitted to provider'], ['8:04 AM', 'Status polled — still processing'], ['8:05 AM', 'Hiring record updated']],
+      channel: 'Provider API', next: 'Joy polls again tomorrow at 8:00 AM and escalates to hiring on Aug 26.',
+      sources: ['Employee profile · Sarah Johnson', 'Background check request #BC-2214'], cta: 'Open employee', href: './Joy%20Health%20Employees.dc.html' }
+  },
+  {
+    title: 'Missing clock-out · Danielle Carter', area: 'Payroll / Timekeeping',
+    summary: "Joy identified a missing clock-out from Saturday's Davis shift. Caregiver contacted at 7:48 AM.",
+    next: 'Second follow-up at 10:00 AM if unresolved.', updated: '7:48 AM', cta: 'View shift',
+    audit: { title: 'Missing clock-out', subtitle: 'Danielle Carter · Davis shift', status: 'Waiting for caregiver correction',
+      why: "Saturday's shift contains a clock-in but no clock-out. A payroll rule flagged the record at 7:42 AM.",
+      timeline: [['7:42 AM', 'Missing clock-out detected'], ['7:43 AM', 'Shift and caregiver record checked'], ['7:48 AM', 'Caregiver reminder sent'], ['7:48 AM', 'Status changed to Waiting']],
+      channel: 'Spruce message', next: 'Second follow-up at 10:00 AM if no response. Escalate to payroll review at 2:00 PM.',
+      sources: ['Shift #48120 · Aug 22', 'Timecard #TC-9032', 'Employee profile · Danielle Carter'], cta: 'Open shift', href: './Joy%20Health%20Scheduling.dc.html' }
+  },
+  {
+    title: 'Payroll corrections', area: 'Payroll · Aug 22–28',
+    summary: 'Two corrected timecards are outstanding. Joy sent reminders this morning.',
+    next: 'Escalate at 2:00 PM if unresolved.', updated: '7:42 AM', cta: 'View payroll',
+    audit: { title: 'Payroll corrections', subtitle: 'Payroll · Aug 22–28', status: 'Two corrections outstanding',
+      why: 'Payroll closes Aug 24. Two timecards fall outside the expected hour range for their scheduled shifts.',
+      timeline: [['7:38 AM', 'Payroll pre-check run'], ['7:42 AM', 'Reminders sent to 2 caregivers']],
+      channel: 'Spruce message', next: 'Escalate to payroll review at 2:00 PM if corrections are not received.',
+      sources: ['Payroll cycle Aug 22–28', 'Timecards #TC-9032, #TC-9047'], cta: 'Open payroll', href: './Joy%20Health%20Payroll.dc.html' }
+  }
+];
+
+const HANDLED = [
+  { title: 'Credential reminder sent', meta: 'Mike Chen · CPR expires Aug 29', time: '8:12 AM' },
+  { title: 'Client signature follow-up sent', meta: 'Mrs. Davis · care plan', time: '7:58 AM' },
+  { title: 'Schedule confirmation sent', meta: 'David Okoro · field orientation', time: '7:42 AM' },
+  { title: 'Medication list received and filed', meta: 'Marcus Bell · admissions', time: '7:31 AM' },
+  { title: 'Shift confirmations sent to 6 caregivers', meta: 'Week of Aug 22', time: '7:14 AM' },
+  { title: 'Gusto onboarding nudge sent', meta: 'Jane Smith · step 2 of 4', time: '6:58 AM' }
+];
+
+const WAITING = [
+  { title: 'CPR renewal · Mike Chen', state: 'Requested Aug 22 · reminder sent today', next: 'Waiting on document upload · next follow-up Aug 25', cta: 'View credential', href: './Joy%20Health%20Employees.dc.html' },
+  { title: 'Client signature · Mrs. Davis', state: 'Resent this morning', next: 'Waiting on family signature · next follow-up tomorrow', cta: 'View client', href: './Joy%20Health%20Clients.dc.html' },
+  { title: 'Background check · Sarah Johnson', state: 'Submitted Aug 20 · polled today', next: 'Waiting on provider · escalates Aug 26', cta: 'View employee', href: './Joy%20Health%20Employees.dc.html' },
+  { title: 'Gusto onboarding · Jane Smith', state: 'Step 2 of 4 · nudged today', next: 'Waiting on employee · escalates to HR Aug 26', cta: 'View employee', href: './Joy%20Health%20Employees.dc.html' }
+];
+
+const EVENTS = [
+  { day: 24, date: 'Aug 24', title: "Thylia's birthday", meta: 'Tomorrow · caregiver since 2023', tag: 'People', cat: 'People', icon: '🎂' },
+  { day: 24, date: 'Aug 24', title: 'Payroll closes', meta: 'Billing Week 2 of 2', tag: 'Payroll', cat: 'Payroll', icon: '💵' },
+  { day: 25, date: 'Aug 25', title: 'Payroll processing', meta: 'Gusto submission', tag: 'Payroll', cat: 'Payroll', icon: '💵' },
+  { day: 26, date: 'Aug 26', title: "Maya's work anniversary", meta: '3 years with Joy Health', tag: 'People', cat: 'People', icon: '🎉' },
+  { day: 28, date: 'Aug 28', title: 'Client invoices due', meta: 'Aug 22–28 period', tag: 'Billing', cat: 'Billing', icon: '📄' },
+  { day: 29, date: 'Aug 29', title: 'CPR renewal deadline · Mike Chen', meta: 'Joy has sent 2 reminders', tag: 'Agency', cat: 'Agency', icon: '🩺' },
+  { day: 31, date: 'Aug 31', title: 'Monthly leadership review', meta: '10:00 AM · office', tag: 'Agency', cat: 'Agency', icon: '📅' }
+];
+
+const ACTIVITY = [
+  { time: '8:12 AM', title: "Joy sent Mike Chen's CPR reminder", meta: 'Joy · employees', cat: 'Joy', cta: 'View employee', href: './Joy%20Health%20Employees.dc.html' },
+  { time: '7:58 AM', title: "Mrs. Davis's care-plan signature request was resent", meta: 'Joy · clients', cat: 'Joy', cta: 'View client', href: './Joy%20Health%20Clients.dc.html' },
+  { time: '7:42 AM', title: 'Payroll reminders sent to 2 caregivers', meta: 'Joy · payroll', cat: 'Payroll', cta: 'View payroll', href: './Joy%20Health%20Payroll.dc.html' },
+  { time: 'Yesterday', title: "Danielle Carter's timecard was corrected", meta: 'Employee · payroll · Davis shift', cat: 'Payroll', cta: 'View payroll record', href: './Joy%20Health%20Payroll.dc.html' },
+  { time: 'Yesterday', title: 'David Okoro completed orientation', meta: 'Administrator · employees', cat: 'Employees', cta: 'View employee', href: './Joy%20Health%20Employees.dc.html' },
+  { time: 'Friday', title: 'New client admitted — Eleanor Whitfield', meta: 'Admissions · assessment complete', cat: 'Clients', cta: 'View client', href: './Joy%20Health%20Clients.dc.html' },
+  { time: 'Friday', title: 'Invoice batch approved for Aug 15–21', meta: 'Administrator · billing', cat: 'Billing', cta: 'View billing', href: './Joy%20Health%20Billing.dc.html' }
+];
+
+const ANSWERS = {
+  "What changed since yesterday?": { a: "Two things. Danielle Carter's corrected timecard came in overnight, clearing one payroll exception — one correction is still outstanding. David Okoro finished orientation and is now available for scheduling starting Aug 25. Nothing else changed materially.", links: [['View payroll', './Joy%20Health%20Payroll.dc.html'], ['View employee', './Joy%20Health%20Employees.dc.html']] },
+  "Anything threatening payroll?": { a: "Not yet. Payroll closes Aug 24 with two corrected timecards outstanding. Joy sent reminders at 7:42 AM and will escalate at 2:00 PM today if they are not returned. At current volume this is roughly 6 hours of unconfirmed time.", links: [['View payroll', './Joy%20Health%20Payroll.dc.html']] },
+  "What are you waiting on?": { a: "Four items, all with outside parties: Mike Chen's CPR upload, Mrs. Davis's care-plan signature, Sarah Johnson's background check with the provider, and Jane Smith's Gusto onboarding. Each has an automated follow-up already scheduled.", links: [['View Joy Operations', '#operations']] }
+};
+
+const DOW_LABEL = { 22: 'Sat', 23: 'Sun', 24: 'Mon', 25: 'Tue', 26: 'Wed', 27: 'Thu', 28: 'Fri', 29: 'Sat', 30: 'Sun', 31: 'Mon' };
+
+const MY_DAYS = [
+  { label: 'Sunday, Aug 23', heading: 'TODAY · SUNDAY, AUGUST 23' },
+  { label: 'Monday, Aug 24', heading: 'MONDAY, AUGUST 24' }
+];
+
+const MY_EVENTS = [
+  { time: '9:00 AM', duration: '30 min', title: 'Weekly leadership sync', meta: 'Office', joyNote: 'Notes captured by Joy', tag: 'Completed', done: true },
+  { time: '2:00 PM', duration: '45 min', title: "Mrs. Davis's family care conference", meta: 'With Joan Robinson, RN · client home', joyNote: 'Family confirmed · care plan prepared', tag: 'Open client', done: false, drawer: true },
+  { time: '4:00 PM', duration: '1 hr', title: 'Field orientation · David Okoro', meta: 'Shadowing Samantha Chen', joyNote: 'Documents ready', tag: 'Orientation', done: false }
+];
+
+const MY_NEEDS = [
+  { title: 'Approve client rate change', subject: 'Susan Miller · $18.00/hr → $19.50/hr', joyNote: 'Joy calculated the payroll impact and prepared the change.', due: 'Due today', cta: 'Review & approve →', href: './Joy%20Health%20Clients.dc.html' },
+  { title: 'Final payroll approval', subject: 'Payroll · Aug 22–28', joyNote: '2 timecard corrections resolved by Joy. Payroll is ready for review.', due: 'Closes tomorrow', cta: 'Review payroll →', href: './Joy%20Health%20Payroll.dc.html' }
+];
+
+const MY_WAITING = [
+  { title: 'Sarah Johnson · background check', state: 'Waiting on provider · 3 days', next: 'Joy checked status today at 8:04 AM. Next check: tomorrow.', cta: 'View employee →', href: './Joy%20Health%20Employees.dc.html' },
+  { title: 'Mrs. Davis · care plan signature', state: 'Sent Tuesday · reminder sent this morning', next: 'Waiting on family. Joy follows up again tomorrow.', cta: 'View client →', href: './Joy%20Health%20Clients.dc.html' },
+  { title: 'Mike Chen · CPR renewal', state: 'Expires Aug 29', next: 'Upload requested · reminder sent today.', cta: 'View credential →', href: './Joy%20Health%20Employees.dc.html' },
+  { title: 'Jane Smith · Gusto onboarding', state: 'Step 2 of 4 · started Aug 19', next: 'Joy nudged today. Escalates to HR if incomplete Aug 26.', cta: 'View employee →', href: './Joy%20Health%20Employees.dc.html' }
+];
+
+const DAY_DETAIL = {
+  23: [['🩺', '14 scheduled client visits', 'All currently covered'], ['📅', 'Mrs. Davis family care conference · 2:00 PM', 'With Joan Robinson, RN'], ['💵', 'Billing Week 2 of 2', 'Aug 22–28']],
+  24: [['🎂', "Thylia's birthday", 'People · caregiver since 2023'], ['💵', 'Payroll closes', 'Billing Week 2 of 2'], ['📅', 'Leadership meeting · 9:00 AM', 'Office'], ['🩺', '14 scheduled client visits', 'All currently covered']],
+  25: [['💵', 'Payroll processing', 'Gusto submission'], ['📋', 'Client assessment · Patricia Green', '1:00 PM']],
+  26: [['🎉', "Maya Patel's work anniversary", '3 years with Joy Health']],
+  28: [['📄', 'Client invoices due', 'Aug 22–28 period'], ['💵', 'New billing period begins Aug 29', '']],
+  29: [['🩺', 'CPR renewal deadline · Mike Chen', 'Joy has sent 2 reminders']],
+  31: [['📅', 'Monthly leadership review', '10:00 AM · office']]
+};
+
+class Component extends DCLogic {
+  state = { opsNeedDone: false, askOpen: false, tTitle: '', tCategory: 'Client follow-up', tDesc: '', tPriority: 'Medium', tDue: '2026-08-24', tAssignee: 'Karynn Reed (me)', modal: null, evTitle: '', evDate: '2026-08-24', evStart: '14:00', evEnd: '17:00', evType: 'Medical', copied: false, calView: 'month', view: 'overview', range: 'today', ops: 'working', filter: 'All', actFilter: 'All', audit: null, day: null, why: false, askQ: '', asked: null, degraded: false, myTab: 'schedule', myDay: 0, myDone: {}, sched: null };
+  componentDidMount() {
+    const h = (window.location.hash || '').replace('#', '');
+    if (['operations', 'calendar', 'activity', 'mywork'].indexOf(h) >= 0) this.setState({ view: h });
+    if (['schedule', 'needs', 'waiting'].indexOf(h) >= 0) this.setState({ view: 'mywork', myTab: h });
+  }
+  pill(active) {
+    return 'font-family:inherit;font-size:13px;font-weight:' + (active ? '500' : '400') +
+      ';padding:8px 16px;border-radius:9px;cursor:pointer;white-space:nowrap;border:1px solid ' +
+      (active ? 'rgba(0,0,0,.09)' : 'transparent') + ';background:' + (active ? '#FFFFFF' : 'transparent') +
+      ';color:' + (active ? '#1B1B1F' : '#8A8A92') + ';box-shadow:' + (active ? '0 1px 2px rgba(0,0,0,.05)' : 'none');
+  }
+  tab(active) {
+    return 'font-family:inherit;font-size:14.5px;font-weight:' + (active ? '600' : '400') +
+      ';padding:0 0 12px;background:transparent;border:none;border-bottom:2px solid ' +
+      (active ? '#1407A2' : 'transparent') + ';margin-bottom:-1px;color:' + (active ? '#1B1B1F' : '#8A8A92') +
+      ';cursor:pointer;letter-spacing:-.012em';
+  }
+  quiet(active) {
+    return 'font-family:inherit;font-size:12.5px;font-weight:' + (active ? '500' : '400') +
+      ';background:transparent;border:none;padding:0;cursor:pointer;white-space:nowrap;color:' + (active ? '#1407A2' : '#9B9BA3');
+  }
+  card(active) {
+    return 'display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:18px 20px;border-radius:16px;cursor:pointer;font-family:inherit;text-align:left;background:#fff;border:1px solid ' +
+      (active ? 'rgba(20,7,162,.28)' : 'rgba(0,0,0,.06)') + ';box-shadow:' + (active ? '0 1px 2px rgba(20,7,162,.08)' : '0 1px 2px rgba(0,0,0,.02)');
+  }
+  renderVals() {
+    const s = this.state;
+    const filtered = EVENTS.filter(e => s.filter === 'All' || e.cat === s.filter);
+    const acts = ACTIVITY.filter(a => s.actFilter === 'All' || a.cat === s.actFilter);
+    const audit = s.audit !== null ? WORKING[s.audit].audit : null;
+    const dayEntries = s.day !== null ? (DAY_DETAIL[s.day] || []) : [];
+    const askKey = s.asked;
+    const answer = askKey && ANSWERS[askKey] ? ANSWERS[askKey] : null;
+
+    // August 2026: Aug 1 falls on Saturday, the first column.
+    // Weeks run Saturday→Friday so each row is one billing week (Aug 22–28 is a full row).
+    const cells = [];
+    for (let d = 1; d <= 31; d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    const markStyle = (cat) => {
+      const c = cat === 'People' ? '#7C3AED' : cat === 'Payroll' ? '#15803D' : cat === 'Billing' ? '#C2410C' : '#1407A2';
+      return 'display:block;font-size:10.5px;line-height:1.35;color:' + c + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%';
+    };
+
+    const monthDays = cells.map((d, i) => {
+      if (d === null) return { key: 'b' + i, label: '', marks: [], click: () => {}, cellStyle: 'border:none;background:transparent;min-height:78px', numStyle: 'display:none' };
+      const isToday = d === 23;
+      const inBilling = d >= 22 && d <= 28;
+      const marks = EVENTS.filter(e => e.day === d && (s.filter === 'All' || e.cat === s.filter))
+        .map(e => ({ key: e.title, label: e.icon + ' ' + e.title, style: markStyle(e.cat) }));
+      return {
+        key: 'd' + d, label: String(d), marks: marks,
+        click: () => this.setState({ day: d, audit: null, why: false }),
+        cellStyle: 'display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:78px;padding:8px 9px;border-radius:11px;font-family:inherit;cursor:pointer;text-align:left;overflow:hidden;background:' +
+          (inBilling ? '#EFF1FE' : '#fff') + ';border:1px solid ' + (isToday ? 'rgba(20,7,162,.45)' : inBilling ? 'rgba(20,7,162,.14)' : 'rgba(0,0,0,.06)'),
+        numStyle: 'font-size:12.5px;font-weight:' + (isToday ? '600' : '400') + ';color:' + (isToday ? '#1407A2' : '#6E6E76')
+      };
+    });
+
+    const miniDays = cells.map((d, i) => {
+      if (d === null) return { key: 'mb' + i, label: '', style: 'display:block;height:26px' };
+      const isToday = d === 23;
+      const inBilling = d >= 22 && d <= 28;
+      return {
+        key: 'm' + d, label: String(d),
+        style: 'display:flex;align-items:center;justify-content:center;height:26px;border-radius:' +
+          (d === 22 ? '8px 0 0 8px' : d === 28 ? '0 8px 8px 0' : inBilling ? '0' : '8px') +
+          ';font-size:11.5px;font-weight:' + (isToday ? '600' : '400') +
+          ';color:' + (isToday ? '#1407A2' : inBilling ? '#3B2FB8' : '#8A8A92') +
+          ';background:' + (inBilling ? '#DCE0FB' : 'transparent') +
+          ';box-shadow:' + (isToday ? 'inset 0 0 0 1.5px #1407A2' : 'none')
+      };
+    });
+
+    return {
+      viewLabel: s.view === 'overview' ? 'Overview' : s.view === 'mywork' ? 'My Work' : s.view === 'operations' ? 'Joy Operations' : s.view === 'calendar' ? 'Calendar' : 'Activity',
+      myWorkActive: s.view === 'mywork',
+      tabMyWorkStyle: this.tab(s.view === 'mywork'),
+      showMyWork: () => this.setState({ view: 'mywork' }),
+      myDateLabel: MY_DAYS[Math.min(s.myDay, MY_DAYS.length - 1)].label,
+      myScheduleHeading: MY_DAYS[Math.min(s.myDay, MY_DAYS.length - 1)].heading,
+      prevDay: () => this.setState(st => ({ myDay: Math.max(0, st.myDay - 1) })),
+      nextDay: () => this.setState(st => ({ myDay: Math.min(MY_DAYS.length - 1, st.myDay + 1) })),
+      goToday: () => this.setState({ myDay: 0 }),
+      myTodayStyle: 'font-family:inherit;font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:9px;cursor:pointer;border:1px solid rgba(0,0,0,.08);background:' +
+        (s.myDay === 0 ? '#F1F2F6' : '#fff') + ';color:' + (s.myDay === 0 ? '#1407A2' : '#6E6E76'),
+      myScheduleActive: s.myTab === 'schedule',
+      myNeedsActive: s.myTab === 'needs',
+      myWaitingActive: s.myTab === 'waiting',
+      myScheduleTabStyle: this.pill(s.myTab === 'schedule'),
+      myNeedsTabStyle: this.pill(s.myTab === 'needs'),
+      myWaitingTabStyle: this.pill(s.myTab === 'waiting'),
+      showMySchedule: () => this.setState({ myTab: 'schedule' }),
+      showMyNeeds: () => this.setState({ myTab: 'needs' }),
+      showMyWaiting: () => this.setState({ myTab: 'waiting' }),
+      myEvents: MY_EVENTS.map((e, i) => ({
+        key: e.title, time: e.time, duration: e.duration, title: e.title, meta: e.meta, joyNote: e.joyNote, tag: e.tag,
+        open: () => this.setState({ sched: e.drawer ? i : null, audit: null, day: null, why: false }),
+        rowStyle: 'display:flex;gap:22px;align-items:flex-start;width:100%;text-align:left;padding:18px 8px 18px 0;border:none;border-top:1px solid rgba(0,0,0,.05);background:transparent;font-family:inherit;cursor:' + (e.drawer ? 'pointer' : 'default'),
+        timeStyle: 'font-size:13px;font-weight:500;color:' + (e.done ? '#C8C8D0' : '#8A8A92'),
+        durStyle: 'font-size:11.5px;color:' + (e.done ? '#D4D4DC' : '#B4B4BC'),
+        titleStyle: 'font-size:15px;font-weight:500;letter-spacing:-.01em;color:' + (e.done ? '#B4B4BC' : '#1B1B1F'),
+        metaStyle: 'font-size:13px;color:' + (e.done ? '#C8C8D0' : '#9B9BA3'),
+        joyStyle: 'font-size:12.5px;color:' + (e.done ? '#C8C8D0' : '#6E6E8A'),
+        tagStyle: 'flex:none;align-self:center;font-size:11.5px;border-radius:20px;padding:4px 11px;background:' +
+          (e.done ? '#F4F4F6' : '#EFEDFB') + ';color:' + (e.done ? '#9B9BA3' : '#1407A2')
+      })),
+      myNeedsItems: MY_NEEDS.map((n, i) => {
+        const isDone = !!s.myDone[i];
+        return {
+          key: n.title, title: n.title, subject: n.subject, joyNote: n.joyNote, due: n.due, cta: n.cta, href: n.href,
+          toggle: () => this.setState(st => ({ myDone: Object.assign({}, st.myDone, { [i]: !st.myDone[i] }) })),
+          boxStyle: 'width:18px;height:18px;margin-top:3px;flex:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:5px;border:1.4px solid ' +
+            (isDone ? '#1407A2' : '#C8C8D0') + ';background:' + (isDone ? '#1407A2' : 'transparent'),
+          checkStyle: 'opacity:' + (isDone ? '1' : '0') + ';transition:opacity .15s ease',
+          titleStyle: 'font-size:15px;font-weight:500;letter-spacing:-.01em;color:' + (isDone ? '#B4B4BC' : '#1B1B1F') +
+            (isDone ? ';text-decoration:line-through;text-decoration-color:#C8C8D0' : ''),
+          subStyle: 'font-size:13px;color:' + (isDone ? '#C8C8D0' : '#6E6E76'),
+          metaStyle: 'font-size:12.5px;color:' + (isDone ? '#D4D4DC' : '#9B9BA3'),
+          dueStyle: 'font-size:12px;color:' + (isDone ? '#C8C8D0' : '#C2410C'),
+          ctaStyle: 'font-size:12.5px;font-weight:500;color:' + (isDone ? '#C8C8D0' : '#1407A2')
+        };
+      }),
+      myNeedsEmpty: MY_NEEDS.filter((n, i) => !s.myDone[i]).length === 0,
+      myNeedsCountLabel: (() => { const r = MY_NEEDS.filter((n, i) => !s.myDone[i]).length; return r + (r === 1 ? ' item' : ' items'); })(),
+      myWaitingItems: MY_WAITING.map(w => ({ key: w.title, title: w.title, state: w.state, next: w.next, cta: w.cta, href: w.href })),
+      schedOpen: s.sched !== null,
+      schedPrepared: ['Latest care plan', 'Last visit summary', 'Open family questions', 'Relevant notes'].map(l => ({ key: l, label: l })),
+      overviewActive: s.view === 'overview',
+      operationsActive: s.view === 'operations',
+      calendarActive: s.view === 'calendar',
+      activityActive: s.view === 'activity',
+      tabOverviewStyle: this.tab(s.view === 'overview'),
+      tabOperationsStyle: this.tab(s.view === 'operations'),
+      tabCalendarStyle: this.tab(s.view === 'calendar'),
+      tabActivityStyle: this.tab(s.view === 'activity'),
+      showOverview: () => this.setState({ view: 'overview' }),
+      showOperations: () => this.setState({ view: 'operations' }),
+      showCalendar: () => this.setState({ view: 'calendar' }),
+      showActivity: () => this.setState({ view: 'activity' }),
+      rangeTodayStyle: this.pill(s.range === 'today'),
+      rangeWeekStyle: this.pill(s.range === 'week'),
+      rangeMonthStyle: this.pill(s.range === 'month'),
+      rangeCustomStyle: this.pill(s.range === 'custom'),
+      setToday: () => this.setState({ range: 'today' }),
+      setWeek: () => this.setState({ range: 'week' }),
+      setMonth: () => this.setState({ range: 'month' }),
+      setCustom: () => this.setState({ range: 'custom' }),
+
+      askQ: s.askQ,
+      onAskQ: (e) => this.setState({ askQ: e.target.value }),
+      askSend: () => this.setState(st => ({ asked: st.askQ || 'What changed since yesterday?', askQ: '', askOpen: false })),
+      askClear: () => this.setState({ asked: null }),
+      askAnswered: !!askKey,
+      askQuestion: askKey || '',
+      askAnswer: answer ? answer.a : "Joy is pulling that together. In the meantime: operations are in good shape, payroll closes tomorrow with two timecards outstanding, and one approval is waiting on you.",
+      askLinks: answer ? answer.links.map(l => ({ key: l[0], label: l[0] + ' →', href: l[1] })) : [{ key: 'ops', label: 'View Joy Operations →', href: '#operations' }],
+      askPrompts: Object.keys(ANSWERS).map(q => ({ key: q, label: q, click: () => this.setState({ asked: q }) })),
+
+      eventFilters: ['All', 'Agency', 'Payroll', 'Billing', 'People'].map(f => ({
+        key: f, label: f, style: this.quiet(s.filter === f), click: () => this.setState({ filter: f })
+      })),
+      events: filtered.map(e => ({
+        key: e.title, date: e.date, title: e.icon + '  ' + e.title, meta: e.meta, tag: e.tag,
+        tagStyle: 'flex:none;align-self:center;font-size:11px;border-radius:20px;padding:3px 10px;background:#F4F4F6;color:#6E6E76'
+      })),
+      eventsEmpty: filtered.length === 0,
+
+      activityFilters: ['All', 'Clients', 'Employees', 'Payroll', 'Billing', 'Joy'].map(f => ({
+        key: f, label: f, style: this.quiet(s.actFilter === f), click: () => this.setState({ actFilter: f })
+      })),
+      activity: acts.map(a => ({ key: a.title, time: a.time, title: a.title, meta: a.meta, cta: a.cta + ' →', href: a.href })),
+      activityEmpty: acts.length === 0,
+      activityPreview: ACTIVITY.slice(0, 5).map(a => ({ key: a.title, time: a.time, label: a.title, meta: a.meta })),
+
+      opsWorking: s.ops === 'working',
+      opsHandled: s.ops === 'handled',
+      opsWaiting: s.ops === 'waiting',
+      opsNeeds: s.ops === 'needs',
+      toggleOpsNeed: () => this.setState(st => ({ opsNeedDone: !st.opsNeedDone })),
+      opsNeedBoxStyle: 'width:19px;height:19px;margin-top:3px;flex:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:background .15s ease,border-color .15s ease;border:1.5px solid ' +
+        (s.opsNeedDone ? '#1407A2' : '#C8C8D0') + ';background:' + (s.opsNeedDone ? '#1407A2' : 'transparent'),
+      opsNeedCheckStyle: 'opacity:' + (s.opsNeedDone ? '1' : '0') + ';transition:opacity .15s ease',
+      opsNeedTitleStyle: 'font-size:16px;font-weight:500;letter-spacing:-.015em;color:' + (s.opsNeedDone ? '#B4B4BC' : '#1B1B1F') +
+        (s.opsNeedDone ? ';text-decoration:line-through;text-decoration-color:#C8C8D0' : ''),
+      showHandled: () => this.setState({ view: 'operations', ops: 'handled' }),
+      showWorking: () => this.setState({ view: 'operations', ops: 'working' }),
+      showWaitingOps: () => this.setState({ view: 'operations', ops: 'waiting' }),
+      showNeedsOps: () => this.setState({ view: 'operations', ops: 'needs' }),
+      handledCardStyle: this.card(s.ops === 'handled'),
+      workingCardStyle: this.card(s.ops === 'working'),
+      waitingCardStyle: this.card(s.ops === 'waiting'),
+      needsCardStyle: this.card(s.ops === 'needs'),
+      working: WORKING.map((w, i) => ({
+        key: w.title, title: w.title, area: w.area, summary: w.summary, next: w.next, updated: w.updated, cta: w.cta + ' →',
+        openAudit: () => this.setState({ audit: i, day: null, why: false })
+      })),
+      handled: HANDLED.map(h => ({ key: h.title, title: h.title, meta: h.meta, time: h.time })),
+      waiting: WAITING.map(w => ({ key: w.title, title: w.title, state: w.state, next: w.next, cta: w.cta + ' →', href: w.href })),
+
+      askOpen: s.askOpen,
+      toggleAsk: () => this.setState(st => ({ askOpen: !st.askOpen })),
+      closeAsk: () => this.setState({ askOpen: false }),
+      askButtonStyle: 'width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;border:1px solid ' +
+        (s.askOpen ? 'rgba(20,7,162,.4)' : 'rgba(0,0,0,.08)') + ';background:#191A2E',
+      openTask: () => this.setState({ modal: 'task' }),
+      taskOpen: s.modal === 'task',
+      tTitle: s.tTitle, onTTitle: (e) => this.setState({ tTitle: e.target.value }),
+      tCategory: s.tCategory, onTCategory: (e) => this.setState({ tCategory: e.target.value }),
+      tDesc: s.tDesc, onTDesc: (e) => this.setState({ tDesc: e.target.value }),
+      tPriority: s.tPriority, onTPriority: (e) => this.setState({ tPriority: e.target.value }),
+      tDue: s.tDue, onTDue: (e) => this.setState({ tDue: e.target.value }),
+      tAssignee: s.tAssignee, onTAssignee: (e) => this.setState({ tAssignee: e.target.value }),
+      taskPriorities: ['Low', 'Medium', 'High'].map(p => ({
+        key: p, label: p, click: () => this.setState({ tPriority: p }),
+        style: 'flex:1;height:38px;font-family:inherit;font-size:12.5px;font-weight:' + (s.tPriority === p ? '500' : '400') +
+          ';border-radius:11px;cursor:pointer;border:1px solid ' + (s.tPriority === p ? 'rgba(20,7,162,.3)' : 'rgba(0,0,0,.1)') +
+          ';background:' + (s.tPriority === p ? '#EFEDFB' : '#fff') + ';color:' + (s.tPriority === p ? '#1407A2' : '#6E6E76')
+      })),
+      taskCategories: ['Client follow-up', 'Caregiver / employee', 'Scheduling', 'Billing', 'Payroll', 'Admissions', 'Hiring', 'Compliance'].map(c => ({ key: c, value: c, label: c })),
+      taskAssignees: ['Karynn Reed (me)', 'Joan Robinson, RN', 'Samantha Chen', 'David Okoro', 'Anita Rivera', 'Grace Nwosu', 'Joy (if authorized)'].map(a => ({ key: a, value: a, label: a })),
+      modalOpen: s.modal !== null,
+      addOpen: s.modal === 'add',
+      subOpen: s.modal === 'subscribe',
+      openAddEvent: () => this.setState({ modal: 'add' }),
+      openSubscribe: () => this.setState({ modal: 'subscribe', copied: false }),
+      closeModal: () => this.setState({ modal: null }),
+      evTitle: s.evTitle, onEvTitle: (e) => this.setState({ evTitle: e.target.value }),
+      evDate: s.evDate, onEvDate: (e) => this.setState({ evDate: e.target.value }),
+      evStart: s.evStart, onEvStart: (e) => this.setState({ evStart: e.target.value }),
+      evEnd: s.evEnd, onEvEnd: (e) => this.setState({ evEnd: e.target.value }),
+      evTypes: ['General', 'Medical', 'Family', 'Personal', 'Transport', 'Shift', 'Billing', 'Payroll'].map(t => ({
+        key: t, label: t, click: () => this.setState({ evType: t }),
+        style: 'font-family:inherit;font-size:12.5px;font-weight:' + (s.evType === t ? '500' : '400') +
+          ';padding:6px 13px;border-radius:20px;cursor:pointer;border:1px solid ' +
+          (s.evType === t ? 'rgba(20,7,162,.3)' : 'rgba(0,0,0,.08)') + ';background:' +
+          (s.evType === t ? '#EFEDFB' : '#fff') + ';color:' + (s.evType === t ? '#1407A2' : '#6E6E76')
+      })),
+      copyLink: () => this.setState({ copied: true }),
+      copyNote: s.copied ? 'Link copied. Anyone with this link can view this calendar — share carefully.' : 'Anyone with this link can view this calendar — share carefully.',
+      monthViewActive: s.calView === 'month',
+      agendaViewActive: s.calView === 'agenda',
+      monthViewStyle: this.pill(s.calView === 'month'),
+      agendaViewStyle: this.pill(s.calView === 'agenda'),
+      showMonthView: () => this.setState({ calView: 'month' }),
+      showAgendaView: () => this.setState({ calView: 'agenda' }),
+      prevMonth: () => {}, nextMonth: () => {}, calToday: () => {},
+      agendaDays: (() => {
+        const groups = [];
+        filtered.forEach(e => {
+          let g = groups.filter(x => x.day === e.day)[0];
+          if (!g) { g = { key: 'g' + e.day, day: e.day, label: DOW_LABEL[e.day] + ', Aug ' + e.day, items: [] }; groups.push(g); }
+          g.items.push({ key: e.title, icon: e.icon, title: e.title, meta: e.meta, tag: e.tag,
+            tagStyle: 'flex:none;font-size:11px;border-radius:20px;padding:3px 10px;background:#F4F4F6;color:#6E6E76' });
+        });
+        return groups;
+      })(),
+      agendaEmpty: filtered.length === 0,
+      dowMini: ['S', 'S', 'M', 'T', 'W', 'T', 'F'].map((d, i) => ({ key: 'dm' + i, label: d })),
+      dowFull: ['SAT', 'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'].map((d, i) => ({ key: 'df' + i, label: d })),
+      monthDays: monthDays,
+      miniDays: miniDays,
+
+      drawerOpen: s.audit !== null || s.day !== null || s.why || s.sched !== null,
+      auditOpen: s.audit !== null,
+      dayOpen: s.day !== null,
+      whyOpen: s.why,
+      openWhy: () => this.setState({ why: true, audit: null, day: null, sched: null }),
+      closeDrawer: () => this.setState({ audit: null, day: null, why: false, sched: null }),
+      auditTitle: audit ? audit.title : '',
+      auditSubtitle: audit ? audit.subtitle : '',
+      auditStatus: audit ? audit.status : '',
+      auditWhy: audit ? audit.why : '',
+      auditTimeline: audit ? audit.timeline.map(t => ({ key: t[0] + t[1], time: t[0], label: t[1] })) : [],
+      auditChannel: audit ? audit.channel : '',
+      auditNext: audit ? audit.next : '',
+      auditSources: audit ? audit.sources.map(l => ({ key: l, label: l })) : [],
+      auditCta: audit ? audit.cta : '',
+      auditHref: audit ? audit.href : '#',
+
+      dayTitle: s.day !== null ? 'August ' + s.day + ', 2026' : '',
+      dayBilling: s.day !== null ? (s.day >= 22 && s.day <= 28 ? 'Aug 22–28 · Billing Week 2 of 2' : 'Aug 29–Sep 4 · next billing period') : '',
+      dayEntries: dayEntries.map(e => ({ key: e[1], icon: e[0], title: e[1], meta: e[2] })),
+      dayEmpty: s.day !== null && dayEntries.length === 0,
+
+      payrollDegraded: (this.props.showPayrollOutage ?? false) && !s.degraded,
+      retryPayroll: () => this.setState({ degraded: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

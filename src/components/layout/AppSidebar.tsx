@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  Home, Compass, ClipboardList, Users, UserCog, UserPlus, Contact, CalendarDays,
+  Home, Brain, Compass, ClipboardList, Users, UserCog, UserPlus, Contact, CalendarDays,
   Receipt, Wallet, BarChart3, FolderOpen, BookOpen, Settings, ShieldAlert, HeartPulse, CalendarCheck, ClipboardCheck,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -58,7 +58,9 @@ function useNav(): NavItem[] {
   const hiringCount = seedApplicants.filter((a) => a.track !== "no_fit" && a.track !== "hired").length;
 
   return [
-    { title: "Home", url: "/", icon: Home },
+    // Home is The Brain now — the updated design's name for the operator's
+    // landing screen, and the sidebar calls it what the screen calls itself.
+    { title: "The Brain", url: "/", icon: Brain },
     {
       title: "Operations",
       url: "/operations",
