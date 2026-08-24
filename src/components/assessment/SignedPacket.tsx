@@ -93,11 +93,11 @@ export function SignedPacket({
           <h2 className="text-base font-bold">Signature</h2>
           <div className="mt-4 grid gap-6 sm:grid-cols-2">
             <div>
-              <p className="border-b border-black pb-1 font-serif text-2xl">
+              <p className="border-b border-black pb-1 font-serif text-2xl italic">
                 {session.signatureText ?? session.signerName ?? "—"}
               </p>
               <p className="mt-1 text-xs">
-                Signature (typed) — {session.signerName ?? "—"}
+                Signature (electronically adopted) — {session.signerName ?? "—"}
                 {session.signerRelationship ? `, ${session.signerRelationship}` : ""}
               </p>
             </div>
@@ -114,6 +114,18 @@ export function SignedPacket({
               <dt className="font-semibold">Completed document reviewed in its entirety:</dt>
               <dd>{fmt(session.reviewedCompletedAt)}</dd>
             </div>
+            {session.esignConsentAt && (
+              <div className="flex gap-2">
+                <dt className="font-semibold">Agreed to sign electronically:</dt>
+                <dd>{fmt(session.esignConsentAt)}</dd>
+              </div>
+            )}
+            {session.signatureAdoptedAt && (
+              <div className="flex gap-2">
+                <dt className="font-semibold">Signature adopted:</dt>
+                <dd>{fmt(session.signatureAdoptedAt)}</dd>
+              </div>
+            )}
             <div className="flex gap-2">
               <dt className="font-semibold">Signed:</dt>
               <dd>{fmt(session.signedAt)}</dd>
@@ -131,9 +143,11 @@ export function SignedPacket({
           </dl>
 
           <p className="mt-6 text-[11px] leading-relaxed">
-            A typed signature stands in for handwriting in this prototype. This page renders
-            Joy's stored record of the signing; the tamper-evident generated document is a
-            separate integration and is not yet enabled.
+            Signature and initials were electronically adopted in the e-signature ceremony —
+            generated from the legal name on record, never typed. The DocuSign-style provider
+            is a separate integration and is not yet connected; this page renders Joy's stored
+            record of the signing, and the provider's tamper-evident certificate replaces it
+            once connected.
           </p>
         </section>
       </div>

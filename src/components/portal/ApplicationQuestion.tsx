@@ -59,10 +59,13 @@ export function ApplicationQuestion({
   field,
   value,
   onChange,
+  adoptName,
 }: {
   field: ApplicationField;
   value: unknown;
   onChange: (value: unknown) => void;
+  /** The legal name a signature field adopts — signatures are never typed. */
+  adoptName?: string;
 }) {
   const id = `q-${field.id}`;
 
@@ -137,21 +140,48 @@ export function ApplicationQuestion({
           </div>
         );
 
-      case "signature":
+      case "signature": {
+        // The adopt-and-sign step — nothing typed (Karynn, 24 August). The
+        // signature is generated from the legal name given earlier in the
+        // application and adopted with one tap.
+        const name = (adoptName ?? "").trim();
+        const adopted = typeof value === "string" && value.trim().length > 0;
         return (
-          <div className="space-y-2">
-            <Input
-              id={id}
-              value={(value as string) ?? ""}
-              onChange={(e) => onChange(e.target.value)}
-              className={cn(BASE_INPUT, "font-display text-lg")}
-              placeholder="Type your full name"
-            />
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border bg-surface p-4">
+              <p
+                className={cn(
+                  "flex h-14 items-end border-b border-border pb-1 font-serif text-2xl italic",
+                  !name && "text-muted-foreground/40",
+                )}
+              >
+                {name || "Your legal name, from earlier in this application"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Signature, generated from your legal name</p>
+            </div>
+            <button
+              type="button"
+              disabled={!name}
+              aria-pressed={adopted}
+              onClick={() => onChange(adopted ? "" : name)}
+              className={cn(
+                "flex min-h-[48px] items-center gap-2 rounded-2xl border px-5 text-base font-medium transition-colors",
+                adopted
+                  ? "border-[hsl(var(--success))] bg-[hsl(var(--success)/0.08)] text-[hsl(var(--success))]"
+                  : name
+                    ? "border-primary bg-primary text-white"
+                    : "cursor-not-allowed border-border text-muted-foreground/50",
+              )}
+            >
+              {adopted ? "Signature adopted ✓ — tap to undo" : "Adopt and sign"}
+            </button>
             <p className="text-xs text-muted-foreground">
-              Typing your name here counts as your signature. Joy records the date and time.
+              Adopting this signature signs your application electronically — nothing to type.
+              Joy records the date and time.
             </p>
           </div>
         );
+      }
 
       default:
         return (

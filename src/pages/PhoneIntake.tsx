@@ -128,7 +128,7 @@ export default function PhoneIntake() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl pb-16">
+    <div className="tablet-flow mx-auto max-w-3xl pb-16">
       {/* Header */}
       <div className="mb-8 flex items-center gap-3 border-b border-border pb-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admissions")} aria-label="Back to Admissions">

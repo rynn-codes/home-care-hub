@@ -6,8 +6,8 @@ import { expect, signInAsStaff, test, watchForErrors } from "./support";
  * The record was always stored; nothing could SHOW it. This walks to a
  * seeded, already-signed session and opens the packet: every clause in full,
  * the decisions, the signature block, the witness — and the honesty line
- * saying a typed signature stands in and the generated document is a separate,
- * off integration.
+ * saying the marks were electronically adopted (nothing typed — Karynn's
+ * ruling) and the DocuSign-style provider is a separate, off integration.
  */
 
 const PROJECT_REF = process.env.VITE_SUPABASE_PROJECT_ID ?? "xembwxgilrsjeybuwxwt";
@@ -40,7 +40,8 @@ test.describe("the signed packet", () => {
     // The signature block: signer, witness, and the honesty line.
     await expect(packet).toContainText("Responsible party");
     await expect(packet).toContainText("Karynn Verrett");
-    await expect(packet).toContainText("typed signature stands in");
+    await expect(packet).toContainText("electronically adopted");
+    await expect(packet).toContainText("never typed");
 
     await packet.getByRole("button", { name: "Close" }).click();
     await expect(page.locator(".signed-packet")).toHaveCount(0);

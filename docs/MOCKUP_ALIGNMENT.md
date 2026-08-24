@@ -9,6 +9,29 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
 
 ## Done
 
+- **Two of the README's open questions, ruled by Karynn 24 Aug and built the
+  same day.**
+
+  1. *Tablet: yes.* The assessment is a tablet workflow in a client's home.
+     The assessment and phone-intake flows now hold the README's 44px hit-area
+     floor on every control (`.tablet-flow` in index.css), verified at iPad
+     width with zero horizontal overflow and zero sub-floor targets.
+
+  2. *E-signature: "DocuSign-style service. Nothing typed."* Typed signatures
+     are gone everywhere. The client-agreement signing is now the provider
+     ceremony: the signer comes off the record (client · the intake's caller ·
+     or someone else, which is data entry, not signature), agrees to sign
+     electronically (timestamped ESIGN consent), **adopts** a signature and
+     initials generated from the legal name, and one action applies them to
+     every page — each gate refusing with a sentence until met. The hiring
+     application's attestation is the same adopt-and-sign, generated from the
+     legal name given earlier in the application. The domain contract lives in
+     `domain/consents/esign.ts` (tested); the record stores consent, adoption
+     and method; the signed packet renders "electronically adopted" with the
+     ceremony's timestamps. The real provider is the developer's integration —
+     every surface says the ceremony is simulated until it is connected, and
+     the provider's tamper-evident certificate replaces Joy's rendering then.
+
 - **00 — The Brain (24 Aug).** Karynn uploaded the home screen's design
   (`Joy Health The Brain.dc.html`, vendored) and confirmed the rebuild; the
   handoff README marks the Brief Band dashboard as a superseded exploration.

@@ -14,6 +14,12 @@ import {
   type ConsentDecisions,
   type ConsentItem,
 } from "@/domain/consents/registry";
+import {
+  CEREMONY_REFUSAL_MESSAGES,
+  PROVIDER_NOTE,
+  ceremonyRefusals,
+  deriveInitials,
+} from "@/domain/consents/esign";
 import { cn } from "@/lib/utils";
 import { canWitnessSignature, witnessLine, witnessRefusal } from "@/domain/consents/witness";
 import { SignedPacket } from "@/components/assessment/SignedPacket";
@@ -47,7 +53,7 @@ interface Props {
  *    the packet asks. The family never signs the same sentence twice.
  */
 export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Props) {
-  const { consentSessions, saveConsents, currentUser } = useDemo();
+  const { consentSessions, saveConsents, currentUser, intakes } = useDemo();
   const stored = consentSessions[admissionId];
 
   const [decisions, setDecisions] = useState<ConsentDecisions>(() => stored?.decisions ?? {});
@@ -57,12 +63,20 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
   );
   const [signerName, setSignerName] = useState(stored?.signerName ?? "");
   const [signerRelationship, setSignerRelationship] = useState(stored?.signerRelationship ?? "");
-  const [signature, setSignature] = useState("");
-  const [initials, setInitials] = useState("");
+  const [signerChoice, setSignerChoice] = useState<"self" | "caller" | "other" | null>(null);
+  const [esignConsentAt, setEsignConsentAt] = useState<string | null>(null);
+  const [adoptedAt, setAdoptedAt] = useState<string | null>(null);
   const [reviewedCompletedAt, setReviewedCompletedAt] = useState<string | null>(
     stored?.reviewedCompletedAt ?? null,
   );
   const [showPacket, setShowPacket] = useState(false);
+
+  // The responsible party Joy has been speaking to — from the intake, so the
+  // signer's name comes off the record, never typed at signing.
+  const intakeAnswers = intakes[admissionId]?.answers as Record<string, unknown> | undefined;
+  const callerName = typeof intakeAnswers?.caller_name === "string" ? (intakeAnswers.caller_name as string) : null;
+  const callerRelationship =
+    typeof intakeAnswers?.caller_relationship === "string" ? (intakeAnswers.caller_relationship as string) : "Responsible party";
 
   const readiness = useMemo(() => consentReadiness(decisions), [decisions]);
   const consequences = useMemo(() => declineConsequences(decisions), [decisions]);
@@ -228,61 +242,165 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
       );
     }
 
+    // The e-signature ceremony — Karynn's ruling, 24 August: "DocuSign-style
+    // service. Nothing typed." The signer comes off the record, agrees to sign
+    // electronically, adopts a generated signature and initials, and one
+    // action applies them everywhere the packet asks. The only typing anywhere
+    // is ordinary data entry when the record is missing the signer's name.
+    const refusals = ceremonyRefusals(
+      { legalName: signerName, relationship: signerRelationship },
+      { consentedAt: esignConsentAt, adoptedAt, signedAt: null },
+    );
+    const chooseSigner = (choice: "self" | "caller" | "other") => {
+      setSignerChoice(choice);
+      setAdoptedAt(null);
+      if (choice === "self") {
+        setSignerName(clientName);
+        setSignerRelationship("Self");
+      } else if (choice === "caller" && callerName) {
+        setSignerName(callerName);
+        setSignerRelationship(callerRelationship);
+      } else {
+        setSignerName("");
+        setSignerRelationship("");
+      }
+    };
+    const initials = deriveInitials(signerName);
+
     return (
-      <section className="rounded-2xl border border-border bg-surface p-8">
-        <h2 className="text-xl font-semibold tracking-tight">Sign once</h2>
+      <section className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+        <h2 className="text-xl font-semibold tracking-tight">Sign once, electronically</h2>
         <p className="mt-2 max-w-prose text-sm text-muted-foreground">
-          One signature and one set of initials. Joy places them on every page that asks —
-          {clientName} never signs the same sentence twice.
+          One adopted signature and one set of initials. Joy places them on every page that asks —
+          {" "}{clientName} never signs the same sentence twice, and nothing is typed.
         </p>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="signerName" className="text-xs font-medium">Signer's full legal name</Label>
-            <Input id="signerName" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
+        <div className="mt-6">
+          <p className="text-xs font-medium">Who is signing?</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              aria-pressed={signerChoice === "self"}
+              onClick={() => chooseSigner("self")}
+              className={cn(
+                "min-h-[44px] rounded-xl border px-4 text-sm transition-colors",
+                signerChoice === "self" ? "border-primary bg-[#EEF0FE] font-medium text-primary" : "border-border hover:bg-surface-muted",
+              )}
+            >
+              {clientName} · Self
+            </button>
+            {callerName && (
+              <button
+                type="button"
+                aria-pressed={signerChoice === "caller"}
+                onClick={() => chooseSigner("caller")}
+                className={cn(
+                  "min-h-[44px] rounded-xl border px-4 text-sm transition-colors",
+                  signerChoice === "caller" ? "border-primary bg-[#EEF0FE] font-medium text-primary" : "border-border hover:bg-surface-muted",
+                )}
+              >
+                {callerName} · {callerRelationship}
+              </button>
+            )}
+            <button
+              type="button"
+              aria-pressed={signerChoice === "other"}
+              onClick={() => chooseSigner("other")}
+              className={cn(
+                "min-h-[44px] rounded-xl border px-4 text-sm transition-colors",
+                signerChoice === "other" ? "border-primary bg-[#EEF0FE] font-medium text-primary" : "border-border hover:bg-surface-muted",
+              )}
+            >
+              Someone else
+            </button>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="signerRel" className="text-xs font-medium">Relationship to client</Label>
-            <Input
-              id="signerRel"
-              value={signerRelationship}
-              onChange={(e) => setSignerRelationship(e.target.value)}
-              placeholder="Self, daughter, power of attorney…"
-            />
-            <p className="text-xs text-muted-foreground">
-              If someone signs for the client, the packet records who and in what capacity.
-            </p>
-          </div>
+          {signerChoice === "other" && (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="signerName" className="text-xs font-medium">Signer's full legal name</Label>
+                <Input
+                  id="signerName"
+                  value={signerName}
+                  onChange={(e) => {
+                    setSignerName(e.target.value);
+                    setAdoptedAt(null);
+                  }}
+                  className="min-h-[44px]"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Data entry for a record that's missing them — the signature itself is never typed.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="signerRel" className="text-xs font-medium">Relationship to client</Label>
+                <Input
+                  id="signerRel"
+                  value={signerRelationship}
+                  onChange={(e) => setSignerRelationship(e.target.value)}
+                  placeholder="Power of attorney, guardian…"
+                  className="min-h-[44px]"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-[2fr_1fr]">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="signature" className="text-xs font-medium">Signature</Label>
-            <Input
-              id="signature"
-              value={signature}
-              onChange={(e) => setSignature(e.target.value)}
-              placeholder="Type the full name to sign"
-              className="h-16 font-serif text-2xl"
-            />
+        <label className="mt-6 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-xl border border-border p-3.5">
+          <input
+            type="checkbox"
+            checked={Boolean(esignConsentAt)}
+            onChange={(e) => {
+              setEsignConsentAt(e.target.checked ? new Date().toISOString() : null);
+              if (!e.target.checked) setAdoptedAt(null);
+            }}
+            className="mt-0.5 h-5 w-5 accent-[#1407A2]"
+          />
+          <span className="text-sm">
+            {signerName.trim() || "The signer"} agrees to sign this agreement electronically, and to
+            the electronic record of it.
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              The e-signature disclosure the provider presents — recorded with a timestamp.
+            </span>
+          </span>
+        </label>
+
+        <div className="mt-4 rounded-xl border border-border bg-surface-muted p-4">
+          <p className="text-xs font-medium">Adopt your signature and initials</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Generated from the legal name on record — the provider's adopt-and-sign step.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-[2fr_1fr]">
+            <div>
+              <p className={cn("flex h-16 items-end border-b border-border pb-1 font-serif text-2xl italic", !signerName.trim() && "text-muted-foreground/40")}>
+                {signerName.trim() || "Pick who is signing"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Signature</p>
+            </div>
+            <div>
+              <p className={cn("flex h-16 items-end border-b border-border pb-1 font-serif text-2xl italic", !initials && "text-muted-foreground/40")}>
+                {initials || "—"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Initials</p>
+            </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="initials" className="text-xs font-medium">Initials</Label>
-            <Input
-              id="initials"
-              value={initials}
-              onChange={(e) => setInitials(e.target.value.toUpperCase().slice(0, 4))}
-              placeholder="ABC"
-              className="h-16 font-serif text-2xl"
-            />
-          </div>
+          <Button
+            variant={adoptedAt ? "outline" : "default"}
+            disabled={!signerName.trim() || !esignConsentAt}
+            onClick={() => setAdoptedAt(new Date().toISOString())}
+            className="mt-3 min-h-[44px]"
+          >
+            {adoptedAt ? (
+              <>
+                <Check className="mr-1.5 h-4 w-4" />
+                Adopted
+              </>
+            ) : (
+              "Adopt signature and initials"
+            )}
+          </Button>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          A typed signature stands in for handwriting in this prototype; a real signature pad is
-          needed before this is used with a client. One signature with initials is Joy's settled
-          approach — Karynn, 22 August — applied only after the completed document has been
-          reviewed in its entirety.
-        </p>
+
+        <p className="mt-3 max-w-prose text-xs text-muted-foreground">{PROVIDER_NOTE}</p>
 
         <dl className="mt-6 divide-y divide-border border-y border-border">
           <div className="flex justify-between py-2.5 text-sm">
@@ -300,8 +418,11 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
         </dl>
 
         <div className="mt-6 flex flex-wrap gap-2">
+          {/* The gated primary states its blocker in its own label. */}
           <Button
-            disabled={!signerName.trim() || !signature.trim() || !initials.trim()}
+            disabled={refusals.length > 0}
+            title={refusals.length > 0 ? CEREMONY_REFUSAL_MESSAGES[refusals[0]] : undefined}
+            className="min-h-[44px]"
             onClick={() => {
               saveConsents(admissionId, {
                 decisions,
@@ -312,17 +433,26 @@ export function ConsentSigning({ admissionId, clientName, onBack, onDone }: Prop
                 // The record that the whole completed document was in front of
                 // them before the pen — Karynn's requirement, 22 August.
                 reviewedCompletedAt,
-                signatureText: signature,
+                signatureText: signerName,
                 initials,
+                esignConsentAt,
+                signatureAdoptedAt: adoptedAt,
+                signatureMethod: "esign_adopted",
                 signedAt: new Date().toISOString(),
               });
               setPhase("done");
             }}
           >
             <PenLine className="mr-1.5 h-4 w-4" />
-            Apply to the whole packet
+            {refusals.length === 0
+              ? "Sign — apply to the whole packet"
+              : refusals[0] === "no_signer_name"
+                ? "Pick who is signing first"
+                : refusals[0] === "not_consented"
+                  ? "Agree to sign electronically first"
+                  : "Adopt the signature first"}
           </Button>
-          <Button variant="ghost" onClick={() => setPhase("review")}>
+          <Button variant="ghost" onClick={() => setPhase("review")} className="min-h-[44px]">
             Back to the review
           </Button>
         </div>

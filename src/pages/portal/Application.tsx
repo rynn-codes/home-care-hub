@@ -228,6 +228,7 @@ export default function Application() {
             field={field}
             value={answers[field.id]}
             onChange={(v) => answer(field.id, v)}
+            adoptName={typeof answers.legal_name === "string" ? answers.legal_name : facts.name}
           />
         ))}
 

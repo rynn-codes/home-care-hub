@@ -100,12 +100,19 @@ export interface DemoConsentSession {
    */
   reviewedCompletedAt?: string | null;
   /**
-   * What the pen actually wrote — the typed signature and initials, kept so
-   * the signed packet can be rendered as the document it is. A typed
-   * signature stands in for handwriting in this prototype.
+   * The adopted signature and initials, kept so the signed packet can be
+   * rendered as the document it is. Karynn, 24 August: "DocuSign-style
+   * service. Nothing typed." — the signature is generated from the legal name
+   * on record and adopted in the ceremony, never typed.
    */
   signatureText?: string | null;
   initials?: string | null;
+  /** ESIGN Act consent — agreed to sign electronically, with a timestamp. */
+  esignConsentAt?: string | null;
+  /** When the generated signature and initials were adopted. */
+  signatureAdoptedAt?: string | null;
+  /** How the marks were made. The only method Joy offers is the ceremony. */
+  signatureMethod?: "esign_adopted" | null;
   signedAt: string | null;
 }
 

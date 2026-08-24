@@ -67,6 +67,9 @@ function fill(
     default:
       if (question.id.includes("phone")) return phone;
       if (question.id.includes("name")) return name;
+      // Relationship labels are capitalized (business rule #6), and this one
+      // feeds the e-signature ceremony's signer chip — a real word, not filler.
+      if (question.id.includes("relationship")) return "Daughter";
       return "Recorded";
   }
 }
@@ -138,6 +141,10 @@ export interface SeededConsentSession {
   witnessName?: string | null;
   witnessRole?: "ceo_admin" | "rn_clinical" | null;
   signerRelationship: string | null;
+  /** The e-signature ceremony's own record — consent, adoption, method. */
+  esignConsentAt?: string | null;
+  signatureAdoptedAt?: string | null;
+  signatureMethod?: "esign_adopted" | null;
   signedAt: string | null;
 }
 
@@ -181,6 +188,11 @@ export const seedConsentSessions: Record<string, SeededConsentSession> = Object.
           signerRelationship: "Responsible party",
           witnessName: "Karynn Verrett",
           witnessRole: "ceo_admin" as const,
+          // Signed through the e-signature ceremony: agreed to sign
+          // electronically, adopted the generated marks, then one application.
+          esignConsentAt: AT,
+          signatureAdoptedAt: AT,
+          signatureMethod: "esign_adopted" as const,
           signedAt: AT,
         },
       ];

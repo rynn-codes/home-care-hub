@@ -101,7 +101,9 @@ export default function Assessment() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl pb-16">
+    // tablet-flow: the assessment is a tablet workflow in a client's home —
+    // every control inside holds the 44px hit-area floor (Karynn, 24 Aug).
+    <div className="tablet-flow mx-auto max-w-4xl pb-16">
       <div className="mb-6 flex items-center gap-3 border-b border-border pb-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admissions")} aria-label="Back to Admissions">
           <ArrowLeft className="h-4 w-4" />

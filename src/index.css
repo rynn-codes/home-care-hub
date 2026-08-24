@@ -173,6 +173,20 @@
   50% { opacity: .95; transform: scale(1.06); }
 }
 
+/* The tablet layer — Karynn's ruling, 24 August: yes to tablets for the
+   assessment. The README calls the assessment "a tablet workflow in practice"
+   and asks for 44px hit areas on any surface used in a client's home. This
+   class wraps the assessment and phone-intake flows and raises every control
+   inside to that floor; checkboxes and radios keep their native size because
+   their label is the touch target. */
+.tablet-flow button,
+.tablet-flow a,
+.tablet-flow select,
+.tablet-flow textarea,
+.tablet-flow input:not([type="checkbox"]):not([type="radio"]) {
+  min-height: 44px;
+}
+
 /* The handoff README's accessibility contract: honor prefers-reduced-motion by
    disabling all animation and transition. The glow dot simply holds still. */
 @media (prefers-reduced-motion: reduce) {
