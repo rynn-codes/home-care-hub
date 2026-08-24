@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, ChevronDown, UserPlus, Phone, ClipboardCheck, CalendarPlus, Upload } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { WorkQueueSection } from "@/components/work-queue/WorkQueueSection";
 import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
@@ -7,6 +7,18 @@ import { classifyAdmission } from "@/domain/admissions/classify";
 import { followUp } from "@/domain/admissions/intake";
 import { STAGE_LABELS, type AdmissionStage } from "@/domain/admissions/stages";
 import { NewReferralDrawer } from "@/components/admissions/NewReferralDrawer";
+import { PersonPickerDialog } from "@/components/admissions/PersonPickerDialog";
+import {
+  ScheduleAdmissionDialog,
+  type ScheduleSubmission,
+} from "@/components/admissions/ScheduleAdmissionDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { type SeedAdmission } from "@/lib/admissionsSeed";
 import { useDemo } from "@/context/DemoDataProvider";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +26,9 @@ import { newId } from "@/lib/demoStore";
 import type { ReferralDraft } from "@/domain/admissions/referral";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+/** The RNs who carry out assessments. */
+const ASSESSORS = ["Kelsey Westley, RN", "Karynn Verrett, RN"];
 
 /**
  * Admissions — the work queue, to the approved mock's frame: the stage
@@ -30,6 +45,13 @@ import { cn } from "@/lib/utils";
  *
  * Reads demo seed. The domain logic underneath — classification, stage
  * rules, duplicate detection, follow-up escalation — is real and tested.
+ *
+ * Quick Add is the updated mock's "flexible entry": the office can enter the
+ * process at any point. The + menu offers New lead (a quick capture, no DOB),
+ * Start phone intake and Start assessment (each behind a person picker with
+ * "start with a new person" always available), Schedule (a three-step modal),
+ * and Upload document. Nothing blocks on a missing earlier step — a referral
+ * can arrive as a booked assessment with no intake, and the gap stays visible.
  */
 
 const STAGE_FILTERS: Array<{ label: string; stage: AdmissionStage | "all" }> = [
@@ -102,48 +124,140 @@ export default function Admissions() {
   const [stage, setStage] = useState<AdmissionStage | "all">("all");
   const [q, setQ] = useState("");
   const [referralOpen, setReferralOpen] = useState(false);
+  const [pickerMode, setPickerMode] = useState<"intake" | "assessment" | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const navigate = useNavigate();
-  const { admissions, people, intakes, addReferral, scheduleEvents } = useDemo();
+  const { admissions, people, intakes, addReferral, scheduleEvents, scheduleAssessment } =
+    useDemo();
+
+  const intakeComplete = (admissionId: string) => Boolean(intakes[admissionId]?.completedAt);
 
   // Stands in for the create service until the migrations are applied. It
-  // persists to localStorage so the demo survives a refresh, and the
-  // confirmation says plainly that this is not a database write.
-  const handleCreate = (draft: ReferralDraft) => {
-    const name = [draft.preferredName || draft.firstName, draft.lastName]
-      .filter(Boolean)
-      .join(" ");
+  // persists to localStorage so the demo survives a refresh. Returns the new
+  // admission id so a caller can go straight on to intake or an assessment.
+  const createLead = (
+    fields: {
+      name: string;
+      firstName: string;
+      lastName: string;
+      preferredName?: string | null;
+      phone?: string | null;
+      email?: string | null;
+      responsiblePartyName?: string | null;
+      service?: string;
+      location?: string;
+      meta?: string;
+    },
+    announce = true,
+  ): string => {
     const id = newId("adm");
-
     addReferral(
       {
         id,
-        name,
+        name: fields.name,
         stage: "new_referral",
         status: "active",
-        service: draft.serviceRequested
-          ? draft.serviceRequested.replace(/_/g, " ")
-          : "Not specified",
-        location: draft.serviceArea || "Not specified",
+        service: fields.service || "Not specified",
+        location: fields.location || "Not specified",
         headline: "New referral — no one has called back yet",
-        meta: draft.referralNote || "Just added",
+        meta: fields.meta || "Just added",
         action: "Start intake",
       },
       {
         personId: newId("per"),
-        firstName: draft.firstName,
-        lastName: draft.lastName,
-        preferredName: draft.preferredName || null,
-        phone: draft.phone || draft.contactPhone || null,
-        email: draft.email || null,
-        dateOfBirth: draft.dateOfBirth || null,
-        responsiblePartyName: draft.contactIsSomeoneElse ? draft.contactName : null,
+        firstName: fields.firstName,
+        lastName: fields.lastName,
+        preferredName: fields.preferredName || null,
+        phone: fields.phone || null,
+        email: fields.email || null,
+        dateOfBirth: null,
+        responsiblePartyName: fields.responsiblePartyName || null,
         openAdmissionStage: "new_referral",
       },
     );
+    if (announce) {
+      toast.success("Lead added", {
+        description: "Saved on this device. Not yet written to a database.",
+      });
+    }
+    return id;
+  };
 
-    toast.success("Referral added", {
-      description: "Saved on this device. Not yet written to a database.",
+  const handleCreate = (draft: ReferralDraft): string => {
+    const name = [draft.preferredName || draft.firstName, draft.lastName]
+      .filter(Boolean)
+      .join(" ");
+    return createLead({
+      name,
+      firstName: draft.firstName,
+      lastName: draft.lastName,
+      preferredName: draft.preferredName,
+      phone: draft.phone || draft.contactPhone,
+      email: draft.email,
+      responsiblePartyName: draft.contactIsSomeoneElse ? draft.contactName : null,
+      service: draft.serviceRequested ? draft.serviceRequested.replace(/_/g, " ") : "Not specified",
+      location: draft.serviceArea || "Not specified",
+      meta: draft.referralNote || "Just added",
     });
+  };
+
+  // A brand-new person captured inside the Schedule modal. Splits the single
+  // contact name into first/last so the same person shape is written as a lead.
+  const createLeadFromCapture = (contactName: string, personNeedingCare: string, phone: string, zip: string): string => {
+    const careName = personNeedingCare.trim() || contactName.trim();
+    const parts = careName.split(" ").filter(Boolean);
+    return createLead(
+      {
+        name: careName,
+        firstName: parts[0] ?? careName,
+        lastName: parts.slice(1).join(" "),
+        phone,
+        responsiblePartyName: personNeedingCare.trim() ? contactName.trim() : null,
+        location: zip.trim() || "Not specified",
+        meta: "Added while scheduling",
+      },
+      false,
+    );
+  };
+
+  const startIntake = (admissionId: string) => navigate(`/admissions/${admissionId}/intake`);
+  const startAssessment = (admissionId: string) => {
+    // If the intake was never completed, the assessment still opens — the flow
+    // itself surfaces the gap. Route straight to the assessment.
+    navigate(`/admissions/${admissionId}/assessment`);
+  };
+
+  const handleSchedule = (s: ScheduleSubmission) => {
+    const admissionId = s.admissionId ?? (s.newPerson
+      ? createLeadFromCapture(s.newPerson.contactName, s.newPerson.personNeedingCare, s.newPerson.phone, s.newPerson.zip)
+      : null);
+    if (!admissionId) return;
+
+    const startsAt = new Date(`${s.date}T${s.time || "09:00"}`).toISOString();
+
+    if (s.what === "assessment") {
+      const intakeOutstanding = !intakeComplete(admissionId);
+      scheduleAssessment({
+        admissionId,
+        clientName: s.clientName,
+        assessorName: s.assignedTo,
+        startsAt,
+        durationMinutes: 90,
+        address: s.address,
+        notifyName: s.clientName,
+      });
+      toast.success("Assessment booked", {
+        description: intakeOutstanding
+          ? "Phone intake is still outstanding — it stays flagged on the record."
+          : "The family will be notified through Spruce once it is connected.",
+      });
+    } else {
+      toast.success("Phone intake scheduled", {
+        description: s.newPerson
+          ? "New lead created and dropped into New Leads."
+          : "Noted on the record. Start the call from the queue when it is time.",
+      });
+    }
   };
 
   // Every row's button goes somewhere. A count or an action that leads
@@ -232,14 +346,41 @@ export default function Admissions() {
                 className="min-w-0 flex-1 border-none bg-transparent text-[13px] outline-none placeholder:text-muted-foreground"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setReferralOpen(true)}
-              className="flex h-[34px] items-center gap-[7px] rounded-[9px] bg-primary px-3.5 text-[13px] font-medium text-white transition-colors hover:bg-[#2A1BD1]"
-            >
-              <Plus className="h-[13px] w-[13px]" aria-hidden="true" />
-              New referral
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-[34px] items-center gap-[7px] rounded-[9px] bg-primary px-3.5 text-[13px] font-medium text-white transition-colors hover:bg-[#2A1BD1]"
+                >
+                  <Plus className="h-[13px] w-[13px]" aria-hidden="true" />
+                  Quick add
+                  <ChevronDown className="h-3.5 w-3.5 opacity-80" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="gap-2.5 py-2" onSelect={() => setReferralOpen(true)}>
+                  <UserPlus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  New lead
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2.5 py-2" onSelect={() => setPickerMode("intake")}>
+                  <Phone className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  Start phone intake
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2.5 py-2" onSelect={() => setPickerMode("assessment")}>
+                  <ClipboardCheck className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  Start assessment
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2.5 py-2" onSelect={() => setScheduleOpen(true)}>
+                  <CalendarPlus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  Schedule
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2.5 py-2" onSelect={() => navigate("/documents")}>
+                  <Upload className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  Upload document
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         }
       />
@@ -389,7 +530,30 @@ export default function Admissions() {
         onOpenChange={setReferralOpen}
         existingPeople={people}
         onCreate={handleCreate}
+        onStartIntake={startIntake}
         onOpenExisting={() => toast.info("Opening the existing record is not built yet.")}
+      />
+
+      <PersonPickerDialog
+        open={pickerMode !== null}
+        onOpenChange={(next) => !next && setPickerMode(null)}
+        mode={pickerMode ?? "intake"}
+        admissions={escalated}
+        intakeComplete={intakeComplete}
+        onPick={(id) => (pickerMode === "assessment" ? startAssessment(id) : startIntake(id))}
+        onStartNew={() => {
+          setPickerMode(null);
+          setReferralOpen(true);
+        }}
+      />
+
+      <ScheduleAdmissionDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        admissions={escalated}
+        assessors={ASSESSORS}
+        intakeComplete={intakeComplete}
+        onSubmit={handleSchedule}
       />
 
       <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">

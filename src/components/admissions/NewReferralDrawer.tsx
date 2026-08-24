@@ -31,7 +31,10 @@ interface NewReferralDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingPeople: readonly DuplicateCandidate[];
-  onCreate: (draft: ReferralDraft) => void;
+  /** Saves the lead and returns the new admission id. */
+  onCreate: (draft: ReferralDraft) => string;
+  /** Save, then take the office straight into the intake call. */
+  onStartIntake: (admissionId: string) => void;
   onOpenExisting: (personId: string) => void;
 }
 
@@ -81,6 +84,7 @@ export function NewReferralDrawer({
   onOpenChange,
   existingPeople,
   onCreate,
+  onStartIntake,
   onOpenExisting,
 }: NewReferralDrawerProps) {
   const [draft, setDraft] = useState<ReferralDraft>(emptyReferral);
@@ -113,13 +117,18 @@ export function NewReferralDrawer({
     setDupeDismissed(false);
   };
 
-  const submit = (event: React.FormEvent) => {
-    event.preventDefault();
+  const save = (thenStartIntake: boolean) => {
     setSubmitted(true);
     if (Object.keys(errors).length > 0 || blockingMatch) return;
-    onCreate(draft);
+    const id = onCreate(draft);
+    if (thenStartIntake) onStartIntake(id);
     reset();
     onOpenChange(false);
+  };
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    save(false);
   };
 
   return (
@@ -132,10 +141,11 @@ export function NewReferralDrawer({
     >
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>New referral</SheetTitle>
+          <SheetTitle>New lead</SheetTitle>
           <SheetDescription>
-            Just enough to follow up. Clinical details and the full address come later,
-            during intake and assessment scheduling.
+            A quick capture — a name and a way to reach them is all this needs. Date of
+            birth, the full address and the clinical details are gathered later, at intake
+            and the assessment.
           </SheetDescription>
         </SheetHeader>
 
@@ -164,23 +174,13 @@ export function NewReferralDrawer({
               </Field>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Preferred name" htmlFor="preferredName" hint="What they go by">
-                <Input
-                  id="preferredName"
-                  value={draft.preferredName}
-                  onChange={(e) => set("preferredName", e.target.value)}
-                />
-              </Field>
-              <Field label="Date of birth" htmlFor="dateOfBirth" hint="Optional">
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={draft.dateOfBirth}
-                  onChange={(e) => set("dateOfBirth", e.target.value)}
-                />
-              </Field>
-            </div>
+            <Field label="Preferred name" htmlFor="preferredName" hint="What they go by — optional">
+              <Input
+                id="preferredName"
+                value={draft.preferredName}
+                onChange={(e) => set("preferredName", e.target.value)}
+              />
+            </Field>
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Phone" htmlFor="phone" error={showErrors ? errors.phone : undefined}>
@@ -398,13 +398,22 @@ export function NewReferralDrawer({
             </p>
           )}
 
-          <div className={cn("flex flex-wrap gap-2 border-t border-border pt-4")}>
+          <div className={cn("flex flex-wrap items-center gap-2 border-t border-border pt-4")}>
             <Button type="submit" disabled={Boolean(blockingMatch)}>
-              Save and start intake
+              Save lead
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={Boolean(blockingMatch)}
+              onClick={() => save(true)}
+            >
+              Save &amp; start intake
             </Button>
             <Button
               type="button"
               variant="ghost"
+              className="ml-auto"
               onClick={() => {
                 reset();
                 onOpenChange(false);
