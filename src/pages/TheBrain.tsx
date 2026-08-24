@@ -176,22 +176,41 @@ export default function TheBrain() {
   const needsOpen = needsAll.filter((n) => !myDone[n.title]).length;
 
   // --------------------------------------------------------------- month --
+  // The month the grid is showing. A calendar whose arrows do nothing is worse
+  // than one that scrolls into an empty month — an empty month is a true
+  // statement about the diary, a dead arrow is a broken control.
+  const [monthCursor, setMonthCursor] = useState(() => {
+    const n = new Date();
+    return { year: n.getFullYear(), month: n.getMonth() };
+  });
+  const stepMonth = (dir: -1 | 1) =>
+    setMonthCursor(({ year, month }) => {
+      const d = new Date(year, month + dir, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+
   const monthCells = useMemo(() => {
-    const now = new Date();
-    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const { year, month } = monthCursor;
+    const first = new Date(year, month, 1);
     const lead = (first.getDay() + 1) % 7; // Sat-first columns
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const cells: Array<{ iso: string; day: number } | null> = [];
     for (let i = 0; i < lead; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
-      const iso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       cells.push({ iso, day: d });
     }
     while (cells.length % 7 !== 0) cells.push(null);
     return cells;
-  }, []);
+  }, [monthCursor]);
 
-  const monthLabel = new Date().toLocaleDateString([], { month: "long", year: "numeric" });
+  const monthLabel = new Date(monthCursor.year, monthCursor.month, 1).toLocaleDateString([], {
+    month: "long",
+    year: "numeric",
+  });
+  const onCurrentMonth =
+    monthCursor.year === new Date().getFullYear() && monthCursor.month === new Date().getMonth();
+  const cursorMonth = `${monthCursor.year}-${String(monthCursor.month + 1).padStart(2, "0")}`;
   const inBillingWeek = (iso: string) => iso >= AGENCY_WEEK.start && iso <= AGENCY_WEEK.end;
 
   const acts = brainActivity.filter((a) => actFilter === "All" || a.cat === actFilter);
@@ -974,12 +993,35 @@ export default function TheBrain() {
         <section className={cn(CARD, "px-6 py-[22px]")}>
           <div className="mb-4 flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2.5">
-              <button disabled title="Only the current month carries seed data" className="h-[30px] w-[30px] cursor-not-allowed rounded-[9px] border border-black/[.08] bg-white text-muted-foreground/40">
+              <button
+                type="button"
+                onClick={() => stepMonth(-1)}
+                aria-label="Previous month"
+                className="h-[30px] w-[30px] rounded-[9px] border border-black/[.08] bg-white text-[#6E6E76] transition-colors hover:bg-[#FAFAFB]"
+              >
                 ‹
               </button>
               <h2 className="m-0 whitespace-nowrap text-xl font-semibold tracking-[-.02em]">{monthLabel}</h2>
-              <button disabled title="Only the current month carries seed data" className="h-[30px] w-[30px] cursor-not-allowed rounded-[9px] border border-black/[.08] bg-white text-muted-foreground/40">
+              <button
+                type="button"
+                onClick={() => stepMonth(1)}
+                aria-label="Next month"
+                className="h-[30px] w-[30px] rounded-[9px] border border-black/[.08] bg-white text-[#6E6E76] transition-colors hover:bg-[#FAFAFB]"
+              >
                 ›
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setMonthCursor({ year: new Date().getFullYear(), month: new Date().getMonth() })
+                }
+                aria-label="Jump the calendar to this month"
+                className={cn(
+                  "rounded-[9px] border border-black/[.08] px-[13px] py-[7px] text-[12.5px] font-medium transition-colors",
+                  onCurrentMonth ? "bg-[#F1F2F6] text-primary" : "bg-white text-[#6E6E76] hover:bg-[#FAFAFB]",
+                )}
+              >
+                Today
               </button>
             </div>
             <div className="ml-auto flex items-center gap-3">
@@ -1063,10 +1105,10 @@ export default function TheBrain() {
 
           {calView === "agenda" && (
             <div className="flex flex-col gap-3.5">
-              {[...new Set(goingOnAllMonth(allEvents, filter).map((e) => e.date))].map((date) => (
+              {[...new Set(goingOnAllMonth(allEvents, filter, cursorMonth).map((e) => e.date))].map((date) => (
                 <div key={date} className="overflow-hidden rounded-[14px] border border-black/[.06]">
                   <div className="bg-[#F7F7F9] px-4 py-[11px] text-[12.5px] font-medium text-[#3A3A42]">{longDate(date)}</div>
-                  {goingOnAllMonth(allEvents, filter)
+                  {goingOnAllMonth(allEvents, filter, cursorMonth)
                     .filter((e) => e.date === date)
                     .map((e) => (
                       <div key={e.title} className="flex items-center gap-3.5 border-t border-black/[.05] px-4 py-3.5">
@@ -1080,7 +1122,7 @@ export default function TheBrain() {
                     ))}
                 </div>
               ))}
-              {goingOnAllMonth(allEvents, filter).length === 0 && (
+              {goingOnAllMonth(allEvents, filter, cursorMonth).length === 0 && (
                 <p className="m-0 py-6 text-center text-[13.5px] text-muted-foreground">Nothing notable is scheduled for this period.</p>
               )}
             </div>
@@ -1578,8 +1620,12 @@ export default function TheBrain() {
   );
 }
 
-function goingOnAllMonth(events: BrainEvent[], filter: "All" | BrainEvent["cat"]): BrainEvent[] {
-  const month = new Date().toISOString().slice(0, 7);
+function goingOnAllMonth(
+  events: BrainEvent[],
+  filter: "All" | BrainEvent["cat"],
+  /** The month the calendar is showing, "YYYY-MM" — the agenda follows the grid. */
+  month: string,
+): BrainEvent[] {
   return events
     .filter((e) => e.date.startsWith(month))
     .filter((e) => filter === "All" || e.cat === filter)
