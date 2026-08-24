@@ -598,13 +598,16 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     section: "Paperwork",
     question: "Who is paying for this?",
     kind: "multichoice",
+    // Joy is private pay only. A long-term care policy reimburses the client
+    // after they have paid Joy — Joy never bills the insurer — so the two
+    // payer options are Private Pay and Private Pay + LTC Insurance. There is
+    // no Medicare, Medicaid, or third-party billing anywhere in the product
+    // (README business rule #1). The consent packet's assignment-of-payment
+    // clause still lists all payors verbatim as fixed legal text; this is the
+    // field the RN actually sets, and it offers only what Joy accepts.
     options: [
-      { value: "self_pay", label: "Self-pay" },
-      { value: "insurance", label: "Insurance" },
-      { value: "medicare", label: "Medicare" },
-      { value: "medicaid", label: "Medicaid" },
-      { value: "third_party", label: "3rd party payor" },
-      { value: "grant", label: "Grant program" },
+      { value: "private_pay", label: "Private Pay" },
+      { value: "private_pay_ltc", label: "Private Pay + LTC Insurance" },
     ],
     fills: ["customer_rights"],
     required: true,
@@ -612,13 +615,13 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: "insurance_name",
     section: "Paperwork",
-    question: "Which insurer, and what is the policy number?",
+    question: "Which LTC carrier, and what is the policy number?",
     kind: "text",
     fills: ["customer_rights"],
     required: true,
     showIf: (a) => {
       const payers = a.payer_source;
-      return Array.isArray(payers) && payers.some((v) => v === "insurance" || v === "third_party");
+      return Array.isArray(payers) && payers.some((v) => v === "private_pay_ltc");
     },
   },
   {

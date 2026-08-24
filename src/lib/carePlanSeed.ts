@@ -101,7 +101,7 @@ const edward = plan({
   createdAt: "2026-01-14T09:30:00.000Z",
   liveFrom: "2026-01-15T00:00:00.000Z",
   answers: {
-    services: ["Live-In"],
+    services: ["Personal Care"],
     goals: ["Effective/safe care"],
     interventions_personal: ["Bathing", "Assist to dress", "Shave", "Eating", "Medication reminder"],
     interventions_elimination: ["Incontinent care", "Assist w/bedside commode"],
@@ -121,7 +121,7 @@ const dolores = plan({
   createdAt: "2026-06-20T16:00:00.000Z",
   liveFrom: "2026-06-21T00:00:00.000Z",
   answers: {
-    services: ["Evening Care"],
+    services: ["Personal Care"],
     goals: ["Patient clean, comfortable"],
     interventions_personal: ["Assist to dress", "Meal prep", "Medication reminder", "Oral hygiene/denture care"],
     interventions_activity: ["Assist in ambulation"],

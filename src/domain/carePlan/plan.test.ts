@@ -215,7 +215,7 @@ describe("the visit task list", () => {
     // caregiver does when she gets there — and an earlier version of this file
     // used it to hide a client's bathing task from the person who came to do
     // it.
-    for (const service of ["Personal Care", "Companion Care", "Live-In", "Respite"]) {
+    for (const service of ["Personal Care", "Post-Surgical", "Respite"]) {
       const tasks = tasksForVisit({
         plans: [live()],
         clientPersonId: "c-1",

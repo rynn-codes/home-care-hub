@@ -74,7 +74,10 @@ export const seedClients: ClientInput[] = [
     status: "active",
     payer: "Private Pay",
     payerLine: "Weekly invoicing · card on file",
-    services: ["Live-In"],
+    // 56 hrs is a live-in schedule, but the service line is Personal Care —
+    // the agency's catalog is exactly three (Personal Care, Post-Surgical,
+    // Respite); "Live-In" is a schedule, not a service.
+    services: ["Personal Care"],
     caregiver: "Vanessa",
     coordinator: "Kelsey Westley",
     condition: "Congestive heart failure",
@@ -98,11 +101,13 @@ export const seedClients: ClientInput[] = [
     address: "1140 Yale St, Houston, TX 77008",
     location: "Houston · Heights",
     status: "active",
-    payer: "Private Pay",
-    // The long-term care policy reimburses HER, after she has paid Joy. Joy
-    // is not a party to it and never bills the insurer.
+    // The second of the two allowed payer values. It still means private pay —
+    // the long-term care policy reimburses HER, after she has paid Joy. Joy is
+    // not a party to it and never bills the insurer. The label records that a
+    // policy is in play so the office can hand her the paperwork she needs.
+    payer: "Private Pay + LTC Insurance",
     payerLine: "Weekly invoicing · claims LTC reimbursement herself",
-    services: ["Evening Care"],
+    services: ["Personal Care"],
     caregiver: "Thylia",
     coordinator: "Kelsey Westley",
     condition: "Fall risk, evening confusion",
@@ -153,7 +158,7 @@ export const seedClients: ClientInput[] = [
     status: "active",
     payer: "Private Pay",
     payerLine: "Weekly invoicing · card on file",
-    services: ["Companion Care"],
+    services: ["Respite"],
     // Her Wednesday shift is the open one on the board — the dashboard's
     // "3 available caregivers" insight and this null are the same fact.
     caregiver: null,
@@ -181,7 +186,7 @@ export const seedClients: ClientInput[] = [
     status: "active",
     payer: "Private Pay",
     payerLine: "Weekly invoicing · ACH",
-    services: ["Dementia Care"],
+    services: ["Personal Care"],
     caregiver: "Heather Gonzales",
     coordinator: "Kelsey Westley",
     condition: "Dementia, moderate",
@@ -212,7 +217,9 @@ export const seedClients: ClientInput[] = [
     status: "on_hold",
     payer: "Private Pay",
     payerLine: "Weekly invoicing · card on file",
-    services: ["Personal Care"],
+    // The one Post-Surgical client on the roster — a short recovery line with
+    // a defined end, which reads differently from ongoing Personal Care.
+    services: ["Post-Surgical"],
     // On hold means no visits — which is why he is absent from the schedule
     // board, and the two screens agreeing on that absence is deliberate.
     caregiver: null,

@@ -26,13 +26,14 @@ export const REFERRAL_SOURCES = [
   { value: "other", label: "Other" },
 ] as const;
 
+// The agency's catalog is exactly three service lines (README business rule
+// #2). "Companion", "dementia", "live-in" and "post-acute" are not service
+// lines — they are, respectively, a Respite framing, a Personal Care client
+// population, a schedule, and the Post-Surgical line's older name.
 export const CARE_SERVICES = [
   { value: "personal_care", label: "Personal Care" },
-  { value: "companion_care", label: "Companion Care" },
-  { value: "respite_care", label: "Respite Care" },
-  { value: "post_acute_recovery", label: "Post-Acute / Recovery" },
-  { value: "dementia_care", label: "Dementia Care" },
-  { value: "live_in", label: "Live-In" },
+  { value: "post_surgical", label: "Post-Surgical" },
+  { value: "respite", label: "Respite" },
   { value: "other", label: "Other" },
 ] as const;
 

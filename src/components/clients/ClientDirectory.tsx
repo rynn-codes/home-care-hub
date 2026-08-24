@@ -15,15 +15,21 @@ import type { ClientRecord } from "@/domain/clients/roster";
  */
 
 /**
- * Karynn, 21 August: "We are all private pay."
+ * Karynn, 21 August: "We are all private pay. We allow long term care
+ * insurance, but only for them to reimburse the client once they have paid
+ * us." So the payer is one of exactly two values (README business rule #1):
+ * Private Pay, or Private Pay + LTC Insurance when a policy is in play.
  *
- * This map used to colour-code Medicaid STAR+PLUS, LTC Insurance, VA
- * Community Care and Medicare. None of them are payers Joy bills, so they
+ * This map used to colour-code Medicaid STAR+PLUS, LTC Insurance (standalone),
+ * VA Community Care and Medicare. None of them are payers Joy bills, so they
  * are gone rather than left as dead keys — a UI that has a colour ready for
- * Medicaid is a UI quietly asserting that Joy takes Medicaid.
+ * Medicaid is a UI quietly asserting that Joy takes Medicaid. LTC-insurance
+ * amber (#B54708 on #FFFAEB) meets contrast; the mock's paler #12B76A/#ECFDF3
+ * greens do not, which is why they are not reused here.
  */
 const PAYER_TONE: Record<string, string> = {
   "Private Pay": "text-primary bg-[#EEF0FE]",
+  "Private Pay + LTC Insurance": "text-[#B54708] bg-[#FFFAEB]",
 };
 
 const STATUS_DOT: Record<string, string> = {

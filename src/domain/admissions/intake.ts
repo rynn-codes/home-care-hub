@@ -98,16 +98,15 @@ export const TIME_PREFERENCES = [
   { value: "flexible", label: "Flexible" },
 ] as const;
 
-// The paper form offers Private Pay, LTC Insurance and Other. "Self pay + LTC
-// insurance" is kept because it is the common real answer — the policy covers
-// part and the family pays the rest — but LTC insurance alone is now available
-// as the form has it.
+// Exactly the three the phone-intake spec allows: Private Pay, Private Pay +
+// LTC Insurance, and Not sure yet (a pre-qualification value on a lead only).
+// "LTC insurance" alone is not an option — a long-term care policy reimburses
+// the client after they have paid Joy; Joy never bills the insurer, so LTC
+// insurance is never the payer, only a reimbursement the family claims.
 export const PAYMENT_SOURCES = [
   { value: "self_pay", label: "Private pay" },
-  { value: "ltc_insurance", label: "LTC insurance" },
   { value: "self_pay_ltc_insurance", label: "Private pay + LTC insurance" },
   { value: "not_sure_yet", label: "Not sure yet" },
-  { value: "other", label: "Other" },
 ] as const;
 
 /** How the caller would rather be reached, when no visit was booked. */

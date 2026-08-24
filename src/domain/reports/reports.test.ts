@@ -132,12 +132,12 @@ describe("hours by service", () => {
   it("adds up delivered hours and says the split is a billing label", () => {
     // Karynn, 21 August: Joy does not separate care.
     const report = hoursByService({
-      visits: [visit(), visit({ id: "v2", service: "Companion Care" })],
+      visits: [visit(), visit({ id: "v2", service: "Respite" })],
       range: RANGE,
     });
     expect(report.rows).toEqual([
       { service: "Personal Care", hours: 4 },
-      { service: "Companion Care", hours: 4 },
+      { service: "Respite", hours: 4 },
     ]);
     expect(report.note).toContain("does not separate care");
   });

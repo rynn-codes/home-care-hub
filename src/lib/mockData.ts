@@ -159,7 +159,7 @@ const clients: Client[] = clientNames.map((name, i) => ({
   name,
   status: i % 11 === 0 ? "on-hold" : i % 17 === 0 ? "discharged" : "active",
   primaryCaregiverId: employees[i % employees.length].id,
-  carePlan: ["Standard Care", "Memory Care", "Post-Op Recovery", "Companion Care", "Skilled Nursing"][i % 5],
+  carePlan: ["Personal Care", "Post-Surgical", "Respite"][i % 3],
   hoursPerWeek: 8 + ((i * 5) % 40),
   address: `${100 + i * 7} ${["Maple", "Oak", "Cedar", "Pine", "Birch"][i % 5]} St, Houston`,
   phone: `555-02${(10 + i).toString().padStart(2, "0")}`,

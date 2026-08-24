@@ -35,10 +35,10 @@ export interface AgendaEntry {
 export const todaysAgenda: AgendaEntry[] = [
   { id: "a1", time: "8:00 AM", client: "Lian Huang", service: "Personal Care", assignee: "Chanel P.", note: "clocked in 7:56 AM", state: "in-progress" },
   { id: "a2", time: "10:30 AM", client: "Marcus Bell", service: "Initial Assessment", assignee: "Kelsey Westley, RN", state: "scheduled" },
-  { id: "a3", time: "12:00 PM", client: "Ruth Alvarez", service: "Companion Care", assignee: "Unassigned", note: "3 caregivers available", state: "unassigned" },
+  { id: "a3", time: "12:00 PM", client: "Ruth Alvarez", service: "Respite", assignee: "Unassigned", note: "3 caregivers available", state: "unassigned" },
   { id: "a4", time: "2:00 PM", client: "Brandon", service: "Field Orientation", assignee: "Shadowing Chanel P.", state: "scheduled" },
-  { id: "a5", time: "4:00 PM", client: "Edward Pham", service: "Live-In", assignee: "Vanessa", state: "scheduled" },
-  { id: "a6", time: "6:30 PM", client: "Dolores Vance", service: "Evening Care", assignee: "Thylia", state: "scheduled" },
+  { id: "a5", time: "4:00 PM", client: "Edward Pham", service: "Personal Care", assignee: "Vanessa", state: "scheduled" },
+  { id: "a6", time: "6:30 PM", client: "Dolores Vance", service: "Personal Care", assignee: "Thylia", state: "scheduled" },
 ];
 
 export interface CountRow {
