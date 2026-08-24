@@ -59,6 +59,16 @@ print, and what the check added.
   three working filters (Hiring / Onboarding / Closed) that already slice the
   queue. Per-stage click-filtering can land with real data volumes.
 
+## The job-board question — settled
+
+The Aug 18 Hiring mock showed an "Open Positions" job board (roles,
+recruitment, an applicant directory). The roadmap above superseded it with the
+candidate work queue, on the ground that GHL owns recruiting. Karynn ruled on
+24 August: **keep the candidate queue, do not build the job board.** So Joy has
+no roles-and-openings surface by design — recruiting lives in GoHighLevel, and
+Joy begins at the Move Forward decision. If a positions view is ever wanted, it
+is a new surface, not a change to this screen.
+
 ## Remaining for the developer
 
 The GHL webhook wiring itself (the vocabulary and effects are the contract),

@@ -195,11 +195,22 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
   JH-number → Outstanding → audit trail all behave exactly as before, and
   the same four e2e specs prove it.
 
-## Conflicts needing Karynn's ruling (per the mockups README protocol)
+## Conflicts — both resolved by Karynn
 
-1. **Hiring: mock 02 vs the newer roadmap.** The mock (Aug 18) shows an "Open
-   Positions" job board — positions, recruitment, applicant directory. The
-   Hiring Screen Roadmap she uploaded 22 Aug (UPDATED, superseding addendum)
-   specifies the post-interview candidate work queue with Needs You | Waiting,
-   and says GHL owns recruiting. The build follows the roadmap. If she also
-   wants the job-positions view, it is a new surface, not a replacement.
+1. **Hiring: mock 02's job board vs the newer roadmap's candidate queue —
+   RESOLVED 24 Aug: keep the candidate queue, do not build the job board.**
+   The Aug 18 mock showed an "Open Positions" job board (positions,
+   recruitment, an applicant directory — the "we're hiring, here are the
+   openings" view). The Hiring Screen Roadmap she uploaded 22 Aug superseded
+   it with the post-interview candidate work queue (Needs You | Waiting |
+   Moving forward, with Stale/Blocked flags), because GoHighLevel owns
+   recruiting — so Joy never posts or advertises roles, it works the people
+   already in the pipeline. The build already followed the roadmap; her
+   ruling confirms it, so nothing changed. The job board is not a Joy
+   surface.
+
+2. **Billing: mock 09's "To send | Sent | Profitability" framing —
+   RESOLVED 23 Aug: adopt it.** Built over the Saturday-run engine; see the
+   Billing entry above. Profitability honestly refuses a net figure until
+   real pay rates exist, and the mock's "due Wednesday" gave way to the
+   Saturday-run answers.
