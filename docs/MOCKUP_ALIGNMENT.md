@@ -93,6 +93,17 @@ mocks live in `docs/mockups/` (pngs are the handoff; `.dc.html` the designs).
     and subtracted (a cheque is a fact), but the invoice stays plainly Unpaid
     (or Overdue) until it is settled in full.
 
+  - **The README's smaller screen notes, applied.** Scheduling gains the
+    **Agenda** view the README pairs with Week (matching The Brain's calendar);
+    Day and Month stay as a recorded superset from the earlier mock. Payroll's
+    week grid gains its own **Export** that exports the grid exactly as
+    displayed — hours only, since that is all Joy holds; the priced .xlsx
+    stays with the developer and Gusto. The last two lowercase relationship
+    labels are capitalized (rule #6). The README's Hiring section (an
+    Applied → Screened → Interview pipeline) remains superseded by the newer
+    Hiring Screen Roadmap and Karynn's 24 Aug ruling — GHL owns recruiting and
+    Joy's screen is the post-interview candidate queue.
+
   - **Assessment — the mock dropped its standalone "Education provided"
     section** (the refreshed README's prose still lists it, so README and HTML
     disagree; trusting the concrete design, it is gone). Joy's assessment is not

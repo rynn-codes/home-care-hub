@@ -91,7 +91,9 @@ function movedTo(v: Visit, target: Date): Visit {
   return { ...v, startsAt: s.toISOString(), endsAt: new Date(s.getTime() + length).toISOString() };
 }
 
-type ViewMode = "day" | "week" | "month";
+// Week and Agenda are the README's pair, matching The Brain's calendar; Day
+// and Month came from the earlier mock and stay as a superset.
+type ViewMode = "day" | "week" | "agenda" | "month";
 
 const pill = {
   open: "inline-flex items-center whitespace-nowrap rounded-full bg-[#EEF0FE] px-2 py-0.5 text-[10.5px] font-semibold tracking-[.03em] text-primary",
@@ -221,7 +223,7 @@ export default function Scheduling() {
   }, [view, weekStart, dayCursor]);
 
   const step = (dir: -1 | 1) => {
-    if (view === "week") setWeekOffset((w) => w + dir);
+    if (view === "week" || view === "agenda") setWeekOffset((w) => w + dir);
     else if (view === "day") setDayCursor((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + dir));
     else setDayCursor((d) => new Date(d.getFullYear(), d.getMonth() + dir, 1));
   };
@@ -345,7 +347,7 @@ export default function Scheduling() {
         </div>
         <span className="text-base font-semibold tracking-[-.015em]">{rangeLabel}</span>
         <div className="ml-auto flex gap-0.5 rounded-[9px] bg-[#F1F2F6] p-[3px]" role="tablist" aria-label="Calendar views">
-          {(["day", "week", "month"] as const).map((v) => (
+          {(["day", "week", "agenda", "month"] as const).map((v) => (
             <button
               key={v}
               role="tab"
@@ -662,6 +664,72 @@ export default function Scheduling() {
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {view === "agenda" && (
+          <div className="flex flex-col gap-3.5">
+            {byDay.map((dayVisitList, i) => {
+              if (dayVisitList.length === 0) return null;
+              const date = new Date(weekStart);
+              date.setDate(date.getDate() + i);
+              return (
+                <div key={i} className="overflow-hidden rounded-[14px] border border-[#ECECF1] bg-white">
+                  <div className="flex items-center gap-2 border-b border-[#ECECF1] bg-[#F7F7F9] px-4 py-[11px]">
+                    <span className={cn("text-[12.5px] font-medium", sameDay(date, new Date()) ? "text-primary" : "text-[#3A3A42]")}>
+                      {date.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}
+                    </span>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {dayVisitList.length} {dayVisitList.length === 1 ? "visit" : "visits"}
+                    </span>
+                  </div>
+                  {dayVisitList.map((v) => {
+                    const status = statusOf(v);
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelected(v)}
+                        className="flex w-full gap-4 border-b border-[#F3F3F6] px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[#FAFAFB]"
+                      >
+                        <span className="flex w-24 flex-none flex-col leading-[1.3]">
+                          <span className="text-[13px] font-semibold tabular-nums">{fmtTime(v.startsAt)}</span>
+                          <span className="text-[11.5px] text-muted-foreground tabular-nums">{fmtTime(v.endsAt)}</span>
+                        </span>
+                        <span
+                          className={cn(
+                            "w-0.5 flex-none rounded-sm",
+                            status === "open" ? "bg-[#C9CEF2]" : status === "conflict" ? "bg-[#FBD9D3]" : "bg-[#E4E4EA]",
+                          )}
+                          aria-hidden="true"
+                        />
+                        <span className="flex min-w-0 flex-col gap-[3px]">
+                          <span className="text-sm font-medium">{v.clientName}</span>
+                          <span className="text-[12.5px] text-muted-foreground">{v.service}</span>
+                        </span>
+                        <span className="ml-auto flex flex-none items-center gap-3">
+                          {status === "open" && <span className={pill.open}>OPEN</span>}
+                          {status === "conflict" && <span className={pill.conflict}>CONFLICT</span>}
+                          <span
+                            className={cn(
+                              "text-[12.5px]",
+                              v.caregiverName ? "text-[#5B6274]" : "font-medium text-primary",
+                            )}
+                          >
+                            {v.caregiverName ?? "Unassigned"}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+            {weekVisits.filter(matches).length === 0 && (
+              <div className="rounded-[14px] border border-[#ECECF1] bg-white px-4 py-8 text-center text-[13px] text-muted-foreground">
+                Nothing scheduled this week.
+              </div>
+            )}
           </div>
         )}
 

@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
@@ -428,9 +430,41 @@ export default function Payroll() {
                 Hours logged per day, from the same clock the review reads.
               </span>
             </div>
-            <span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className="h-[7px] w-[7px] rounded-sm bg-[#F79009]" aria-hidden="true" />
-              Needs review
+            <span className="ml-auto flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="h-[7px] w-[7px] rounded-sm bg-[#F79009]" aria-hidden="true" />
+                Needs review
+              </span>
+              {/* The grid's own Export, per the README: the grid exactly as
+                  displayed. Hours only — that is all Joy holds; the priced
+                  .xlsx stays with the developer and Gusto. */}
+              <button
+                type="button"
+                onClick={() => {
+                  const header = ["Employee", ...grid.days.map((d) => d.toISOString().slice(0, 10)), "Hrs", "OT"];
+                  const body = grid.rows.map((r) => [
+                    r.c.caregiverName,
+                    ...r.cells.map((cell) => (cell.hours === 0 ? "" : String(cell.hours))),
+                    String(r.total),
+                    r.ot > 0 ? String(r.ot) : "",
+                  ]);
+                  const totals = ["Total", ...grid.footer.map((v) => (v === 0 ? "" : String(v))), String(grid.totalHrs), String(grid.totalOt)];
+                  const csv = [header, ...body, totals]
+                    .map((cols) => cols.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+                    .join("\n");
+                  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `joy-payroll-hours-${grid.days[0].toISOString().slice(0, 10)}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("Week grid exported as shown — hours only, no wages.");
+                }}
+                className="flex h-[30px] items-center gap-1.5 rounded-lg border border-[#ECECF1] bg-white px-2.5 text-xs font-medium text-[#5B6274] transition-colors hover:bg-[#FAFAFB] hover:text-foreground"
+              >
+                <Download className="h-3 w-3" aria-hidden="true" />
+                Export
+              </button>
             </span>
           </div>
           <div className="overflow-hidden rounded-[14px] border border-[#ECECF1] bg-white">

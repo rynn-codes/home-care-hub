@@ -84,7 +84,7 @@ export const seedAdmissions: SeedAdmission[] = [
     service: "Personal Care",
     location: "Houston · 77004",
     headline: "RN assessment booked for Aug 17, 10:30 AM",
-    meta: "Kelsey Westley, RN · daughter Susan Bell is primary contact",
+    meta: "Kelsey Westley, RN · Daughter Susan Bell is primary contact",
     action: "Open assessment",
     scheduledAt: "2026-08-17T10:30:00Z",
   },

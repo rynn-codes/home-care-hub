@@ -1307,7 +1307,7 @@ export default function TheBrain() {
           <div className="flex flex-col gap-2 border-b border-black/[.05] px-6 py-5">
             <span className="text-[10.5px] font-semibold tracking-[.13em] text-muted-foreground">ATTENDEES</span>
             <span className="text-[13.5px] text-[#3A3A42]">Kelsey Westley, RN</span>
-            <span className="text-[13.5px] text-[#3A3A42]">Marta Vance · niece</span>
+            <span className="text-[13.5px] text-[#3A3A42]">Marta Vance · Niece</span>
           </div>
           <div className="flex flex-col gap-[9px] px-6 py-5">
             <Link to="/clients" className="flex h-[38px] items-center justify-center rounded-[11px] bg-primary text-[13px] font-medium text-white transition-colors hover:bg-[#2A1BD1]">
