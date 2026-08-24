@@ -167,6 +167,13 @@ export default function Settings() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Which build am I looking at? A cached page is indistinguishable from a
+          current one in a screenshot, so the page says so itself. */}
+      <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
+        Prototype build <span className="font-medium tabular-nums text-foreground">{__BUILD_STAMP__}</span>.
+        If this is older than you expect, the page is cached — reload with Cmd/Ctrl + Shift + R.
+      </p>
     </>
   );
 }
