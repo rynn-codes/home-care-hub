@@ -65,9 +65,10 @@ export default function Home() {
       <div className="flex flex-col gap-1">
         <h1 className="m-0 text-[30px] font-bold leading-[1.15] tracking-[-.03em]">
           Good {greeting()},{" "}
-          <span className="bg-gradient-to-r from-[#3B2FB8] to-[#1407A2] bg-clip-text text-transparent">
-            {currentUser.name.split(" ")[0]}.
-          </span>{" "}
+          {/* Flat primary, not a gradient. THE_BRAIN.md §2: the gradient H1 is
+              The Brain's alone — "the only gradient in the entire product. Do
+              not repeat the treatment elsewhere." */}
+          <span className="text-primary">{currentUser.name.split(" ")[0]}.</span>{" "}
           <span aria-hidden="true">👋</span>
         </h1>
         <p className="m-0 text-[13px] text-muted-foreground">{billingWeekLabel} · Billing Week 2 of 2</p>
