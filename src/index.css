@@ -172,3 +172,16 @@
   0%, 100% { opacity: .5; transform: scale(1); }
   50% { opacity: .95; transform: scale(1.06); }
 }
+
+/* The handoff README's accessibility contract: honor prefers-reduced-motion by
+   disabling all animation and transition. The glow dot simply holds still. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

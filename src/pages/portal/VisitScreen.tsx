@@ -367,7 +367,7 @@ export default function VisitScreen() {
                       {/* A caregiver reviewing should know which lines are
                           hers and which are a suggestion. */}
                       {line.drafted && (
-                        <span className="rounded-full bg-[hsl(var(--primary-soft))] px-2 py-0.5 text-[10px] font-medium normal-case text-[hsl(var(--accent-foreground))]">
+                        <span className="rounded-full bg-[hsl(var(--primary-soft))] px-2 py-0.5 text-[10.5px] font-medium normal-case text-[hsl(var(--accent-foreground))]">
                           Suggested
                         </span>
                       )}

@@ -520,7 +520,7 @@ function ClientScheduleTab({ clientName }: { clientName: string }) {
                           : "bg-[#EEF0FE] text-primary",
                     )}
                   >
-                    <span className="block text-[10px] opacity-90">{fmtTime(v.startsAt)}</span>
+                    <span className="block text-[10.5px] opacity-90">{fmtTime(v.startsAt)}</span>
                     <span className="block text-[11px] font-medium">
                       {open ? "Unassigned" : v.caregiverName}
                     </span>

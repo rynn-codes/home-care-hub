@@ -130,7 +130,7 @@ export function SignedPacket({
             </div>
           </dl>
 
-          <p className="mt-6 text-[10px] leading-relaxed">
+          <p className="mt-6 text-[11px] leading-relaxed">
             A typed signature stands in for handwriting in this prototype. This page renders
             Joy's stored record of the signing; the tamper-evident generated document is a
             separate integration and is not yet enabled.

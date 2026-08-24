@@ -542,7 +542,7 @@ function CommandCenterPanel({
                     )}
                   >
                     <div className="font-medium truncate">{t.title}</div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[11px] text-muted-foreground">
                       {formatDistanceToNow(new Date(t.updatedAt), { addSuffix: true })}
                     </div>
                   </button>
