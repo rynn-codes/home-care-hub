@@ -66,27 +66,38 @@ export const HOME_SCHEDULE: HomeEvent[] = [
 export interface HomeNeed {
   title: string;
   subject: string;
-  due: string;
+  /** The category chip on the right of the row. */
+  pill: string;
   cta: string;
   href: string;
 }
 
 export const HOME_NEEDS: HomeNeed[] = [
   {
-    title: "Approve client rate change",
-    subject: "Susan Miller · $18.00/hr → $19.50/hr",
-    due: "Due today",
-    cta: "Review & approve →",
+    title: "Approve payroll · Aug 22–28",
+    subject: "Joy prepared 36 timecards · closes tomorrow",
+    pill: "Payroll",
+    cta: "Review",
+    href: "/payroll",
+  },
+  {
+    title: "Approve Susan Miller rate change",
+    subject: "$24.00 → $26.50/hr · requested by scheduling",
+    pill: "Rate",
+    cta: "Review",
     href: "/clients",
   },
   {
-    title: "Final payroll approval",
-    subject: "Payroll · Aug 22–28",
-    due: "Closes tomorrow",
-    cta: "Review payroll →",
-    href: "/payroll",
+    title: "Confirm Marcus Bell caregiver match",
+    subject: "Joy prepared 3 candidates · start date Aug 26",
+    pill: "Match",
+    cta: "Review",
+    href: "/scheduling",
   },
 ];
+
+/** The footer line beside the cleared count. */
+export const HOME_NEEDS_FOOTNOTE = "Everything else Joy is authorized to handle.";
 
 export interface HomeWaiting {
   title: string;

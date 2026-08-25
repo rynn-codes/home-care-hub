@@ -173,6 +173,48 @@
   50% { opacity: .95; transform: scale(1.06); }
 }
 
+/* Clearing a Needs-Me item.
+   The line is drawn rather than switched on — the eye follows it across the
+   words, which is what makes the tick feel like it did something. #5B6274 is
+   the body-text ink: dark enough to read as a deliberate mark rather than the
+   faint grey a disabled row would wear. Both animations are disabled under
+   prefers-reduced-motion by the block further down. */
+@keyframes strikeIn {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.strike {
+  position: relative;
+  display: inline;
+}
+.strike::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: -1px;
+  top: 55%;
+  height: 1.5px;
+  border-radius: 1px;
+  background: #5B6274;
+  transform-origin: left center;
+  animation: strikeIn 0.3s cubic-bezier(.4, 0, .2, 1) forwards;
+}
+
+/* The confetti burst when the last item is cleared. One piece per element,
+   each given its own drift, spin and delay inline. */
+@keyframes confettiFall {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg); }
+  100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--spin)); }
+}
+.confetti-piece {
+  position: absolute;
+  top: 0;
+  width: 7px;
+  height: 11px;
+  border-radius: 1.5px;
+  animation: confettiFall 1.15s cubic-bezier(.2, .6, .35, 1) forwards;
+}
+
 /* The tablet layer — Karynn's ruling, 24 August: yes to tablets for the
    assessment. The README calls the assessment "a tablet workflow in practice"
    and asks for 44px hit areas on any surface used in a client's home. This

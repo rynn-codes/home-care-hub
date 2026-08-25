@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { HOME_NEEDS, HOME_SCHEDULE, HOME_WAITING } from "@/lib/homeSeed";
+import { HOME_NEEDS, HOME_NEEDS_FOOTNOTE, HOME_SCHEDULE, HOME_WAITING } from "@/lib/homeSeed";
+import { Confetti } from "@/components/home/Confetti";
 
 /**
  * My Schedule · Needs Me · Waiting on Others — the mockup's working card,
@@ -12,7 +13,19 @@ type Tab = "schedule" | "needs" | "waiting";
 export function DayTabs() {
   const [tab, setTab] = useState<Tab>("schedule");
   const [done, setDone] = useState<Record<string, boolean>>({});
+  const [celebrating, setCelebrating] = useState(false);
   const openNeeds = HOME_NEEDS.filter((n) => !done[n.title]).length;
+  const cleared = HOME_NEEDS.length - openNeeds;
+  const allClear = cleared === HOME_NEEDS.length;
+
+  // Fire the burst on the transition into "all cleared", not on every render
+  // that happens to be clear — reopening and re-clearing an item earns it again,
+  // but simply sitting on a finished list does not.
+  const wasClear = useRef(allClear);
+  useEffect(() => {
+    if (allClear && !wasClear.current) setCelebrating(true);
+    wasClear.current = allClear;
+  }, [allClear]);
 
   return (
     <section className="flex flex-col rounded-[14px] border border-[#ECECF1] bg-white px-[22px] py-5">
@@ -96,63 +109,98 @@ export function DayTabs() {
       )}
 
       {tab === "needs" && (
-        <div className="flex flex-col">
-          {openNeeds === 0 && (
-            <div className="flex flex-col items-center gap-[7px] py-11 text-center">
-              <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#F1F2F6]">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1407A2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3.6 8.4l2.8 2.8 6-6.4" />
-                </svg>
-              </span>
-              <span className="text-base font-medium tracking-[-.015em]">You're all caught up.</span>
-              <span className="text-[13.5px] text-muted-foreground">
-                Joy doesn't need any decisions from you right now.
-              </span>
+        <div className="relative flex flex-col">
+          {celebrating && <Confetti onDone={() => setCelebrating(false)} />}
+
+          {/* Progress under the tabs: how much of today's judgement is done. */}
+          <div className="mb-1 pt-1">
+            <div
+              className="h-1 flex-1 overflow-hidden rounded-full bg-[#F1F2F6]"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={HOME_NEEDS.length}
+              aria-valuenow={cleared}
+              aria-label="Needs Me progress"
+            >
+              <div
+                className={cn(
+                  "h-full rounded-full transition-[width,background-color] duration-500 ease-out",
+                  allClear ? "bg-[#12B76A]" : "bg-primary",
+                )}
+                style={{ width: `${(cleared / HOME_NEEDS.length) * 100}%` }}
+              />
             </div>
-          )}
+          </div>
+
           {HOME_NEEDS.map((n) => {
             const isDone = Boolean(done[n.title]);
             return (
-              <div key={n.title} className="flex items-start gap-5 border-t border-[#F3F3F6] py-5 first:border-t-0">
+              <div key={n.title} className="flex items-center gap-4 border-t border-[#F3F3F6] py-4">
                 <button
                   type="button"
                   onClick={() => setDone((d) => ({ ...d, [n.title]: !d[n.title] }))}
                   aria-label={isDone ? `Reopen ${n.title}` : "Mark done"}
+                  aria-pressed={isDone}
                   className={cn(
-                    "mt-px flex h-[22px] w-[22px] flex-none items-center justify-center rounded-[7px] border-[1.5px] transition-colors",
-                    isDone ? "border-primary bg-primary" : "border-[#D4D4DC] bg-transparent",
+                    "flex h-[22px] w-[22px] flex-none items-center justify-center rounded-[7px] border-[1.5px] transition-colors duration-200",
+                    isDone ? "border-primary bg-primary" : "border-[#D4D4DC] bg-transparent hover:border-[#A9A9B4]",
                   )}
                 >
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isDone ? "opacity-100" : "opacity-0"}>
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={cn("transition-opacity duration-200", isDone ? "opacity-100" : "opacity-0")}
+                  >
                     <path d="M2.4 6.2l2.4 2.4 4.8-5.2" />
                   </svg>
                 </button>
-                <span className="flex min-w-0 flex-1 flex-col gap-[5px]">
-                  <span className={cn("text-[15px] font-medium tracking-[-.01em]", isDone && "text-muted-foreground line-through decoration-[#D4D4DC]")}>
-                    {n.title}
+
+                <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <span className={cn("text-[14px] font-medium tracking-[-.01em]", isDone && "text-muted-foreground")}>
+                    {/* The line is drawn across the words rather than switched
+                        on — see .strike in index.css. */}
+                    {isDone ? <span className="strike">{n.title}</span> : n.title}
                   </span>
-                  <span className="text-[13px] text-[#6E6E76]">{n.subject}</span>
+                  <span className={cn("text-[12.5px]", isDone ? "text-muted-foreground/70" : "text-muted-foreground")}>
+                    {n.subject}
+                  </span>
                 </span>
-                <span className="flex flex-none flex-col items-end gap-2">
-                  <span
-                    className={cn(
-                      "whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium",
-                      isDone
-                        ? "bg-[#F3F3F6] text-muted-foreground"
-                        : n.due === "Due today"
-                          ? "bg-[#FFFAEB] text-[#B54708]"
-                          : "bg-[#F3F3F6] text-[#5B6274]",
-                    )}
-                  >
-                    {n.due}
-                  </span>
-                  <Link to={n.href} className="text-[12.5px] font-medium text-primary hover:text-[#2A1BD1]">
+
+                <span
+                  className={cn(
+                    "flex-none whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
+                    isDone ? "bg-[#F4F4F6] text-muted-foreground/70" : "bg-[#F1F2F6] text-[#5B6274]",
+                  )}
+                >
+                  {n.pill}
+                </span>
+
+                {isDone ? (
+                  <span className="flex-none text-[12.5px] text-muted-foreground/60">{n.cta}</span>
+                ) : (
+                  <Link to={n.href} className="flex-none text-[12.5px] font-medium text-primary hover:text-[#2A1BD1]">
                     {n.cta}
                   </Link>
-                </span>
+                )}
               </div>
             );
           })}
+
+          <div className="flex items-center gap-3 border-t border-[#F3F3F6] pt-3">
+            <span className="flex-none whitespace-nowrap text-[12px] text-muted-foreground tabular-nums">
+              {cleared} of {HOME_NEEDS.length} cleared
+            </span>
+            <span className={cn("ml-auto text-[12px]", allClear ? "text-[#027A48]" : "text-muted-foreground")}>
+              {allClear ? "You're all caught up. " : ""}
+              {HOME_NEEDS_FOOTNOTE}
+            </span>
+          </div>
         </div>
       )}
 
