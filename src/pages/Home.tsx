@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Mic, ArrowUp, Sun } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useDemo } from "@/context/DemoDataProvider";
 import { MorningBriefCard } from "@/components/home/MorningBriefCard";
 import { DayTabs } from "@/components/home/DayTabs";
 import { JoyAssistantColumn } from "@/components/home/JoyAssistantColumn";
-import { HOME_ASK_CHIPS } from "@/lib/homeSeed";
+import { HOME_ASK_CHIPS, HOME_STATS } from "@/lib/homeSeed";
 import { AGENCY_WEEK } from "@/lib/brainSeed";
 
 /**
@@ -144,6 +145,26 @@ export default function Home() {
 
           <JoyAssistantColumn />
         </div>
+      </div>
+
+      {/* The three figures that close the screen. Each is a link into the
+          screen that owns the number — a count you cannot act on is decoration. */}
+      <div className="grid gap-[18px] sm:grid-cols-3">
+        {HOME_STATS.map((s) => (
+          <Link
+            key={s.label}
+            to={s.href}
+            className="flex flex-col gap-2 rounded-[14px] border border-[#ECECF1] bg-white px-5 py-[18px] transition-colors hover:border-[#DDE0F8]"
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-[.1em] text-muted-foreground">
+              {s.label}
+            </span>
+            <span className="text-[32px] font-semibold leading-none tracking-[-.02em] text-[#1B1B1F]">
+              {s.value}
+            </span>
+            <span className="text-[12.5px] text-muted-foreground">{s.sub}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );

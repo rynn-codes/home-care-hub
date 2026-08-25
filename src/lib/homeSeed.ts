@@ -190,3 +190,16 @@ export const HOME_ASK_CHIPS = [
   "What's missing for payroll?",
   "Prepare tomorrow's schedule",
 ];
+
+/**
+ * The three figures that close the screen.
+ *
+ * The mockup's own values. Everything else on Home is transcribed rather than
+ * computed, and these follow suit so the screen reads as one piece; the live
+ * counts still drive the sidebar and The Brain.
+ */
+export const HOME_STATS = [
+  { label: "Clients", value: "42", sub: "Active", href: "/clients" },
+  { label: "Caregivers", value: "36", sub: "Active", href: "/employees" },
+  { label: "Hours", value: "1,284", sub: "Current billing period", href: "/payroll" },
+] as const;
