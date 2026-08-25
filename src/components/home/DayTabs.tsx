@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { ClipboardCheck, CornerUpRight, Upload, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HOME_NEEDS, HOME_NEEDS_FOOTNOTE, HOME_SCHEDULE, HOME_WAITING } from "@/lib/homeSeed";
 import { Confetti } from "@/components/home/Confetti";
@@ -9,6 +10,14 @@ import { Confetti } from "@/components/home/Confetti";
  * transcribed. Rows, pills, the Now marker and the copy are the design's.
  */
 type Tab = "schedule" | "needs" | "waiting";
+
+/** The tinted disc icons on Waiting on Others, as the mockup draws them. */
+const WAITING_ICON = {
+  check: ClipboardCheck,
+  share: CornerUpRight,
+  upload: Upload,
+  user: User,
+} as const;
 
 export function DayTabs() {
   const [tab, setTab] = useState<Tab>("schedule");
@@ -87,7 +96,10 @@ export function DayTabs() {
                   <span
                     className={cn(
                       "text-[15px] font-medium tracking-[-.01em]",
-                      e.done && "text-muted-foreground line-through decoration-[#D4D4DC]",
+                      // Same weight of mark as a cleared Needs-Me row: the
+                      // body-text ink, not a hairline grey that reads as a
+                      // rendering artefact.
+                      e.done && "text-muted-foreground line-through decoration-[#5B6274] decoration-[1.5px]",
                     )}
                   >
                     {e.title}
@@ -206,20 +218,30 @@ export function DayTabs() {
 
       {tab === "waiting" && (
         <div className="flex flex-col">
-          {HOME_WAITING.map((w) => (
-            <div key={w.title} className="flex items-start gap-5 border-t border-[#F3F3F6] py-5 first:border-t-0">
-              <span className="flex min-w-0 flex-1 flex-col gap-[5px]">
-                <span className="text-[15px] font-medium tracking-[-.01em]">{w.title}</span>
-                <span className="text-[13px] text-[#6E6E76]">{w.state}</span>
-                <span className="text-[12.5px] text-muted-foreground">{w.next}</span>
-              </span>
-              <Link to={w.href} className="flex-none self-center text-[12.5px] font-medium text-primary hover:text-[#2A1BD1]">
-                {w.cta}
+          {HOME_WAITING.map((w) => {
+            const Icon = WAITING_ICON[w.icon];
+            return (
+              <Link
+                key={w.title}
+                to={w.href}
+                className="flex items-center gap-3.5 border-t border-[#F3F3F6] py-3.5 transition-colors first:border-t-0 hover:bg-[#FCFCFD]"
+              >
+                <span className={cn("flex h-9 w-9 flex-none items-center justify-center rounded-[10px]", w.tint[0])}>
+                  <Icon className={cn("h-[17px] w-[17px]", w.tint[1])} aria-hidden="true" strokeWidth={1.6} />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <span className="text-[14px] font-medium tracking-[-.01em]">{w.title}</span>
+                  <span className="text-[12.5px] text-muted-foreground">{w.sub}</span>
+                </span>
+                <span className="flex-none whitespace-nowrap rounded-full bg-[#F1F2F6] px-2.5 py-1 text-[11px] font-medium text-[#5B6274]">
+                  {w.pill}
+                </span>
               </Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
+
     </section>
   );
 }

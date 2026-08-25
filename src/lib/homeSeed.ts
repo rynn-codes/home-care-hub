@@ -100,40 +100,48 @@ export const HOME_NEEDS: HomeNeed[] = [
 export const HOME_NEEDS_FOOTNOTE = "Everything else Joy is authorized to handle.";
 
 export interface HomeWaiting {
+  /** lucide icon name, resolved in the component. */
+  icon: "check" | "share" | "upload" | "user";
+  /** The tinted disc behind it: [background, foreground]. */
+  tint: [string, string];
   title: string;
-  state: string;
-  next: string;
-  cta: string;
+  sub: string;
+  /** What Joy last did about it — the row's right-hand chip. */
+  pill: string;
   href: string;
 }
 
 export const HOME_WAITING: HomeWaiting[] = [
   {
-    title: "Sarah Johnson · background check",
-    state: "Waiting on provider · 3 days",
-    next: "Joy checked status today at 8:04 AM. Next check: tomorrow.",
-    cta: "View employee →",
-    href: "/employees",
+    icon: "check",
+    tint: ["bg-[#FFF4E8]", "text-[#B54708]"],
+    title: "Background check pending",
+    sub: "Sarah Johnson · requested 3 days ago",
+    pill: "Joy following up",
+    href: "/operations/hiring",
   },
   {
-    title: "Mrs. Davis · care plan signature",
-    state: "Sent Tuesday · reminder sent this morning",
-    next: "Waiting on family. Joy follows up again tomorrow.",
-    cta: "View client →",
+    icon: "share",
+    tint: ["bg-[#EEF0FE]", "text-primary"],
+    title: "Family signature requested",
+    sub: "Mrs. Davis — Plan of Care · sent Tuesday",
+    pill: "2nd reminder sent",
     href: "/clients",
   },
   {
-    title: "Mike Chen · CPR renewal",
-    state: "Expires Aug 29",
-    next: "Upload requested · reminder sent today.",
-    cta: "View credential →",
+    icon: "upload",
+    tint: ["bg-[#ECFDF3]", "text-[#027A48]"],
+    title: "CPR renewal requested",
+    sub: "Mike Chen · expires Aug 29",
+    pill: "Reminder sent Friday",
     href: "/employees",
   },
   {
-    title: "Jane Smith · Gusto onboarding",
-    state: "Step 2 of 4 · started Aug 19",
-    next: "Joy nudged today. Escalates to HR if incomplete Aug 26.",
-    cta: "View employee →",
+    icon: "user",
+    tint: ["bg-[#EFF4FF]", "text-[#175CD3]"],
+    title: "Gusto onboarding incomplete",
+    sub: "Jane Smith · step 2 of 4",
+    pill: "Joy nudged today",
     href: "/employees",
   },
 ];
