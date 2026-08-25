@@ -71,7 +71,20 @@ export function agencyWeekLabel(iso: string): string {
     : `${s.toLocaleDateString([], m)}–${e.toLocaleDateString([], m)}`;
 }
 
-/** The line screens print under a title: "Aug 22–28 · Billing Week 1 of 2". */
+/**
+ * The line screens print under a title: "Week of Aug 22–28".
+ *
+ * Karynn, 25 August: "I think we can completely take off the 1 of 2 on ALL
+ * pages. I have no clue what that means." — and then: "Instead of saying
+ * billing week, can we say Week of?" Both are the same instinct and both are
+ * right. Which half of a payroll fortnight you are in is a fact the software
+ * needs and a person does not; "Billing Week" was internal vocabulary wearing
+ * a badge. "Week of" is what anybody would say out loud.
+ *
+ * `payrollWeekOfPeriod` is still here and still used — `payrollPeriod` cannot
+ * work out which fortnight you are in without it. It is simply no longer
+ * something the screens say.
+ */
 export function weekBadge(iso: string): string {
-  return `${agencyWeekLabel(iso)} · Billing Week ${payrollWeekOfPeriod(iso)} of 2`;
+  return `Week of ${agencyWeekLabel(iso)}`;
 }

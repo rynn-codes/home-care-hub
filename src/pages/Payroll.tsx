@@ -3,12 +3,7 @@ import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import {
-  agencyWeekLabel,
-  agencyWeekStart,
-  payrollPeriod,
-  payrollWeekOfPeriod,
-} from "@/domain/calendar/agencyWeek";
+import { agencyWeekLabel, agencyWeekStart, payrollPeriod } from "@/domain/calendar/agencyWeek";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   OVERTIME_AFTER_HOURS,
@@ -135,7 +130,6 @@ export default function Payroll() {
       payroll: agencyWeekLabel(lastWeekIso),
       billing: agencyWeekLabel(upcomingBillingWeek(today)),
       cycle: `${fmt(cycle.start)} – ${fmt(cycle.end)}`,
-      half: payrollWeekOfPeriod(today),
     };
   }, []);
 
@@ -347,7 +341,6 @@ export default function Payroll() {
         <span className="flex items-baseline gap-2">
           <span className="text-[13px] text-muted-foreground">Pay cycle</span>
           <span className="text-sm font-semibold">{weekDates.cycle}</span>
-          <span className="text-[12px] text-muted-foreground">week {weekDates.half} of 2</span>
         </span>
         <span className="ml-auto flex gap-0.5 rounded-[9px] bg-[#F1F2F6] p-[3px]" role="tablist" aria-label="Payroll views">
           {(

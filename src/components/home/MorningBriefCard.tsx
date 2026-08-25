@@ -1,4 +1,4 @@
-import { Sparkles, CloudRain } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { HOME_BRIEF } from "@/lib/homeSeed";
 import { weatherAdvisory } from "@/domain/home/weather";
 import { seedForecast } from "@/lib/weatherSeed";
@@ -59,38 +59,54 @@ export function MorningBriefCard() {
         {HOME_BRIEF.paragraph}
       </p>
 
-      {weather && (
-        <div
-          className={cn(
-            "flex items-start gap-3 rounded-[11px] border px-3.5 py-3",
-            // Amber is legitimate here: bad weather is something the office
-            // still owes an answer to — who is driving, and does a visit move.
-            weather.severity === "warn"
-              ? "border-[#FCE8B6] bg-[#FFFCF5]"
-              : "border-[#ECECF1] bg-[#FCFCFD]",
-          )}
-        >
-          <CloudRain
-            className={cn("mt-0.5 h-4 w-4 flex-none", weather.severity === "warn" ? "text-[#B54708]" : "text-[#175CD3]")}
-            aria-hidden="true"
-          />
-          <span className="flex min-w-0 flex-col gap-0.5 leading-[1.5]">
-            <span className={cn("text-[13px]", weather.severity === "warn" ? "text-[#8A6220]" : "text-[#3A3A42]")}>
-              {weather.line}
+      {/* Karynn, 25 August: "the weather box under the Coming up tomorrow box —
+          I feel that that should all be together instead of just throwing the
+          weather in the mix." Right: they were two loose cards stacked, and a
+          stack of cards reads as a list of unrelated alarms. They are the same
+          kind of thing — what is coming that you have not been told about — so
+          they are one bordered block with one heading and a hairline between
+          the rows. When there is no weather, the block is just the birthday and
+          looks like it was always meant to hold one thing. */}
+      <div className="flex flex-col rounded-[11px] border border-[#ECECF1] bg-[#FCFCFD]">
+        <span className="px-3.5 pb-1.5 pt-3 text-[10.5px] font-semibold uppercase tracking-[.13em] text-muted-foreground">
+          Heads up
+        </span>
+
+        {weather && (
+          <div
+            className={cn(
+              "flex items-center gap-3 border-t border-[#ECECF1] px-3.5 py-3",
+              // Amber is legitimate here and only here: a storm is something
+              // the office still owes an answer to — who drives, and does a
+              // visit move. Heavy rain without a storm stays neutral.
+              weather.severity === "warn" && "bg-[#FFFCF5]",
+            )}
+          >
+            {/* Karynn asked whether this matched the birthday card's icon. It
+                did not: that one is an emoji at 16px, this was a Lucide line
+                icon at 14px in a tinted colour — two icon families three lines
+                apart in one card. Same treatment now. */}
+            <span className="text-base leading-none" aria-hidden="true">
+              {weather.severity === "warn" ? "\u26C8\uFE0F" : "\uD83C\uDF27\uFE0F"}
             </span>
-            <span className="text-[11.5px] text-muted-foreground">
-              Forecast is seeded — no weather provider is connected yet.
+            <span className="flex min-w-0 flex-col gap-0.5 leading-[1.5]">
+              <span className={cn("text-[13px]", weather.severity === "warn" ? "text-[#8A6220]" : "text-[#3A3A42]")}>
+                {weather.line}
+              </span>
+              <span className="text-[11.5px] text-muted-foreground">
+                Forecast is seeded — no weather provider is connected yet.
+              </span>
             </span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 border-t border-[#ECECF1] px-3.5 py-3">
+          <span className="text-base leading-none" aria-hidden="true">{HOME_BRIEF.comingUp.icon}</span>
+          <span className="flex min-w-0 flex-col leading-[1.4]">
+            <span className="text-[13px] font-medium text-[#1B1B1F]">{HOME_BRIEF.comingUp.title}</span>
+            <span className="text-[12px] text-[#7C3AED]">{HOME_BRIEF.comingUp.when} · People</span>
           </span>
         </div>
-      )}
-
-      <div className="flex items-center gap-3 rounded-[11px] border border-[#ECECF1] bg-[#FCFCFD] px-3.5 py-3">
-        <span className="text-base leading-none" aria-hidden="true">{HOME_BRIEF.comingUp.icon}</span>
-        <span className="flex min-w-0 flex-col leading-[1.4]">
-          <span className="text-[13px] font-medium text-[#1B1B1F]">{HOME_BRIEF.comingUp.title}</span>
-          <span className="text-[12px] text-[#7C3AED]">{HOME_BRIEF.comingUp.when} · People</span>
-        </span>
       </div>
 
       <p className="m-0 text-[13px] text-muted-foreground">{HOME_BRIEF.allClear}</p>

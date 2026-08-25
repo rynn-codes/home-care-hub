@@ -77,7 +77,18 @@ describe("the agency week", () => {
   });
 
   it("prints the badge every screen shows", () => {
-    expect(weekBadge("2026-08-25")).toBe("Aug 22–28 · Billing Week 1 of 2");
+    expect(weekBadge("2026-08-25")).toBe("Week of Aug 22–28");
+  });
+
+  it("never says which half of the fortnight it is", () => {
+    // Karynn, 25 August: "take off the 1 of 2 on ALL pages. I have no clue
+    // what that means." The parity is still computed — payrollPeriod needs it —
+    // but it is not vocabulary a person should meet. This is the guard against
+    // it creeping back into a label.
+    for (const iso of ["2026-08-25", "2026-08-31", "2026-01-10", "2025-12-27"]) {
+      expect(weekBadge(iso)).not.toMatch(/of 2|Billing/i);
+      expect(weekBadge(iso)).toMatch(/^Week of /);
+    }
   });
 
   it("is the same Saturday billing and payroll already use", () => {
