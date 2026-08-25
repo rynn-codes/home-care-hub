@@ -18,12 +18,17 @@ test.describe("incidents", () => {
     await signInAsStaff(page, PROJECT_REF);
   });
 
-  test("Home sends somebody to the incident that is past a deadline", async ({ page }) => {
-    // Home is where this gets noticed or does not.
+  test("The Brain sends somebody to the incident that is past a deadline", async ({ page }) => {
+    // The Brain is where this gets noticed or does not. It was Home until the
+    // August rebuild moved the signal board off the morning screen; the point
+    // stands, which is that a missed reporting deadline is one click from the
+    // screen a person opens the day on.
     const log = watchForErrors(page);
-    await page.goto("/");
+    await page.goto("/brain");
 
-    const tile = page.locator('a[href="/operations/incidents"]').first();
+    await page.getByRole("button", { name: "See why" }).click();
+    const drawer = page.getByRole("dialog", { name: "Behind the brief" });
+    const tile = drawer.locator('a[href="/operations/incidents"]').first();
     await expect(tile).toContainText("past a deadline");
     await tile.click();
 

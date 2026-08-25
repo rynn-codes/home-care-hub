@@ -7,6 +7,7 @@ import { morningBrief } from "@/domain/home/brief";
 import { upcomingBillingWeek } from "@/domain/billing/run";
 import { useHomeSignals } from "@/components/home/useHomeSignals";
 import { todaysAgenda } from "@/lib/joySeed";
+import { weekBadge } from "@/domain/calendar/agencyWeek";
 import {
   AGENCY_WEEK,
   agencyDay,
@@ -364,7 +365,9 @@ export default function TheBrain() {
             The Brain
           </h1>
           <p className="m-0 text-sm text-muted-foreground">Your agency at a glance. Joy is monitoring the details.</p>
-          <p className="m-0 mt-0.5 text-[13px] text-[#6E6E76]">{longDate(todayIso())}</p>
+          <p className="m-0 mt-0.5 text-[13px] text-[#6E6E76]">
+            {longDate(todayIso())} · {weekBadge(todayIso())}
+          </p>
         </div>
         <div className="flex flex-none flex-col items-end gap-2.5">
           <div className="flex gap-0.5 rounded-xl bg-[#F7F7F9] p-1" role="group" aria-label="Time range">

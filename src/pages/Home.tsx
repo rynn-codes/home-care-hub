@@ -6,7 +6,8 @@ import { MorningBriefCard } from "@/components/home/MorningBriefCard";
 import { DayTabs } from "@/components/home/DayTabs";
 import { JoyAssistantColumn } from "@/components/home/JoyAssistantColumn";
 import { HOME_ASK_CHIPS, HOME_STATS } from "@/lib/homeSeed";
-import { AGENCY_WEEK } from "@/lib/brainSeed";
+import { weekBadge } from "@/domain/calendar/agencyWeek";
+import { todaysWeather } from "@/lib/weatherSeed";
 
 /**
  * Home — the operator's morning, built to Karynn's own screenshot of the
@@ -33,14 +34,6 @@ export default function Home() {
   const { currentUser } = useDemo();
   const [q, setQ] = useState("");
   const now = new Date();
-  // "Aug 22–28" — the mockup's compact form: month once, en dash, no repeat.
-  const start = new Date(`${AGENCY_WEEK.start}T12:00:00`);
-  const end = new Date(`${AGENCY_WEEK.end}T12:00:00`);
-  const billingWeekLabel =
-    start.getMonth() === end.getMonth()
-      ? `${start.toLocaleDateString([], { month: "short", day: "numeric" })}\u2013${end.getDate()}`
-      : `${start.toLocaleDateString([], { month: "short", day: "numeric" })}\u2013${end.toLocaleDateString([], { month: "short", day: "numeric" })}`;
-
   const ask = (question: string) => {
     const text = question.trim();
     if (!text) return;
@@ -58,7 +51,7 @@ export default function Home() {
         <span>{now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>
         <span className="flex items-center gap-1.5">
           <Sun className="h-3.5 w-3.5 text-[#F79009]" aria-hidden="true" />
-          92°F
+          {todaysWeather.high}°F
         </span>
         <span>Houston, TX</span>
       </div>
@@ -72,7 +65,7 @@ export default function Home() {
           <span className="text-primary">{currentUser.name.split(" ")[0]}.</span>{" "}
           <span aria-hidden="true">👋</span>
         </h1>
-        <p className="m-0 text-[13px] text-muted-foreground">{billingWeekLabel} · Billing Week 2 of 2</p>
+        <p className="m-0 text-[13px] text-muted-foreground">{weekBadge(new Date().toISOString())}</p>
       </div>
 
       <div className="grid items-start gap-[18px] lg:grid-cols-[minmax(0,1fr)_320px]">

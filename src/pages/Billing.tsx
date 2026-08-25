@@ -358,6 +358,7 @@ export default function Billing() {
     <>
       <PageHeader
         title="Billing"
+        week
         description="Review this week's drafts, then approve and send. Out Monday, due the Sunday before care."
         actions={
           <>

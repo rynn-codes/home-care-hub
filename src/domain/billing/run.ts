@@ -1,3 +1,4 @@
+import { agencyWeekStart } from "@/domain/calendar/agencyWeek";
 import type { Visit } from "@/domain/scheduling/conflicts";
 import { buildInvoice, isBillable, type Invoice, type PaymentMethod } from "@/domain/billing/invoice";
 import {
@@ -56,11 +57,16 @@ export const BILLING_CALENDAR = {
   sendsOn: "when approved — out by Monday, five days before the care week",
 };
 
-/** The Saturday on or before this date — the billing week containing it. */
+/**
+ * The Saturday on or before this date — the billing week containing it.
+ *
+ * One line, delegating, on purpose: this was its own copy of the Saturday
+ * arithmetic, and a second copy of a date rule is how two screens end up
+ * naming two different weeks. The agency week is defined once, in
+ * `domain/calendar/agencyWeek`.
+ */
 export function billingWeekStart(iso: string): string {
-  const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
-  d.setDate(d.getDate() - ((d.getDay() + 1) % 7));
-  return d.toISOString().slice(0, 10);
+  return agencyWeekStart(iso);
 }
 
 /**

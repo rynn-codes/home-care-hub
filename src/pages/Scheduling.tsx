@@ -269,6 +269,7 @@ export default function Scheduling() {
     <>
       <PageHeader
         title="Scheduling"
+        week
         description="Manage client schedules, caregiver assignments, and open shifts."
         actions={
           <>

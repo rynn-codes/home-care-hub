@@ -1,3 +1,10 @@
+/** "August 26" — the day after today, in the brief's own long form. */
+function tomorrowLabel(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString([], { month: "long", day: "numeric" });
+}
+
 /**
  * The Home screen's content, taken verbatim from Karynn's mockup.
  *
@@ -18,7 +25,11 @@ export const HOME_BRIEF = {
   headline: "Operations are in good shape.",
   paragraph:
     "Payroll closes tomorrow. Joy is waiting on two corrected timecards and has already followed up with both caregivers. Mrs. Davis's family care conference is at 2:00 PM today.",
-  comingUp: { icon: "🎂", title: "Coming up tomorrow — Thylia's birthday", when: "August 24" },
+  // The mockup froze this at "tomorrow — August 24" because its today was the
+  // 23rd. Ours is the real clock, so the date is computed: a card that says
+  // "tomorrow" beside yesterday's date is the kind of small wrongness that
+  // makes a person stop trusting every other number on the screen.
+  comingUp: { icon: "🎂", title: "Coming up tomorrow — Thylia's birthday", when: tomorrowLabel() },
   allClear: "Nothing else needs your attention this morning.",
 };
 

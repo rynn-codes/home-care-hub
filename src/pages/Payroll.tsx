@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
+import {
+  agencyWeekLabel,
+  agencyWeekStart,
+  payrollPeriod,
+  payrollWeekOfPeriod,
+} from "@/domain/calendar/agencyWeek";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   OVERTIME_AFTER_HOURS,
@@ -87,9 +93,14 @@ export default function Payroll() {
   const [showDone, setShowDone] = useState(false);
   const [showExport, setShowExport] = useState(false);
 
+  // The fortnight the run computes over. Deliberately still a window ending
+  // today rather than `payrollPeriod(today)`: the seeded time entries are
+  // derived from the visit board, which is anchored to today, so the shared
+  // period would leave the queue nearly empty mid-period and the screen would
+  // demonstrate nothing. The period Joy is *in* is named from the shared
+  // calendar below, so the label and the arithmetic no longer disagree about
+  // which week it is even though they cover different spans.
   const period = useMemo(() => {
-    // A fortnight ending today, which is what the demo data covers. The real
-    // version reads Joy's configured schedule.
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - 13);
@@ -109,19 +120,23 @@ export default function Payroll() {
   );
 
   // The week everything on this screen means by "the week": Saturday–Friday,
-  // matching Gusto. Payroll pays the one that just finished.
+  // matching Gusto. Payroll pays the one that just finished; billing bills the
+  // one about to start. Both labels come from the shared agency calendar, so
+  // Home, Billing and Payroll cannot name different weeks on the same morning.
   const weekDates = useMemo(() => {
-    const currentStart = new Date(`${workweekStart(new Date().toISOString())}T12:00:00`);
-    const payrollStart = new Date(currentStart);
-    payrollStart.setDate(payrollStart.getDate() - 7);
-    const label = (start: Date) => {
-      const end = new Date(start);
-      end.setDate(end.getDate() + 6);
-      const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-      return `${start.toLocaleDateString([], opts)} – ${end.toLocaleDateString([], opts)}`;
+    const today = new Date().toISOString();
+    const lastWeek = new Date(`${agencyWeekStart(today)}T12:00:00`);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    const lastWeekIso = lastWeek.toISOString().slice(0, 10);
+    const cycle = payrollPeriod(today);
+    const fmt = (iso: string) =>
+      new Date(`${iso}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric" });
+    return {
+      payroll: agencyWeekLabel(lastWeekIso),
+      billing: agencyWeekLabel(upcomingBillingWeek(today)),
+      cycle: `${fmt(cycle.start)} – ${fmt(cycle.end)}`,
+      half: payrollWeekOfPeriod(today),
     };
-    const billingStart = new Date(`${upcomingBillingWeek(new Date().toISOString())}T12:00:00`);
-    return { payroll: label(payrollStart), billing: label(billingStart) };
   }, []);
 
   const queue: QueueItem[] = useMemo(() => {
@@ -328,6 +343,11 @@ export default function Payroll() {
         <span className="flex items-baseline gap-2">
           <span className="text-[13px] text-muted-foreground">Billing week</span>
           <span className="text-sm font-semibold">{weekDates.billing}</span>
+        </span>
+        <span className="flex items-baseline gap-2">
+          <span className="text-[13px] text-muted-foreground">Pay cycle</span>
+          <span className="text-sm font-semibold">{weekDates.cycle}</span>
+          <span className="text-[12px] text-muted-foreground">week {weekDates.half} of 2</span>
         </span>
         <span className="ml-auto flex gap-0.5 rounded-[9px] bg-[#F1F2F6] p-[3px]" role="tablist" aria-label="Payroll views">
           {(

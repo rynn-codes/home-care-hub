@@ -18,11 +18,18 @@ test.describe("care plans", () => {
     await signInAsStaff(page, PROJECT_REF);
   });
 
-  test("Home names the clients who have no plan at all", async ({ page }) => {
+  test("The Brain names the clients who have no plan at all", async ({ page }) => {
+    // This used to read Home's signal tiles. Home was rebuilt to Karynn's own
+    // design in August and is now the morning, not the signal board — the
+    // signals moved to The Brain, in full behind "See why". What the test is
+    // actually about is unchanged: an unwritten care plan has to be findable
+    // from the screen a person starts on, in one click.
     const log = watchForErrors(page);
-    await page.goto("/");
+    await page.goto("/brain");
 
-    const tile = page.locator('a[href="/clients/care-plans"]').first();
+    await page.getByRole("button", { name: "See why" }).click();
+    const drawer = page.getByRole("dialog", { name: "Behind the brief" });
+    const tile = drawer.locator('a[href="/clients/care-plans"]').first();
     await expect(tile).toContainText("no plan at all");
     await tile.click();
 

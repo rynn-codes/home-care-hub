@@ -1,4 +1,5 @@
 import { billingWeekStart } from "@/domain/billing/run";
+import { agencyWeekLabel } from "@/domain/calendar/agencyWeek";
 
 /**
  * Deterministic demo seed for The Brain — the home screen from the updated
@@ -35,7 +36,8 @@ export const AGENCY_WEEK = { start: agencyDay(0), end: agencyDay(6) };
 const shortDate = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric" });
 
-export const weekLabel = `${shortDate(AGENCY_WEEK.start)} – ${shortDate(AGENCY_WEEK.end)}`;
+/** One source for "which week", shared with Home, Billing and Payroll. */
+export const weekLabel = agencyWeekLabel(AGENCY_WEEK.start);
 
 // ------------------------------------------------------- Joy Operations --
 
