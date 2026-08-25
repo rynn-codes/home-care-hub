@@ -158,17 +158,44 @@ export const HOME_WAITING: HomeWaiting[] = [
 ];
 
 /** Joy's four states, in the order CLAUDE.md fixes them. */
-export const HOME_JOY = [
+/**
+ * Joy's own work, in the four states CLAUDE.md fixes: HANDLED · WORKING ·
+ * WAITING · NEEDS YOU, those words, that order, everywhere they appear.
+ *
+ * Karynn, 25 August: "All of these should be links to somewhere. Also you're
+ * missing View Joy Operations." Both were real. NEEDS YOU was absent entirely —
+ * three states where the rule says four, and the missing one is the only state
+ * that asks the human for anything. And every line was plain text: Joy would
+ * report that it had chased two signatures and leave you to work out where to
+ * go and look.
+ *
+ * So `to` is required on every item, not optional. A line in this column is a
+ * claim about work, and a claim about work you cannot open is a claim you
+ * cannot check.
+ */
+export interface JoyItem {
+  text: string;
+  /** Where this goes. Required — see above. */
+  to: string;
+}
+
+export const HOME_JOY: ReadonlyArray<{
+  n: number;
+  label: string;
+  note: string;
+  tone: string;
+  items: readonly JoyItem[];
+}> = [
   {
     n: 12,
     label: "Handled",
     note: "since yesterday",
     tone: "text-[#15803D]",
     items: [
-      "Sent 3 credential reminders",
-      "Followed up on 2 client signatures",
-      "Requested missing medication list",
-      "Sent schedule confirmations",
+      { text: "Sent 3 credential reminders", to: "/employees" },
+      { text: "Followed up on 2 client signatures", to: "/clients" },
+      { text: "Requested missing medication list", to: "/clients/care-plans" },
+      { text: "Sent schedule confirmations", to: "/scheduling" },
     ],
   },
   {
@@ -177,9 +204,9 @@ export const HOME_JOY = [
     note: "",
     tone: "text-primary",
     items: [
-      "Following up on background check",
-      "Resolving missing clock-out",
-      "Collecting two corrected timecards",
+      { text: "Following up on background check", to: "/operations/hiring" },
+      { text: "Resolving missing clock-out", to: "/payroll" },
+      { text: "Collecting two corrected timecards", to: "/payroll" },
     ],
   },
   {
@@ -187,14 +214,28 @@ export const HOME_JOY = [
     label: "Waiting",
     note: "",
     tone: "text-muted-foreground",
+    // One line, as the design has it, rather than the four itemised rows this
+    // column used to carry. Waiting is the state where the office can do
+    // nothing but wait, so naming four people it cannot chase is four lines of
+    // noise; the list itself is one tap away under Waiting on Others.
     items: [
-      "CPR renewal upload · Mike Chen",
-      "Care plan signature · Mrs. Davis",
-      "Background check · Sarah Johnson",
-      "Gusto onboarding · Jane Smith",
+      {
+        text: "External responses on credentials, signatures and onboarding",
+        to: "/brain/my-work",
+      },
     ],
   },
-] as const;
+  {
+    n: 1,
+    label: "Needs you",
+    note: "",
+    // Amber, and the only amber in this column: this is the one state where a
+    // human still owes something. Handled is green, Working is the primary
+    // blue, Waiting is quiet.
+    tone: "text-[#B54708]",
+    items: [{ text: "Approve Susan Miller rate change", to: "/brain/operations" }],
+  },
+];
 
 export const HOME_ASK_CHIPS = [
   "Show today's open shifts",

@@ -34,9 +34,13 @@ export default function Home() {
   const { currentUser } = useDemo();
   const [q, setQ] = useState("");
   const now = new Date();
-  const ask = (question: string) => {
+  // `allowEmpty` is what the Talk to Joy heading uses: opening Joy with nothing
+  // typed is a legitimate thing to want, and the Command Center starts a fresh
+  // thread when it receives no question. The send arrow still refuses a blank,
+  // because pressing send on an empty box means nothing.
+  const ask = (question: string, opts?: { allowEmpty?: boolean }) => {
     const text = question.trim();
-    if (!text) return;
+    if (!text && !opts?.allowEmpty) return;
     document.dispatchEvent(new CustomEvent("joy:ask", { detail: { question: text } }));
     setQ("");
   };
@@ -78,8 +82,17 @@ export default function Home() {
           {/* Talk to Joy — the conversational door. A question here opens the
               full Command Center with it as the thread's first message. */}
           <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF1] bg-white px-5 py-[18px]">
+            {/* Karynn, 25 August: "Talk to Joy icon doesn't work." It didn't —
+                the disc and its breathing dot were decoration, so the one thing
+                on the card that looks most like a button was the one thing that
+                wasn't. The heading and the mark are now a single button that
+                opens Joy with no question, the same as clicking the pill. */}
             <div className="flex flex-col gap-0.5">
-              <span className="flex items-center gap-2 text-[13.5px] font-semibold tracking-[-.01em]">
+              <button
+                type="button"
+                onClick={() => ask("", { allowEmpty: true })}
+                className="-mx-1 -my-0.5 flex items-center gap-2 self-start rounded-lg px-1 py-0.5 text-[13.5px] font-semibold tracking-[-.01em] transition-colors hover:bg-[#FAFAFB]"
+              >
                 <span className="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-[#191A2E]">
                   <span
                     className="h-1.5 w-1.5 rounded-full bg-[#8FA0FF]"
@@ -87,7 +100,7 @@ export default function Home() {
                   />
                 </span>
                 Talk to Joy
-              </span>
+              </button>
               <span className="text-[12px] text-muted-foreground">
                 Your assistant for smarter, faster decisions.
               </span>

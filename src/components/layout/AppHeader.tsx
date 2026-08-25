@@ -1,4 +1,4 @@
-import { Bell, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -63,15 +63,11 @@ export function AppHeader() {
         <span className="ml-auto flex-none text-[11px] text-muted-foreground" aria-hidden="true">⌘K</span>
       </div>
 
-      <button
-        type="button"
-        title="Notifications"
-        aria-label="Notifications"
-        className="relative flex h-8 w-8 flex-none items-center justify-center rounded-[9px] transition-colors hover:bg-[#F7F7F9]"
-      >
-        <Bell className="h-[15px] w-[15px] text-muted-foreground" aria-hidden="true" />
-        <span className="absolute right-[7px] top-1.5 h-[5px] w-[5px] rounded-full bg-[#C2410C]" aria-hidden="true" />
-      </button>
+      {/* No notification bell. Karynn, 25 August: "You can take off the
+          notifications bell at the top. Don't need." It was a dot that lit up
+          and led nowhere — and this product already has a considered answer to
+          "what needs me": Joy's four states, on Home and in The Brain. A bell
+          beside them would be a second, worse inbox. */}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

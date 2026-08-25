@@ -107,10 +107,14 @@ interface AddedEvent {
 export default function TheBrain() {
   const signals = useHomeSignals();
 
-  // /brain/my-work lands straight on the My Work tab — the current canvas
-  // promotes My Work to its own nav item while it still lives inside The Brain.
-  const startOnMyWork = useLocation().pathname.endsWith("/my-work");
-  const [view, setView] = useState<View>(startOnMyWork ? "mywork" : "overview");
+  // Deep links into a tab. /brain/my-work exists because the current canvas
+  // promotes My Work to its own nav item while it still lives inside The Brain;
+  // /brain/operations exists because Home's Joy column now links every line it
+  // prints somewhere, and most of them end up here.
+  const { pathname } = useLocation();
+  const [view, setView] = useState<View>(
+    pathname.endsWith("/my-work") ? "mywork" : pathname.endsWith("/operations") ? "operations" : "overview",
+  );
   const [range, setRange] = useState<Range>("week");
   const [filter, setFilter] = useState<"All" | BrainEvent["cat"]>("All");
   const [actFilter, setActFilter] = useState<"All" | (typeof brainActivity)[number]["cat"]>("All");
