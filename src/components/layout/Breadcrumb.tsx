@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
 import { useDemo } from "@/context/DemoDataProvider";
 import { canView } from "@/domain/access/roles";
 import { readCameFrom } from "@/lib/navigation";
@@ -10,7 +9,11 @@ export interface Crumb {
 }
 
 function Sep() {
-  return <ChevronRight className="h-3.5 w-3.5 flex-none text-[#C7C7CF]" aria-hidden="true" />;
+  return (
+    <span className="text-muted-foreground/40" aria-hidden="true">
+      /
+    </span>
+  );
 }
 
 /**

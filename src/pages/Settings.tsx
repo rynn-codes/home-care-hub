@@ -1,22 +1,23 @@
+import { Monitor, Moon, Sun } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { AgencySettingsPanel } from "@/components/settings/AgencySettingsPanel";
+import { DeletedItems } from "@/components/settings/DeletedItems";
+import { MicrophoneCheck } from "@/components/settings/MicrophoneCheck";
+import { cn } from "@/lib/utils";
+import { useDemo } from "@/context/DemoDataProvider";
 import { ROLE_LABELS } from "@/domain/consents/witness";
+import { setPreference, usePreferences, type Appearance } from "@/lib/preferences";
 import logo from "@/assets/logo.png";
 
 /**
  * Settings — Joy's own identity and wiring, stated honestly.
  *
- * This page shipped from the original scaffold with somebody else's company
- * on it: "CareHub Home Care, 123 Main St, Springfield", a teal brand color,
- * QuickBooks and Slack integrations, and a "$199/mo Growth plan" — Joy is
- * Karynn's own operations platform, not a SaaS subscription she buys. All
- * of that is gone. What remains is what is true: Joy Health's identity, the
- * real brand color, the real roles the domain enforces, and the four
- * integrations the design brief assigns — each marked not-connected until
- * the developer wires it.
+ * Appearance and navigation are this device's; Agency is the agency's;
+ * Deleted items is the bin. Roles read from the database and never edit it;
+ * Notifications and Integrations say what is not connected rather than
+ * offering a switch for a message that cannot be sent.
  */
 
 /** The brief's integration table — each system and what it owns. */
@@ -34,55 +35,104 @@ const NOTIFICATIONS = [
   "Payment and dunning notices",
 ];
 
+const APPEARANCES: Array<{ value: Appearance; label: string; hint: string; icon: typeof Sun }> = [
+  { value: "light", label: "Light", hint: "The white screen, always", icon: Sun },
+  { value: "dark", label: "Dark", hint: "The dark screen, always", icon: Moon },
+  { value: "system", label: "Auto", hint: "Follow this device", icon: Monitor },
+];
+
+/** Stamped at build time by vite.config's `define` (declared in vite-env.d.ts). */
+const BUILD_STAMP: string = typeof __BUILD_STAMP__ === "string" ? __BUILD_STAMP__ : "dev";
+
+const CARD = "rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-6";
+const PILL = "whitespace-nowrap rounded-full bg-[var(--hairline-soft)] px-2.5 py-1 text-[11.5px] font-medium text-[var(--ink-body)]";
+
 export default function Settings() {
+  const prefs = usePreferences();
+  const { deletedRecords } = useDemo();
+
   return (
     <>
       <PageHeader title="Settings" description="Joy's identity, roles, and the systems it talks to." />
-      <Tabs defaultValue="org">
-        <TabsList>
-          <TabsTrigger value="org">Organization</TabsTrigger>
+      <Tabs defaultValue="appearance">
+        <TabsList className="h-auto flex-wrap justify-start">
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="org">Agency</TabsTrigger>
           <TabsTrigger value="brand">Branding</TabsTrigger>
           <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="notify">Notifications</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger value="deleted">
+            Deleted items
+            {deletedRecords.length > 0 && (
+              <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-[var(--hairline-soft)] px-1.5 text-[10.5px] font-medium tabular-nums text-[var(--ink-body)]">
+                {deletedRecords.length}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="org" className="mt-4">
-          <div className="max-w-2xl space-y-4 rounded-[14px] border border-[#ECECF1] bg-white p-6">
-            <div>
-              <Label htmlFor="org-name">Company name</Label>
-              <Input id="org-name" defaultValue="Joy Health" />
-            </div>
-            <div>
-              <Label htmlFor="org-address">Address</Label>
-              <Input id="org-address" placeholder="Add the office address" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="org-phone">Phone</Label>
-                <Input id="org-phone" placeholder="Add the office phone" />
+        <TabsContent value="appearance" className="mt-4">
+          <div className="max-w-2xl space-y-6">
+            <div className={cn(CARD, "space-y-4")}>
+              <div className="flex flex-col gap-1">
+                <h2 className="m-0 text-[15px] font-semibold tracking-[-.01em]">Screen</h2>
+                <p className="m-0 text-[13px] text-muted-foreground">Auto follows whatever this computer or phone is set to, and changes with it.</p>
               </div>
-              <div>
-                <Label htmlFor="org-tax">Tax ID</Label>
-                <Input id="org-tax" placeholder="Add the EIN" />
+              <div role="radiogroup" aria-label="Screen" className="grid gap-2.5 sm:grid-cols-3">
+                {APPEARANCES.map(({ value, label, hint, icon: Icon }) => {
+                  const on = prefs.appearance === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => setPreference("appearance", value)}
+                      className={cn(
+                        "flex flex-col gap-1.5 rounded-[12px] border p-4 text-left transition-colors",
+                        on ? "border-[#1407A2]/30 bg-[#EEF0FE]" : "border-[var(--hairline)] bg-[var(--paper)] hover:bg-[var(--wash)]",
+                      )}
+                    >
+                      <Icon className={cn("h-4 w-4", on ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
+                      <span className={cn("text-[13.5px] font-medium", on && "text-primary")}>{label}</span>
+                      <span className="text-[12px] leading-[1.45] text-muted-foreground">{hint}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <div>
-              <Label htmlFor="org-about">About</Label>
-              <Textarea
-                id="org-about"
-                defaultValue="Private duty home care in Houston. Joy runs the operations; people run the care."
-              />
+            <div className={cn(CARD, "space-y-4")}>
+              <div className="flex flex-col gap-1">
+                <h2 className="m-0 text-[15px] font-semibold tracking-[-.01em]">Navigation</h2>
+                <p className="m-0 text-[13px] text-muted-foreground">What takes a row in the side menu.</p>
+              </div>
+              <div className="flex items-start justify-between gap-6 rounded-[12px] border border-[var(--hairline)] px-4 py-3.5">
+                <span className="flex min-w-0 flex-col gap-1">
+                  <span className="text-[13.5px] font-medium">My Work in the side menu</span>
+                  <span className="text-[12.5px] leading-[1.5] text-muted-foreground">
+                    My Work sits under The Brain, above Documents. Turn this off and the row goes; the tab, the page and every
+                    link to it stay exactly where they are.
+                  </span>
+                </span>
+                <Switch
+                  checked={prefs.showMyWork}
+                  onCheckedChange={(on) => setPreference("showMyWork", on)}
+                  aria-label="Show My Work in the side menu"
+                  className="mt-0.5 flex-none"
+                />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Nothing here saves yet — the organizations table carries this once the database is
-              connected. Real details go in then, not into a seed file.
-            </p>
+            <MicrophoneCheck />
           </div>
         </TabsContent>
 
+        <TabsContent value="org" className="mt-4">
+          <AgencySettingsPanel />
+        </TabsContent>
+
         <TabsContent value="brand" className="mt-4">
-          <div className="max-w-2xl space-y-4 rounded-[14px] border border-[#ECECF1] bg-white p-6">
+          <div className={cn(CARD, "max-w-2xl space-y-4")}>
             <div className="flex items-center gap-3">
               <img src={logo} alt="Joy Health logo" className="h-10 w-10 rounded-full object-contain" />
               <div>
@@ -90,13 +140,12 @@ export default function Settings() {
                 <p className="m-0 text-xs text-muted-foreground">The logo the app and portals use.</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 border-t border-[#F3F3F6] pt-4">
+            <div className="flex items-center gap-3 border-t border-[var(--hairline-soft)] pt-4">
               <span className="h-10 w-10 rounded-[10px] bg-primary" aria-hidden="true" />
               <div>
                 <p className="m-0 text-sm font-medium">#1407A2 — Joy Royal Blue</p>
                 <p className="m-0 text-xs text-muted-foreground">
-                  The design brief's brand primary. Fixed in the design tokens, not editable per
-                  user — one brand, everywhere.
+                  The design brief's brand primary. Fixed in the design tokens, not editable per user — one brand, everywhere.
                 </p>
               </div>
             </div>
@@ -104,9 +153,9 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="roles" className="mt-4">
-          <div className="max-w-2xl rounded-[14px] border border-[#ECECF1] bg-white p-6">
+          <div className={cn(CARD, "max-w-2xl")}>
             {Object.entries(ROLE_LABELS).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-4 border-b border-[#F3F3F6] py-3 last:border-0">
+              <div key={key} className="flex items-center justify-between gap-4 border-b border-[var(--hairline-soft)] py-3 last:border-0">
                 <div>
                   <p className="m-0 text-sm font-medium">{label}</p>
                   <p className="m-0 text-[12.5px] text-muted-foreground">
@@ -117,62 +166,57 @@ export default function Settings() {
                         : "Referrals, intake and scheduling. No clinical sign-off, no rates."}
                   </p>
                 </div>
-                <span className="whitespace-nowrap rounded-full bg-[#F3F3F6] px-2.5 py-1 text-[11.5px] font-medium text-[#5B6274]">
-                  From the database
-                </span>
+                <span className={PILL}>From the database</span>
               </div>
             ))}
             <p className="mb-0 mt-3 text-xs text-muted-foreground">
-              The grants themselves live in the migrations (row-level security, tested per role) —
-              this screen reads them, it never edits them. The header's "view as" switch shows each
-              role's world in the prototype.
+              The grants themselves live in the migrations (row-level security, tested per role) — this screen reads them, it
+              never edits them. The header's "view as" switch shows each role's world in the prototype.
             </p>
           </div>
         </TabsContent>
 
         <TabsContent value="notify" className="mt-4">
-          <div className="max-w-2xl rounded-[14px] border border-[#ECECF1] bg-white p-6">
+          <div className={cn(CARD, "max-w-2xl")}>
             {NOTIFICATIONS.map((n) => (
-              <div key={n} className="flex items-center justify-between gap-4 border-b border-[#F3F3F6] py-3 last:border-0">
+              <div key={n} className="flex items-center justify-between gap-4 border-b border-[var(--hairline-soft)] py-3 last:border-0">
                 <p className="m-0 text-sm">{n}</p>
-                <span className="whitespace-nowrap rounded-full bg-[#F3F3F6] px-2.5 py-1 text-[11.5px] font-medium text-[#5B6274]">
-                  Arrives with Spruce
-                </span>
+                <span className={PILL}>Arrives with Spruce</span>
               </div>
             ))}
             <p className="mb-0 mt-3 text-xs text-muted-foreground">
-              No toggles yet on purpose: nothing sends today, and a switch that saves a preference
-              for a message that cannot be sent would be the screen lying about what Joy does.
+              No toggles yet on purpose: nothing sends today, and a switch that saves a preference for a message that cannot
+              be sent would be the screen lying about what Joy does.
             </p>
           </div>
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-4">
-          <div className="max-w-2xl rounded-[14px] border border-[#ECECF1] bg-white p-6">
+          <div className={cn(CARD, "max-w-2xl")}>
             {INTEGRATIONS.map((i) => (
-              <div key={i.name} className="flex items-center justify-between gap-4 border-b border-[#F3F3F6] py-3 last:border-0">
+              <div key={i.name} className="flex items-center justify-between gap-4 border-b border-[var(--hairline-soft)] py-3 last:border-0">
                 <div>
                   <p className="m-0 text-sm font-medium">{i.name}</p>
                   <p className="m-0 text-[12.5px] text-muted-foreground">{i.owns}</p>
                 </div>
-                <span className="whitespace-nowrap rounded-full bg-[#F3F3F6] px-2.5 py-1 text-[11.5px] font-medium text-[#5B6274]">
-                  Not connected
-                </span>
+                <span className={PILL}>Not connected</span>
               </div>
             ))}
             <p className="mb-0 mt-3 text-xs text-muted-foreground">
-              The division of labour is the design brief's: each system keeps what it owns, and Joy
-              never rebuilds it. Connecting them is the developer's work at handoff.
+              The division of labour is the design brief's: each system keeps what it owns, and Joy never rebuilds it.
+              Connecting them is the developer's work at handoff.
             </p>
           </div>
         </TabsContent>
+
+        <TabsContent value="deleted" className="mt-4">
+          <DeletedItems />
+        </TabsContent>
       </Tabs>
 
-      {/* Which build am I looking at? A cached page is indistinguishable from a
-          current one in a screenshot, so the page says so itself. */}
       <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-        Prototype build <span className="font-medium tabular-nums text-foreground">{__BUILD_STAMP__}</span>.
-        If this is older than you expect, the page is cached — reload with Cmd/Ctrl + Shift + R.
+        Prototype build <span className="font-medium tabular-nums text-foreground">{BUILD_STAMP}</span>. If this is older than
+        you expect, the page is cached — reload with Cmd/Ctrl + Shift + R.
       </p>
     </>
   );

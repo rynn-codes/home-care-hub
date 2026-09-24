@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Ban, Car, MoreHorizontal, Pencil, Phone, Plus, Trash2, TriangleAlert } from "lucide-react";
+import { Ban, Car, MoreVertical, Pencil, Phone, Plus, Trash2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -252,7 +252,7 @@ export function EmployeeRecordView({
                       aria-label={`More for ${employee.name}`}
                       className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] border border-[var(--hairline)] bg-[var(--paper)] text-muted-foreground transition-colors hover:bg-[var(--wash)] hover:text-foreground"
                     >
-                      <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                      <MoreVertical className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-[210px]">

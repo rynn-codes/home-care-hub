@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { applyAppearance, readPreferences } from "./lib/preferences";
 
 // The standalone demo build signs the viewer in as the demo owner before the
 // app mounts. Honest about what it is: the hosted try-it page has no Supabase
@@ -35,5 +36,9 @@ if (import.meta.env.VITE_STANDALONE_DEMO === "true") {
     // Storage unavailable — the login screen will say so honestly.
   }
 }
+
+// This device's screen preference, painted before the first frame so a dark
+// screen does not flash white. Later changes are applied from Settings.
+applyAppearance(readPreferences().appearance);
 
 createRoot(document.getElementById("root")!).render(<App />);

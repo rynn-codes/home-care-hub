@@ -47,6 +47,12 @@ export function setPreference<K extends keyof Preferences>(key: K, value: Prefer
     // Preferences that cannot persist still apply for the session.
   }
   listeners.forEach((l) => l());
+  if (key === "appearance") applyAppearance(value as Appearance);
+}
+
+/** For code outside React — main.tsx paints the screen before the first render. */
+export function readPreferences(): Preferences {
+  return current;
 }
 
 function subscribe(listener: () => void) {

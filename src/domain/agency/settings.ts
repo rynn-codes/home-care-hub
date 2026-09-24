@@ -190,6 +190,14 @@ export const DEFAULT_AGENCY_SETTINGS: AgencySettings = {
   notifications: { beforeStart: true, beforeStartMinutes: 60, beforeEnd: true, beforeEndMinutes: 15 },
 };
 
+/** Metres, in the words an office in Houston uses: feet under a quarter mile, miles above. */
+export function describeDistance(meters: number): string {
+  const feet = meters * 3.28084;
+  if (feet < 1320) return `${Math.round(feet / 10) * 10} feet`;
+  const miles = meters / 1609.344;
+  return `${miles < 10 ? miles.toFixed(1) : Math.round(miles)} miles`;
+}
+
 /** A switch that depends on another is only live while that one is on. */
 export function switchEnabled(sw: AgencySwitch, switches: Record<string, boolean>): boolean {
   return !sw.requires || switches[sw.requires] === true;

@@ -1,0 +1,18 @@
+import { chromium } from "playwright";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await browser.newPage({ viewport: { width: 1380, height: 900 } });
+const errors = [];
+page.on("pageerror", (e) => errors.push(String(e)));
+const out = "/tmp/claude-0/-home-claude/d2433efc-dba1-5080-a930-43a82e41e69f/scratchpad/";
+await page.goto("http://localhost:8097/#/settings", { waitUntil: "networkidle" });
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}settings-appearance.png`, fullPage: true });
+await page.getByRole("tab", { name: "Agency" }).click(); await page.waitForTimeout(400);
+await page.screenshot({ path: `${out}settings-agency.png`, fullPage: true });
+await page.getByRole("tab", { name: /Deleted items/ }).click(); await page.waitForTimeout(400);
+await page.screenshot({ path: `${out}settings-deleted.png`, fullPage: true });
+await page.keyboard.press("Control+K"); await page.waitForTimeout(400);
+await page.keyboard.type("chan"); await page.waitForTimeout(400);
+await page.screenshot({ path: `${out}palette.png` });
+console.log("errors:", JSON.stringify(errors));
+await browser.close();

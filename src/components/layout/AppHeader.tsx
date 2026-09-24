@@ -1,6 +1,9 @@
+import { useCallback, useState } from "react";
 import { Eye, Plus, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { CommandPalette, useSearchShortcut } from "@/components/layout/CommandPalette";
+import { HeaderClock } from "@/components/layout/HeaderClock";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -49,21 +52,41 @@ export function AppHeader() {
   const { currentUser, setCurrentUser } = useDemo();
   const initials = currentUser.name.split(" ").slice(0, 2).map((w) => w[0]).join("");
   const readOnly = readOnlyReason(currentUser.role);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  useSearchShortcut(useCallback(() => setSearchOpen(true), []));
 
   return (
     <header className="sticky top-0 z-30 flex h-[var(--shell-band)] items-center justify-end gap-3.5 border-b border-black/[.06] bg-background/[.92] px-4 backdrop-blur-[10px] md:px-8 lg:px-14">
       <SidebarTrigger className="md:hidden" />
+      <HeaderClock />
 
-      <div className="hidden flex-1 items-center gap-[9px] rounded-[9px] border border-black/[.07] px-3 py-[7px] md:flex md:max-w-[420px]">
+      {/* The search field is a button: the palette opens on click, on ⌘K, or
+          on the first letter typed into it. */}
+      <button
+        type="button"
+        onClick={() => setSearchOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+            setTyped(e.key);
+            setSearchOpen(true);
+          }
+        }}
+        aria-label="Search clients, caregivers, admissions and people"
+        className="hidden flex-1 items-center gap-[9px] rounded-[9px] border border-black/[.07] px-3 py-[7px] text-left transition-colors hover:bg-[var(--wash)] md:flex md:max-w-[420px]"
+      >
         <Search className="h-[13px] w-[13px] flex-none text-muted-foreground/70" aria-hidden="true" />
-        <input
-          type="search"
-          placeholder="Search clients, caregivers, invoices…"
-          aria-label="Search clients, caregivers, invoices"
-          className="min-w-0 flex-1 border-none bg-transparent text-[12.5px] outline-none placeholder:text-muted-foreground"
-        />
+        <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted-foreground">Search clients, caregivers, invoices…</span>
         <span className="ml-auto flex-none text-[11px] text-muted-foreground" aria-hidden="true">⌘K</span>
-      </div>
+      </button>
+      <CommandPalette
+        open={searchOpen}
+        onOpenChange={(o) => {
+          setSearchOpen(o);
+          if (!o) setTyped("");
+        }}
+        initialQuery={typed}
+      />
 
       {canWrite(currentUser.role) && (
         <DropdownMenu>
