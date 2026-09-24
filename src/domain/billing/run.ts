@@ -1,6 +1,7 @@
 import { agencyWeekStart } from "@/domain/calendar/agencyWeek";
 import type { Visit } from "@/domain/scheduling/conflicts";
-import { buildInvoice, isBillable, type Invoice, type PaymentMethod } from "@/domain/billing/invoice";
+import { buildInvoice, isBillable, servedPeople, type Invoice, type PaymentMethod } from "@/domain/billing/invoice";
+import type { Household } from "@/domain/billing/households";
 import {
   accountGaps,
   ACCOUNT_GAP_MESSAGES,
@@ -180,6 +181,11 @@ interface RunInputs {
    * verified units.
    */
   carryForward?: Readonly<Record<string, readonly CarryForwardLine[]>>;
+  /**
+   * Couples in one home served by one visit. The run drafts for everybody a
+   * visit serves; the household decides who carries the invoice.
+   */
+  households?: readonly Household[];
 }
 
 function periodVisits(input: RunInputs): Visit[] {
@@ -190,6 +196,13 @@ function periodVisits(input: RunInputs): Visit[] {
       v.startsAt.slice(0, 10) >= input.periodStart &&
       v.startsAt.slice(0, 10) <= input.periodEnd,
   );
+}
+
+/** Everybody the period's visits serve — the client on each, plus companions. */
+function servedClients(visits: readonly Visit[]): Map<string, string> {
+  const clients = new Map<string, string>();
+  for (const v of visits) for (const p of servedPeople(v)) clients.set(p.personId, p.name);
+  return clients;
 }
 
 function overlap(a: Visit, b: Visit): boolean {
@@ -207,9 +220,7 @@ function overlap(a: Visit, b: Visit): boolean {
 export function detectRunExceptions(input: RunInputs): RunException[] {
   const exceptions: RunException[] = [];
   const visits = periodVisits(input);
-
-  const clients = new Map<string, string>();
-  for (const v of visits) clients.set(v.clientPersonId!, v.clientName);
+  const clients = servedClients(visits);
 
   for (const [clientId, clientName] of clients) {
     const links = input.accountClients.filter((c) => c.clientPersonId === clientId);
@@ -355,8 +366,7 @@ export function planBillingRun(input: RunInputs): BillingRun {
     }
   }
 
-  const clients = new Map<string, string>();
-  for (const v of visits) clients.set(v.clientPersonId!, v.clientName);
+  const clients = servedClients(visits);
 
   const drafts: Invoice[] = [];
   const skipped: BillingRun["skipped"] = [];
@@ -404,13 +414,14 @@ export function planBillingRun(input: RunInputs): BillingRun {
             clientName,
             // The version prices it; a bare rate here would be a second answer.
             hourlyRate: null,
-            paymentMethod: (account.paymentMethod ?? "check") as PaymentMethod,
+            paymentMethod: (account.paymentMethod ?? "ach") as PaymentMethod,
             depositRemaining: account.depositRemaining,
           },
           visits: input.visits,
           weekStart: input.periodStart,
           rateVersion: { id: rate.id, hourlyRate: rate.hourlyRate },
           advance,
+          households: input.households,
         }),
       );
     }

@@ -126,7 +126,8 @@ describe("the seven kinds, before any draft exists", () => {
     );
     const payer = exceptions.find((e) => e.kind === "payer_not_ready")!;
     expect(payer.blocksDraft).toBe(true);
-    expect(payer.detail).toContain("A saved card is not permission");
+    expect(payer.detail).toContain("No payment method on file");
+    expect(payer.detail).toContain("Joy needs the signed authorization");
   });
 
   it("no account at all is also payer not ready", () => {

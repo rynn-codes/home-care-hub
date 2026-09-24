@@ -44,6 +44,23 @@ export interface IssuedInvoice {
   /** Set when Joy writes the balance off rather than chasing it further. */
   writtenOffOn: string | null;
   writtenOffReason: string | null;
+  /** What was billed, line by line, so the sheet can show the family's copy. */
+  lines?: Array<{ description: string; hours: number; rate: number | null; amount: number }>;
+  /** Corrections after issue. The original amount stays derivable from these. */
+  adjustments?: InvoiceAdjustment[];
+}
+
+/** A correction to an issued invoice — a second fact beside the first, never a rewrite. */
+export interface InvoiceAdjustment {
+  id: string;
+  invoiceId: string;
+  kind: "credit" | "debit" | "write_off";
+  amount: number;
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  /** Set when the credit came from a refund rather than a decision to charge less. */
+  origin?: "refund";
 }
 
 export interface Payment {

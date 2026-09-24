@@ -55,6 +55,10 @@ import type { HouseholdBilling } from "@/domain/billing/households";
 import type { SupervisoryVisit } from "@/domain/supervision/supervision";
 import { bookSupervisoryVisit } from "@/domain/supervision/supervision";
 import type { VisitMileage } from "@/lib/schedulingExtrasSeed";
+import type { LtciEnrollment } from "@/domain/billing/ltci";
+import type { PayerEdit, RateChange } from "@/domain/billing/payerSetup";
+import type { DraftCharge } from "@/domain/billing/manualInvoice";
+import { reducesInvoice, type RefundKind } from "@/domain/billing/invoiceActions";
 
 /** What each kind of deleted record carries so it can be put back exactly. */
 export type DeletedPayload =
@@ -125,6 +129,7 @@ interface DemoContextValue extends DemoState {
     weekStart: string;
     weekEnd: string;
     total: number;
+    lines?: Array<{ description: string; hours: number; rate: number | null; amount: number }>;
   }) => void;
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
@@ -220,6 +225,21 @@ interface DemoContextValue extends DemoState {
   pairHousehold: (input: { clientPersonId: string; clientName: string; partnerPersonId: string; partnerName: string; billing: HouseholdBilling }) => void;
   bookSupervision: (visit: SupervisoryVisit) => void;
   completeSupervision: (visit: SupervisoryVisit) => void;
+
+  /* ── Billing: after the run ─────────────────────────────────────────── */
+
+  saveLtciEnrollment: (clientPersonId: string, patch: Omit<LtciEnrollment, "clientPersonId" | "clientName">) => void;
+  savePayerSetup: (input: { clientPersonId: string; patch: PayerEdit; rate: number; currentRate: number | null; reason: string; effectiveFrom: string }) => void;
+  saveDraftEdit: (input: { key: string; hours: number; rate: number | null; reason: string; charges: DraftCharge[]; method: "ach" | "card" }) => void;
+  saveFirstPayment: (input: { clientPersonId: string; deposit: number; depositReason: string; technologyFee: number; startsOn: string }) => void;
+  /** A correction to an issued invoice. The original amount stays on the record. */
+  adjustInvoice: (input: { invoiceId: string; kind: "credit" | "debit"; amount: number; reason: string }) => void;
+  /** Stops it counting as money owed; keeps its number and history. */
+  voidInvoice: (input: { invoiceId: string; reason: string }) => void;
+  /** Money back through Stripe. Care not delivered also brings the invoice down. */
+  refundInvoice: (input: { invoiceId: string; amount: number; reason: string; kind: RefundKind; method: "ach" | "card" }) => void;
+  /** The family is told again that an invoice exists; the figures wait in the portal. */
+  resendInvoice: (input: { invoiceId: string; clientName: string }) => void;
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null);
@@ -903,6 +923,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
           weekStart: input.weekStart,
           weekEnd: input.weekEnd,
           total: input.total,
+          lines: input.lines,
           issuedOn: today,
           dueOn,
           writtenOffOn: null,
@@ -1786,9 +1807,144 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, supervisoryVisits: s.supervisoryVisits.map((v) => (v.id === visit.id ? visit : v)) }));
   }, [audit]);
 
+  const saveLtciEnrollment = useCallback<DemoContextValue["saveLtciEnrollment"]>((clientPersonId, patch) => {
+    audit({ action: "ltci.enrollment_changed", entityType: "client", entityId: clientPersonId, after: { ...patch } });
+    setState((s) => ({
+      ...s,
+      ltciEnrollments: s.ltciEnrollments.map((e) => (e.clientPersonId === clientPersonId ? { ...e, ...patch } : e)),
+    }));
+  }, [audit]);
+
+  const seededTotal = (invoiceId: string) => seedIssuedInvoices.find((i) => i.id === invoiceId)?.total ?? null;
+
+  const adjustInvoice = useCallback<DemoContextValue["adjustInvoice"]>(({ invoiceId, kind, amount, reason }) => {
+    const delta = kind === "debit" ? amount : -amount;
+    audit({ action: "invoice.adjusted", entityType: "invoice", entityId: invoiceId, after: { kind, amount, reason } });
+    const adjustment = { id: newId("adj"), invoiceId, kind, amount, reason, createdByUserId: currentUserRef.current.name, createdAt: new Date().toISOString() };
+    setState((s) => {
+      if (s.issuedInvoices.find((i) => i.id === invoiceId)) {
+        return {
+          ...s,
+          issuedInvoices: s.issuedInvoices.map((i) =>
+            i.id === invoiceId ? { ...i, total: Math.round((i.total + delta) * 100) / 100, adjustments: [...(i.adjustments ?? []), adjustment] } : i,
+          ),
+        };
+      }
+      const edit = s.invoiceEdits[invoiceId] ?? {};
+      const total = edit.total ?? seededTotal(invoiceId);
+      return {
+        ...s,
+        invoiceEdits: {
+          ...s.invoiceEdits,
+          [invoiceId]: { ...edit, total: total === null ? undefined : Math.round((total + delta) * 100) / 100, adjustments: [...(edit.adjustments ?? []), adjustment] },
+        },
+      };
+    });
+  }, [audit]);
+
+  const voidInvoice = useCallback<DemoContextValue["voidInvoice"]>(({ invoiceId, reason }) => {
+    audit({ action: "invoice.voided", entityType: "invoice", entityId: invoiceId, after: { reason } });
+    const today = new Date().toISOString().slice(0, 10);
+    setState((s) =>
+      s.issuedInvoices.some((i) => i.id === invoiceId)
+        ? { ...s, issuedInvoices: s.issuedInvoices.map((i) => (i.id === invoiceId ? { ...i, writtenOffOn: today, writtenOffReason: reason } : i)) }
+        : { ...s, invoiceEdits: { ...s.invoiceEdits, [invoiceId]: { ...(s.invoiceEdits[invoiceId] ?? {}), writtenOffOn: today, writtenOffReason: reason } } },
+    );
+  }, [audit]);
+
+  const refundInvoice = useCallback<DemoContextValue["refundInvoice"]>(({ invoiceId, amount, reason, kind, method }) => {
+    audit({ action: "invoice.refunded", entityType: "invoice", entityId: invoiceId, after: { amount, reason, kind, method } });
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const adjustment = { id: newId("adj"), invoiceId, kind: "credit" as const, amount, reason, createdByUserId: currentUserRef.current.name, createdAt: now.toISOString(), origin: "refund" as const };
+    const payment: Payment = { id: newId("pay"), invoiceId, amount: -amount, receivedOn: today, method, reference: "Refund" };
+    const refund = { id: newId("ref"), invoiceId, amount, reason, kind, on: today, issuedByUserId: currentUserRef.current.name };
+    setState((s) => {
+      const next = { ...s, recordedPayments: [payment, ...s.recordedPayments], refunds: [refund, ...s.refunds] };
+      if (!reducesInvoice(kind)) return next;
+      if (s.issuedInvoices.find((i) => i.id === invoiceId)) {
+        return {
+          ...next,
+          issuedInvoices: s.issuedInvoices.map((i) =>
+            i.id === invoiceId ? { ...i, total: Math.round((i.total - amount) * 100) / 100, adjustments: [...(i.adjustments ?? []), adjustment] } : i,
+          ),
+        };
+      }
+      const edit = s.invoiceEdits[invoiceId] ?? {};
+      const total = edit.total ?? seededTotal(invoiceId);
+      return {
+        ...next,
+        invoiceEdits: {
+          ...s.invoiceEdits,
+          [invoiceId]: { ...edit, total: total === null ? undefined : Math.round((total - amount) * 100) / 100, adjustments: [...(edit.adjustments ?? []), adjustment] },
+        },
+      };
+    });
+  }, [audit]);
+
+  const resendInvoice = useCallback<DemoContextValue["resendInvoice"]>(({ invoiceId, clientName }) => {
+    audit({ action: "invoice.resent", entityType: "invoice", entityId: invoiceId, after: { clientName } });
+    setState((s) => ({
+      ...s,
+      // §9.4 again: the text says an invoice exists; the portal holds the figures.
+      communications: [
+        {
+          id: newId("comm"),
+          entityType: "invoice",
+          entityId: invoiceId,
+          recipientName: clientName,
+          channel: "sms" as const,
+          provider: "spruce",
+          templateKey: "invoice_notification",
+          status: "queued" as const,
+          providerMessageId: null,
+          errorMessage: null,
+          createdAt: new Date().toISOString(),
+          sentAt: null,
+        },
+        ...s.communications,
+      ],
+    }));
+  }, [audit]);
+
+  const savePayerSetup = useCallback<DemoContextValue["savePayerSetup"]>(({ clientPersonId, patch, rate, currentRate, reason, effectiveFrom }) => {
+    audit({ action: "payer.setup.changed", entityType: "client", entityId: clientPersonId, after: { ...patch, rate, reason } });
+    const change: RateChange | null =
+      rate > 0 && rate !== currentRate
+        ? { id: newId("rate"), clientPersonId, from: currentRate, to: rate, reason: reason.trim(), effectiveFrom, recordedAt: new Date().toISOString(), recordedByUserId: currentUserRef.current.name }
+        : null;
+    setState((s) => ({
+      ...s,
+      payerEdits: { ...s.payerEdits, [clientPersonId]: { ...(s.payerEdits[clientPersonId] ?? {}), ...patch } },
+      rateChanges: change ? [change, ...s.rateChanges] : s.rateChanges,
+    }));
+  }, [audit]);
+
+  const saveDraftEdit = useCallback<DemoContextValue["saveDraftEdit"]>(({ key, hours, rate, reason, charges, method }) => {
+    audit({ action: "invoice.draft.edited", entityType: "invoice", entityId: key, after: { hours, rate, reason, charges: charges.length, method } });
+    const edit = { hours, ...(rate === null ? {} : { rate }), reason, charges, method, editedByUserId: currentUserRef.current.name, editedAt: new Date().toISOString() };
+    setState((s) => ({ ...s, draftEdits: { ...s.draftEdits, [key]: edit } }));
+  }, [audit]);
+
+  const saveFirstPayment = useCallback<DemoContextValue["saveFirstPayment"]>(({ clientPersonId, deposit, depositReason, technologyFee, startsOn }) => {
+    audit({ action: "invoice.first_payment.raised", entityType: "client", entityId: clientPersonId, after: { deposit, depositReason, technologyFee, startsOn } });
+    setState((s) => ({
+      ...s,
+      firstPayments: { ...s.firstPayments, [clientPersonId]: { on: new Date().toISOString().slice(0, 10), deposit, depositReason, technologyFee, startsOn } },
+    }));
+  }, [audit]);
+
   const value = useMemo<DemoContextValue>(
     () => ({
       ...state,
+      saveLtciEnrollment,
+      savePayerSetup,
+      saveDraftEdit,
+      saveFirstPayment,
+      adjustInvoice,
+      voidInvoice,
+      refundInvoice,
+      resendInvoice,
       addShift,
       addScheduleEvent,
       requestTimeOff,
@@ -1879,7 +2035,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       renameSopCategory,
       moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
   );
 
   /**

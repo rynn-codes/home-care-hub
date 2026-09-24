@@ -12,12 +12,21 @@ import {
 import { seedBillingTerms } from "@/lib/billingSeed";
 
 describe("the seeded accounts", () => {
-  it("puts one payer on two clients, which the old shape could not express", () => {
-    // Diane pays for her mother and her father. Keyed on the client she had two
-    // unrelated records; once Stripe were connected, two Customers and two
-    // saved cards.
-    const diane = clientsOnAccount(seedBillingAccountClients, "acct-diane");
-    expect(diane).toHaveLength(2);
+  it("gives every client their own account, in their own name", () => {
+    // Joy is all private pay and invoices the client. The payer on each
+    // account is the client, whoever holds the chequebook at home.
+    for (const terms of seedBillingTerms) {
+      const account = seedBillingAccounts.find((a) => a.id === `acct-${terms.clientPersonId}`)!;
+      expect(account.payerPersonId).toBe(terms.clientPersonId);
+      expect(clientsOnAccount(seedBillingAccountClients, account.id)).toHaveLength(1);
+    }
+  });
+
+  it("bills the agreed weekly hours the standing schedule actually carries", () => {
+    // The advance invoice bills the agreement's hours, read from the
+    // schedule so the two cannot disagree.
+    const charles = seedBillingAccountClients.find((l) => l.clientPersonId === "c-charles")!;
+    expect(charles.agreedWeeklyHours).toBe(56);
   });
 
   it("bills every client that has terms, and no more", () => {
@@ -48,19 +57,19 @@ describe("the seeded accounts", () => {
   });
 
   it("includes the state §18.4 exists to prevent", () => {
-    // A saved card and nobody has recorded authority to use it. It looks ready
-    // and is not, which is the whole reason the constraint is in the database
-    // rather than only in a form.
-    const priya = seedBillingAccounts.find((a) => a.id === "acct-priya")!;
-    expect(priya.collectionMethod).toBe("automatic");
-    expect(priya.paymentMethod).toBe("card");
-    expect(priya.authorizationStatus).toBe("not_captured");
-    expect(priya.status).not.toBe("ready");
+    // Automatic collection with nothing to charge and nobody's authority
+    // recorded. It looks like setup and is not finished, which is the whole
+    // reason the constraint is in the database rather than only in a form.
+    const vince = seedBillingAccounts.find((a) => a.id === "acct-c-vince")!;
+    expect(vince.collectionMethod).toBe("automatic");
+    expect(vince.paymentMethod).toBeNull();
+    expect(vince.authorizationStatus).toBe("not_captured");
+    expect(vince.status).not.toBe("ready");
   });
 
   it("tells withdrawn authority apart from never having asked", () => {
-    const yvonne = seedBillingAccounts.find((a) => a.id === "acct-yvonne")!;
-    expect(yvonne.status).toBe("attention_needed");
+    const robert = seedBillingAccounts.find((a) => a.id === "acct-c-robert")!;
+    expect(robert.status).toBe("attention_needed");
   });
 
   it("keeps rate versions in step with the billing terms", () => {

@@ -35,6 +35,12 @@ import type { VisitPay } from "@/domain/scheduling/visitPay";
 import type { SupervisoryVisit } from "@/domain/supervision/supervision";
 import { seedSupervisoryVisits } from "@/lib/supervisionSeed";
 import { seedApprovedLocations, seedClientSchedules, seedHouseholds, seedMileage, type VisitMileage } from "@/lib/schedulingExtrasSeed";
+import type { LtciEnrollment } from "@/domain/billing/ltci";
+import type { PayerEdit, RateChange } from "@/domain/billing/payerSetup";
+import type { DraftEdit } from "@/domain/billing/manualInvoice";
+import type { InvoiceAdjustment } from "@/domain/billing/receivables";
+import type { Refund } from "@/domain/billing/invoiceActions";
+import { seedLtciEnrollments } from "@/lib/ltciSeed";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -311,6 +317,22 @@ export interface DemoState {
   /** The office asked a caregiver for her phone number through her Joy app. */
   phoneAsks: Record<string, { askedBy: string; askedAt: string; answeredAt: string | null }>;
   supervisoryVisits: SupervisoryVisit[];
+
+  /* ── Billing: what the office changes after the run ─────────────────── */
+
+  /** Long-term care carriers per client, for reimbursement packets. */
+  ltciEnrollments: LtciEnrollment[];
+  /** Payer setup changes by client — pay type, method. */
+  payerEdits: Record<string, PayerEdit>;
+  /** Edits to this week's drafts by draft key, before they go. */
+  draftEdits: Record<string, DraftEdit>;
+  /** First-time payments raised, by client. */
+  firstPayments: Record<string, { on: string; deposit: number; depositReason: string; technologyFee: number; startsOn: string }>;
+  /** Rate changes, newest first; laid over the seeded versions when pricing. */
+  rateChanges: RateChange[];
+  /** Adjustments and voids on SEEDED invoices, by invoice id. Issued ones carry theirs. */
+  invoiceEdits: Record<string, { total?: number; adjustments?: InvoiceAdjustment[]; writtenOffOn?: string; writtenOffReason?: string }>;
+  refunds: Refund[];
 }
 
 export interface DemoClockAttempt {
@@ -401,6 +423,13 @@ function initial(): DemoState {
     visitPay: {},
     phoneAsks: {},
     supervisoryVisits: [...seedSupervisoryVisits],
+    ltciEnrollments: [...seedLtciEnrollments],
+    payerEdits: {},
+    draftEdits: {},
+    firstPayments: {},
+    rateChanges: [],
+    invoiceEdits: {},
+    refunds: [],
   };
 }
 

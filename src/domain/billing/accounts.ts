@@ -145,7 +145,7 @@ export type AccountGap =
 export const ACCOUNT_GAP_MESSAGES: Record<AccountGap, string> = {
   no_payment_method: "No payment method on file.",
   no_authorization:
-    "Joy's payment authorization form is not on file for this account. A saved card is not permission — capture the form during payment setup.",
+    "Payment setup is not finished — Joy needs the signed authorization and a card or bank account before it can bill.",
   authorization_withdrawn: "Authority to charge this account has been withdrawn.",
   no_billing_contact: "No billing e-mail or phone, so an invoice has nowhere to go.",
   no_clients: "This account pays for nobody.",

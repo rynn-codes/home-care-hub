@@ -166,7 +166,9 @@ export type LineKind =
   | "carried_hours"
   | "carried_overtime"
   /** Negative amount: last week had less care than was billed in advance. */
-  | "credit";
+  | "credit"
+  /** A charge typed in by hand — a fee, an expense, a one-off. */
+  | "manual";
 
 export interface InvoiceLine {
   kind: LineKind;
@@ -449,7 +451,7 @@ export function buildInvoice(input: {
     // week's guess. A household member carries their share of the advance.
     const share = advanceShare(terms.clientPersonId, households);
     const shared = share < 1 && share > 0 ? ` — shared visit, ${Math.round(share * 100)}% of the hourly rate` : "";
-    line("standard", `Care hours for the week of ${weekStart} — as agreed${shared}`, input.advance.agreedHours, share);
+    line("standard", `Regular care${shared}`, input.advance.agreedHours, share);
 
     for (const carry of input.advance.carryForward ?? []) {
       if (carry.kind === "credit") {

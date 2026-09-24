@@ -81,7 +81,7 @@ describe("the advance invoice bills the agreement, not the board", () => {
 
     expect(invoice.lines).toHaveLength(1);
     expect(invoice.lines[0].hours).toBe(12);
-    expect(invoice.lines[0].description).toContain("as agreed");
+    expect(invoice.lines[0].description).toBe("Regular care");
     expect(invoice.subtotal).toBe(360);
   });
 
