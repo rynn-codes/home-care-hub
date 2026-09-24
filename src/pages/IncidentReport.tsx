@@ -118,8 +118,11 @@ export default function IncidentReport() {
   return (
     <>
       <PageHeader
+        parents={[
+          { label: "Reports", to: "/reports" },
+          { label: "Incidents", to: "/reports/incidents" },
+        ]}
         title="Yearly incident report"
-        description="Every incident reported in the year, and whether Joy did what it said it would do each time."
       />
 
       <div className="mb-6 flex flex-wrap items-center gap-3">

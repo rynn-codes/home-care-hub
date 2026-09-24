@@ -15,6 +15,8 @@ import { seedCarePlans } from "@/lib/carePlanSeed";
 import { seedStartOfCare, seedSupervisoryVisits } from "@/lib/supervisionSeed";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { seedClients } from "@/lib/clientsSeed";
+import { seedEvvRecords, seedEvvVisits } from "@/lib/evvSeed";
+import { defaultEvvPeriod, evvSummary } from "@/domain/audit/evv";
 import { useDemo } from "@/context/DemoDataProvider";
 import { auditPhrase } from "@/lib/demoAudit";
 import { cn } from "@/lib/utils";
@@ -61,11 +63,14 @@ export default function Audit() {
     [],
   );
 
+  const evv = useMemo(() => evvSummary({ records: seedEvvRecords, visits: seedEvvVisits, period: defaultEvvPeriod(today) }), [today]);
+
   const readiness = useMemo(
     () =>
       surveyReadiness({
         today,
         auditEntryCount: auditEntries.length,
+        evv,
         workforce: seedEmployees,
         requirements: seedCredentialRequirements,
         incidents: seedIncidents,
@@ -74,15 +79,12 @@ export default function Audit() {
         supervisoryVisits: seedSupervisoryVisits,
         clients: seedClients,
       }),
-    [today, servedClients, auditEntries.length],
+    [today, servedClients, auditEntries.length, evv],
   );
 
   return (
     <>
-      <PageHeader
-        title="Audit"
-        description="What a surveyor asks for, and what Joy can show them this morning."
-      />
+      <PageHeader parents={[{ label: "Reports", to: "/reports" }]} title="Audit" />
 
       <p className="mb-6 text-sm">{readiness.headline}</p>
 

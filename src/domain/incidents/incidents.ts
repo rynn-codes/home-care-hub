@@ -62,12 +62,11 @@ export const SEVERITY_LABELS: Record<IncidentSeverity, string> = {
   serious: "Serious — hospitalisation, death or an allegation",
 };
 
-export type NotifyParty = "rn" | "family" | "physician" | "state" | "administrator";
+export type NotifyParty = "rn" | "family" | "state" | "administrator";
 
 export const NOTIFY_LABELS: Record<NotifyParty, string> = {
   rn: "The RN",
   family: "The responsible party",
-  physician: "The client's physician",
   state: "The state",
   administrator: "The administrator",
 };
@@ -101,8 +100,9 @@ export const NOTIFICATION_POLICY: Record<IncidentKind, NotificationRule[]> = {
     { party: "family", withinHours: 2, because: "They will hear about it anyway. Better from Joy." },
   ],
   medication_error: [
-    { party: "rn", withinHours: 1, because: "The RN decides whether the physician is called." },
-    { party: "physician", withinHours: 4, because: "Only the prescriber can say what happens next." },
+    // The physician is not a party Joy tells directly. The RN makes that call —
+    // literally — which is why the RN's window is the short one.
+    { party: "rn", withinHours: 1, because: "The RN decides what happens next, and whether anybody outside the agency is rung." },
     { party: "family", withinHours: 4, because: "They are entitled to know what was given." },
   ],
   behavioural: [
@@ -433,6 +433,21 @@ export function recordNotification(input: {
 }
 
 // ------------------------------------------------------------- closing --
+
+/**
+ * The administrator opening the incident list is the administrator being told.
+ *
+ * Karynn's rule is that the office hears about every incident within the hour.
+ * When the person reading the list is the office, the reading is the hearing,
+ * and asking her to press "Mark told" on her own behalf would be a record of
+ * a phone call nobody made.
+ */
+export function acknowledgeAsAdmin(input: { incident: Incident; byUserId: string; at: string }): Incident {
+  const pending = input.incident.notifications.some((n) => n.party === "administrator" && !n.doneAt);
+  return pending
+    ? recordNotification({ incident: input.incident, party: "administrator", note: "Seen in Joy", byUserId: input.byUserId, at: input.at })
+    : input.incident;
+}
 
 export type CloseRefusal =
   | "not_classified"

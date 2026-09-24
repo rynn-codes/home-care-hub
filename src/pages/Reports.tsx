@@ -24,6 +24,7 @@ import { csvFilename, reportToCsv } from "@/domain/reports/csv";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedTimeEntries } from "@/lib/payrollSeed";
+import { seedEmployees } from "@/lib/employeesSeed";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 import { useDemo } from "@/context/DemoDataProvider";
 import { cn } from "@/lib/utils";
@@ -215,10 +216,12 @@ export default function Reports() {
       }),
       net_margin: netMarginByClient({
         terms: seedBillingTerms,
-        // Empty on purpose. The figures on the Employees screen came from the
-        // mockup and are fiction; Payroll computes hours rather than wages for
-        // the same reason.
-        payRates: new Map(),
+        // The base rate on each employee's record, by name — the same figure
+        // Payroll prices a week with. Placeholders until Karynn enters the
+        // real ones, and said so on the Employees screen.
+        payRates: new Map(
+          seedEmployees.filter((e) => typeof e.baseRate === "number").map((e) => [e.name, e.baseRate as number]),
+        ),
         visits: seedVisits,
         range,
       }),
@@ -302,17 +305,29 @@ export default function Reports() {
             })}
           </ul>
 
-          <div className="mt-6 rounded-xl border border-border bg-surface p-4">
-            <p className="flex items-center gap-2 text-sm font-medium">
-              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              Yearly incident report
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Every incident in the year, and whether Joy met each obligation.
-            </p>
-            <Button size="sm" variant="outline" className="mt-3" asChild>
-              <Link to="/reports/incidents/annual">Open</Link>
-            </Button>
+          {/* The reports that are screens of their own. Each card is the
+              link, not a card with a button in it. */}
+          <div className="mt-6 space-y-2">
+            {(
+              [
+                { to: "/reports/supervision", title: "Supervision", blurb: "Every RN supervisory visit, and who is due." },
+                { to: "/reports/incidents", title: "Incidents", blurb: "The agency-wide incident log and each one's obligations." },
+                { to: "/reports/incidents/annual", title: "Yearly incident report", blurb: "Every incident in the year, and whether Joy met each obligation." },
+                { to: "/reports/audit", title: "Audit", blurb: "Who did what, when — the trail a surveyor reads." },
+              ] as const
+            ).map((card) => (
+              <Link
+                key={card.to}
+                to={card.to}
+                className="block rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-muted"
+              >
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  {card.title}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{card.blurb}</p>
+              </Link>
+            ))}
           </div>
         </nav>
 

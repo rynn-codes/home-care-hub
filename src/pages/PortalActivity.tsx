@@ -198,6 +198,7 @@ export default function PortalActivity() {
   return (
     <>
       <PageHeader
+        parents={[{ label: "Operations", to: "/operations" }]}
         title="Portal activity"
         description="What caregivers and families have sent in, and what is waiting on them."
       />

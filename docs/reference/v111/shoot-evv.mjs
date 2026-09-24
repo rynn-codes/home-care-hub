@@ -1,0 +1,10 @@
+import { chromium } from "playwright";
+const port = process.argv[3] ?? "8097";
+const out = process.argv[2];
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await browser.newPage({ viewport: { width: 1380, height: 1500 } });
+page.on("pageerror", (e) => console.log("PAGE ERROR", e.message));
+await page.goto(`http://localhost:${port}/index.html#/reports/audit/evv`);
+await page.waitForTimeout(900);
+await page.screenshot({ path: `${out}/evv-top-${port}.png`, fullPage: false });
+await browser.close();

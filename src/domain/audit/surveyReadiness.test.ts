@@ -9,6 +9,8 @@ import { seedVisits } from "@/lib/schedulingSeed";
 import { seedClients } from "@/lib/clientsSeed";
 import { complianceAlerts } from "@/domain/credentials/alerts";
 import { carePlanQueue } from "@/domain/carePlan/plan";
+import { defaultEvvPeriod, evvSummary } from "@/domain/audit/evv";
+import { seedEvvRecords, seedEvvVisits } from "@/lib/evvSeed";
 
 const TODAY = "2026-08-21";
 
@@ -38,6 +40,7 @@ function build(over: Partial<SurveyReadinessInput> = {}) {
     servedClients: served,
     supervisoryVisits: seedSupervisoryVisits,
     clients: seedClients,
+    evv: evvSummary({ records: seedEvvRecords, visits: seedEvvVisits, period: defaultEvvPeriod(TODAY) }),
     ...over,
   });
 }
@@ -120,6 +123,7 @@ describe("when everything is in order", () => {
       carePlans: [],
       supervisoryVisits: [],
       clients: [],
+      evv: evvSummary({ records: [], visits: [], period: defaultEvvPeriod(TODAY) }),
     });
     expect(clean.lines.filter((l) => l.state === "gaps")).toEqual([]);
     // One line is permanently honest until somebody writes the Postgres store.

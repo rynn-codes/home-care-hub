@@ -54,7 +54,7 @@ export const seedMoments: Moment[] = [
     visitId: "v1",
     clientPersonId: "p-marcus",
     narrative: "He beat me at chess and wanted everyone to know.",
-    body: "Marcus and Jamisha played two games of chess this afternoon — he won one, and made sure she knew it.",
+    body: "Jessie and Jamisha played two games of chess this afternoon — he won one, and made sure she knew it.",
     state: "shared",
     createdByPersonId: "p-jamisha",
     createdAt: daysAgo(0),

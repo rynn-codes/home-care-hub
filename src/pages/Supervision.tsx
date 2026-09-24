@@ -222,6 +222,7 @@ export default function Supervision() {
   return (
     <>
       <PageHeader
+        parents={[{ label: "Reports", to: "/reports" }]}
         title="Supervisory visits"
         description="The annual supervision the service agreement commits Joy to, and who is waiting for one."
       />

@@ -86,7 +86,6 @@ describe("classifying", () => {
     expect(incident.notifications.map((n) => n.party)).toEqual([
       "administrator",
       "rn",
-      "physician",
       "family",
     ]);
     expect(incident.state).toBe("under_review");

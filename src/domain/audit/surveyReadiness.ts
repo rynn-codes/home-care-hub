@@ -5,6 +5,7 @@ import type { Incident } from "@/domain/incidents/incidents";
 import { carePlanQueue, reviewOverdue, type CarePlan } from "@/domain/carePlan/plan";
 import { supervisionQueue, type SupervisoryVisit } from "@/domain/supervision/supervision";
 import { clientCompliance, type ClientInput } from "@/domain/clients/roster";
+import { EXCEPTION_LABELS, evvPeriodLabel, type EvvExceptionKind, type EvvSummary } from "@/domain/audit/evv";
 
 /**
  * Audit readiness — what a surveyor asks for, and whether Joy can show it.
@@ -81,6 +82,8 @@ export interface SurveyReadinessInput {
   supervisoryVisits: readonly SupervisoryVisit[];
   /** The client roster, for the consents and records authorizations. */
   clients: readonly ClientInput[];
+  /** The last three months of visit verification, from domain/audit/evv. */
+  evv: EvvSummary;
 }
 
 export interface SurveyReadiness {
@@ -197,6 +200,19 @@ export function surveyReadiness(input: SurveyReadinessInput): SurveyReadiness {
           : `${clientGaps.length} ${clientGaps.length === 1 ? "client has" : "clients have"} something expired or missing.`,
       to: "/clients",
       gaps: clientGaps.map((c) => `${c.name} — ${c.items.map((i) => i.label).join(", ")}`),
+    },
+    {
+      key: "evv",
+      question: "Show me your EVV documentation for the past three months.",
+      state: input.evv.exceptions.length === 0 ? "ready" : "gaps",
+      answer:
+        input.evv.exceptions.length === 0
+          ? `Every visit between ${evvPeriodLabel(input.evv.period)} is fully verified.`
+          : `${input.evv.verified} of ${input.evv.records + input.evv.byKind.no_record} visits between ${evvPeriodLabel(input.evv.period)} carry all six required elements.`,
+      to: "/reports/audit/evv",
+      gaps: (Object.keys(input.evv.byKind) as EvvExceptionKind[])
+        .filter((k) => input.evv.byKind[k] > 0)
+        .map((k) => `${input.evv.byKind[k]} — ${EXCEPTION_LABELS[k]}`),
     },
     {
       key: "audit_trail",

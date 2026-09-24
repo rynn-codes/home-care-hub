@@ -56,8 +56,8 @@ function livePlan(): CarePlan {
 }
 
 describe("the clock the client record could never stop", () => {
-  it("counts from start of care when nobody has been out yet", () => {
-    expect(status().dueOn).toBe("2026-06-01");
+  it("counts ninety days from start of care when nobody has been out yet", () => {
+    expect(status().dueOn).toBe("2025-08-30");
     expect(status().daysRemaining).toBeLessThan(0);
     expect(status().needsYou).toBe(true);
   });
@@ -103,8 +103,10 @@ describe("the clock the client record could never stop", () => {
 
   it("says how late it is rather than that it is late", () => {
     expect(supervisionHeadline(status())).toMatch(/^\d+ days overdue$/);
-    expect(supervisionHeadline(status({ startOfCare: "2025-09-01" }))).toMatch(/^Due in \d+ days$/);
-    expect(supervisionHeadline(status({ startOfCare: "2026-06-01" }))).toBe("Next due 2027-06-01");
+    // Today is 2026-08-21. Ninety days from the first of July falls inside the
+    // sixty-day window; ninety days from the first of August does not.
+    expect(supervisionHeadline(status({ startOfCare: "2026-07-01" }))).toMatch(/^Due in \d+ days$/);
+    expect(supervisionHeadline(status({ startOfCare: "2026-08-01" }))).toBe("Next due 2026-10-30");
   });
 
   it("puts the most overdue client first", () => {

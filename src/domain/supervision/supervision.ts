@@ -46,6 +46,19 @@ export interface SupervisoryVisit {
  */
 export const SUPERVISE_EVERY_MONTHS = 12;
 
+/**
+ * The first visit comes sooner. A new client has never been seen under care,
+ * so the first supervisory visit falls ninety days after start of care; only
+ * after one has been made does the clock run annually.
+ */
+export const FIRST_VISIT_WITHIN_DAYS = 90;
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T12:00:00`);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 /** How far ahead the queue starts asking. Matches the client record's window. */
 export const DUE_SOON_DAYS = 60;
 
@@ -92,7 +105,7 @@ export function supervisionStatus(input: {
     mine.find((v) => !v.completedAt && v.scheduledFor) ?? null;
 
   const from = last?.completedAt?.slice(0, 10) ?? input.startOfCare.slice(0, 10);
-  const dueOn = addMonths(from, SUPERVISE_EVERY_MONTHS) ?? from;
+  const dueOn = last ? (addMonths(from, SUPERVISE_EVERY_MONTHS) ?? from) : addDays(from, FIRST_VISIT_WITHIN_DAYS);
   const daysRemaining = daysBetween(input.today, dueOn);
 
   const state: SupervisionState = booked ? "booked" : daysRemaining <= DUE_SOON_DAYS ? "due" : "done";
@@ -230,10 +243,12 @@ export function completeSupervisoryVisit(input: {
 }
 
 /** Plain English for the queue. */
+const days = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
+
 export function supervisionHeadline(status: SupervisionStatus): string {
   if (status.booked?.scheduledFor) return `Booked for ${status.booked.scheduledFor}`;
-  if (status.daysRemaining < 0) return `${Math.abs(status.daysRemaining)} days overdue`;
+  if (status.daysRemaining < 0) return `${days(Math.abs(status.daysRemaining))} overdue`;
   if (status.daysRemaining === 0) return "Due today";
-  if (status.daysRemaining <= DUE_SOON_DAYS) return `Due in ${status.daysRemaining} days`;
+  if (status.daysRemaining <= DUE_SOON_DAYS) return `Due in ${days(status.daysRemaining)}`;
   return `Next due ${status.dueOn}`;
 }

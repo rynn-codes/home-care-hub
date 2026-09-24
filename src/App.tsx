@@ -19,6 +19,7 @@ import Operations from "./pages/Operations";
 import Hiring from "./pages/Hiring";
 import PortalActivity from "./pages/PortalActivity";
 import Audit from "./pages/Audit";
+import EvvLog from "./pages/EvvLog";
 import Incidents from "./pages/Incidents";
 import IncidentReport from "./pages/IncidentReport";
 import Admissions from "./pages/Admissions";
@@ -113,6 +114,7 @@ const App = () => (
                   September; the old paths keep working for bookmarks. */}
               <Route path="/hiring" element={<Hiring />} />
               <Route path="/reports/audit" element={<Audit />} />
+              <Route path="/reports/audit/evv" element={<EvvLog />} />
               <Route path="/reports/incidents" element={<Incidents />} />
               <Route path="/reports/incidents/annual" element={<IncidentReport />} />
               <Route path="/reports/supervision" element={<Supervision />} />
