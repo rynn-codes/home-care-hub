@@ -29,13 +29,33 @@ import { addMonths, daysBetween, toDateOnly } from "@/domain/dates";
  * date, not a new panel.
  */
 
-export type ClientStatus = "active" | "on_hold" | "discharged";
+export type ClientStatus = "active" | "on_hold" | "inactive" | "discharged";
 
 export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   active: "Active",
   on_hold: "On hold",
+  inactive: "Inactive",
   discharged: "Discharged",
 };
+
+/** What each status means for the record, in the status control's own words. */
+export const CLIENT_STATUS_MEANINGS: Record<ClientStatus, string> = {
+  active: "Receiving care. Visits are scheduled and invoices run each week.",
+  on_hold: "Paused and expected back. The care plan stands; no invoices run.",
+  inactive: "Not being served, and no discharge was run. The record stays whole.",
+  discharged:
+    "Formally ended. The record is kept under Texas retention and cannot be deleted, and the deposit is settled against the final week.",
+};
+
+/** A status set on the client record, layered over the seed. */
+export interface ClientStatusChange {
+  status: ClientStatus;
+  changedAt: string;
+  changedBy: string;
+  note: string | null;
+  /** Discharge only: the last day of service. */
+  lastServiceOn: string | null;
+}
 
 export type ComplianceState = "ok" | "due_soon" | "overdue" | "missing";
 
@@ -64,6 +84,8 @@ export interface ClientInput {
   address?: string | null;
   location?: string | null;
   status?: ClientStatus;
+  /** Issued once from initials and the last four of an SSN; never derived. See domain/records/mrNumber. */
+  mrNumber?: string | null;
   payer?: string | null;
   payerLine?: string | null;
   services?: string[];

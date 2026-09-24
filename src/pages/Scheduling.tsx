@@ -54,7 +54,7 @@ const QUICK_ADD: Array<{ label: string; to?: string; note?: string }> = [
   { label: "Client visit", note: "Not built yet" },
   { label: "Assessment", to: "/admissions" },
   { label: "Orientation", note: "Not built yet" },
-  { label: "Supervisor visit", to: "/clients/supervision" },
+  { label: "Supervisor visit", to: "/reports/supervision" },
 ];
 const JOY_PROMPTS = [
   "Who can cover Ruth's shift this week?",

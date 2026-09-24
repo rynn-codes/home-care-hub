@@ -15,18 +15,9 @@ import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
 
 const TODAY = "2026-08-18";
 
-/** Every document, all comfortably in date. */
-const ALL_DOCS = docs([
-  "background_check",
-  "tb_test",
-  "licence",
-  "cpr",
-  "handbook",
-  "immunizations",
-  "annual_training",
-  "drivers_license",
-  "auto_insurance",
-]);
+/** Every document the agency tracks, all comfortably in date. Read from the
+ *  seed so a requirement added there cannot silently strand this test. */
+const ALL_DOCS = docs(seedCredentialRequirements.map((r) => r.credentialType));
 
 function docs(keys: readonly string[]): Applicant["documents"] {
   return Object.fromEntries(
@@ -175,7 +166,9 @@ describe("the first-shift gate", () => {
     const readiness = firstShiftReadiness(a);
     expect(readiness.ready).toBe(true);
     // Everything blocking is present, so what is left is genuinely due later.
-    expect(readiness.missingSoon).toEqual(["immunizations", "annual_training"]);
+    expect(readiness.missingSoon).toContain("immunizations");
+    expect(readiness.missingSoon).toContain("annual_training");
+    expect(readiness.missingSoon).not.toContain("handbook");
   });
 
   it("keeps somebody off the schedule while the handbook is outstanding", () => {

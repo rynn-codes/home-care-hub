@@ -311,7 +311,7 @@ export default function Reports() {
               Every incident in the year, and whether Joy met each obligation.
             </p>
             <Button size="sm" variant="outline" className="mt-3" asChild>
-              <Link to="/operations/incidents/annual">Open</Link>
+              <Link to="/reports/incidents/annual">Open</Link>
             </Button>
           </div>
         </nav>

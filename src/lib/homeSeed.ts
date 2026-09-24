@@ -70,7 +70,7 @@ export const HOME_SCHEDULE: HomeEvent[] = [
     title: "Field orientation · David Okoro",
     meta: "Shadowing Samantha Chen",
     tag: "Orientation",
-    href: "/operations/hiring",
+    href: "/hiring",
   },
 ];
 
@@ -129,7 +129,7 @@ export const HOME_WAITING: HomeWaiting[] = [
     title: "Background check pending",
     sub: "Sarah Johnson · requested 3 days ago",
     pill: "Joy following up",
-    href: "/operations/hiring",
+    href: "/hiring",
   },
   {
     icon: "share",
@@ -204,7 +204,7 @@ export const HOME_JOY: ReadonlyArray<{
     note: "",
     tone: "text-primary",
     items: [
-      { text: "Following up on background check", to: "/operations/hiring" },
+      { text: "Following up on background check", to: "/hiring" },
       { text: "Resolving missing clock-out", to: "/payroll" },
       { text: "Collecting two corrected timecards", to: "/payroll" },
     ],

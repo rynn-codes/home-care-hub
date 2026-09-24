@@ -125,7 +125,7 @@ export function buildPortalQueue(input: OfficeQueueInput): PortalWorkItem[] {
       headline: "A candidate's invitation expired before they used it",
       detail: "Reissue it, or close them out.",
       subject: null,
-      to: "/operations/hiring",
+      to: "/hiring",
       since: invitation.expiresAt,
     });
   }
@@ -144,7 +144,7 @@ export function buildPortalQueue(input: OfficeQueueInput): PortalWorkItem[] {
           ? `Sent ${invitation.sends.length} times. Worth a phone call.`
           : "Sent once. Give it a day before chasing.",
       subject: null,
-      to: "/operations/hiring",
+      to: "/hiring",
       since: invitation.issuedAt,
     });
   }

@@ -1,0 +1,22 @@
+import { chromium } from "playwright";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await browser.newPage({ viewport: { width: 1380, height: 900 } });
+const errors = [];
+page.on("pageerror", (e) => errors.push(String(e)));
+page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+const out = "/tmp/claude-0/-home-claude/d2433efc-dba1-5080-a930-43a82e41e69f/scratchpad/";
+const go = async (path, name, extra) => {
+  await page.goto(`http://localhost:8097/${path}`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(600);
+  if (extra) await extra();
+  await page.screenshot({ path: `${out}${name}.png`, fullPage: true });
+};
+await go("#/employees", "emp-directory");
+await go("#/employees", "emp-peek", async () => { await page.getByRole("button", { name: /Chanel P/ }).first().click(); await page.waitForTimeout(500); });
+await go("#/employees/emp-chanel", "emp-record");
+await go("#/employees/emp-chanel", "emp-record-employment", async () => { await page.getByRole("tab", { name: "Employment & Compliance" }).click(); await page.waitForTimeout(300); });
+await go("#/employees/emp-chanel", "emp-log", async () => { await page.getByRole("button", { name: "Log a call" }).first().click(); await page.waitForTimeout(500); });
+await go("#/employees", "emp-add", async () => { await page.getByRole("button", { name: "Add employee" }).click(); await page.waitForTimeout(500); });
+await go("#/employees/emp-tanya", "emp-tanya");
+console.log("errors:", JSON.stringify(errors, null, 1));
+await browser.close();

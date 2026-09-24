@@ -404,7 +404,7 @@ export default function Incidents() {
         description="Everything a caregiver reported at clock-out, and who still has to be told."
         actions={
           <Button variant="outline" asChild>
-            <Link to="/operations/incidents/annual">Yearly report</Link>
+            <Link to="/reports/incidents/annual">Yearly report</Link>
           </Button>
         }
       />

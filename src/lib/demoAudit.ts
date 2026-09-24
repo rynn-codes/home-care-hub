@@ -155,6 +155,22 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "payment.failed": "a payment failed",
   "refund.initiated": "started a refund",
   "refund.completed": "completed a refund",
+  "employee.created": "added an employee",
+  "employee.updated": "edited an employee's profile",
+  "employee.status_changed": "changed an employee's status",
+  "employee.change_undone": "undid a change to an employee",
+  "employee.deleted": "deleted an employee record",
+  "client.status_changed": "changed a client's status",
+  "client.change_undone": "undid a change to a client",
+  "client.deleted": "deleted a client record",
+  "record.restored": "restored a deleted record",
+  "record.purged": "removed a deleted record for good",
+  "record.updated": "updated a record",
+  "record.viewed": "opened a record",
+  "activity.logged": "logged an activity",
+  "activity.deleted": "deleted a logged activity",
+  "contact.deleted": "removed a contact",
+  "admission.deleted": "deleted an admission record",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {

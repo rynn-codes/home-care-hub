@@ -10,13 +10,20 @@
  *
  * Two engines deciding whether somebody is compliant is worse than either one,
  * so the old one is gone rather than deprecated.
+ *
+ * ── The roles are Joy's, not the industry's ──────────────────────────────
+ *
+ * Karynn, 8 September: "Under roles, we only have CNA or Caregiver." There is
+ * no HHA at Joy — home health aide is a Medicare vocabulary and Joy does not
+ * bill Medicare. The nurses are RN and LVN, and the office is the office.
  */
 
-export type EmployeeRole = "cna" | "hha" | "lvn" | "office";
+export type EmployeeRole = "caregiver" | "cna" | "lvn" | "rn" | "office";
 
 export const ROLE_LABELS: Record<EmployeeRole, string> = {
+  caregiver: "Caregiver",
   cna: "CNA",
-  hha: "HHA",
+  rn: "RN",
   lvn: "LVN",
   office: "Office",
 };

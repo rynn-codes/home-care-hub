@@ -61,9 +61,9 @@ export const admissionsSummary: CountRow[] = [
 ];
 
 export const employeeTasks: CountRow[] = [
-  { label: "Orientation", value: "3", to: "/operations/hiring" },
-  { label: "Field Orientation", value: "2", to: "/operations/hiring" },
-  { label: "Week One Follow-Ups", value: "4", to: "/operations/hiring" },
+  { label: "Orientation", value: "3", to: "/hiring" },
+  { label: "Field Orientation", value: "2", to: "/hiring" },
+  { label: "Week One Follow-Ups", value: "4", to: "/hiring" },
   { label: "Supervisor Visits", value: "5", note: "2 overdue", to: "/scheduling" },
   { label: "Annual Reviews", value: "2", to: "/employees" },
 ];

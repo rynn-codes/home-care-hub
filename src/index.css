@@ -85,6 +85,26 @@
     --sidebar-accent-foreground: 245 92% 28%;
     --sidebar-border: 40 10% 92%;
     --sidebar-ring: 245 92% 33%;
+
+    /* The named neutrals the September screens are built on. Hex, not HSL
+     * triplets, because they are used as var(--paper) inside arbitrary
+     * Tailwind values and never mixed with an alpha. */
+    --shell-band: 64px;
+    --ink-strong: #191A2E;
+    --ink: #191A2E;
+    --ink-soft: #3A3A42;
+    --ink-body: #5B6274;
+    --ink-muted: #6E6E76;
+    --ink-tertiary: #8A8A92;
+    --ink-eyebrow: #9B9BA3;
+    --ink-disabled: #B9B9C1;
+    --ink-placeholder: #D8D8DE;
+    --paper: #FFFFFF;
+    --paper-sunken: #FCFCFD;
+    --wash: #FAFAFB;
+    --wash-strong: #F1F2F6;
+    --hairline: #ECECF1;
+    --hairline-soft: #F3F3F6;
   }
 
   .dark {
@@ -129,6 +149,18 @@
     --sidebar-accent-foreground: 248 95% 86%;
     --sidebar-border: 245 22% 20%;
     --sidebar-ring: 248 95% 72%;
+
+    --ink-strong: #F4F4F8;
+    --ink: #ECECF1;
+    --ink-soft: #C9CAD4;
+    --ink-body: #A6A9B8;
+    --ink-muted: #90939F;
+    --paper: #16161C;
+    --paper-sunken: #131318;
+    --wash: #1D1D25;
+    --wash-strong: #26262F;
+    --hairline: #2A2A34;
+    --hairline-soft: #24242D;
   }
 }
 

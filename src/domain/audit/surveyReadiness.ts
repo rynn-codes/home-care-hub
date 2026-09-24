@@ -159,7 +159,7 @@ export function surveyReadiness(input: SurveyReadinessInput): SurveyReadiness {
           ? `Nothing reported in ${year}.`
           : `${log.total} reported in ${year}` +
             (incidentGaps.length === 0 ? ", every obligation met on time." : "."),
-      to: "/operations/incidents/annual",
+      to: "/reports/incidents/annual",
       gaps: incidentGaps,
     },
     {
@@ -184,7 +184,7 @@ export function surveyReadiness(input: SurveyReadinessInput): SurveyReadiness {
         supervisionDue.length === 0
           ? "Every client's supervisory visit is current or booked."
           : `${supervisionDue.length} due or overdue.`,
-      to: "/clients/supervision",
+      to: "/reports/supervision",
       gaps: supervisionDue.map((r) => `${r.clientName} — ${r.dueOn}`),
     },
     {

@@ -173,7 +173,7 @@ export default function Operations() {
         <h2 className="mb-4 text-sm font-semibold">Hiring</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Link
-            to="/operations/hiring"
+            to="/hiring"
             className="rounded-2xl border border-border bg-surface p-5 transition-colors hover:bg-surface-muted"
           >
             <p className="flex items-center gap-2 text-sm font-medium">
@@ -194,7 +194,7 @@ export default function Operations() {
           </Link>
 
           <Link
-            to="/operations/hiring"
+            to="/hiring"
             className="rounded-2xl border border-border bg-surface p-5 transition-colors hover:bg-surface-muted"
           >
             <p className="flex items-center gap-2 text-sm font-medium">
@@ -213,7 +213,7 @@ export default function Operations() {
       <section className="mb-8">
         <h2 className="mb-4 text-sm font-semibold">Incidents</h2>
         <Link
-          to="/operations/incidents"
+          to="/reports/incidents"
           className="block rounded-2xl border border-border bg-surface p-5 transition-colors hover:bg-surface-muted"
         >
           <p className="flex items-center gap-2 text-sm font-medium">

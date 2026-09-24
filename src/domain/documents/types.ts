@@ -130,6 +130,17 @@ export interface CredentialRequirement {
   /** Null or empty means every role. */
   requiredForRoles?: string[] | null;
   requiredForDriving: boolean;
+  /**
+   * Applies only to somebody whose right to work expires — a work permit
+   * holder. Off a citizen's file entirely. See domain/employees/workAuthorization.
+   */
+  requiredForWorkAuthorization?: boolean;
+  /**
+   * Never counted as missing. A passport proves identity for the I-9 but a
+   * social security card does the same, so nobody is chased for one; once
+   * somebody has one on file its expiry is watched like any other.
+   */
+  optional?: boolean;
   expirationRequired: boolean;
   verificationRequired: boolean;
   /**

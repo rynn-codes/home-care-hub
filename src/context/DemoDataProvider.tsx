@@ -21,6 +21,26 @@ import type { AuditRecord } from "@/domain/audit/audit";
 import { paymentRefusals, type Payment, type PaymentRefusal } from "@/domain/billing/receivables";
 import { externalPaymentRecorded, invoiceApproved, invoiceIssued } from "@/domain/billing/financialAudit";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
+import { toast } from "sonner";
+import { canWrite } from "@/domain/access/roles";
+import { seedEmployees } from "@/lib/employeesSeed";
+import { profileFromSeed } from "@/lib/employeeRoster";
+import { EMPLOYEE_STATUS_LABELS, type EmployeeStatus } from "@/domain/employees/credentials";
+import { fullName, type EmployeeProfile } from "@/domain/employees/profile";
+import { changeSummary, changedFieldLabels, type ProfileChange } from "@/domain/records/profileChanges";
+import { binned, type DeletedRecord } from "@/domain/records/deletion";
+import { interactionFromDraft, type ActivityDraft, type ActivitySubject, type Interaction } from "@/domain/records/activity";
+import { CLIENT_STATUS_LABELS, type ClientStatus } from "@/domain/clients/roster";
+
+/** What each kind of deleted record carries so it can be put back exactly. */
+export type DeletedPayload =
+  | { kind: "contact"; contact: Contact; edits: Partial<Contact> | null }
+  | { kind: "activity"; interaction: Interaction }
+  | { kind: "employee"; employeeId: string; edits: EmployeeProfile | null; added: EmployeeProfile | null }
+  | { kind: "client"; clientPersonId: string }
+  | { kind: "admission"; admission: SeedAdmission; person: DemoState["people"][number] | null; mrNumber: string | null }
+  | { kind: "document"; document: unknown }
+  | { kind: "sop"; sop: unknown };
 
 /**
  * The demo's organization id.
@@ -85,6 +105,34 @@ interface DemoContextValue extends DemoState {
   currentUser: DemoState["currentUser"];
   setCurrentUser: (user: DemoState["currentUser"]) => void;
   reset: () => void;
+
+  /* ── Records: employees, clients, the bin, activity ─────────────────── */
+
+  /**
+   * Save an employee's profile. `id` null adds somebody; otherwise the edit
+   * is laid over the seed (or replaces an added profile). Returns the id.
+   * Every edit leaves a ProfileChange so it can be undone for the agency's
+   * window, and an audit line that stays.
+   */
+  saveEmployee: (id: string | null, profile: EmployeeProfile) => string;
+  setEmployeeStatus: (id: string, status: EmployeeStatus, name?: string) => void;
+  undoProfileChange: (changeId: string) => void;
+  deleteEmployee: (id: string, name: string, reason?: string | null) => void;
+  deleteClient: (personId: string, name: string, reason?: string | null) => void;
+  restoreDeleted: (id: string) => void;
+  purgeDeleted: (id: string) => void;
+  logActivity: (input: { draft: ActivityDraft; subject: ActivitySubject }) => Interaction;
+  deleteActivity: (id: string) => void;
+  /** Opening a record is audited — a surveyor's session is the one that is not. */
+  recordView: (entityType: string, entityId: string, label: string) => void;
+  issueMrNumber: (entityId: string, number: string) => void;
+  setClientStatus: (input: {
+    clientPersonId: string;
+    status: ClientStatus;
+    note?: string | null;
+    lastServiceOn?: string | null;
+    name?: string;
+  }) => void;
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null);
@@ -144,8 +192,17 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   );
 
 
+  // Said once. Photos on logged activity are the usual way to fill a device,
+  // and the person needs to hear it before a refresh loses their afternoon.
+  const warnedStorage = useRef(false);
   useEffect(() => {
-    saveDemoState(state);
+    if (saveDemoState(state) || warnedStorage.current) return;
+    warnedStorage.current = true;
+    toast.error("This device is out of storage", {
+      description:
+        "Recent changes will not survive a refresh. Removing photos from a few logged activities is the quickest fix.",
+      duration: 12_000,
+    });
   }, [state]);
 
   const addContact = useCallback<DemoContextValue["addContact"]>((contact) => {
@@ -800,6 +857,313 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(() => setState(resetDemoState()), []);
 
+  /* ── Employees ────────────────────────────────────────────────────────── */
+
+  const saveEmployee = useCallback<DemoContextValue["saveEmployee"]>((id, profile) => {
+    const employeeId = id ?? newId("emp");
+    audit({
+      action: id ? "employee.updated" : "employee.created",
+      entityType: "employee",
+      entityId: employeeId,
+      after: { name: fullName(profile), role: profile.role, status: profile.status },
+    });
+    setState((s) => {
+      const isAdded = s.addedEmployees.some((a) => a.id === employeeId);
+      const stored: EmployeeProfile | null = isAdded
+        ? (s.addedEmployees.find((a) => a.id === employeeId)?.profile ?? null)
+        : (s.employeeEdits[employeeId] ?? null);
+      const seed = seedEmployees.find((e) => e.id === employeeId);
+      const before = stored ?? (seed ? profileFromSeed(seed) : null);
+      const labels = before ? changedFieldLabels(before, profile) : [];
+      const change: ProfileChange | null = id
+        ? {
+            id: newId("chg"),
+            kind: "employee",
+            entityId: employeeId,
+            name: fullName(profile),
+            what: "profile",
+            summary: before ? changeSummary(labels) : "Profile filled in",
+            before: stored,
+            changedAt: new Date().toISOString(),
+            changedBy: currentUserRef.current.name,
+          }
+        : null;
+      // Nothing moved: no change record, no override written.
+      if (change && before && labels.length === 0) return s;
+      const profileChanges = change ? [change, ...s.profileChanges] : s.profileChanges;
+      if (!id || isAdded) {
+        return {
+          ...s,
+          profileChanges,
+          addedEmployees: isAdded
+            ? s.addedEmployees.map((a) => (a.id === employeeId ? { id: employeeId, profile } : a))
+            : [{ id: employeeId, profile }, ...s.addedEmployees],
+        };
+      }
+      return { ...s, profileChanges, employeeEdits: { ...s.employeeEdits, [employeeId]: profile } };
+    });
+    return employeeId;
+  }, [audit]);
+
+  const setEmployeeStatus = useCallback<DemoContextValue["setEmployeeStatus"]>((id, status, name) => {
+    audit({ action: "employee.status_changed", entityType: "employee", entityId: id, after: { status } });
+    setState((s) => {
+      const added = s.addedEmployees.find((a) => a.id === id);
+      const stored: EmployeeProfile | null = added ? added.profile : (s.employeeEdits[id] ?? null);
+      const from: EmployeeStatus | undefined = added
+        ? added.profile.status
+        : (s.employeeEdits[id]?.status ?? seedEmployees.find((e) => e.id === id)?.status);
+      if (from === status) return s;
+      const change: ProfileChange = {
+        id: newId("chg"),
+        kind: "employee",
+        entityId: id,
+        name: name ?? (stored ? fullName(stored) : id),
+        what: "status",
+        summary: `${from ? EMPLOYEE_STATUS_LABELS[from] : "Status"} → ${EMPLOYEE_STATUS_LABELS[status]}`,
+        before: stored,
+        changedAt: new Date().toISOString(),
+        changedBy: currentUserRef.current.name,
+      };
+      const profileChanges = [change, ...s.profileChanges];
+      if (added) {
+        return {
+          ...s,
+          profileChanges,
+          addedEmployees: s.addedEmployees.map((a) => (a.id === id ? { ...a, profile: { ...a.profile, status } } : a)),
+        };
+      }
+      const seed = seedEmployees.find((e) => e.id === id);
+      const base = s.employeeEdits[id] ?? (seed ? profileFromSeed(seed) : null);
+      if (!base) return s;
+      return { ...s, profileChanges, employeeEdits: { ...s.employeeEdits, [id]: { ...base, status } } };
+    });
+  }, [audit]);
+
+  const undoProfileChange = useCallback<DemoContextValue["undoProfileChange"]>((changeId) => {
+    const change = stateRef.current.profileChanges.find((c) => c.id === changeId);
+    if (!change) return;
+    audit({
+      action: change.kind === "employee" ? "employee.change_undone" : "client.change_undone",
+      entityType: change.kind,
+      entityId: change.entityId,
+      before: { what: change.what, summary: change.summary, changedAt: change.changedAt, changedBy: change.changedBy },
+    });
+    setState((s) => {
+      const profileChanges = s.profileChanges.filter((c) => c.id !== changeId);
+      if (change.kind === "client") {
+        const clientStatuses = { ...s.clientStatuses };
+        if (change.before) clientStatuses[change.entityId] = change.before as DemoState["clientStatuses"][string];
+        else delete clientStatuses[change.entityId];
+        return { ...s, profileChanges, clientStatuses };
+      }
+      if (s.addedEmployees.find((a) => a.id === change.entityId)) {
+        return change.before
+          ? {
+              ...s,
+              profileChanges,
+              addedEmployees: s.addedEmployees.map((a) =>
+                a.id === change.entityId ? { ...a, profile: change.before as EmployeeProfile } : a,
+              ),
+            }
+          : { ...s, profileChanges };
+      }
+      const employeeEdits = { ...s.employeeEdits };
+      if (change.before) employeeEdits[change.entityId] = change.before as EmployeeProfile;
+      else delete employeeEdits[change.entityId];
+      return { ...s, profileChanges, employeeEdits };
+    });
+  }, [audit]);
+
+  const deleteEmployee = useCallback<DemoContextValue["deleteEmployee"]>((id, name, reason) => {
+    audit({ action: "employee.deleted", entityType: "employee", entityId: id, after: { reason: reason ?? null } });
+    setState((s) => {
+      const added = s.addedEmployees.find((a) => a.id === id);
+      const edits = s.employeeEdits[id] ?? null;
+      const payload: DeletedPayload = { kind: "employee", employeeId: id, edits, added: added?.profile ?? null };
+      return {
+        ...s,
+        deletedEmployeeIds: [...new Set([...s.deletedEmployeeIds, id])],
+        deletedRecords: [
+          binned({ id, kind: "employee", label: name, sublabel: "Employee record", by: currentUserRef.current.name, reason, payload }),
+          ...s.deletedRecords,
+        ],
+      };
+    });
+  }, [audit]);
+
+  const deleteClient = useCallback<DemoContextValue["deleteClient"]>((personId, name, reason) => {
+    audit({ action: "client.deleted", entityType: "client", entityId: personId, after: { reason: reason ?? null } });
+    setState((s) => ({
+      ...s,
+      deletedClientIds: [...new Set([...s.deletedClientIds, personId])],
+      deletedRecords: [
+        binned({
+          id: personId,
+          kind: "client",
+          label: name,
+          sublabel: "Client record",
+          by: currentUserRef.current.name,
+          reason,
+          payload: { kind: "client", clientPersonId: personId } satisfies DeletedPayload,
+        }),
+        ...s.deletedRecords,
+      ],
+    }));
+  }, [audit]);
+
+  const restoreDeleted = useCallback<DemoContextValue["restoreDeleted"]>((id) => {
+    setState((s) => {
+      const record = s.deletedRecords.find((r) => r.id === id) as DeletedRecord<DeletedPayload> | undefined;
+      if (!record) return s;
+      const deletedRecords = s.deletedRecords.filter((r) => r.id !== id);
+      const p = record.payload;
+      if (p.kind === "contact") {
+        const seeded = seedContacts.some((c) => c.id === id);
+        return {
+          ...s,
+          deletedRecords,
+          deletedContactIds: s.deletedContactIds.filter((x) => x !== id),
+          contacts: seeded ? s.contacts : [p.contact, ...s.contacts],
+          contactEdits: p.edits ? { ...s.contactEdits, [id]: p.edits } : s.contactEdits,
+        };
+      }
+      if (p.kind === "employee") {
+        return {
+          ...s,
+          deletedRecords,
+          deletedEmployeeIds: s.deletedEmployeeIds.filter((x) => x !== p.employeeId),
+          employeeEdits: p.edits ? { ...s.employeeEdits, [p.employeeId]: p.edits } : s.employeeEdits,
+          addedEmployees:
+            p.added && !s.addedEmployees.some((a) => a.id === p.employeeId)
+              ? [{ id: p.employeeId, profile: p.added }, ...s.addedEmployees]
+              : s.addedEmployees,
+        };
+      }
+      if (p.kind === "client") {
+        return { ...s, deletedRecords, deletedClientIds: s.deletedClientIds.filter((x) => x !== p.clientPersonId) };
+      }
+      if (p.kind === "activity") {
+        return { ...s, deletedRecords, interactions: [p.interaction, ...s.interactions] };
+      }
+      if (p.kind === "admission") {
+        return {
+          ...s,
+          deletedRecords,
+          admissions: [p.admission, ...s.admissions],
+          people: p.person ? [p.person, ...s.people] : s.people,
+          mrNumbers: p.mrNumber ? { ...s.mrNumbers, [id]: p.mrNumber } : s.mrNumbers,
+        };
+      }
+      // Documents and SOPs restore through their own modules' payloads.
+      return { ...s, deletedRecords };
+    });
+    audit({ action: "record.restored", entityType: "deleted_record", entityId: id });
+  }, [audit]);
+
+  const purgeDeleted = useCallback<DemoContextValue["purgeDeleted"]>((id) => {
+    audit({ action: "record.purged", entityType: "deleted_record", entityId: id });
+    setState((s) => ({ ...s, deletedRecords: s.deletedRecords.filter((r) => r.id !== id) }));
+  }, [audit]);
+
+  /* ── Activity ─────────────────────────────────────────────────────────── */
+
+  const logActivity = useCallback<DemoContextValue["logActivity"]>(({ draft, subject }) => {
+    const interaction = interactionFromDraft({
+      draft,
+      id: newId("act"),
+      subject,
+      loggedBy: stateRef.current.currentUser.name,
+    });
+    // The channel and the source, never the notes: an audit line says an
+    // activity was logged, not what somebody's mother said on the phone.
+    audit({
+      action: "activity.logged",
+      entityType: subject.kind,
+      entityId: subject.id,
+      after: { at: interaction.at, channel: interaction.channel, source: interaction.source },
+    });
+    setState((s) => ({ ...s, interactions: [interaction, ...s.interactions] }));
+    if (subject.kind === "contact" && interaction.channel !== "note") {
+      editContact(subject.id, { lastContactedOn: interaction.at.slice(0, 10) });
+    }
+    return interaction;
+  }, [audit, editContact]);
+
+  const deleteActivity = useCallback<DemoContextValue["deleteActivity"]>((id) => {
+    audit({ action: "activity.deleted", entityType: "activity", entityId: id });
+    setState((s) => {
+      const interaction = s.interactions.find((i) => i.id === id);
+      return {
+        ...s,
+        interactions: s.interactions.filter((i) => i.id !== id),
+        deletedRecords: interaction
+          ? [
+              binned({
+                id,
+                kind: "activity",
+                label: interaction.summary || "Logged activity",
+                sublabel: new Date(interaction.at).toLocaleDateString([], { month: "long", day: "numeric" }),
+                by: currentUserRef.current.name,
+                payload: { kind: "activity", interaction } satisfies DeletedPayload,
+              }),
+              ...s.deletedRecords,
+            ]
+          : s.deletedRecords,
+      };
+    });
+  }, [audit]);
+
+  const recordView = useCallback<DemoContextValue["recordView"]>((entityType, entityId, label) => {
+    // Staff opening a record is routine; a surveyor opening one is the thing
+    // the agency would want on the trail. Only the read-only session is logged.
+    if (canWrite(stateRef.current.currentUser.role)) return;
+    audit({ action: "record.viewed", entityType, entityId, after: { label } });
+  }, [audit]);
+
+  const issueMrNumber = useCallback<DemoContextValue["issueMrNumber"]>((entityId, number) => {
+    audit({ action: "record.updated", entityType: "person", entityId, after: { mrNumber: number } });
+    setState((s) => ({ ...s, mrNumbers: { ...s.mrNumbers, [entityId]: number } }));
+  }, [audit]);
+
+  const setClientStatus = useCallback<DemoContextValue["setClientStatus"]>((input) => {
+    audit({
+      action: "client.status_changed",
+      entityType: "client",
+      entityId: input.clientPersonId,
+      after: { status: input.status, lastServiceOn: input.lastServiceOn ?? null },
+    });
+    setState((s) => {
+      const before = s.clientStatuses[input.clientPersonId] ?? null;
+      const now = new Date().toISOString();
+      const change: ProfileChange = {
+        id: newId("chg"),
+        kind: "client",
+        entityId: input.clientPersonId,
+        name: input.name ?? input.clientPersonId,
+        what: "status",
+        summary: `${before ? CLIENT_STATUS_LABELS[before.status] : "Status"} → ${CLIENT_STATUS_LABELS[input.status]}`,
+        before,
+        changedAt: now,
+        changedBy: currentUserRef.current.name,
+      };
+      return {
+        ...s,
+        profileChanges: [change, ...s.profileChanges],
+        clientStatuses: {
+          ...s.clientStatuses,
+          [input.clientPersonId]: {
+            status: input.status,
+            changedAt: now,
+            changedBy: currentUserRef.current.name,
+            note: input.note?.trim() || null,
+            lastServiceOn: input.status === "discharged" ? (input.lastServiceOn ?? null) : null,
+          },
+        },
+      };
+    });
+  }, [audit]);
+
   const value = useMemo<DemoContextValue>(
     () => ({
       ...state,
@@ -828,11 +1192,43 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       scheduleAssessment,
       retryCommunication,
       reset,
+      saveEmployee,
+      setEmployeeStatus,
+      undoProfileChange,
+      deleteEmployee,
+      deleteClient,
+      restoreDeleted,
+      purgeDeleted,
+      logActivity,
+      deleteActivity,
+      recordView,
+      issueMrNumber,
+      setClientStatus,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus],
   );
 
-  return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
+  /**
+   * The third door (see domain/access/roles): a read-only role gets a value
+   * whose every mutation is replaced by a toast. Switching user and recording
+   * a view are the two things a surveyor's session still does.
+   */
+  const readOnly = !canWrite(state.currentUser.role);
+  const guarded = useMemo<DemoContextValue>(() => {
+    if (!readOnly) return value;
+    const refuse = (name: string) => () => {
+      toast("Read-only survey session", { description: "Nothing can be changed while signed in as an auditor." });
+      console.warn(`[access] ${name} refused: role is read-only`);
+    };
+    const allowed = new Set(["setCurrentUser", "recordView"]);
+    const out: Record<string, unknown> = { ...value };
+    for (const [key, member] of Object.entries(out)) {
+      if (typeof member === "function" && !allowed.has(key)) out[key] = refuse(key);
+    }
+    return out as unknown as DemoContextValue;
+  }, [value, readOnly]);
+
+  return <DemoContext.Provider value={guarded}>{children}</DemoContext.Provider>;
 }
 
 export function useDemo() {

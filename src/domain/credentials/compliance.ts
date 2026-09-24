@@ -28,6 +28,8 @@ export interface EmployeeContext {
   employeeId: string;
   role: string;
   drives: boolean;
+  /** True for a work-permit holder; undefined or false keeps the permit row off the file. */
+  workAuthorizationExpires?: boolean;
 }
 
 export interface RequirementOutcome {
@@ -77,6 +79,8 @@ export function requirementApplies(
 ): boolean {
   if (!requirement.active) return false;
   if (requirement.requiredForDriving && !employee.drives) return false;
+  // The right to work expires only for a permit holder; nobody else is asked.
+  if (requirement.requiredForWorkAuthorization && !employee.workAuthorizationExpires) return false;
   const roles = requirement.requiredForRoles;
   if (roles && roles.length > 0 && !roles.includes(employee.role)) return false;
   return true;
@@ -222,14 +226,21 @@ export function auditReadiness(
   const pick = (status: CredentialStatus) =>
     outcomes.filter((o) => o.status === status).map((o) => o.credentialType);
 
-  const missing = pick("missing");
+  /*
+   * An optional requirement that nobody has supplied is not a gap. See
+   * `optional` on CredentialRequirement — a passport is the case.
+   */
+  const optionalTypes = new Set(
+    applicable.filter((r) => r.optional).map((r) => r.credentialType),
+  );
+  const missing = pick("missing").filter((t) => !optionalTypes.has(t));
   const expired = [...pick("expired"), ...pick("rejected")];
   const expiring = pick("expiring");
   const needsReview = pick("pending_review");
 
   return {
     employeeId: employee.employeeId,
-    required: applicable.length,
+    required: applicable.filter((r) => !r.optional).length,
     complete: outcomes.filter((o) => o.status === "current" || o.status === "expiring").length,
     missing,
     expired,

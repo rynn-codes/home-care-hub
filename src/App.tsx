@@ -109,12 +109,19 @@ const App = () => (
               <Route path="/brain/operations" element={<TheBrain />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
 
+              {/* Hiring and the reports moved out from under Operations in
+                  September; the old paths keep working for bookmarks. */}
+              <Route path="/hiring" element={<Hiring />} />
+              <Route path="/reports/audit" element={<Audit />} />
+              <Route path="/reports/incidents" element={<Incidents />} />
+              <Route path="/reports/incidents/annual" element={<IncidentReport />} />
+              <Route path="/reports/supervision" element={<Supervision />} />
               <Route path="/operations" element={<Operations />} />
-              <Route path="/operations/hiring" element={<Hiring />} />
+              <Route path="/operations/hiring" element={<Navigate to="/hiring" replace />} />
               <Route path="/operations/portal" element={<PortalActivity />} />
-              <Route path="/operations/audit" element={<Audit />} />
-              <Route path="/operations/incidents" element={<Incidents />} />
-              <Route path="/operations/incidents/annual" element={<IncidentReport />} />
+              <Route path="/operations/audit" element={<Navigate to="/reports/audit" replace />} />
+              <Route path="/operations/incidents" element={<Navigate to="/reports/incidents" replace />} />
+              <Route path="/operations/incidents/annual" element={<Navigate to="/reports/incidents/annual" replace />} />
 
               <Route path="/admissions" element={<Admissions />} />
               <Route path="/admissions/:id/intake" element={<PhoneIntake />} />
@@ -125,12 +132,13 @@ const App = () => (
                   AppSidebar. The client record is a nested route so a link to
                   one person survives a refresh and can be sent to somebody. */}
               <Route path="/clients/care-plans" element={<CarePlans />} />
-              <Route path="/clients/supervision" element={<Supervision />} />
+              <Route path="/clients/supervision" element={<Navigate to="/reports/supervision" replace />} />
               <Route path="/clients" element={<Clients />} />
               <Route path="/clients/:id" element={<Clients />} />
               <Route path="/employees" element={<Employees />} />
               <Route path="/employees/:id" element={<Employees />} />
               <Route path="/people" element={<People />} />
+              <Route path="/people/:id" element={<People />} />
 
               <Route path="/scheduling" element={<Scheduling />} />
               <Route path="/billing" element={<Billing />} />

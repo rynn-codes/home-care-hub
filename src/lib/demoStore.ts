@@ -9,6 +9,13 @@ import type { StoredAuditEntry } from "@/lib/demoAudit";
 import type { IssuedInvoice, Payment } from "@/domain/billing/receivables";
 import type { PaymentSetupState } from "@/domain/billing/paymentSetup";
 import type { PaymentMode } from "@/domain/billing/paymentAuthorization";
+import type { Interaction } from "@/domain/records/activity";
+import type { DeletedRecord } from "@/domain/records/deletion";
+import { partitionExpired } from "@/domain/records/deletion";
+import type { ProfileChange } from "@/domain/records/profileChanges";
+import type { EmployeeProfile } from "@/domain/employees/profile";
+import type { ClientStatusChange } from "@/domain/clients/roster";
+import { seedInteractions } from "@/lib/activitySeed";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -230,6 +237,25 @@ export interface DemoState {
    * push skips all of them.
    */
   auditEntries: StoredAuditEntry[];
+  /**
+   * MR numbers issued in the demo, keyed by person or employee id. The number
+   * is stored; the digits it was made from never are. See domain/records/mrNumber.
+   */
+  mrNumbers: Record<string, string>;
+  /** Profile and status changes still inside the undo window. See domain/records/profileChanges. */
+  profileChanges: ProfileChange[];
+  /** Calls, visits, meals and notes logged against any record. Seeded with a few. */
+  interactions: Interaction[];
+  /** The bin. Anything deleted waits here until its recovery window closes. */
+  deletedRecords: DeletedRecord[];
+  /** Edits to seeded employees, keyed by id — the seed is a file and cannot change. */
+  employeeEdits: Record<string, EmployeeProfile>;
+  /** People added on the Employees screen, newest first. */
+  addedEmployees: Array<{ id: string; profile: EmployeeProfile }>;
+  deletedEmployeeIds: string[];
+  deletedClientIds: string[];
+  /** Status set on a client record, over whatever the seed says. */
+  clientStatuses: Record<string, ClientStatusChange>;
 }
 
 function initial(): DemoState {
@@ -263,6 +289,15 @@ function initial(): DemoState {
     contactEdits: {},
     deletedContactIds: [],
     auditEntries: [],
+    mrNumbers: {},
+    profileChanges: [],
+    interactions: [...seedInteractions],
+    deletedRecords: [],
+    employeeEdits: {},
+    addedEmployees: [],
+    deletedEmployeeIds: [],
+    deletedClientIds: [],
+    clientStatuses: {},
   };
 }
 
@@ -294,6 +329,15 @@ export function loadDemoState(): DemoState {
         gateOverride: legacy.gateOverride ?? null,
       };
     }
+    // The bin empties itself: anything past its recovery window goes on load.
+    merged.deletedRecords = partitionExpired(merged.deletedRecords ?? [], new Date().toISOString()).keep;
+    // Seeded activity added since this blob was written joins the list; nothing
+    // somebody logged is touched.
+    const have = new Set((merged.interactions ?? []).map((i) => i.id));
+    merged.interactions = [
+      ...(merged.interactions ?? []),
+      ...seedInteractions.filter((i) => !have.has(i.id)),
+    ];
     return merged;
   } catch {
     return initial();
@@ -328,11 +372,14 @@ function withoutRestricted(state: DemoState): DemoState {
   return { ...state, assessments };
 }
 
-export function saveDemoState(state: DemoState): void {
+/** Returns false when the device is out of storage, so the provider can say so. */
+export function saveDemoState(state: DemoState): boolean {
   try {
     storage()?.setItem(KEY, JSON.stringify(withoutRestricted(state)));
+    return true;
   } catch {
     // A full or unavailable storage must never break the workflow.
+    return false;
   }
 }
 

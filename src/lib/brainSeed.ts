@@ -73,7 +73,7 @@ export const brainWorking: BrainWorking[] = [
     next: "Joy will check again tomorrow morning.",
     updated: "8:04 AM",
     cta: "View candidate",
-    href: "/operations/hiring",
+    href: "/hiring",
     audit: {
       title: "Background check",
       subtitle: "Brandon · onboarding",
@@ -88,7 +88,7 @@ export const brainWorking: BrainWorking[] = [
       next: `Joy polls again tomorrow at 8:00 AM and escalates to hiring on ${shortDate(agencyDay(4))}.`,
       sources: ["Candidate record · Brandon", "Background check request"],
       cta: "Open candidate",
-      href: "/operations/hiring",
+      href: "/hiring",
     },
   },
   {
@@ -172,7 +172,7 @@ export const brainWaiting: Array<{ title: string; state: string; next: string; c
     state: `Submitted ${shortDate(agencyDay(-2))} · polled today`,
     next: `Waiting on provider · escalates ${shortDate(agencyDay(4))}`,
     cta: "View candidate",
-    href: "/operations/hiring",
+    href: "/hiring",
   },
   {
     title: "Family signature · Evelyn Carter",
@@ -313,8 +313,8 @@ export const brainActivity: BrainActivity[] = [
   { time: "8:12 AM", title: "Joy sent Bedjine Cupidon's CPR reminder", meta: "Joy · employees", cat: "Joy", cta: "View employee", href: "/employees" },
   { time: "7:58 AM", title: "Dolores Vance's records authorization request was resent", meta: "Joy · clients", cat: "Joy", cta: "View client", href: "/clients" },
   { time: "7:42 AM", title: "Payroll reminders queued for 2 caregivers", meta: "Joy · payroll", cat: "Payroll", cta: "View payroll", href: "/payroll" },
-  { time: "Yesterday", title: "Brandon completed Gusto onboarding", meta: "Candidate · hiring", cat: "Employees", cta: "View candidate", href: "/operations/hiring" },
+  { time: "Yesterday", title: "Brandon completed Gusto onboarding", meta: "Candidate · hiring", cat: "Employees", cta: "View candidate", href: "/hiring" },
   { time: "Yesterday", title: "Ruth Alvarez's Wednesday shift reopened — caregiver call-out", meta: "Scheduler · scheduling", cat: "Employees", cta: "View schedule", href: "/scheduling" },
-  { time: "Friday", title: "Incident classified for Dolores Vance — family notified", meta: "Kelsey Westley · incidents", cat: "Clients", cta: "View incident", href: "/operations/incidents" },
+  { time: "Friday", title: "Incident classified for Dolores Vance — family notified", meta: "Kelsey Westley · incidents", cat: "Clients", cta: "View incident", href: "/reports/incidents" },
   { time: "Friday", title: `Invoice batch approved for ${shortDate(agencyDay(-7))} – ${shortDate(agencyDay(-1))}`, meta: "Karynn Verrett · billing", cat: "Billing", cta: "View billing", href: "/billing" },
 ];

@@ -1,12 +1,15 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  Home, Brain, Compass, ClipboardList, Users, UserCog, UserPlus, Contact, CalendarDays,
-  Receipt, Wallet, BarChart3, FolderOpen, BookOpen, Settings, ShieldAlert, HeartPulse, CalendarCheck, ClipboardCheck,
+  BarChart3, BookOpen, Brain, CalendarCheck, CalendarDays, ClipboardCheck, ClipboardList, Contact, FolderOpen,
+  Home, Receipt, Settings, ShieldAlert, UserCog, UserPlus, Users, Wallet,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/context/DemoDataProvider";
+import { canView, grantsFor, type Area } from "@/domain/access/roles";
+import type { UserRole } from "@/domain/consents/witness";
+import { usePreferences } from "@/lib/preferences";
 import { seedApplicants } from "@/lib/hiringSeed";
 import { seedClients } from "@/lib/clientsSeed";
 import { seedEmployees } from "@/lib/employeesSeed";
@@ -15,90 +18,96 @@ interface NavChild {
   title: string;
   url: string;
   icon: typeof Home;
+  area: Area;
   count?: number;
 }
 
-interface NavItem {
-  title: string;
-  url: string;
-  icon: typeof Home;
-  count?: number;
+interface NavItem extends NavChild {
   children?: NavChild[];
 }
 
 /**
- * The Joy navigation, fixed by section 6 of the Codex Engineering Kickoff,
- * restyled to the approved mock: white, 13px rows, the active row on a quiet
- * grey with an indigo icon, and live counts on the right edge.
+ * The Joy navigation.
  *
- * Two rules this encodes, both easy to lose:
- *   - Hiring lives under Operations, never at the top level (§6).
- *   - Clients, Employees and People are three siblings, not a parent and two
- *     children. §6 and §10 file clients under People; the approved Clients
- *     mockup does not, and Karynn ruled for the mockup on 18 Aug: People is the
- *     general contact list — business contacts, partners, referral sources,
- *     anyone the agency needs to follow up with — while clients and employees
- *     are their own destinations. The people table underneath is unchanged;
- *     this is only where a record is shown.
+ * Home first, then The Brain with Documents and SOPs under it (and My Work,
+ * when this device has asked for the row). The working screens follow in
+ * the order of a day — Scheduling, Billing, Payroll — then the directories,
+ * then Admissions and Hiring, then Reports, then Settings.
  *
- * "Talk to Joy" is persistent AI access and is deliberately not a nav item —
- * it lives on the Ask Joy pill.
+ * Clients, Employees and People are three siblings, not a parent and two
+ * children: Karynn ruled for the mockup on 18 Aug. People is the general
+ * contact list; clients and employees are their own destinations.
+ *
+ * Every row names its area so the auditor's allowlist can filter the menu —
+ * the first of the three doors in domain/access/roles.
  */
 function useNav(): NavItem[] {
   // The same seeds the module screens count, never a second store — a sidebar
   // saying 21 clients over a directory showing 8 is Joy contradicting itself.
   const { people } = useDemo();
+  const { showMyWork } = usePreferences();
   const admitted = people.filter(
-    (p) =>
-      p.clientStatus === "active" &&
-      !seedClients.some((c) => c.personId === p.personId),
+    (p) => p.clientStatus === "active" && !seedClients.some((c) => c.personId === p.personId),
   ).length;
   const clientCount = seedClients.filter((c) => c.status === "active").length + admitted;
   const employeeCount = seedEmployees.filter((e) => e.status === "active").length;
   const hiringCount = seedApplicants.filter((a) => a.track !== "no_fit" && a.track !== "hired").length;
 
   return [
-    // Home and The Brain are two screens, in this order — the updated design's
-    // own sidebar lists both, and The Brain's breadcrumb reads
-    // "Home / The Brain / …". Home is the morning; The Brain is the agency at
-    // a glance. They were briefly collapsed into one; Karynn caught it.
-    // The current canvas carries three separate screens at the top: Home (the
-    // morning), My Work (your own day) and The Brain (the agency at a glance).
-    // My Work is still a tab inside The Brain, so its nav row deep-links there.
-    { title: "Home", url: "/", icon: Home },
-    { title: "My Work", url: "/brain/my-work", icon: ClipboardCheck },
-    { title: "The Brain", url: "/brain", icon: Brain },
+    { title: "Home", url: "/", icon: Home, area: "home" },
     {
-      title: "Operations",
-      url: "/operations",
-      icon: Compass,
+      title: "The Brain",
+      url: "/brain",
+      icon: Brain,
+      area: "brain",
       children: [
-        { title: "Hiring", url: "/operations/hiring", icon: UserPlus, count: hiringCount },
-        { title: "Incidents", url: "/operations/incidents", icon: ShieldAlert },
-        { title: "Audit", url: "/operations/audit", icon: ClipboardCheck },
-        { title: "Documents", url: "/documents", icon: FolderOpen },
-        { title: "SOPs", url: "/sops", icon: BookOpen },
+        ...(showMyWork ? [{ title: "My Work", url: "/brain/my-work", icon: ClipboardCheck, area: "my_work" as Area }] : []),
+        { title: "Documents", url: "/documents", icon: FolderOpen, area: "documents" },
+        { title: "SOPs", url: "/sops", icon: BookOpen, area: "sops" },
       ],
     },
-    { title: "Admissions", url: "/admissions", icon: ClipboardList },
+    { title: "Scheduling", url: "/scheduling", icon: CalendarDays, area: "scheduling" },
+    { title: "Billing", url: "/billing", icon: Receipt, area: "billing" },
+    { title: "Payroll", url: "/payroll", icon: Wallet, area: "payroll" },
+    { title: "Clients", url: "/clients", icon: Users, area: "clients", count: clientCount },
+    { title: "Employees", url: "/employees", icon: UserCog, area: "employees", count: employeeCount },
+    { title: "People", url: "/people", icon: Contact, area: "people" },
+    { title: "Admissions", url: "/admissions", icon: ClipboardList, area: "admissions" },
+    { title: "Hiring", url: "/hiring", icon: UserPlus, area: "hiring", count: hiringCount },
     {
-      title: "Clients",
-      url: "/clients",
-      icon: Users,
-      count: clientCount,
+      title: "Reports",
+      url: "/reports",
+      icon: BarChart3,
+      area: "reports",
       children: [
-        { title: "Care plans", url: "/clients/care-plans", icon: HeartPulse },
-        { title: "Supervision", url: "/clients/supervision", icon: CalendarCheck },
+        { title: "Supervision", url: "/reports/supervision", icon: CalendarCheck, area: "reports" },
+        { title: "Incidents", url: "/reports/incidents", icon: ShieldAlert, area: "incidents" },
+        { title: "Audit", url: "/reports/audit", icon: ClipboardCheck, area: "audit" },
       ],
     },
-    { title: "Employees", url: "/employees", icon: UserCog, count: employeeCount },
-    { title: "People", url: "/people", icon: Contact },
-    { title: "Scheduling", url: "/scheduling", icon: CalendarDays },
-    { title: "Billing", url: "/billing", icon: Receipt },
-    { title: "Payroll", url: "/payroll", icon: Wallet },
-    { title: "Reports", url: "/reports", icon: BarChart3 },
-    { title: "Settings", url: "/settings", icon: Settings },
+    { title: "Settings", url: "/settings", icon: Settings, area: "settings" },
   ];
+}
+
+/**
+ * The rows this role may see. A child whose parent is hidden is promoted to
+ * a top-level row — a surveyor sees Incidents and Audit, not a Reports
+ * heading with two things under it. The auditor's rows follow the order of
+ * their allowlist.
+ */
+function visibleNav(items: NavItem[], role: UserRole): NavItem[] {
+  const out: NavItem[] = [];
+  for (const item of items) {
+    const children = (item.children ?? []).filter((c) => canView(role, c.area));
+    if (canView(role, item.area)) {
+      out.push(item.children ? { ...item, children } : item);
+      continue;
+    }
+    for (const c of children) out.push({ title: c.title, url: c.url, icon: c.icon, area: c.area });
+  }
+  const grant = grantsFor(role);
+  if (grant === "all") return out;
+  return [...out].sort((a, b) => grant.indexOf(a.area) - grant.indexOf(b.area));
 }
 
 export function AppSidebar() {
@@ -106,38 +115,31 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { currentUser } = useDemo();
-  const nav = useNav();
+  const nav = visibleNav(useNav(), currentUser.role);
 
-  const isActive = (url: string) =>
-    url === "/" ? pathname === "/" : pathname === url || pathname.startsWith(`${url}/`);
-
-  const isSectionOpen = (item: NavItem) =>
-    isActive(item.url) || (item.children ?? []).some((child) => isActive(child.url));
+  const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname === url || pathname.startsWith(`${url}/`));
+  const isSectionOpen = (item: NavItem) => isActive(item.url) || (item.children ?? []).some((c) => isActive(c.url));
 
   const rowClass = (active: boolean) =>
     cn(
       "flex items-center gap-[11px] rounded-lg px-2.5 py-2 text-[13px] transition-colors",
       active
-        ? "bg-[#F1F2F6] font-medium text-foreground"
-        : "font-normal text-[#6E6E76] hover:bg-[#FAFAFB] hover:text-foreground",
+        ? "bg-[var(--wash-strong)] font-medium text-foreground"
+        : "font-normal text-[var(--ink-muted)] hover:bg-[var(--wash)] hover:text-foreground",
     );
 
-  const initials = currentUser.name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
+  const initials = currentUser.name.split(" ").slice(0, 2).map((w) => w[0]).join("");
 
   return (
     <Sidebar collapsible="icon" className="border-r border-black/[.07]">
-      <SidebarHeader className="border-none">
-        <div className={cn("flex items-center gap-2.5 px-2.5 pb-3 pt-2", collapsed && "justify-center px-0")}>
+      <SidebarHeader className="h-[var(--shell-band)] border-none p-0">
+        <div className={cn("mx-2 flex h-full items-center gap-2.5 border-b border-black/[.06] px-2.5", collapsed && "justify-center border-none px-0")}>
           <img src={logo} alt="" className="h-[22px] w-[22px] flex-none rounded-full object-contain" />
           {!collapsed && <span className="text-[13.5px] font-medium tracking-[-.01em]">Joy Health</span>}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="pt-3.5">
         <nav className={cn("flex flex-col gap-0.5 px-2", collapsed && "items-center px-1")} aria-label="Main">
           {nav.map((item) => {
             const active = isActive(item.url);
@@ -152,9 +154,7 @@ export function AppSidebar() {
                   {!collapsed && (
                     <>
                       <span className="flex-1 truncate">{item.title}</span>
-                      {item.count != null && (
-                        <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">{item.count}</span>
-                      )}
+                      {item.count != null && <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">{item.count}</span>}
                     </>
                   )}
                 </NavLink>
@@ -165,15 +165,9 @@ export function AppSidebar() {
                       const childActive = isActive(child.url);
                       return (
                         <NavLink key={child.title} to={child.url} className={rowClass(childActive)}>
-                          <child.icon
-                            className={cn("h-3.5 w-3.5 flex-none", childActive ? "text-primary" : "text-[#8A8A92]")}
-                            strokeWidth={1.5}
-                            aria-hidden="true"
-                          />
+                          <child.icon className={cn("h-3.5 w-3.5 flex-none", childActive ? "text-primary" : "text-[#8A8A92]")} strokeWidth={1.5} aria-hidden="true" />
                           <span className="flex-1 truncate text-[12.5px]">{child.title}</span>
-                          {child.count != null && (
-                            <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">{child.count}</span>
-                          )}
+                          {child.count != null && <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">{child.count}</span>}
                         </NavLink>
                       );
                     })}
@@ -190,7 +184,7 @@ export function AppSidebar() {
           <span className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full bg-[#F0F0F2] text-[10px] font-semibold text-muted-foreground">
             {initials}
           </span>
-          {!collapsed && <span className="truncate text-[12.5px] text-[#6E6E76]">{currentUser.name}</span>}
+          {!collapsed && <span className="truncate text-[12.5px] text-[var(--ink-muted)]">{currentUser.name}</span>}
         </div>
       </SidebarFooter>
     </Sidebar>

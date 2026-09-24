@@ -245,9 +245,11 @@ export function firstShiftReadiness(
 
 /** The role a requirement set is keyed on, from the advertised position. */
 export function roleFromApplication(roleApplied: string): string {
-  if (/LVN/i.test(roleApplied)) return "lvn";
-  if (/HHA/i.test(roleApplied)) return "hha";
-  if (/CNA|caregiver/i.test(roleApplied)) return "cna";
+  if (/\bRN\b|registered nurse/i.test(roleApplied)) return "rn";
+  if (/\bLVN\b|vocational nurse/i.test(roleApplied)) return "lvn";
+  if (/CNA/i.test(roleApplied)) return "cna";
+  // Karynn, 8 September: "Under roles, we only have CNA or Caregiver." An HHA applicant is a caregiver here.
+  if (/caregiver|aide|HHA/i.test(roleApplied)) return "caregiver";
   return "office";
 }
 
@@ -406,7 +408,7 @@ export function isStale(applicant: Applicant, today: string): boolean {
 export interface HireDetails {
   /** Chosen at the offer, not derivable from the application. */
   title: string;
-  role: "cna" | "hha" | "lvn" | "office";
+  role: "caregiver" | "cna" | "lvn" | "rn" | "office";
   employmentType: string;
   /** Null for salaried staff. */
   baseRate: number | null;

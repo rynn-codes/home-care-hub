@@ -124,7 +124,7 @@ export default function IncidentReport() {
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/operations/incidents">
+          <Link to="/reports/incidents">
             <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden="true" />
             Back to Incidents
           </Link>

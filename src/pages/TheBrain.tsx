@@ -237,7 +237,7 @@ export default function TheBrain() {
     "What changed since yesterday?": {
       a: "Two things. Brandon finished Gusto onboarding and is one clear background check away from schedulable. Ruth Alvarez's Wednesday shift reopened after a caregiver call-out and still needs coverage. Nothing else changed materially.",
       links: [
-        ["View hiring", "/operations/hiring"],
+        ["View hiring", "/hiring"],
         ["View scheduling", "/scheduling"],
       ],
     },

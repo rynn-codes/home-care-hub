@@ -176,7 +176,7 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
       key: "incidents",
       label: "Incidents",
       value: String(openIncidents.length),
-      to: "/operations/incidents",
+      to: "/reports/incidents",
       urgent: lateIncidents > 0,
       detail:
         lateIncidents > 0
@@ -223,7 +223,7 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
       key: "hiring",
       label: "In orientation",
       value: String(orientations),
-      to: "/operations/hiring",
+      to: "/hiring",
       // Orientation is progress, not a problem — unless somebody has stalled.
       urgent: stale > 0,
       detail:
@@ -266,7 +266,7 @@ export function homeSignals(input: HomeSignalInput): HomeSignal[] {
       key: "supervision",
       label: "Supervisory visits",
       value: String(supervision),
-      to: "/clients/supervision",
+      to: "/reports/supervision",
       urgent: supervision > 0,
       detail: supervision > 0 ? "Due or overdue" : "All current",
     },

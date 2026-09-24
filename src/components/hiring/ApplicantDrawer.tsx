@@ -30,6 +30,7 @@ import {
   type NoFitReason,
 } from "@/domain/hiring/pipeline";
 import { seedCredentialRequirements } from "@/lib/credentialRequirementsSeed";
+import { ROLE_LABELS, type EmployeeRole } from "@/domain/employees/credentials";
 
 /**
  * One applicant, and the moves available from where they are.
@@ -415,16 +416,12 @@ function HireForm({
   today: string;
   onHire: (applicant: Applicant, details: HireDetails) => void;
 }) {
-  const guessedRole = /LVN/i.test(applicant.roleApplied)
-    ? "lvn"
-    : /HHA/i.test(applicant.roleApplied)
-      ? "hha"
-      : /CNA/i.test(applicant.roleApplied)
-        ? "cna"
-        : "office";
+  // One reading of the application, shared with the pipeline. Two regexes
+  // disagreeing by a role is how somebody gets hired as the wrong thing.
+  const guessedRole = roleFromApplication(applicant.roleApplied) as HireDetails["role"];
 
   const [title, setTitle] = useState(
-    guessedRole === "office" ? applicant.roleApplied : "Field caregiver",
+    guessedRole === "office" ? applicant.roleApplied : "Field Caregiver",
   );
   const [role, setRole] = useState<HireDetails["role"]>(guessedRole as HireDetails["role"]);
   const [employmentType, setEmploymentType] = useState("Full-time · hourly");
@@ -454,10 +451,13 @@ function HireForm({
             onChange={(e) => setRole(e.target.value as HireDetails["role"])}
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="cna">CNA</option>
-            <option value="hha">HHA</option>
-            <option value="lvn">LVN</option>
-            <option value="office">Office</option>
+            {/* The agency's own roles. Karynn, 8 September: "Under roles, we
+                only have CNA or Caregiver." */}
+            {(Object.keys(ROLE_LABELS) as EmployeeRole[]).map((r) => (
+              <option key={r} value={r}>
+                {ROLE_LABELS[r]}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
