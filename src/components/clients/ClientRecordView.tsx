@@ -23,7 +23,14 @@ import {
 } from "@/domain/clients/roster";
 import { seedRequestedDocuments } from "@/lib/familyPortalSeed";
 import { seedClients, seedClientActivity } from "@/lib/clientsSeed";
-import { seedVisits } from "@/lib/schedulingSeed";
+import { ClientAgreementCard, ClientScheduleTab } from "@/components/clients/ClientScheduleTab";
+import { HouseholdCard } from "@/components/scheduling/HouseholdCard";
+import { ServiceMixEditor } from "@/components/scheduling/ServiceMixEditor";
+import { useScheduleBoard } from "@/hooks/use-schedule-board";
+import { companionsOf, householdOf } from "@/domain/billing/households";
+import { locationsFor, LOCATION_STATUS_LABELS } from "@/domain/scheduling/locations";
+import { DEFAULT_MIX, hoursLabel, splitHours, validateMix, type ServiceShare } from "@/domain/scheduling/serviceMix";
+import { payerFor } from "@/lib/clientRates";
 import { seedCarePlans } from "@/lib/carePlanSeed";
 import { seedBillingTerms, seedPaidWeeks } from "@/lib/billingSeed";
 import { buildInvoice, ageing } from "@/domain/billing/invoice";
@@ -104,8 +111,9 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
   const wanted = params.get("tab");
   const [tab, setTab] = useState<Tab>((TABS as readonly string[]).includes(wanted ?? "") ? (wanted as Tab) : "Profile");
   const [logging, setLogging] = useState<"phone" | "any" | null>(null);
-  const { interactions, logActivity, deleteActivity, recordView, currentUser, mrNumbers, issueMrNumber, setClientStatus } =
+  const { interactions, logActivity, deleteActivity, recordView, currentUser, mrNumbers, issueMrNumber, setClientStatus, households } =
     useDemo();
+  const companions = companionsOf(households, client.personId);
 
   useEffect(() => {
     recordView("client", client.personId, client.name);
@@ -201,6 +209,7 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
 
       {tab === "Profile" && (
         <div className="grid items-start gap-[18px] lg:grid-cols-[330px_minmax(0,1fr)]">
+          <ClientAgreementCard client={client} className="lg:col-span-2" />
           <div className="flex flex-col gap-3.5 rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-[18px]">
             <SectionLabel>Details</SectionLabel>
             <dl className="m-0">
@@ -236,6 +245,7 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
                 value={client.hoursPerWeek === null ? "Paused" : `${client.hoursPerWeek} hrs / week`}
               />
               <Detail label="Coordinator" value={client.coordinator ?? "Unassigned"} />
+              {companions.length > 0 && <Detail label="Served with" value={companions.map((c) => c.name).join(", ")} />}
             </dl>
 
             <SectionLabel>Emergency contact</SectionLabel>
@@ -358,7 +368,7 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
         onSave={(draft) => logActivity({ draft, subject: { kind: "client", id: client.personId, name: client.name } })}
       />
 
-      {tab === "Schedule" && <ClientScheduleTab clientName={client.name} />}
+      {tab === "Schedule" && <ClientScheduleTab clientName={client.name} personId={client.personId} />}
 
       {tab === "Docs" && (
         <div className="grid items-start gap-[18px] lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
@@ -443,145 +453,17 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
   );
 }
 
-// ------------------------------------------------------------ Schedule --
-
-function ClientScheduleTab({ clientName }: { clientName: string }) {
-  const [cursor, setCursor] = useState(() => new Date());
-
-  const visits = useMemo(
-    () => seedVisits.filter((v) => v.clientName === clientName),
-    [clientName],
-  );
-
-  const cells = useMemo(() => {
-    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    // Sat-first columns — the agency week is Saturday → Friday everywhere.
-    const lead = (first.getDay() + 1) % 7;
-    const start = new Date(first);
-    start.setDate(start.getDate() - lead);
-    return Array.from({ length: 42 }, (_, i) => {
-      const date = new Date(start);
-      date.setDate(date.getDate() + i);
-      const dayVisits = visits.filter(
-        (v) => new Date(v.startsAt).toDateString() === date.toDateString(),
-      );
-      return { date, inMonth: date.getMonth() === cursor.getMonth(), visits: dayVisits };
-    });
-  }, [cursor, visits]);
-
-  const fmtTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-
-  return (
-    <div className="rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-[18px]">
-      <div className="flex flex-wrap items-center gap-3 pb-3.5">
-        <span className="text-[15px] font-semibold tracking-[-.01em]">
-          {cursor.toLocaleDateString([], { month: "long", year: "numeric" })}
-        </span>
-        <span className="ml-auto flex items-center gap-3.5 text-[12.5px] text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm bg-[#12B76A]" aria-hidden="true" />
-            Completed
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm bg-primary" aria-hidden="true" />
-            Scheduled
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm bg-[#F79009]" aria-hidden="true" />
-            Unassigned
-          </span>
-        </span>
-        <span className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Previous month"
-            onClick={() => setCursor((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
-            className="h-7 w-7 rounded-lg border border-[var(--hairline)] bg-[var(--paper)] text-muted-foreground hover:bg-[var(--wash)]"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={() => setCursor(new Date())}
-            className="h-7 rounded-lg border border-[var(--hairline)] bg-[var(--paper)] px-3 text-[12.5px] hover:bg-[var(--wash)]"
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            aria-label="Next month"
-            onClick={() => setCursor((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
-            className="h-7 w-7 rounded-lg border border-[var(--hairline)] bg-[var(--paper)] text-muted-foreground hover:bg-[var(--wash)]"
-          >
-            ›
-          </button>
-        </span>
-      </div>
-      <div className="grid grid-cols-7 overflow-hidden rounded-[11px] border border-[var(--hairline)]">
-        {["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"].map((w) => (
-          <div
-            key={w}
-            className="border-b border-[var(--hairline)] bg-[var(--paper-sunken)] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[.06em] text-muted-foreground"
-          >
-            {w}
-          </div>
-        ))}
-        {cells.map(({ date, inMonth, visits: dayVisits }) => {
-          const isToday = date.toDateString() === new Date().toDateString();
-          return (
-            <div
-              key={date.toISOString()}
-              className={cn(
-                "flex min-h-[84px] flex-col gap-1 border-b border-r border-[var(--hairline-soft)] px-2 py-1.5",
-                isToday ? "bg-[#FBFBFE]" : inMonth ? "bg-[var(--paper)]" : "bg-[var(--paper-sunken)]",
-              )}
-            >
-              <span
-                className={cn(
-                  "text-xs tabular-nums",
-                  isToday ? "font-semibold text-primary" : inMonth ? "text-[var(--ink-body)]" : "text-muted-foreground/40",
-                )}
-              >
-                {date.getDate()}
-              </span>
-              {dayVisits.map((v) => {
-                const past = new Date(v.endsAt) < new Date();
-                const open = v.caregiverName === null;
-                return (
-                  <span
-                    key={v.id}
-                    className={cn(
-                      "block rounded-md px-1.5 py-1 leading-[1.3]",
-                      open
-                        ? "bg-[#FFFAEB] text-[#B54708]"
-                        : past
-                          ? "bg-[#ECFDF3] text-[#027A48]"
-                          : "bg-[#EEF0FE] text-primary",
-                    )}
-                  >
-                    <span className="block text-[10.5px] opacity-90">{fmtTime(v.startsAt)}</span>
-                    <span className="block text-[11px] font-medium">
-                      {open ? "Unassigned" : v.caregiverName}
-                    </span>
-                  </span>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-      <p className="mb-0 mt-3 text-xs text-muted-foreground">
-        The same visits the Scheduling board shows, filtered to this client — one Joy schedule, per
-        §20. <Link to="/scheduling" className="text-primary hover:text-[#2A1BD1]">Open Scheduling →</Link>
-      </p>
-    </div>
-  );
-}
-
 // ------------------------------------------------------------ Services --
 
 function ClientServicesTab({ client }: { client: ClientRecord }) {
+  const { serviceMixes, serviceMixConfirmed, setServiceMix, confirmServiceMix, approvedLocations, decideLocation, currentUser } = useDemo();
+  const mayEdit = canWrite(currentUser.role);
+  const [editingMix, setEditingMix] = useState(false);
+  const [draftMix, setDraftMix] = useState<ServiceShare[]>([...DEFAULT_MIX]);
+  const locations = locationsFor(approvedLocations, client.personId);
+  const pendingLocations = locations.filter((l) => l.status === "pending");
+  const mix = serviceMixes[client.personId] ?? DEFAULT_MIX;
+  const confirmed = serviceMixConfirmed[client.personId] ?? null;
   const plans = seedCarePlans.filter((p) => p.clientPersonId === client.personId);
   const active = plans.find((p) => p.state === "active") ?? null;
   const terms = seedBillingTerms.find((t) => t.clientPersonId === client.personId);
@@ -629,6 +511,103 @@ function ClientServicesTab({ client }: { client: ClientRecord }) {
             >
               Open Care plans →
             </Link>
+          </div>
+          <section className="flex flex-col gap-3 rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-[18px]">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[13.5px] font-semibold">Where care may be given</span>
+              {pendingLocations.length > 0 && <span className="rounded-full bg-[#FFFAEB] px-2 py-0.5 text-[11px] font-semibold text-[#B54708]">{pendingLocations.length} waiting on you</span>}
+            </div>
+            <div className="flex flex-col">
+              {locations.map((l) => (
+                <div key={l.id} className="flex flex-wrap items-center gap-2 border-b border-[var(--hairline-soft)] py-2.5 last:border-b-0">
+                  <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+                    <span className="truncate text-[13px] font-medium">{l.label}</span>
+                    <span className="truncate text-[12px] text-muted-foreground">{l.address ?? "No address on file yet"}</span>
+                    {l.status === "pending" && (
+                      <span className="pt-0.5 text-[11.5px] text-[#B54708]">
+                        Used by {l.addedBy || "somebody"} on a visit{l.addedOn ? ` on ${new Date(l.addedOn).toLocaleDateString([], { month: "short", day: "numeric" })}` : ""}
+                      </span>
+                    )}
+                  </span>
+                  <span className={cn("flex-none rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[.05em]", l.status === "primary" && "bg-[#EEF0FE] text-primary", l.status === "approved" && "bg-[#ECFDF3] text-[#027A48]", l.status === "pending" && "bg-[#FFFAEB] text-[#B54708]")}>
+                    {LOCATION_STATUS_LABELS[l.status]}
+                  </span>
+                  {mayEdit && l.status === "pending" && (
+                    <span className="flex flex-none gap-1.5">
+                      <button type="button" onClick={() => decideLocation(l.id, true, currentUser.name)} className="h-8 rounded-lg bg-primary px-3 text-[12.5px] font-medium text-white transition-colors hover:bg-[#2A1BD1]">
+                        Approve
+                      </button>
+                      <button type="button" onClick={() => decideLocation(l.id, false, currentUser.name)} className="h-8 rounded-lg border border-[var(--hairline)] px-3 text-[12.5px] transition-colors hover:bg-[var(--wash)]">
+                        Not approved
+                      </button>
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="m-0 text-[12px] leading-[1.45] text-muted-foreground [text-wrap:pretty]">
+              A caregiver can clock in anywhere — Joy never stops care happening. Somewhere new goes on this list as pending and onto your morning list until you decide.
+            </p>
+          </section>
+          <div className="flex flex-col gap-2 rounded-[11px] border border-[var(--hairline)] bg-[var(--paper-sunken)] px-3 py-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-[12.5px] font-semibold">How a shift divides</span>
+              {confirmed ? <span className="text-[11.5px] text-[#027A48]">Confirmed at admission by {confirmed.by}</span> : <span className="text-[11.5px] text-muted-foreground">Joy's default — not confirmed yet</span>}
+            </div>
+            {editingMix ? (
+              <>
+                <ServiceMixEditor mix={draftMix} onChange={setDraftMix} previewHours={8} />
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  <button
+                    type="button"
+                    disabled={validateMix(draftMix) !== null}
+                    onClick={() => {
+                      setServiceMix(client.personId, [...draftMix]);
+                      setEditingMix(false);
+                    }}
+                    className={cn("h-8 rounded-lg px-3 text-[12.5px] font-medium transition-colors", validateMix(draftMix) === null ? "bg-primary text-white hover:bg-[#2A1BD1]" : "cursor-not-allowed bg-[var(--wash-strong)] text-muted-foreground/50")}
+                  >
+                    {validateMix(draftMix) ?? "Save the split"}
+                  </button>
+                  <button type="button" onClick={() => setEditingMix(false)} className="h-8 rounded-lg px-3 text-[12.5px] text-muted-foreground transition-colors hover:bg-[var(--wash)]">
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col">
+                  {splitHours(mix, 8).map((l, i) => (
+                    <div key={l.service} className="flex items-baseline justify-between gap-3 border-b border-[var(--hairline-soft)] py-1 last:border-b-0">
+                      <span className="min-w-0 truncate text-[12.5px]">
+                        <span className="mr-1.5 font-medium tabular-nums">{mix[i].percent}%</span>
+                        {l.service}
+                      </span>
+                      <span className="flex-none text-[11.5px] tabular-nums text-muted-foreground">{hoursLabel(l.hours)} on an 8-hour shift</span>
+                    </div>
+                  ))}
+                </div>
+                {mayEdit && (
+                  <div className="flex flex-wrap gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraftMix([...mix]);
+                        setEditingMix(true);
+                      }}
+                      className="h-8 rounded-lg border border-[var(--hairline)] bg-[var(--paper)] px-3 text-[12.5px] transition-colors hover:bg-[var(--wash)]"
+                    >
+                      Change the split
+                    </button>
+                    {!confirmed && (
+                      <button type="button" onClick={() => confirmServiceMix(client.personId, currentUser.name)} className="h-8 rounded-lg bg-primary px-3 text-[12.5px] font-medium text-white transition-colors hover:bg-[#2A1BD1]">
+                        Confirm this split
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
           {active ? (
             <>
@@ -737,22 +716,26 @@ function ClientServicesTab({ client }: { client: ClientRecord }) {
 // ------------------------------------------------------------- Billing --
 
 function ClientBillingTab({ client }: { client: ClientRecord }) {
+  const { households, setHouseholdBilling, setHouseholdRate, currentUser } = useDemo();
+  const { visits: board } = useScheduleBoard();
   const terms = seedBillingTerms.find((t) => t.clientPersonId === client.personId);
+  const household = householdOf(households, client.personId);
   const weekStart = useMemo(() => upcomingBillingWeek(new Date().toISOString()), []);
   const invoice = useMemo(
     () =>
       terms
         ? buildInvoice({
             terms,
-            visits: seedVisits,
+            visits: board,
             weekStart,
+            households,
             // Bill the agreement, not the board — Karynn's advance model. The
             // upcoming week's schedule may not exist yet; the agreed hours do.
             advance:
               client.hoursPerWeek !== null ? { agreedHours: client.hoursPerWeek } : null,
           })
         : null,
-    [terms, weekStart, client.hoursPerWeek],
+    [terms, weekStart, client.hoursPerWeek, households, board],
   );
   const paid = seedPaidWeeks.has(client.personId);
   const age =
@@ -779,6 +762,17 @@ function ClientBillingTab({ client }: { client: ClientRecord }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {household && (
+        <HouseholdCard
+          household={household}
+          clientPersonId={client.personId}
+          hourlyRate={terms.hourlyRate}
+          payerFor={payerFor}
+          canEdit={canWrite(currentUser.role)}
+          onChange={(billing) => setHouseholdBilling(household.id, billing)}
+          onRateChange={(rate, split) => setHouseholdRate(household.id, rate, split)}
+        />
+      )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {

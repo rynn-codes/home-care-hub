@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeftRight, TriangleAlert, Users } from "lucide-react";
+import { ArrowLeftRight, Home, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   HOUSEHOLD_BILLING_LABELS,
@@ -51,7 +51,7 @@ export function HouseholdCard({
   return (
     <section className="flex flex-col gap-3.5 rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-[18px]">
       <div className="flex items-center gap-2">
-        <Users className="h-3.5 w-3.5 text-[var(--ink-body)]" aria-hidden="true" />
+        <Home className="h-3.5 w-3.5 text-[var(--ink-body)]" aria-hidden="true" />
         <h2 className="m-0 text-sm font-semibold tracking-[-.01em]">Served with</h2>
       </div>
       <div className="flex flex-col gap-1.5">

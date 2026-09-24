@@ -2,6 +2,7 @@ import type { Visit } from "@/domain/scheduling/conflicts";
 import { hoursOf } from "@/domain/scheduling/conflicts";
 import { HOLIDAY_LABELS, holidayOn, type HolidayKey } from "@/domain/billing/holidays";
 import { billableHours, type VerifiedServiceUnit } from "@/domain/service/verifiedUnit";
+import { advanceShare, billsToClient, shareOf, type Household } from "@/domain/billing/households";
 
 /**
  * Billing — what a client owes, from the terms they signed.
@@ -370,16 +371,22 @@ export function buildInvoice(input: {
     agreedHours: number;
     carryForward?: readonly CarryForwardLine[];
   } | null;
+  /**
+   * Households decide whether a shared visit lands on this person's invoice
+   * at all, and what share of its hours they carry. See domain/billing/households.
+   */
+  households?: readonly Household[];
 }): Invoice {
   const { terms, weekStart } = input;
   const weekEnd = addDays(weekStart, 6);
   const rate = input.rateVersion ? input.rateVersion.hourlyRate : terms.hourlyRate;
   const ratePlanVersionId = input.rateVersion?.id ?? null;
+  const households = input.households ?? [];
 
   const mine = input.visits.filter(
     (v) =>
       isBillable(v) &&
-      v.clientName === terms.clientName &&
+      billsToClient(v, terms.clientPersonId, terms.clientName, households) &&
       v.startsAt.slice(0, 10) >= weekStart &&
       v.startsAt.slice(0, 10) <= weekEnd,
   );
@@ -417,15 +424,15 @@ export function buildInvoice(input: {
     };
   }
 
-  const split = splitHours(mine, (visit) => {
+  const hoursFor = (visit: Visit) => {
     const unit = live.get(visit.id);
     const approved = unit ? billableHours(unit) : null;
     return approved ?? hoursOf(visit);
-  });
+  };
   const lines: InvoiceLine[] = [];
 
   const line = (kind: LineKind, description: string, hours: number, multiplier: number) => {
-    if (hours <= 0) return;
+    if (hours <= 0 || multiplier === 0) return;
     lines.push({
       kind,
       description,
@@ -439,13 +446,10 @@ export function buildInvoice(input: {
   if (input.advance) {
     // The agreement's hours, not the board's. Holidays are not projected —
     // whether a holiday visit happened is next week's carry-forward, not this
-    // week's guess.
-    line(
-      "standard",
-      `Care hours for the week of ${weekStart} — as agreed`,
-      input.advance.agreedHours,
-      1,
-    );
+    // week's guess. A household member carries their share of the advance.
+    const share = advanceShare(terms.clientPersonId, households);
+    const shared = share < 1 && share > 0 ? ` — shared visit, ${Math.round(share * 100)}% of the hourly rate` : "";
+    line("standard", `Care hours for the week of ${weekStart} — as agreed${shared}`, input.advance.agreedHours, share);
 
     for (const carry of input.advance.carryForward ?? []) {
       if (carry.kind === "credit") {
@@ -457,24 +461,36 @@ export function buildInvoice(input: {
           description: carry.description,
           hours: carry.hours,
           rate,
-          multiplier: 1,
-          amount: rate === null ? null : money(-carry.hours * rate),
+          multiplier: share,
+          amount: rate === null ? null : money(-carry.hours * rate * share),
         });
       } else {
         line(
           carry.kind,
           carry.description,
           carry.hours,
-          carry.kind === "carried_overtime" ? TIME_AND_A_HALF : 1,
+          (carry.kind === "carried_overtime" ? TIME_AND_A_HALF : 1) * share,
         );
       }
     }
   } else {
-    line("standard", "Care hours", split.standard, 1);
-    for (const holiday of split.holidays) {
-      line("holiday", `${HOLIDAY_LABELS[holiday.key]} — time and a half`, holiday.hours, TIME_AND_A_HALF);
+    // A visit shared with a companion in the same home is billed at this
+    // person's share of it, so the household is never charged twice for one
+    // caregiver. Grouped by share so each group prints its own lines.
+    const byShare = new Map<number, Visit[]>();
+    for (const v of mine) {
+      const share = shareOf(v, terms.clientPersonId, households);
+      byShare.set(share, [...(byShare.get(share) ?? []), v]);
     }
-    line("overtime", `Hours over ${OVERTIME_AFTER_HOURS} — time and a half`, split.overtime, TIME_AND_A_HALF);
+    for (const [share, group] of [...byShare.entries()].sort((a, b) => b[0] - a[0])) {
+      const split = splitHours(group, hoursFor);
+      const shared = share < 1 ? ` — shared visit, ${Math.round(share * 100)}% of the hourly rate` : "";
+      line("standard", `Care hours${shared}`, split.standard, share);
+      for (const holiday of split.holidays) {
+        line("holiday", `${HOLIDAY_LABELS[holiday.key]} — time and a half${shared}`, holiday.hours, TIME_AND_A_HALF * share);
+      }
+      line("overtime", `Hours over ${OVERTIME_AFTER_HOURS} — time and a half${shared}`, split.overtime, TIME_AND_A_HALF * share);
+    }
   }
 
   // ------------------------------------------------------------- totals --
