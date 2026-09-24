@@ -1,0 +1,132 @@
+[
+  {
+    "r": "/",
+    "name": "home.png",
+    "h1": "Good afternoon, Karynn. 👋"
+  },
+  {
+    "r": "/brain",
+    "name": "brain.png",
+    "h1": "The Brain"
+  },
+  {
+    "r": "/brain/my-work",
+    "name": "brain-my-work.png",
+    "h1": "The Brain"
+  },
+  {
+    "r": "/brain/operations",
+    "name": "brain-operations.png",
+    "h1": "The Brain"
+  },
+  {
+    "r": "/scheduling",
+    "name": "scheduling.png",
+    "h1": "Scheduling"
+  },
+  {
+    "r": "/billing",
+    "name": "billing.png",
+    "h1": "Billing"
+  },
+  {
+    "r": "/payroll",
+    "name": "payroll.png",
+    "h1": "Payroll"
+  },
+  {
+    "r": "/clients",
+    "name": "clients.png",
+    "h1": "Clients"
+  },
+  {
+    "r": "/employees",
+    "name": "employees.png",
+    "h1": "Employees"
+  },
+  {
+    "r": "/people",
+    "name": "people.png",
+    "h1": "People"
+  },
+  {
+    "r": "/admissions",
+    "name": "admissions.png",
+    "h1": "Admissions"
+  },
+  {
+    "r": "/hiring",
+    "name": "hiring.png",
+    "h1": "Hiring"
+  },
+  {
+    "r": "/reports",
+    "name": "reports.png",
+    "h1": "Reports"
+  },
+  {
+    "r": "/reports/audit",
+    "name": "reports-audit.png",
+    "h1": "Audit"
+  },
+  {
+    "r": "/reports/audit/evv",
+    "name": "reports-audit-evv.png",
+    "h1": "EVV records"
+  },
+  {
+    "r": "/reports/incidents",
+    "name": "reports-incidents.png",
+    "h1": "Incidents"
+  },
+  {
+    "r": "/reports/supervision",
+    "name": "reports-supervision.png",
+    "h1": "Supervisory visits"
+  },
+  {
+    "r": "/documents",
+    "name": "documents.png",
+    "h1": "Documents"
+  },
+  {
+    "r": "/sops",
+    "name": "sops.png",
+    "h1": "SOPs"
+  },
+  {
+    "r": "/settings",
+    "name": "settings.png",
+    "h1": "Settings"
+  },
+  {
+    "r": "/clients/care-plans",
+    "name": "clients-care-plans.png",
+    "h1": "Care plans"
+  },
+  {
+    "r": "/portal/login",
+    "name": "portal-login.png",
+    "h1": "Sign in"
+  },
+  {
+    "r": "/portal/care",
+    "name": "portal-care.png",
+    "h1": "Sign in"
+  },
+  {
+    "r": "/portal/care/documents",
+    "name": "portal-care-documents.png",
+    "h1": "Sign in"
+  },
+  {
+    "r": "/portal/work",
+    "name": "portal-work.png",
+    "h1": "Sign in"
+  },
+  {
+    "r": "/portal/work/schedule",
+    "name": "portal-work-schedule.png",
+    "h1": "Sign in"
+  }
+]
