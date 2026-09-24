@@ -1719,7 +1719,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       const existing = s.employeeEdits[employee.id] ?? profileFromSeed(employee);
       return {
         ...s,
-        employeeEdits: { ...s.employeeEdits, [employee.id]: { ...existing, phone } },
+        employeeEdits: { ...s.employeeEdits, [employee.id]: { ...existing, phoneMobile: phone } },
         phoneAsks: { ...s.phoneAsks, [caregiverName]: { ...(s.phoneAsks[caregiverName] ?? { askedBy: "", askedAt: at }), answeredAt: at } },
       };
     });

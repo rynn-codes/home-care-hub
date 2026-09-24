@@ -377,7 +377,12 @@ export function seriesPattern(visit: Visit & { seriesId?: string }, all: readonl
   }
   let usual = "";
   let best = 0;
-  for (const [key, n] of counts) if (n > best) (usual = key), (best = n);
+  for (const [key, n] of counts) {
+    if (n > best) {
+      usual = key;
+      best = n;
+    }
+  }
   const [usualStart, usualHours] = usual.split("|");
   const mine = `${hhmm(visit.startsAt)}|${hours(visit)}`;
   return { usualHours: Number(usualHours), usualStart, differs: mine !== usual, against: others.length };

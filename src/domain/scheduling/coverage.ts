@@ -50,8 +50,20 @@ export interface CoverageShift {
   familyCovers?: boolean;
 }
 
-export type CoveragePriority = "continuity" | "fewest_caregivers" | "spread_hours";
-export type PoolMode = "everyone" | "selected_only";
+export type CoveragePriority = "continuity" | "avoid_overtime" | "fewest_caregivers";
+export type PoolMode = "preferred_first" | "selected_only" | "any_qualified";
+
+export const PREFERENCE_LABELS: Record<PreferenceState, string> = { preferred: "Preferred", required: "Required", excluded: "Do not use" };
+export const POOL_MODE_LABELS: Record<PoolMode, string> = {
+  preferred_first: "Preferred + previous caregivers first",
+  selected_only: "Only caregivers I selected",
+  any_qualified: "Any qualified & available caregiver",
+};
+export const PRIORITY_LABELS: Record<CoveragePriority, string> = {
+  continuity: "Continuity first — known caregivers, even a little overtime",
+  avoid_overtime: "No overtime — known caregivers first, then a good fit",
+  fewest_caregivers: "Fewest caregivers",
+};
 export type PreferenceState = "required" | "preferred" | "excluded";
 
 export interface CoveragePreference {
@@ -66,7 +78,7 @@ export interface OvertimeApproval {
   hours: number;
   approvedBy: string;
   approvedAt: string;
-  reason: string;
+  reason: string | null;
 }
 
 export interface CoverageEvent {
@@ -76,14 +88,15 @@ export interface CoverageEvent {
   coverageType: CoverageType;
   startsAt: string;
   endsAt: string;
+  requiredHours: number;
   shiftLengthHours: number;
-  dayShiftStart: string | null;
-  priority: CoveragePriority;
+  dayShiftStart: string;
+  staffingPriority: CoveragePriority;
   poolMode: PoolMode;
   preferences: CoveragePreference[];
   shifts: CoverageShift[];
   overtimeApprovals: OvertimeApproval[];
-  note: string;
+  note: string | null;
   createdBy: string;
   createdAt: string;
   approvedAt: string | null;

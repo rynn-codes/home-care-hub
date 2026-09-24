@@ -41,23 +41,26 @@ export interface ReceiptMeta {
   name: string;
   size: number;
   type: string;
-  via: "camera" | "file";
+  via: "camera" | "upload";
   takenAt: string;
 }
 
 export interface VisitExpense {
   id: string;
+  visitId: string;
   category: ExpenseCategory;
   otherKind?: string;
   description: string;
   date: string;
   amount: number;
   miles: number;
+  /** Where the miles came from — Joy's GPS reading or the odometer. */
+  milesFrom?: "gps" | "typed" | null;
   tripFrom?: string;
   tripTo?: string;
   receipt: ReceiptMeta | null;
   recordedBy: string;
-  recordedAt: string;
+  recordedOn: string;
   reviewedBy?: string | null;
   reviewedAt?: string | null;
   deletedAt?: string | null;

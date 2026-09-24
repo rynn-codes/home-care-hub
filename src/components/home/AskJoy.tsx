@@ -56,7 +56,11 @@ export function AskJoy() {
   };
 
   useEffect(() => {
-    const onOpen = () => {
+    const onOpen = (e: Event) => {
+      // A screen may hand over a half-written question — Scheduling's
+      // "Put Chanel with Marilyn on " — for the person to finish.
+      const draft = (e as CustomEvent<{ draft?: string }>).detail?.draft;
+      if (typeof draft === "string") setQ(draft);
       setOpen(true);
       setTimeout(() => inputRef.current?.focus(), 0);
     };
