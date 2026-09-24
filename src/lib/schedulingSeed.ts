@@ -1,26 +1,21 @@
 import type { Visit } from "@/domain/scheduling/conflicts";
 
 /**
- * A week of visits for the demo board.
+ * The week's visits on the demo board — Karynn's standing schedule as she
+ * gave it on 9 September, built relative to the current week so the board
+ * always looks live.
  *
- * Built relative to the current week so the board always looks live, rather
- * than pointing at a date in the past. People and services match the rest of
- * the seed, so the same clients appear across Home, Admissions and Scheduling.
- *
- * Deliberately includes two open shifts and one caregiver double-booking, so
- * the Needs You panel and the conflict service have something real to report —
- * an empty board demonstrates nothing.
- *
- * Caregivers are Joy Health's real team. Clients are fictional and must remain
- * so — see the note in joySeed.ts.
+ * Caregivers are Joy Health's real team and the clients are Karynn's; the
+ * pairings and hours are hers. The S household is one home, one caregiver,
+ * one visit that serves two clients (`alsoServes`), so the shift is
+ * scheduled and clocked once — see domain/billing/households.
  */
 
 /**
  * The Monday INSIDE the current Saturday–Friday agency week (README business
  * rule #4). Anchoring on the agency week rather than the calendar week keeps
  * the seeded Mon–Fri visits visible in the board's Sat-start week view on any
- * day the demo is opened — including the weekend, when a plain "Monday of this
- * week" would point at the previous agency week.
+ * day the demo is opened.
  */
 function mondayOfThisWeek(): Date {
   const d = new Date();
@@ -39,21 +34,40 @@ function at(dayOffset: number, hour: number, minute = 0): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
 }
 
+const WEEKDAYS = [0, 1, 2, 3, 4];
+const HOUSEHOLD = [{ personId: "c-sara", name: "Sara S" }];
+
 export const seedVisits: Visit[] = [
-  { id: "v1", clientName: "Lian Huang", clientPersonId: "c-lian", service: "Personal Care", caregiverName: "Chanel P.", startsAt: at(0, 8), endsAt: at(0, 12) },
-  { id: "v2", clientName: "Edward Pham", clientPersonId: "c-edward", service: "Personal Care", caregiverName: "Vanessa", startsAt: at(0, 16), endsAt: at(1, 0) },
-  { id: "v3", clientName: "Dolores Vance", clientPersonId: "c-dolores", service: "Personal Care", caregiverName: "Thylia", startsAt: at(1, 18, 30), endsAt: at(1, 22, 30) },
-  { id: "v4", clientName: "Lian Huang", clientPersonId: "c-lian", service: "Personal Care", caregiverName: "Chanel P.", startsAt: at(2, 8), endsAt: at(2, 12) },
-
-  // Unassigned — the scheduler's most time-sensitive work.
-  { id: "v5", clientName: "Ruth Alvarez", clientPersonId: "c-ruth", service: "Respite", caregiverName: null, startsAt: at(2, 12), endsAt: at(2, 18) },
-  { id: "v6", clientName: "Evelyn Carter", clientPersonId: "c-evelyn", service: "Personal Care", caregiverName: null, startsAt: at(4, 9), endsAt: at(4, 13) },
-
-  // Deliberate clash: Vanessa is with Edward and Susan at the same time on
-  // Thursday, so the conflict service has something to catch on load.
-  { id: "v7", clientName: "Edward Pham", clientPersonId: "c-edward", service: "Personal Care", caregiverName: "Vanessa", startsAt: at(3, 16), endsAt: at(4, 0) },
-  { id: "v8", clientName: "Susan Miller", clientPersonId: "c-susan", service: "Personal Care", caregiverName: "Vanessa", startsAt: at(3, 18), endsAt: at(3, 21) },
-
+  ...WEEKDAYS.map((d) => ({ id: `v-pamela-${d}`, clientName: "Pamela P", clientPersonId: "c-pamela", service: "Personal Care", caregiverName: "Chanel P", startsAt: at(d, 10, 30), endsAt: at(d, 18) })),
+  ...WEEKDAYS.map((d) => ({ id: `v-marilyn-${d}`, clientName: "Marilyn K", clientPersonId: "c-marilyn", service: "Personal Care", caregiverName: "Vanessa J", startsAt: at(d, 11), endsAt: at(d, 19) })),
+  ...[0, 2, 4].map((d) => ({ id: `v-vince-t-${d}`, clientName: "Vince W", clientPersonId: "c-vince", service: "Personal Care", caregiverName: "Thylia B", startsAt: at(d, 11), endsAt: at(d, 19) })),
+  ...[1, 3, -2].map((d) => ({ id: `v-vince-b-${d}`, clientName: "Vince W", clientPersonId: "c-vince", service: "Personal Care", caregiverName: "Bedjine C", startsAt: at(d, 11), endsAt: at(d, 19) })),
+  ...[0, 2, 4].map((d) => ({ id: `v-robert-${d}`, clientName: "Robert H", clientPersonId: "c-robert", service: "Personal Care", caregiverName: "Glory O", startsAt: at(d, 7, 30), endsAt: at(d, 11, 30) })),
+  ...WEEKDAYS.map((d) => ({ id: `v-jessie-${d}`, clientName: "Jessie C", clientPersonId: "c-jessie", service: "Personal Care", caregiverName: "Glory O", startsAt: at(d, 13), endsAt: at(d, 17) })),
+  ...WEEKDAYS.map((d) => ({
+    id: `v-household-day-${d}`,
+    clientName: "Charles S",
+    clientPersonId: "c-charles",
+    alsoServes: HOUSEHOLD,
+    service: "Personal Care",
+    caregiverName: "Brandon H",
+    startsAt: at(d, 9),
+    endsAt: at(d, 13),
+  })),
+  ...[
+    { key: "sat", from: -2, to: -1 },
+    { key: "sun", from: -1, to: 0 },
+    { key: "fri", from: 4, to: 5 },
+  ].map(({ key, from, to }) => ({
+    id: `v-household-night-${key}`,
+    clientName: "Charles S",
+    clientPersonId: "c-charles",
+    alsoServes: HOUSEHOLD,
+    service: "Personal Care",
+    caregiverName: "Daizha S",
+    startsAt: at(from, 20),
+    endsAt: at(to, 8),
+  })),
   // Brandon is a new caregiver shadowing, not a client — hence the event type.
-  { id: "v9", clientName: "Brandon (new caregiver)", service: "Field Orientation", caregiverName: "Chanel P.", startsAt: at(1, 14), endsAt: at(1, 14, 45), eventType: "field_orientation" },
+  { id: "v-orientation", clientName: "Brandon H", service: "Field Orientation", caregiverName: "Chanel P", startsAt: at(1, 19, 15), endsAt: at(1, 20), eventType: "field_orientation" },
 ];

@@ -283,7 +283,7 @@ export function ScheduleAdmissionDialog({
           <div className="flex flex-col gap-3">
             <LabeledInput label="Contact name" value={newPerson.contactName} onChange={(v) => setNewPerson((p) => ({ ...p, contactName: v }))} placeholder="Johnathan Huang" autoFocus />
             <LabeledInput label="Phone" value={newPerson.phone} onChange={(v) => setNewPerson((p) => ({ ...p, phone: v }))} placeholder="(713) 555-0188" inputMode="tel" />
-            <LabeledInput label="Person needing care" hint="Optional" value={newPerson.personNeedingCare} onChange={(v) => setNewPerson((p) => ({ ...p, personNeedingCare: v }))} placeholder="Lian Huang" />
+            <LabeledInput label="Person needing care" hint="Optional" value={newPerson.personNeedingCare} onChange={(v) => setNewPerson((p) => ({ ...p, personNeedingCare: v }))} placeholder="Marilyn K" />
             <LabeledInput label="ZIP" hint="Optional" value={newPerson.zip} onChange={(v) => setNewPerson((p) => ({ ...p, zip: v }))} placeholder="77027" />
             <div className="flex items-center justify-between gap-2 border-t border-[#F3F3F6] pt-3">
               <button

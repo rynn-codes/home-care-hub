@@ -28,6 +28,12 @@ export interface Visit {
    * service unit needs the id, because a name is not who payroll pays.
    */
   caregiverPersonId?: string | null;
+  /**
+   * The other people this one visit serves — a couple in one home with one
+   * caregiver. The shift is scheduled and clocked once; billing decides how
+   * the household is invoiced. See domain/billing/households.
+   */
+  alsoServes?: Array<{ personId: string; name: string }>;
   startsAt: string;
   endsAt: string;
   /** rn_assessment visits are the RN's, not a caregiver's. */

@@ -199,18 +199,36 @@ export const seedConsentSessions: Record<string, SeededConsentSession> = Object.
     }),
 );
 
+/**
+ * A call that got as far as the caller's details and no further — the
+ * "Phone intake started and not finished" record in the queue. Its button
+ * reads "Continue intake" rather than "Start intake" because there is
+ * something to continue.
+ */
+function partialIntakeFor(name: string, phone: string): IntakeAnswers {
+  const answers: IntakeAnswers = {};
+  for (const q of INTAKE_QUESTIONS.slice(0, 3)) {
+    if (q.showIf && !q.showIf(answers)) continue;
+    answers[q.id] = fill(q, name, phone);
+  }
+  answers.caller_name = name;
+  answers.caller_phone = phone;
+  return answers;
+}
+
 export const seedIntakes: Record<string, SeededIntake> = Object.fromEntries(
   seedAdmissions
-    .filter((a) => INTAKE_DONE.has(a.stage))
+    .filter((a) => INTAKE_DONE.has(a.stage) || a.stage === "phone_intake")
     .map((a) => {
       const rp = RESPONSIBLE_PARTY[a.id] ?? { name: a.name, phone: "(713) 555-0100" };
+      const started = a.stage === "phone_intake";
       return [
         a.id,
         {
           admissionId: a.id,
-          answers: intakeFor(rp.name, rp.phone),
-          visited: INTAKE_QUESTIONS.map((q) => q.id),
-          completedAt: AT,
+          answers: started ? partialIntakeFor(rp.name, rp.phone) : intakeFor(rp.name, rp.phone),
+          visited: started ? [] : INTAKE_QUESTIONS.map((q) => q.id),
+          completedAt: started ? null : AT,
           startedAt: AT,
         },
       ];

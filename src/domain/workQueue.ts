@@ -45,6 +45,8 @@ export interface WorkQueueSection<T> {
 export function buildWorkQueue<T>(
   items: readonly T[],
   classify: (item: T) => WorkQueueGroup,
+  /** Per-group ordering. A group without one keeps the caller's order. */
+  order: Partial<Record<WorkQueueGroup, (a: T, b: T) => number>> = {},
 ): WorkQueueSection<T>[] {
   const buckets: Record<WorkQueueGroup, T[]> = {
     needs_you: [],
@@ -56,12 +58,15 @@ export function buildWorkQueue<T>(
     buckets[classify(item)].push(item);
   }
 
-  return WORK_QUEUE_GROUPS.map((group) => ({
-    group,
-    label: WORK_QUEUE_LABELS[group],
-    hint: WORK_QUEUE_HINTS[group],
-    items: buckets[group],
-  }));
+  return WORK_QUEUE_GROUPS.map((group) => {
+    const sorter = order[group];
+    return {
+      group,
+      label: WORK_QUEUE_LABELS[group],
+      hint: WORK_QUEUE_HINTS[group],
+      items: sorter ? [...buckets[group]].sort(sorter) : buckets[group],
+    };
+  });
 }
 
 export function countNeedsYou<T>(sections: WorkQueueSection<T>[]): number {

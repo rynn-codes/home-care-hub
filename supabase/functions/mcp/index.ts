@@ -62,14 +62,14 @@ var employees = [
   assignedClientIds: []
 }));
 var clientNames = [
-  "Lian Huang",
-  "Edward Pham",
-  "Dolores Vance",
-  "Susan Miller",
-  "Ruth Alvarez",
-  "Evelyn Carter",
-  "Theo Nakamura",
-  "Augustin Vandermeer"
+  "Marilyn K",
+  "Jessie C",
+  "Pamela P",
+  "Vince W",
+  "Robert H",
+  "Robert H",
+  "Charles S",
+  "Sara S"
 ];
 var clients = clientNames.map((name, i) => ({
   id: uid(),

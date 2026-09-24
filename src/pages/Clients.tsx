@@ -2,17 +2,15 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ClientDirectory } from "@/components/clients/ClientDirectory";
+import { ClientDirectory, type ClientStatusFilter } from "@/components/clients/ClientDirectory";
+import { ClientPeek } from "@/components/clients/ClientPeek";
 import { ClientRecordView } from "@/components/clients/ClientRecordView";
+import { ConfirmDeleteDialog } from "@/components/records/ConfirmDeleteDialog";
 import { useDemo } from "@/context/DemoDataProvider";
-import { consentSessionForClient } from "@/lib/demoStore";
-import { seedClients } from "@/lib/clientsSeed";
-import {
-  buildClientRecord,
-  searchRoster,
-  sortRoster,
-  type ClientInput,
-} from "@/domain/clients/roster";
+import { canWrite } from "@/domain/access/roles";
+import { recoveryDaysFor } from "@/domain/records/deletion";
+import { buildClientRecord, searchRoster, sortRoster, type ClientRecord } from "@/domain/clients/roster";
+import { buildClientRoster } from "@/lib/clientRoster";
 
 /**
  * Clients — the permanent record.
@@ -30,52 +28,39 @@ import {
  * the agency needs to follow up with — and clients are not filed inside it. The
  * data model is unaffected; this is where a record is *displayed*, not how it
  * is stored.
+ *
+ * A row opens the peek first, the same gesture as Employees. Deleting is a
+ * bin, not a shredder: the record sits in Settings → Deleted items for its
+ * recovery window. An admitted client cannot be deleted at all — Texas
+ * retention — which the provider enforces.
  */
 export default function Clients() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { people, consentSessions, admissions } = useDemo();
+  const { people, consentSessions, admissions, deletedClientIds, clientStatuses, currentUser, deleteClient, restoreDeleted } =
+    useDemo();
+  const mayWrite = canWrite(currentUser.role);
+  const [peek, setPeek] = useState<ClientRecord | null>(null);
+  const [deleting, setDeleting] = useState<ClientRecord | null>(null);
   const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<ClientStatusFilter>("active");
 
   // The date is read once per render rather than inside the domain module, so
   // the compliance clock stays a pure function of (client, today).
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  const records = useMemo(() => {
-    // Clients admitted during the demo. They carry only what admission knew, so
-    // the directory columns the assessment does not fill stay honestly empty.
-    const admitted: ClientInput[] = people
-      .filter((p) => p.clientStatus === "active")
-      .map((p) => {
-        const session = consentSessionForClient(
-          { admissions, consentSessions },
-          `${p.firstName} ${p.lastName}`,
-        );
-        return {
-          personId: p.personId,
-          firstName: p.firstName,
-          lastName: p.lastName,
-          preferredName: p.preferredName,
-          dateOfBirth: p.dateOfBirth,
-          phone: p.phone,
-          email: p.email,
-          status: "active" as const,
-          responsiblePartyName: p.responsiblePartyName,
-          responsiblePartyLine: p.responsiblePartyName ? "Responsible party" : null,
-          admissionDate: p.admissionDate,
-          signedAt: session?.signedAt ?? null,
-          decisions: session?.decisions ?? {},
-          lastActivity: p.admissionDate ? `Admitted · ${p.admissionDate}` : "Admitted",
-        };
-      });
-
-    // Seeded clients are dropped when a live admission produced the same person,
-    // so admitting somebody never shows them twice.
-    const admittedIds = new Set(admitted.map((c) => c.personId));
-    const all = [...admitted, ...seedClients.filter((c) => !admittedIds.has(c.personId))];
-
-    return sortRoster(all.map((c) => buildClientRecord(c, today)));
-  }, [people, consentSessions, today]);
+  const records = useMemo(
+    () =>
+      sortRoster(
+        buildClientRoster({ people, admissions, consentSessions })
+          .filter((c) => !deletedClientIds.includes(c.personId))
+          .map((c) => {
+            const set = clientStatuses[c.personId];
+            return buildClientRecord(set ? { ...c, status: set.status } : c, today);
+          }),
+      ),
+    [people, admissions, consentSessions, deletedClientIds, clientStatuses, today],
+  );
 
   const selected = id ? records.find((c) => c.personId === id) : undefined;
 
@@ -95,34 +80,75 @@ export default function Clients() {
   }
 
   if (selected) {
-    return <ClientRecordView client={selected} onBack={() => navigate("/clients")} />;
+    return <ClientRecordView client={selected} />;
   }
 
-  const visible = searchRoster(records, query);
-  const active = records.filter((c) => c.status === "active").length;
+  const searched = searchRoster(records, query);
+  const visible = status === "all" ? searched : searched.filter((c) => c.status === status);
+  const counts: Record<ClientStatusFilter, number> = {
+    all: records.length,
+    active: records.filter((c) => c.status === "active").length,
+    on_hold: records.filter((c) => c.status === "on_hold").length,
+    inactive: records.filter((c) => c.status === "inactive").length,
+    discharged: records.filter((c) => c.status === "discharged").length,
+  };
 
   return (
     <>
-      <PageHeader
-        title="Clients"
-        description={`Every care recipient in one place — status, payer, and who is on the case. ${records.length} total · ${active} active.`}
-      />
+      <PageHeader title="Clients" />
 
       <ClientDirectory
         clients={visible}
         query={query}
         onQueryChange={setQuery}
-        onOpen={(personId) => navigate(`/clients/${personId}`)}
-        onAdd={() =>
+        status={status}
+        onStatusChange={setStatus}
+        counts={counts}
+        hiddenBySearch={query.trim() ? searched.length - visible.length : 0}
+        onOpen={(personId) => setPeek(records.find((c) => c.personId === personId) ?? null)}
+        onAdd={() => {
+          navigate("/admissions");
           toast.info("Clients are added through Admissions.", {
-            description: "A referral becomes a client when the admission is approved.",
-          })
-        }
+            description: "Start a referral here — it becomes a client when the admission is approved.",
+          });
+        }}
+      />
+
+      <ClientPeek
+        client={peek}
+        mayWrite={mayWrite}
+        onClose={() => setPeek(null)}
+        onDelete={() => {
+          if (peek) {
+            setDeleting(peek);
+            setPeek(null);
+          }
+        }}
+      />
+
+      <ConfirmDeleteDialog
+        open={!!deleting}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title="Delete this client?"
+        subject={deleting ? `${deleting.name}${deleting.payer ? ` · ${deleting.payer}` : ""}` : ""}
+        consequences={["The client record and everything filed under it"]}
+        recoveryDays={recoveryDaysFor("client")}
+        confirmLabel="Delete client"
+        onConfirm={() => {
+          if (!deleting) return;
+          const { personId, name } = deleting;
+          deleteClient(personId, name);
+          setDeleting(null);
+          toast(`${name} deleted`, {
+            description: `In Settings → Deleted items for ${recoveryDaysFor("client")} days.`,
+            action: { label: "Undo", onClick: () => restoreDeleted(personId) },
+          });
+        }}
       />
 
       <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-        Demo data, saved on this device. Every client here is fictional. Renewal dates are
-        computed from the signing packet's own expiry clauses, not entered by hand.
+        Demo data, saved on this device. Renewal dates are computed from the signing packet's own
+        expiry clauses, not entered by hand.
       </p>
     </>
   );

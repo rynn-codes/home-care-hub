@@ -351,3 +351,139 @@ export function deletionWarning(contact: Contact): string | null {
   const n = contact.referrals.length;
   return `${contact.name} is recorded as the source of ${n} ${n === 1 ? "admission" : "admissions"}. Removing them loses that.`;
 }
+
+// ------------------------------------------------------------- listing --
+
+/** Every kind, in the order the filter menu shows them. */
+export const CONTACT_KINDS: readonly ContactKind[] = [
+  "discharge_planner",
+  "physician",
+  "case_manager",
+  "outreach",
+  "facility",
+  "vendor",
+  "partner",
+  "community",
+  "other",
+];
+
+/** Whole days from one date to another; zero when either will not parse. */
+export function daysApart(from: string, to: string): number {
+  const a = Date.parse(`${from.slice(0, 10)}T00:00:00Z`);
+  const b = Date.parse(`${to.slice(0, 10)}T00:00:00Z`);
+  return Number.isNaN(a) || Number.isNaN(b) ? 0 : Math.floor((b - a) / 86_400_000);
+}
+
+/**
+ * "Yesterday", "3 weeks ago", "over 1 year ago" — the way somebody would say
+ * it across a desk. Nobody on the office side wants to subtract dates.
+ */
+export function relativeContactLabel(iso: string | null | undefined, asOf: string): string {
+  if (!iso) return "No contact yet";
+  const days = daysApart(iso, asOf);
+  if (days < 0) return "Scheduled";
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 14) return "Last week";
+  if (days < 31) return `${Math.floor(days / 7)} weeks ago`;
+  const months = Math.round(days / 30.4);
+  if (months < 12) return months <= 1 ? "about 1 month ago" : `${months} months ago`;
+  const years = Math.floor(days / 365);
+  const rest = days - years * 365;
+  if (years === 1) return rest < 45 ? "about 1 year ago" : "over 1 year ago";
+  return `over ${years} years ago`;
+}
+
+export type ContactTemperature = "fresh" | "cooling" | "cold" | "none";
+
+/**
+ * How warm the relationship is right now.
+ *
+ * Fresh inside a month. Cold once the follow-up rule fires — which only a
+ * referring contact can do, so a vendor Joy has not rung since spring cools
+ * without ever going cold. Everything in between is cooling.
+ */
+export function contactTemperature(contact: Contact, asOf: string): ContactTemperature {
+  if (!contact.lastContactedOn) return "none";
+  const days = daysApart(contact.lastContactedOn, asOf);
+  if (days <= 30) return "fresh";
+  return needsFollowUp(contact, asOf) ? "cold" : "cooling";
+}
+
+export const TEMPERATURE_LABELS: Record<ContactTemperature, string> = {
+  fresh: "In touch",
+  cooling: "Cooling off",
+  cold: "Gone quiet",
+  none: "Never contacted",
+};
+
+/** One row of the People table, with everything the columns show worked out once. */
+export interface ContactRow {
+  contact: Contact;
+  name: string;
+  line: string;
+  organization: string;
+  kindLabel: string;
+  lastContact: string;
+  temperature: ContactTemperature;
+  referrals: number;
+  isReferrer: boolean;
+  needsCall: boolean;
+}
+
+export function contactRow(contact: Contact, asOf: string): ContactRow {
+  return {
+    contact,
+    name: displayName(contact),
+    line: contactLine(contact),
+    organization: contact.organization ?? "—",
+    kindLabel: CONTACT_KIND_LABELS[contact.kind],
+    lastContact: relativeContactLabel(contact.lastContactedOn, asOf),
+    temperature: contactTemperature(contact, asOf),
+    referrals: contact.referrals.length,
+    isReferrer: isReferrer(contact),
+    needsCall: needsFollowUp(contact, asOf),
+  };
+}
+
+export type ContactSort = "last_contact" | "name" | "organization" | "referrals";
+
+export const CONTACT_SORT_LABELS: Record<ContactSort, string> = {
+  last_contact: "Last contact",
+  name: "Name",
+  organization: "Organization",
+  referrals: "Referrals",
+};
+
+/**
+ * Last contact sorts the quietest to the top — the default, because the
+ * list exists to say who needs a call. Ties break on name so the order is
+ * stable between renders.
+ */
+export function sortContactRows(rows: readonly ContactRow[], sort: ContactSort, asOf: string): ContactRow[] {
+  const silence = (r: ContactRow) =>
+    r.contact.lastContactedOn ? daysApart(r.contact.lastContactedOn, asOf) : Number.MAX_SAFE_INTEGER;
+  return [...rows].sort((a, b) => {
+    if (sort === "name") return a.name.localeCompare(b.name);
+    if (sort === "organization") {
+      const o = a.organization.localeCompare(b.organization);
+      return o !== 0 ? o : a.name.localeCompare(b.name);
+    }
+    if (sort === "referrals") {
+      const r = b.referrals - a.referrals;
+      return r !== 0 ? r : a.name.localeCompare(b.name);
+    }
+    const s = silence(b) - silence(a);
+    return s !== 0 ? s : a.name.localeCompare(b.name);
+  });
+}
+
+export type ContactFilter = "all" | "referrers" | "needs_call" | ContactKind;
+
+export function filterContactRows(rows: readonly ContactRow[], filter: ContactFilter): ContactRow[] {
+  if (filter === "all") return [...rows];
+  if (filter === "referrers") return rows.filter((r) => r.isReferrer);
+  if (filter === "needs_call") return rows.filter((r) => r.needsCall);
+  return rows.filter((r) => r.contact.kind === filter);
+}

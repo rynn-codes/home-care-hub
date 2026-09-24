@@ -235,7 +235,7 @@ export default function TheBrain() {
   // ------------------------------------------------------------- the ask --
   const askAnswers: Record<string, { a: string; links: Array<[string, string]> }> = {
     "What changed since yesterday?": {
-      a: "Two things. Brandon finished Gusto onboarding and is one clear background check away from schedulable. Ruth Alvarez's Wednesday shift reopened after a caregiver call-out and still needs coverage. Nothing else changed materially.",
+      a: "Two things. Brandon finished Gusto onboarding and is one clear background check away from schedulable. Robert H's Wednesday shift reopened after a caregiver call-out and still needs coverage. Nothing else changed materially.",
       links: [
         ["View hiring", "/hiring"],
         ["View scheduling", "/scheduling"],
@@ -996,7 +996,7 @@ export default function TheBrain() {
                     onClick={() => {
                       setOpsNeedDone(true);
                       toast.success("Hours increase approved", {
-                        description: "Susan Miller moves to 16 hrs/week. The schedule change is Joy's to carry out.",
+                        description: "Vince W moves to 16 hrs/week. The schedule change is Joy's to carry out.",
                       });
                     }}
                     className="flex h-9 items-center justify-center rounded-[11px] bg-primary px-[18px] text-[13px] font-medium text-white transition-colors hover:bg-[#2A1BD1]"
@@ -1361,7 +1361,7 @@ export default function TheBrain() {
         <div role="dialog" aria-label="Prepared visit" className="fixed bottom-0 right-0 top-0 z-[45] flex w-[400px] max-w-full flex-col overflow-y-auto border-l border-black/[.08] bg-white shadow-[-12px_0_40px_rgba(0,0,0,.08)]">
           <div className="flex items-start gap-3 border-b border-black/[.05] px-6 pb-4 pt-[22px]">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="text-[17px] font-semibold tracking-[-.02em]">Dolores Vance</span>
+              <span className="text-[17px] font-semibold tracking-[-.02em]">Pamela P</span>
               <span className="text-[13px] text-[#6E6E76]">Family care conference · client home</span>
               <span className="text-[12.5px] text-muted-foreground">Today · 2:00–2:45 PM</span>
             </div>
@@ -1462,7 +1462,7 @@ export default function TheBrain() {
                     mine.length === 0
                       ? "No open client escalations."
                       : `${mine.map((u) => `${u.label.toLowerCase()} (${u.detail ?? u.value})`).join(", ")}.`;
-                  return `${lead} One family conference today (Dolores Vance, 2:00 PM).`;
+                  return `${lead} One family conference today (Pamela P, 2:00 PM).`;
                 })(),
                 link: ["View clients", "/clients"],
               },
@@ -1496,7 +1496,7 @@ export default function TheBrain() {
               value={tTitle}
               autoFocus
               onChange={(e) => setTTitle(e.target.value)}
-              placeholder="Call Susan Miller about increased hours"
+              placeholder="Call Vince W about increased hours"
               className="h-[38px] rounded-[11px] border border-black/10 px-3 text-[13.5px] outline-none placeholder:text-muted-foreground"
             />
           </ModalField>

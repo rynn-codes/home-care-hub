@@ -1,84 +1,75 @@
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { useMemo, useState, type ReactNode } from "react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { DuplicateWarning } from "@/components/admissions/DuplicateWarning";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { findDuplicates, type DuplicateCandidate } from "@/domain/admissions/duplicateCheck";
 import {
-  CARE_SERVICES,
-  CONTACT_METHODS,
-  PAYMENT_SOURCES,
-  REFERRAL_SOURCES,
-  emptyReferral,
-  isReadyForDuplicateCheck,
-  toDuplicateQuery,
-  validateReferral,
-  type ReferralDraft,
-} from "@/domain/admissions/referral";
+  LEAD_SOURCES,
+  RELATIONSHIPS,
+  canSaveLead,
+  emptyLead,
+  leadDuplicateQuery,
+  readyForDuplicateCheck,
+  sourceHasOrganisation,
+  type LeadCapture,
+} from "@/domain/admissions/leadCapture";
+import { formatPhoneInput, serviceAreaForZip } from "@/domain/admissions/serviceArea";
 import { cn } from "@/lib/utils";
 
+/**
+ * New lead — the quick capture.
+ *
+ * Section 8 of the Admissions spec keeps this intentionally light: enough
+ * to follow up, and no clinical packet. A name and one way to reach them
+ * saves; everything else is optional and folds in as it is said on the
+ * call. The full address, the date of birth and the clinical detail are
+ * gathered later, at intake and the assessment.
+ *
+ * The duplicate check runs as the name is typed and surfaces a match before
+ * the record is created, per section 10. It never merges and never blocks
+ * outright — "Create new anyway" is always there — but a possible match is
+ * put in front of the office before they make a second record.
+ */
 interface NewReferralDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingPeople: readonly DuplicateCandidate[];
   /** Saves the lead and returns the new admission id. */
-  onCreate: (draft: ReferralDraft) => string;
+  onCreate: (lead: LeadCapture) => string;
   /** Save, then take the office straight into the intake call. */
   onStartIntake: (admissionId: string) => void;
   onOpenExisting: (personId: string) => void;
 }
 
+const FIELD =
+  "h-[42px] rounded-[10px] border border-[var(--hairline)] bg-[var(--paper)] px-[13px] text-sm text-[var(--ink-strong)] outline-none transition-colors focus:border-[#C7C9F5] placeholder:text-[#C9C9D0]";
+
 function Field({
   label,
+  optional,
   htmlFor,
-  error,
-  hint,
   children,
 }: {
   label: string;
+  optional?: boolean;
   htmlFor: string;
-  error?: string;
-  hint?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium">
+    <label htmlFor={htmlFor} className="flex min-w-0 flex-col gap-1.5">
+      <span className="text-xs text-[#8A8A92]">
         {label}
-      </Label>
+        {optional && <span className="ml-1 text-[#C9C9D0]">optional</span>}
+      </span>
       {children}
-      {error ? (
-        <p id={`${htmlFor}-error`} className="text-xs text-destructive">
-          {error}
-        </p>
-      ) : hint ? (
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      ) : null}
-    </div>
+    </label>
   );
 }
 
-/**
- * New referral entry.
- *
- * Section 8 of the Admissions spec keeps this intentionally light: enough to
- * follow up, and no clinical packet. The client's full address is deliberately
- * absent — the source form rule moves that to assessment scheduling rather than
- * demanding it at the start of a call.
- *
- * The duplicate check runs as the name is typed and surfaces a match before the
- * record is created, per section 10.
- */
 export function NewReferralDrawer({
   open,
   onOpenChange,
@@ -87,343 +78,290 @@ export function NewReferralDrawer({
   onStartIntake,
   onOpenExisting,
 }: NewReferralDrawerProps) {
-  const [draft, setDraft] = useState<ReferralDraft>(emptyReferral);
-  const [submitted, setSubmitted] = useState(false);
+  const [lead, setLead] = useState<LeadCapture>(emptyLead);
   const [dupeDismissed, setDupeDismissed] = useState(false);
 
-  const set = <K extends keyof ReferralDraft>(key: K, value: ReferralDraft[K]) => {
-    setDraft((d) => ({ ...d, [key]: value }));
-    if (key === "firstName" || key === "lastName" || key === "phone" || key === "email") {
+  const set = <K extends keyof LeadCapture>(key: K, value: LeadCapture[K]) => {
+    setLead((d) => ({ ...d, [key]: value }));
+    if (key === "contactName" || key === "personNeedingCare" || key === "phone" || key === "email") {
       setDupeDismissed(false);
     }
   };
 
-  const errors = validateReferral(draft);
-  const showErrors = submitted;
-
-  const duplicates = useMemo(() => {
-    if (!isReadyForDuplicateCheck(draft)) return null;
-    return findDuplicates(toDuplicateQuery(draft), existingPeople);
-  }, [draft, existingPeople]);
-
-  const blockingMatch =
-    duplicates?.best && duplicates.best.candidate.openAdmissionStage && !dupeDismissed
-      ? duplicates.best
-      : null;
+  const match = useMemo(
+    () => (readyForDuplicateCheck(lead) ? findDuplicates(leadDuplicateQuery(lead), existingPeople).best ?? null : null),
+    [lead, existingPeople],
+  );
+  const area = serviceAreaForZip(lead.zip);
+  const canSave = canSaveLead(lead);
+  const showMatch = !!match && !dupeDismissed;
 
   const reset = () => {
-    setDraft(emptyReferral);
-    setSubmitted(false);
+    setLead(emptyLead);
     setDupeDismissed(false);
   };
-
-  const save = (thenStartIntake: boolean) => {
-    setSubmitted(true);
-    if (Object.keys(errors).length > 0 || blockingMatch) return;
-    const id = onCreate(draft);
-    if (thenStartIntake) onStartIntake(id);
+  const close = () => {
     reset();
     onOpenChange(false);
   };
-
-  const submit = (event: React.FormEvent) => {
-    event.preventDefault();
-    save(false);
+  const save = (thenStartIntake: boolean) => {
+    if (!canSave) return;
+    const id = onCreate(lead);
+    if (thenStartIntake) onStartIntake(id);
+    close();
   };
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) reset();
-        onOpenChange(next);
-      }}
-    >
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>New lead</SheetTitle>
-          <SheetDescription>
-            A quick capture — a name and a way to reach them is all this needs. Date of
-            birth, the full address and the clinical details are gathered later, at intake
-            and the assessment.
-          </SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : close())}>
+      <DialogContent className="flex max-h-[86vh] w-full max-w-[540px] flex-col gap-0 overflow-hidden rounded-[18px] p-0">
+        <DialogHeader className="space-y-0 border-b border-[var(--hairline-soft)] px-6 pb-[18px] pt-[22px] text-left">
+          <DialogTitle className="text-[19px] font-semibold tracking-[-.02em] text-[var(--ink-strong)]">New lead</DialogTitle>
+          <DialogDescription className="pt-1.5 text-[13px] leading-[1.5] text-[var(--ink-body)]">
+            Capture a referral in a few seconds. Joy will queue the intake call.
+          </DialogDescription>
+        </DialogHeader>
 
-        <form onSubmit={submit} className="mt-6 flex flex-col gap-5" noValidate>
-          <fieldset className="flex flex-col gap-4">
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Who needs care
-            </legend>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="First name" htmlFor="firstName" error={showErrors ? errors.firstName : undefined}>
-                <Input
-                  id="firstName"
-                  value={draft.firstName}
-                  onChange={(e) => set("firstName", e.target.value)}
-                  aria-invalid={showErrors && Boolean(errors.firstName)}
-                />
-              </Field>
-              <Field label="Last name" htmlFor="lastName" error={showErrors ? errors.lastName : undefined}>
-                <Input
-                  id="lastName"
-                  value={draft.lastName}
-                  onChange={(e) => set("lastName", e.target.value)}
-                  aria-invalid={showErrors && Boolean(errors.lastName)}
-                />
-              </Field>
-            </div>
-
-            <Field label="Preferred name" htmlFor="preferredName" hint="What they go by — optional">
-              <Input
-                id="preferredName"
-                value={draft.preferredName}
-                onChange={(e) => set("preferredName", e.target.value)}
+        <form
+          id="new-lead-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            save(false);
+          }}
+          noValidate
+          className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-5"
+        >
+          <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2">
+            <Field label="Who are you talking to?" htmlFor="lead-contact-name">
+              <input
+                id="lead-contact-name"
+                type="text"
+                value={lead.contactName}
+                onChange={(e) => set("contactName", e.target.value)}
+                className={FIELD}
               />
             </Field>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Phone" htmlFor="phone" error={showErrors ? errors.phone : undefined}>
-                <Input
-                  id="phone"
-                  inputMode="tel"
-                  value={draft.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  aria-invalid={showErrors && Boolean(errors.phone)}
-                />
-              </Field>
-              <Field label="Email" htmlFor="email" error={showErrors ? errors.email : undefined}>
-                <Input
-                  id="email"
-                  type="email"
-                  value={draft.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  aria-invalid={showErrors && Boolean(errors.email)}
-                />
-              </Field>
-            </div>
-          </fieldset>
-
-          {duplicates?.best && (
-            <DuplicateWarning
-              match={duplicates.best}
-              dismissed={dupeDismissed}
-              onOpenExisting={(personId) => {
-                onOpenExisting(personId);
-                onOpenChange(false);
-              }}
-              onContinueAsNew={() => setDupeDismissed(true)}
-            />
-          )}
-
-          <fieldset className="flex flex-col gap-4">
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Who we talk to
-            </legend>
-
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
-              <Label htmlFor="contactIsSomeoneElse" className="text-sm font-normal">
-                Someone else is the main contact
-              </Label>
-              <Switch
-                id="contactIsSomeoneElse"
-                checked={draft.contactIsSomeoneElse}
-                onCheckedChange={(v) => set("contactIsSomeoneElse", v)}
-              />
-            </div>
-
-            {draft.contactIsSomeoneElse && (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field
-                    label="Contact name"
-                    htmlFor="contactName"
-                    error={showErrors ? errors.contactName : undefined}
-                  >
-                    <Input
-                      id="contactName"
-                      value={draft.contactName}
-                      onChange={(e) => set("contactName", e.target.value)}
-                      aria-invalid={showErrors && Boolean(errors.contactName)}
-                    />
-                  </Field>
-                  <Field
-                    label="Relationship"
-                    htmlFor="contactRelationship"
-                    error={showErrors ? errors.contactRelationship : undefined}
-                    hint="Daughter, spouse, case manager…"
-                  >
-                    <Input
-                      id="contactRelationship"
-                      value={draft.contactRelationship}
-                      onChange={(e) => set("contactRelationship", e.target.value)}
-                      aria-invalid={showErrors && Boolean(errors.contactRelationship)}
-                    />
-                  </Field>
-                </div>
-                <Field
-                  label="Contact phone"
-                  htmlFor="contactPhone"
-                  error={showErrors ? errors.contactPhone : undefined}
-                >
-                  <Input
-                    id="contactPhone"
-                    inputMode="tel"
-                    value={draft.contactPhone}
-                    onChange={(e) => set("contactPhone", e.target.value)}
-                  />
-                </Field>
-              </>
-            )}
-
-            <Field
-              label="Best way to reach them"
-              htmlFor="bestContactMethod"
-              error={showErrors ? errors.bestContactMethod : undefined}
-            >
-              <Select
-                value={draft.bestContactMethod}
-                onValueChange={(v) => set("bestContactMethod", v as ReferralDraft["bestContactMethod"])}
-              >
-                <SelectTrigger id="bestContactMethod">
-                  <SelectValue placeholder="Choose one" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTACT_METHODS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </fieldset>
-
-          <fieldset className="flex flex-col gap-4">
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              About the enquiry
-            </legend>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Where it came from" htmlFor="referralSource">
-                <Select
-                  value={draft.referralSource}
-                  onValueChange={(v) => set("referralSource", v as ReferralDraft["referralSource"])}
-                >
-                  <SelectTrigger id="referralSource">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REFERRAL_SOURCES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Service requested" htmlFor="serviceRequested">
-                <Select
-                  value={draft.serviceRequested}
-                  onValueChange={(v) => set("serviceRequested", v as ReferralDraft["serviceRequested"])}
-                >
-                  <SelectTrigger id="serviceRequested">
-                    <SelectValue placeholder="Not sure yet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CARE_SERVICES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            {draft.referralSource === "other" && (
-              <Field
-                label="Where exactly?"
-                htmlFor="referralSourceDetail"
-                error={showErrors ? errors.referralSourceDetail : undefined}
-              >
-                <Input
-                  id="referralSourceDetail"
-                  value={draft.referralSourceDetail}
-                  onChange={(e) => set("referralSourceDetail", e.target.value)}
-                />
-              </Field>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Area or ZIP" htmlFor="serviceArea" hint="Full address comes later">
-                <Input
-                  id="serviceArea"
-                  value={draft.serviceArea}
-                  onChange={(e) => set("serviceArea", e.target.value)}
-                />
-              </Field>
-              <Field label="Expected payer" htmlFor="expectedPayer">
-                <Select
-                  value={draft.expectedPayer}
-                  onValueChange={(v) => set("expectedPayer", v as ReferralDraft["expectedPayer"])}
-                >
-                  <SelectTrigger id="expectedPayer">
-                    <SelectValue placeholder="Not sure yet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_SOURCES.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            <Field label="Short note" htmlFor="referralNote" hint="What did they say on the call?">
-              <Textarea
-                id="referralNote"
-                rows={3}
-                value={draft.referralNote}
-                onChange={(e) => set("referralNote", e.target.value)}
+            <Field label="Best phone number" htmlFor="lead-phone">
+              <input
+                id="lead-phone"
+                type="text"
+                inputMode="tel"
+                value={lead.phone}
+                onChange={(e) => set("phone", formatPhoneInput(e.target.value))}
+                placeholder="(000) 000-0000"
+                className={FIELD}
               />
             </Field>
-          </fieldset>
-
-          {showErrors && Object.keys(errors).length > 0 && (
-            <p role="alert" className="text-xs text-destructive">
-              A few details need fixing before this can be saved. Nothing you typed is lost.
-            </p>
-          )}
-
-          <div className={cn("flex flex-wrap items-center gap-2 border-t border-border pt-4")}>
-            <Button type="submit" disabled={Boolean(blockingMatch)}>
-              Save lead
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={Boolean(blockingMatch)}
-              onClick={() => save(true)}
-            >
-              Save &amp; start intake
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="ml-auto"
-              onClick={() => {
-                reset();
-                onOpenChange(false);
-              }}
-            >
-              Cancel
-            </Button>
           </div>
+          <p className="-mt-2.5 m-0 text-[11.5px] text-[#9B9BA3]">
+            A name and either a phone number or an email is enough to save.
+          </p>
+
+          {showMatch && match && (
+            <div className="flex flex-col gap-2 rounded-xl border border-[#FCE8B6] bg-[#FFFAEB] px-3.5 py-[13px]">
+              <span className="text-[12.5px] font-medium text-[#93370D]">Possible existing record</span>
+              <span className="text-[12.5px] leading-[1.45] text-[#B54708]">
+                {[
+                  [match.candidate.firstName, match.candidate.lastName].filter(Boolean).join(" "),
+                  match.candidate.phone,
+                  match.candidate.openAdmissionStage,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+              <span className="flex gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenExisting(match.candidate.personId);
+                    close();
+                  }}
+                  className="h-[30px] rounded-[9px] border border-[#FCE8B6] bg-[var(--paper)] px-3 text-xs text-[#B54708] transition-colors hover:bg-[#FFFAEB]"
+                >
+                  Use this record
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDupeDismissed(true)}
+                  className="h-[30px] rounded-[9px] px-2.5 text-xs text-[#93370D] transition-colors hover:bg-[#FDF3D8]"
+                >
+                  Create new anyway
+                </button>
+              </span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2">
+            <Field label="Person needing care" optional htmlFor="lead-person">
+              <input
+                id="lead-person"
+                type="text"
+                value={lead.personNeedingCare}
+                onChange={(e) => set("personNeedingCare", e.target.value)}
+                className={FIELD}
+              />
+            </Field>
+            <Field label="Relationship" optional htmlFor="lead-relationship">
+              <select
+                id="lead-relationship"
+                value={lead.relationship}
+                onChange={(e) => set("relationship", e.target.value)}
+                className={cn(FIELD, "cursor-pointer px-[11px]")}
+              >
+                <option value="">Not said</option>
+                {RELATIONSHIPS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          {lead.relationship === "Other" && (
+            <Field label="Relationship — please specify" htmlFor="lead-relationship-other">
+              <input
+                id="lead-relationship-other"
+                type="text"
+                value={lead.relationshipOther}
+                onChange={(e) => set("relationshipOther", e.target.value)}
+                placeholder="Neighbour, family friend, guardian…"
+                className={FIELD}
+                autoFocus
+              />
+            </Field>
+          )}
+
+          <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2">
+            <Field label="Email" optional htmlFor="lead-email">
+              <input
+                id="lead-email"
+                type="email"
+                value={lead.email}
+                onChange={(e) => set("email", e.target.value)}
+                placeholder="name@example.com"
+                className={FIELD}
+              />
+            </Field>
+            <Field label="ZIP code" optional htmlFor="lead-zip">
+              <input
+                id="lead-zip"
+                type="text"
+                inputMode="numeric"
+                value={lead.zip}
+                onChange={(e) => set("zip", e.target.value)}
+                className={FIELD}
+              />
+              {area.status !== "unknown" && (
+                <span
+                  className={cn(
+                    "text-[11.5px] leading-[1.45]",
+                    area.status === "out_of_state" ? "text-[#C2410C]" : "text-[#15803D]",
+                  )}
+                >
+                  {area.status !== "out_of_state" && <span aria-hidden="true">✓ </span>}
+                  {area.text}
+                </span>
+              )}
+            </Field>
+          </div>
+
+          <Field label="Referral source" htmlFor="lead-source">
+            <select
+              id="lead-source"
+              value={lead.source}
+              onChange={(e) => set("source", e.target.value)}
+              className={cn(FIELD, "cursor-pointer px-[11px]")}
+            >
+              <option value="">Not said</option>
+              {LEAD_SOURCES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {lead.source === "Other" && (
+            <Field label="Referral source — please specify" htmlFor="lead-source-other">
+              <input
+                id="lead-source-other"
+                type="text"
+                value={lead.sourceOther}
+                onChange={(e) => set("sourceOther", e.target.value)}
+                placeholder="Church group, senior centre, radio spot…"
+                className={FIELD}
+                autoFocus
+              />
+            </Field>
+          )}
+          {sourceHasOrganisation(lead.source) && (
+            <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2">
+              <Field label="Organization" optional htmlFor="lead-org">
+                <input
+                  id="lead-org"
+                  type="text"
+                  value={lead.org}
+                  onChange={(e) => set("org", e.target.value)}
+                  placeholder="Memorial Hermann"
+                  className={FIELD}
+                />
+              </Field>
+              <Field label="Referrer" optional htmlFor="lead-referrer">
+                <input
+                  id="lead-referrer"
+                  type="text"
+                  value={lead.referrer}
+                  onChange={(e) => set("referrer", e.target.value)}
+                  placeholder="Name and number"
+                  className={FIELD}
+                />
+              </Field>
+            </div>
+          )}
+
+          <Field label="Note" optional htmlFor="lead-note">
+            <textarea
+              id="lead-note"
+              value={lead.note}
+              onChange={(e) => set("note", e.target.value)}
+              placeholder="Anything the team should know before the first call"
+              className="min-h-16 resize-y rounded-[10px] border border-[var(--hairline)] bg-[var(--paper)] px-[13px] py-3 text-sm leading-[1.55] text-[var(--ink-strong)] outline-none transition-colors focus:border-[#C7C9F5] placeholder:text-[#C9C9D0]"
+            />
+          </Field>
         </form>
-      </SheetContent>
-    </Sheet>
+
+        <div className="flex items-center gap-2.5 border-t border-[var(--hairline-soft)] bg-[var(--paper-sunken)] px-6 py-4">
+          <button
+            type="submit"
+            form="new-lead-form"
+            disabled={!canSave}
+            className={cn(
+              "h-10 rounded-[10px] px-[18px] text-[13.5px] font-medium transition-colors",
+              canSave ? "cursor-pointer bg-primary text-white hover:bg-[#2A1BD1]" : "cursor-not-allowed bg-[var(--wash-strong)] text-[#B9B9C1]",
+            )}
+          >
+            Save lead
+          </button>
+          <button
+            type="button"
+            disabled={!canSave}
+            onClick={() => save(true)}
+            className={cn(
+              "h-10 rounded-[10px] border border-[var(--hairline)] bg-[var(--paper)] px-[15px] text-[13.5px] transition-colors",
+              canSave
+                ? "cursor-pointer text-[var(--ink-body)] hover:bg-[var(--wash-strong)] hover:text-[var(--ink-strong)]"
+                : "cursor-not-allowed text-[#B9B9C1]",
+            )}
+          >
+            Save &amp; start intake
+          </button>
+          <button
+            type="button"
+            onClick={close}
+            className="ml-auto p-1 text-[13px] text-[#9B9BA3] transition-colors hover:text-[var(--ink-body)]"
+          >
+            Cancel
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

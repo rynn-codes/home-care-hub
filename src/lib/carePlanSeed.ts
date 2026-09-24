@@ -63,8 +63,8 @@ function plan(input: {
 
 const lian = plan({
   id: "cp-lian-1",
-  clientPersonId: "c-lian",
-  clientName: "Lian Huang",
+  clientPersonId: "c-marilyn",
+  clientName: "Marilyn K",
   createdAt: "2026-03-02T11:00:00.000Z",
   liveFrom: "2026-03-03T00:00:00.000Z",
   answers: {
@@ -96,8 +96,8 @@ const lianReviewed = reviewPlan({ plan: lian, byUserId: RN, at: "2026-06-11T15:2
 
 const edward = plan({
   id: "cp-edward-1",
-  clientPersonId: "c-edward",
-  clientName: "Edward Pham",
+  clientPersonId: "c-jessie",
+  clientName: "Jessie C",
   createdAt: "2026-01-14T09:30:00.000Z",
   liveFrom: "2026-01-15T00:00:00.000Z",
   answers: {
@@ -116,8 +116,8 @@ const edward = plan({
 
 const dolores = plan({
   id: "cp-dolores-1",
-  clientPersonId: "c-dolores",
-  clientName: "Dolores Vance",
+  clientPersonId: "c-pamela",
+  clientName: "Pamela P",
   createdAt: "2026-06-20T16:00:00.000Z",
   liveFrom: "2026-06-21T00:00:00.000Z",
   answers: {
@@ -168,8 +168,8 @@ const doloresTimed: CarePlan = {
 
 const susan = plan({
   id: "cp-susan-1",
-  clientPersonId: "c-susan",
-  clientName: "Susan Miller",
+  clientPersonId: "c-vince",
+  clientName: "Vince W",
   createdAt: "2026-05-05T13:00:00.000Z",
   liveFrom: "2026-05-06T00:00:00.000Z",
   answers: {
@@ -194,7 +194,7 @@ const marcus = submitForReview(
   carePlanFromAssessment({
     id: "cp-marcus-1",
     clientPersonId: "p-marcus",
-    clientName: "Marcus",
+    clientName: "Jessie",
     authoredByUserId: RN,
     at: "2026-08-18T13:00:00.000Z",
     answers: {
@@ -210,7 +210,7 @@ const marcus = submitForReview(
 );
 
 /**
- * Ruth Alvarez and Evelyn Carter deliberately have no plan. Both of their
+ * Robert H and Robert H deliberately have no plan. Both of their
  * visits are open shifts, and a client whose care has not been planned yet is
  * a real state Joy has to be able to show — the caregiver's screen says so
  * plainly instead of listing five tasks nobody agreed to.

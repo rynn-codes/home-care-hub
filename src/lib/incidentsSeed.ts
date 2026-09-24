@@ -26,10 +26,10 @@ function hoursAgo(n: number): string {
 const untouched = incidentFromVisit({
   id: "inc-1",
   visitId: "v3",
-  clientPersonId: "c-dolores",
-  clientName: "Dolores Vance",
+  clientPersonId: "c-pamela",
+  clientName: "Pamela P",
   reportedByPersonId: "p-thylia",
-  reportedByName: "Thylia",
+  reportedByName: "Thylia B",
   narrative:
     "She stumbled getting up from her chair and sat back down hard. She said she was fine and " +
     "did not want me to call anyone. No mark on her that I could see.",
@@ -40,10 +40,10 @@ const overdue = classifyIncident({
   incident: incidentFromVisit({
     id: "inc-2",
     visitId: "v5",
-    clientPersonId: "c-edward",
-    clientName: "Edward Pham",
+    clientPersonId: "c-jessie",
+    clientName: "Jessie C",
     reportedByPersonId: "p-vanessa",
-    reportedByName: "Vanessa",
+    reportedByName: "Vanessa J",
     narrative:
       "I found his evening tablets still in the box when I arrived, so he had not taken the " +
       "lunchtime dose. I did not give it as it was too late in the day.",
@@ -59,8 +59,8 @@ const nearlyDone = recordNotification({
     incident: incidentFromVisit({
       id: "inc-3",
       visitId: "v7",
-      clientPersonId: "c-lian",
-      clientName: "Lian Huang",
+      clientPersonId: "c-marilyn",
+      clientName: "Marilyn K",
       reportedByPersonId: "p-chanel",
       reportedByName: "Chanel P.",
       narrative: "I knocked a lamp off the side table while moving the walker. The shade is bent.",
@@ -90,8 +90,8 @@ const handledProperly = recordRnVisit({
       incident: incidentFromVisit({
         id: "inc-4",
         visitId: "v1",
-        clientPersonId: "c-lian",
-        clientName: "Lian Huang",
+        clientPersonId: "c-marilyn",
+        clientName: "Marilyn K",
         reportedByPersonId: "p-chanel",
         reportedByName: "Chanel P.",
         narrative:

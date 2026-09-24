@@ -72,7 +72,7 @@ function namesMatch(query: DuplicateQuery, candidate: DuplicateCandidate): boole
   if (!queryLast || queryLast !== candidateLast) return false;
 
   // Compare against both legal and preferred first names, in both directions.
-  // "Marcus Bell" and "Marc Bell" are the same man to a family member calling in.
+  // "Robert H" and "Marc Bell" are the same man to a family member calling in.
   const queryFirsts = [query.firstName, query.preferredName].map(normalizeName).filter(Boolean);
   const candidateFirsts = [candidate.firstName, candidate.preferredName]
     .map(normalizeName)
@@ -139,7 +139,7 @@ export function scoreCandidate(
 
   // Households share a phone number, an email and often a responsible party.
   // With no name agreement, a single shared identifier describes a HOUSEHOLD,
-  // not a person — Marcus Bell and Dolores Vance on one line is two clients,
+  // not a person — Robert H and Pamela P on one line is two clients,
   // and collapsing them would be the worst outcome this check can produce.
   // Two independent identifiers is different: that is plausibly the same person
   // under a changed surname, so it is surfaced quietly for a human to judge.

@@ -1,30 +1,58 @@
-import { useMemo, useState } from "react";
-import { Plus, Search, ChevronDown, UserPlus, Phone, ClipboardCheck, CalendarPlus, Upload } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CalendarPlus,
+  ChevronDown,
+  ClipboardCheck,
+  MoreHorizontal,
+  Phone,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  Upload,
+  UserPlus,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { WorkQueueSection } from "@/components/work-queue/WorkQueueSection";
-import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
-import { classifyAdmission } from "@/domain/admissions/classify";
-import { followUp } from "@/domain/admissions/intake";
-import { STAGE_LABELS, type AdmissionStage } from "@/domain/admissions/stages";
+import { ConfirmDeleteDialog } from "@/components/records/ConfirmDeleteDialog";
 import { NewReferralDrawer } from "@/components/admissions/NewReferralDrawer";
 import { PersonPickerDialog } from "@/components/admissions/PersonPickerDialog";
-import {
-  ScheduleAdmissionDialog,
-  type ScheduleSubmission,
-} from "@/components/admissions/ScheduleAdmissionDialog";
+import { ScheduleAdmissionDialog, type ScheduleSubmission } from "@/components/admissions/ScheduleAdmissionDialog";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type SeedAdmission } from "@/lib/admissionsSeed";
-import { useDemo } from "@/context/DemoDataProvider";
-import { useNavigate } from "react-router-dom";
+import { buildWorkQueue, countNeedsYou, type WorkQueueGroup } from "@/domain/workQueue";
+import { classifyAdmission } from "@/domain/admissions/classify";
+import { followUp } from "@/domain/admissions/intake";
+import { STAGE_LABELS, checkTransition, type AdmissionStage } from "@/domain/admissions/stages";
+import {
+  QUEUE_ORDER,
+  anticipatedStart,
+  daysWaiting,
+  isLongWait,
+  nextStep,
+  routeForStage,
+  startOfCareAtRisk,
+  waitingLabel,
+  type AdmissionRoute,
+} from "@/domain/admissions/queue";
+import { careRecipientName, leadMeta, splitName, type LeadCapture } from "@/domain/admissions/leadCapture";
+import { admissionConsequences, whyNotDeletable } from "@/domain/records/deletion";
+import { canWrite } from "@/domain/access/roles";
+import { seedAdmissionsHandled, type SeedAdmission } from "@/lib/admissionsSeed";
 import { newId } from "@/lib/demoStore";
-import type { ReferralDraft } from "@/domain/admissions/referral";
-import { toast } from "sonner";
+import { useDemo } from "@/context/DemoDataProvider";
+import { useOpenRequest } from "@/hooks/use-open-request";
 import { cn } from "@/lib/utils";
 
 /** The RNs who carry out assessments. */
@@ -34,56 +62,72 @@ const ASSESSORS = ["Kelsey Westley, RN", "Karynn Verrett, RN"];
  * Admissions — the work queue, to the approved mock's frame: the stage
  * filter tabs with counts, the stalled-record banner, the grouped queue
  * (Needs you / Waiting / Moving forward, each under its colored dot) and
- * the Today + Ask Joy rail.
+ * the Today rail. A board view of the same records sits behind a toggle for
+ * the people who think in columns; a card dragged between columns goes
+ * through the same stage rules as everything else.
  *
  * Organised by who holds the next move, not by pipeline column. Section 3
  * of the Admissions Master Build Spec is explicit that this is more useful
- * than exposing the whole roadmap at once, and section 2 warns against a
- * many-column pipeline — which is also why the mock's kanban Board view is
- * deliberately not built: the queue IS the spec's preferred surface, and a
- * second view of the same records would need its own reason to exist.
+ * than exposing the whole roadmap at once.
  *
- * Reads demo seed. The domain logic underneath — classification, stage
- * rules, duplicate detection, follow-up escalation — is real and tested.
+ * Quick add is the updated mock's "flexible entry": the office can enter the
+ * process at any point. New lead (a quick capture, no DOB), Start phone
+ * intake and Start assessment (each behind a person picker with "start with
+ * a new person" always available), Schedule (a three-step modal), and Upload
+ * document. Nothing blocks on a missing earlier step — a referral can arrive
+ * as a booked assessment with no intake, and the gap stays visible.
  *
- * Quick Add is the updated mock's "flexible entry": the office can enter the
- * process at any point. The + menu offers New lead (a quick capture, no DOB),
- * Start phone intake and Start assessment (each behind a person picker with
- * "start with a new person" always available), Schedule (a three-step modal),
- * and Upload document. Nothing blocks on a missing earlier step — a referral
- * can arrive as a booked assessment with no intake, and the gap stays visible.
+ * Deleting is for the record that should never have been made — a
+ * duplicate, the wrong person, somebody who never wanted care. It asks why,
+ * lists what goes with it, and bins rather than shreds. A record that became
+ * a client cannot be deleted from here at all.
  */
 
 const STAGE_FILTERS: Array<{ label: string; stage: AdmissionStage | "all" }> = [
   { label: "All", stage: "all" },
-  { label: "New Referrals", stage: "new_referral" },
-  { label: "Phone Intake", stage: "phone_intake" },
+  { label: "New leads", stage: "new_referral" },
+  { label: "Phone intake", stage: "phone_intake" },
   { label: "Assessment", stage: "assessment" },
-  { label: "Pre-Onboarding", stage: "pre_onboarding" },
-  { label: "Ready for Admission", stage: "ready_for_admission" },
+  { label: "Pre-onboarding", stage: "pre_onboarding" },
+  { label: "Ready", stage: "ready_for_admission" },
+  { label: "Admitted", stage: "admitted" },
 ];
+
+const SERVICES = ["Personal Care", "Post-Surgical", "Respite"];
 
 const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
+interface QueueItem extends SeedAdmission {
+  route: AdmissionRoute | null;
+  daysWaiting: number | null;
+  atRisk: boolean;
+}
+
 function AdmissionRow({
   item,
   onAction,
-  waiting,
+  onDelete,
+  group,
 }: {
-  item: SeedAdmission;
-  onAction: (item: SeedAdmission) => void;
-  waiting: boolean;
+  item: QueueItem;
+  onAction: (item: QueueItem) => void;
+  onDelete?: (item: QueueItem) => void;
+  group: WorkQueueGroup;
 }) {
+  const waiting = group === "waiting";
+  const waitLabel = group === "moving_forward" ? null : waitingLabel(item.daysWaiting);
+  const long = isLongWait(item.daysWaiting);
+
   return (
-    <div className="flex items-center gap-4 px-[18px] py-4 transition-colors hover:bg-[#FAFAFB]">
+    <div className="flex items-center gap-4 px-[18px] py-4 transition-colors hover:bg-[var(--wash)]">
       <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-[#EEF0FE] text-[11.5px] font-semibold text-primary">
         {initialsOf(item.name)}
       </span>
       <div className="flex min-w-0 flex-col gap-[3px]">
         <span className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">{item.name}</span>
-          <span className="inline-flex whitespace-nowrap rounded-full bg-[#F3F3F6] px-2 py-[2px] text-[10.5px] font-medium text-[#5B6274]">
+          <span className="inline-flex whitespace-nowrap rounded-full bg-[var(--hairline-soft)] px-2 py-[2px] text-[10.5px] font-medium text-[var(--ink-body)]">
             {STAGE_LABELS[item.stage]}
           </span>
           {item.overdue && (
@@ -91,18 +135,33 @@ function AdmissionRow({
               Overdue
             </span>
           )}
+          {item.atRisk && !item.overdue && (
+            <span className="inline-flex whitespace-nowrap rounded-full bg-[#FDF0E7] px-2 py-[2px] text-[10.5px] font-medium text-[#C2410C]">
+              Start of care at risk
+            </span>
+          )}
+          {waitLabel && (
+            <span
+              className={cn(
+                "inline-flex whitespace-nowrap rounded-full px-2 py-[2px] text-[10.5px] font-medium",
+                long ? "bg-[#FDF0E7] text-[#C2410C]" : "bg-[var(--hairline-soft)] text-[var(--ink-body)]",
+              )}
+            >
+              {waitLabel}
+            </span>
+          )}
         </span>
-        <span className="text-[12.5px] text-[#5B6274]">{item.headline}</span>
+        <span className="text-[12.5px] text-[var(--ink-body)]">{item.headline}</span>
         <span className="text-[11.5px] text-muted-foreground">
           {item.service} · {item.location} · {item.meta}
         </span>
       </div>
-      <span className="ml-auto flex flex-none items-center">
+      <span className="ml-auto flex flex-none items-center gap-1">
         {waiting && !item.overdue ? (
           <button
             type="button"
             onClick={() => onAction(item)}
-            className="h-[30px] rounded-lg border border-[#ECECF1] bg-white px-3 text-[12.5px] text-[#5B6274] transition-colors hover:bg-[#FAFAFB] hover:text-foreground"
+            className="h-[30px] rounded-[20px] border border-[var(--hairline)] bg-[var(--paper)] px-[13px] text-[12.5px] text-[var(--ink-body)] transition-colors hover:bg-[var(--wash)] hover:text-foreground"
           >
             {item.action}
           </button>
@@ -110,10 +169,29 @@ function AdmissionRow({
           <button
             type="button"
             onClick={() => onAction(item)}
-            className="h-[30px] rounded-lg border border-[#ECECF1] bg-white px-3 text-[12.5px] font-medium text-primary transition-colors hover:bg-[#EEF0FE]"
+            className="h-[30px] rounded-[20px] border border-[#1407A2]/[.28] bg-[var(--paper)] px-[13px] text-[12.5px] font-medium text-primary transition-colors hover:bg-[#EEF0FE]"
           >
             {item.action}
           </button>
+        )}
+        {onDelete && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label={`More for ${item.name}`}
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-[var(--hairline-soft)] hover:text-foreground"
+              >
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem className="text-[#B42318] focus:text-[#B42318]" onSelect={() => onDelete(item)}>
+                <Trash2 className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+                Delete this record
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </span>
     </div>
@@ -126,9 +204,34 @@ export default function Admissions() {
   const [referralOpen, setReferralOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState<"intake" | "assessment" | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [deleting, setDeleting] = useState<QueueItem | null>(null);
   const navigate = useNavigate();
-  const { admissions, people, intakes, addReferral, scheduleEvents, scheduleAssessment } =
-    useDemo();
+
+  // The header's New menu lands here asking for a dialog.
+  const requested = useOpenRequest<"referral" | "assessment">();
+  useEffect(() => {
+    if (requested === "referral") setReferralOpen(true);
+    if (requested === "assessment") setPickerMode("assessment");
+  }, [requested]);
+
+  const {
+    admissions,
+    people,
+    intakes,
+    assessments,
+    consentSessions,
+    preOnboarding,
+    currentUser,
+    addReferral,
+    deleteAdmission,
+    restoreDeleted,
+    scheduleEvents,
+    scheduleAssessment,
+  } = useDemo();
+
+  const mayDelete = (a: SeedAdmission) =>
+    canWrite(currentUser.role) &&
+    !whyNotDeletable({ stage: a.stage, activated: !!preOnboarding[a.id]?.activatedAt });
 
   const intakeComplete = (admissionId: string) => Boolean(intakes[admissionId]?.completedAt);
 
@@ -162,6 +265,8 @@ export default function Admissions() {
         headline: "New referral — no one has called back yet",
         meta: fields.meta || "Just added",
         action: "Start intake",
+        waitingOn: "Joy",
+        waitingSince: new Date().toISOString(),
       },
       {
         personId: newId("per"),
@@ -183,21 +288,20 @@ export default function Admissions() {
     return id;
   };
 
-  const handleCreate = (draft: ReferralDraft): string => {
-    const name = [draft.preferredName || draft.firstName, draft.lastName]
-      .filter(Boolean)
-      .join(" ");
+  const handleCreate = (lead: LeadCapture): string => {
+    const name = careRecipientName(lead);
+    const { firstName, lastName } = splitName(name);
+    const someoneElse = lead.personNeedingCare.trim().length > 0;
     return createLead({
       name,
-      firstName: draft.firstName,
-      lastName: draft.lastName,
-      preferredName: draft.preferredName,
-      phone: draft.phone || draft.contactPhone,
-      email: draft.email,
-      responsiblePartyName: draft.contactIsSomeoneElse ? draft.contactName : null,
-      service: draft.serviceRequested ? draft.serviceRequested.replace(/_/g, " ") : "Not specified",
-      location: draft.serviceArea || "Not specified",
-      meta: draft.referralNote || "Just added",
+      firstName,
+      lastName,
+      phone: lead.phone,
+      email: lead.email,
+      responsiblePartyName: someoneElse ? lead.contactName.trim() : null,
+      service: "Not specified",
+      location: lead.zip.trim() || "Not specified",
+      meta: leadMeta(lead),
     });
   };
 
@@ -228,9 +332,11 @@ export default function Admissions() {
   };
 
   const handleSchedule = (s: ScheduleSubmission) => {
-    const admissionId = s.admissionId ?? (s.newPerson
-      ? createLeadFromCapture(s.newPerson.contactName, s.newPerson.personNeedingCare, s.newPerson.phone, s.newPerson.zip)
-      : null);
+    const admissionId =
+      s.admissionId ??
+      (s.newPerson
+        ? createLeadFromCapture(s.newPerson.contactName, s.newPerson.personNeedingCare, s.newPerson.phone, s.newPerson.zip)
+        : null);
     if (!admissionId) return;
 
     const startsAt = new Date(`${s.date}T${s.time || "09:00"}`).toISOString();
@@ -262,21 +368,10 @@ export default function Admissions() {
 
   // Every row's button goes somewhere. A count or an action that leads
   // nowhere is a dead end, which the definition of done rules out.
-  const handleAction = (item: SeedAdmission) => {
-    if (item.stage === "new_referral" || item.stage === "phone_intake") {
-      navigate(`/admissions/${item.id}/intake`);
-      return;
-    }
-    if (item.stage === "assessment") {
-      navigate(
-        intakes[item.id]?.completedAt
-          ? `/admissions/${item.id}/assessment`
-          : `/admissions/${item.id}/intake`,
-      );
-      return;
-    }
-    if (["pre_onboarding", "ready_for_admission", "admitted"].includes(item.stage)) {
-      navigate(`/admissions/${item.id}/review`);
+  const handleAction = (item: QueueItem) => {
+    const route = item.route ?? routeForStage(item.stage);
+    if (route) {
+      navigate(`/admissions/${item.id}/${route}`);
       return;
     }
     toast.info(`${item.action} is not built yet.`, {
@@ -284,41 +379,96 @@ export default function Admissions() {
     });
   };
 
+  // Board view: a card dropped on a column asks the stage rules first. The
+  // move is held on this screen only — it is a demo of the gesture, not a
+  // second way to change a record behind the flow's back.
+  const [stageOverrides, setStageOverrides] = useState<Record<string, AdmissionStage>>({});
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<AdmissionStage | null>(null);
+
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const now = useMemo(() => new Date(), []);
 
   const escalated = useMemo(
     () =>
       admissions.map((a) => {
+        const record = stageOverrides[a.id] ? { ...a, stage: stageOverrides[a.id] } : a;
         // The intake form's follow-up date is the whole reason it is asked.
         // A caller who did not book an in-home visit is the one who quietly
         // disappears, so an overdue follow-up escalates into "needs you".
-        const answers = intakes[a.id]?.answers;
-        if (!answers) return a;
+        const answers = intakes[record.id]?.answers;
+        if (!answers) return record;
         const state = followUp(answers, today);
-        if (state.state !== "overdue" && state.state !== "due") return a;
-        return { ...a, overdue: true, headline: state.note };
+        if (state.state !== "overdue" && state.state !== "due") return record;
+        return { ...record, overdue: true, headline: state.note };
       }),
-    [admissions, intakes, today],
+    [admissions, intakes, today, stageOverrides],
   );
+
+  const dropOn = (to: AdmissionStage) => {
+    const id = dragging;
+    setDragging(null);
+    setDropTarget(null);
+    if (!id) return;
+    const record = escalated.find((a) => a.id === id);
+    if (!record || record.stage === to) return;
+    const check = checkTransition(record.stage, to);
+    if (!check.allowed) {
+      toast.error(`${record.name} stays at ${STAGE_LABELS[record.stage]}`, { description: check.reason });
+      return;
+    }
+    setStageOverrides((s) => ({ ...s, [id]: to }));
+    toast.success(`${record.name} moved to ${STAGE_LABELS[to]}`, { description: "Saved on this device." });
+  };
+
+  const [service, setService] = useState<string>("all");
+  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [view, setView] = useState<"list" | "board">("list");
+  const activeFilters = (service !== "all" ? 1 : 0) + (overdueOnly ? 1 : 0);
+  const passesFilters = (a: SeedAdmission) => (service === "all" || a.service === service) && (!overdueOnly || !!a.overdue);
 
   const filtered = useMemo(
     () =>
       escalated
-        .filter((a) => stage === "all" || a.stage === stage)
+        .filter((a) => (stage === "all" ? a.stage !== "admitted" : a.stage === stage))
+        .filter(passesFilters)
         .filter((a) => !q.trim() || a.name.toLowerCase().includes(q.trim().toLowerCase())),
-    [escalated, stage, q],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [escalated, stage, q, service, overdueOnly],
   );
 
-  const countFor = (s: AdmissionStage | "all") =>
-    s === "all" ? escalated.length : escalated.filter((a) => a.stage === s).length;
+  const countFor = (s: AdmissionStage | "all") => {
+    const pool = escalated.filter(passesFilters);
+    return s === "all" ? pool.filter((a) => a.stage !== "admitted").length : pool.filter((a) => a.stage === s).length;
+  };
 
   const stalled = escalated.find((a) => a.overdue);
 
-  const sections = useMemo(
-    () => buildWorkQueue<SeedAdmission>(filtered, classifyAdmission),
-    [filtered],
+  const rows = useMemo<QueueItem[]>(
+    () =>
+      filtered.map((a) => {
+        const step = nextStep({
+          stage: a.stage,
+          intakeStarted: !!intakes[a.id],
+          intakeComplete: !!intakes[a.id]?.completedAt,
+          assessmentStarted: !!assessments[a.id],
+          assessmentComplete: !!assessments[a.id]?.completedAt,
+          packetSigned: !!consentSessions[a.id]?.signedAt,
+        });
+        return {
+          ...a,
+          action: step?.label ?? a.action,
+          route: step?.route ?? routeForStage(a.stage),
+          daysWaiting: daysWaiting(a, now),
+          atRisk: startOfCareAtRisk(anticipatedStart(intakes[a.id]?.answers), a.stage, today),
+        };
+      }),
+    [filtered, intakes, assessments, consentSessions, today, now],
   );
+
+  const sections = useMemo(() => buildWorkQueue<QueueItem>(rows, classifyAdmission, QUEUE_ORDER), [rows]);
   const needsYou = countNeedsYou(sections);
+  const [handledOpen, setHandledOpen] = useState(false);
 
   const todaysEvents = useMemo(
     () =>
@@ -332,10 +482,9 @@ export default function Admissions() {
     <>
       <PageHeader
         title="Admissions"
-        description="Move a referral to a ready client without losing a step."
         actions={
           <>
-            <div className="flex h-[34px] w-full items-center gap-2 rounded-[9px] border border-[#ECECF1] bg-white px-2.5 sm:w-[212px]">
+            <div className="flex h-[34px] w-full items-center gap-2 rounded-[9px] border border-[var(--hairline)] bg-[var(--paper)] px-2.5 sm:w-[212px]">
               <Search className="h-3.5 w-3.5 flex-none text-muted-foreground" aria-hidden="true" />
               <input
                 type="search"
@@ -346,6 +495,71 @@ export default function Admissions() {
                 className="min-w-0 flex-1 border-none bg-transparent text-[13px] outline-none placeholder:text-muted-foreground"
               />
             </div>
+            <div className="flex h-[34px] flex-none items-center gap-0.5 rounded-[9px] bg-[var(--wash-strong)] p-[3px]" role="group" aria-label="View">
+              {(["list", "board"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={view === v}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    "h-[28px] rounded-[7px] px-3 text-[13px] capitalize transition-colors",
+                    view === v
+                      ? "bg-[var(--paper)] font-medium text-foreground shadow-[0_1px_2px_rgba(0,0,0,.05)]"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex h-[34px] flex-none items-center gap-[7px] rounded-[9px] border px-3 text-[13px] transition-colors",
+                    activeFilters > 0
+                      ? "border-[#1407A2]/[.28] bg-[#EEF0FE] font-medium text-primary"
+                      : "border-[var(--hairline)] bg-[var(--paper)] text-[var(--ink-body)] hover:bg-[var(--wash)] hover:text-foreground",
+                  )}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5 flex-none" aria-hidden="true" />
+                  Filter
+                  {activeFilters > 0 && (
+                    <span className="rounded-full bg-primary px-[6px] text-[11px] font-semibold text-white">{activeFilters}</span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Service</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={service} onValueChange={setService}>
+                  <DropdownMenuRadioItem value="all">All services</DropdownMenuRadioItem>
+                  {SERVICES.map((s) => (
+                    <DropdownMenuRadioItem key={s} value={s}>
+                      {s}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem checked={overdueOnly} onCheckedChange={(v) => setOverdueOnly(v === true)}>
+                  Overdue only
+                </DropdownMenuCheckboxItem>
+                {activeFilters > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setService("all");
+                        setOverdueOnly(false);
+                      }}
+                    >
+                      Clear filters
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -385,7 +599,7 @@ export default function Admissions() {
         }
       />
 
-      <div className="mb-4 flex items-center gap-5 overflow-x-auto border-b border-[#ECECF1]" role="tablist" aria-label="Filter by stage">
+      <div className="mb-4 flex items-center gap-5 overflow-x-auto border-b border-[var(--hairline)]" role="tablist" aria-label="Filter by stage">
         {STAGE_FILTERS.map((f) => (
           <button
             key={f.stage}
@@ -403,7 +617,7 @@ export default function Admissions() {
             <span
               className={cn(
                 "rounded-full px-[7px] py-px text-[11px]",
-                stage === f.stage ? "bg-[#EEF0FE] text-primary" : "bg-[#F3F3F6] text-muted-foreground",
+                stage === f.stage ? "bg-[#EEF0FE] text-primary" : "bg-[var(--hairline-soft)] text-muted-foreground",
               )}
             >
               {countFor(f.stage)}
@@ -413,7 +627,7 @@ export default function Admissions() {
       </div>
 
       {stalled && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-[#ECECF1] bg-white px-4 py-3">
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--hairline)] bg-[var(--paper)] px-4 py-3">
           <span className="h-[7px] w-[7px] flex-none rounded-full bg-[#F79009]" aria-hidden="true" />
           <span className="text-[13px] [text-wrap:pretty]">
             <span className="font-medium">{stalled.name}</span> — {stalled.headline}
@@ -423,14 +637,14 @@ export default function Admissions() {
               type="button"
               disabled
               title="Reminders go through Spruce — not wired in the prototype"
-              className="h-[30px] cursor-not-allowed rounded-lg border border-[#ECECF1] bg-white px-3 text-[12.5px] text-muted-foreground/50"
+              className="h-[30px] cursor-not-allowed rounded-lg border border-[var(--hairline)] bg-[var(--paper)] px-3 text-[12.5px] text-muted-foreground/50"
             >
               Send reminder
             </button>
             <button
               type="button"
-              onClick={() => handleAction(stalled)}
-              className="h-[30px] rounded-lg border border-[#ECECF1] bg-white px-3 text-[12.5px] text-[#5B6274] transition-colors hover:bg-[#F1F2F6] hover:text-foreground"
+              onClick={() => handleAction(rows.find((r) => r.id === stalled.id) ?? { ...stalled, route: null, daysWaiting: null, atRisk: false })}
+              className="h-[30px] rounded-lg border border-[var(--hairline)] bg-[var(--paper)] px-3 text-[12.5px] text-[var(--ink-body)] transition-colors hover:bg-[var(--wash-strong)] hover:text-foreground"
             >
               Open record
             </button>
@@ -438,92 +652,161 @@ export default function Admissions() {
         </div>
       )}
 
-      <div className="grid items-start gap-[18px] lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div>
-          <p className="mb-4 mt-0 text-sm text-muted-foreground">
-            {needsYou === 0
-              ? "Nothing is waiting on you right now."
-              : `${needsYou} ${needsYou === 1 ? "record needs" : "records need"} you today.`}
-          </p>
-
-          {sections.map((section) => (
-            <WorkQueueSection
-              key={section.group}
-              section={section}
-              renderItem={(item) => (
-                <AdmissionRow item={item} onAction={handleAction} waiting={section.group === "waiting"} />
-              )}
-              emptyNote={
-                section.group === "needs_you"
-                  ? "Nothing needs you in this view."
-                  : section.group === "waiting"
-                    ? "Nobody outside the office is holding anything up."
-                    : "Nothing is booked further ahead in this view."
-              }
-            />
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-3.5">
-          <section className="flex flex-col gap-2.5 rounded-[14px] border border-[#ECECF1] bg-white p-4">
-            <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[.09em] text-muted-foreground">
-              Today
-            </h2>
-            {todaysEvents.length === 0 ? (
-              <p className="m-0 py-1 text-[12.5px] text-muted-foreground">
-                No assessments booked today.
-              </p>
-            ) : (
-              <div className="flex flex-col">
-                {todaysEvents.map((e) => (
-                  <div key={e.id} className="flex items-center gap-2.5 border-b border-[#F3F3F6] py-2 last:border-0">
-                    <span className="w-[62px] flex-none text-xs text-muted-foreground">
-                      {new Date(e.startsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-                    </span>
-                    <span className="flex flex-col leading-[1.3]">
-                      <span className="text-[12.5px]">{e.clientName}</span>
-                      <span className="text-[11px] text-muted-foreground">
-                        RN assessment · {e.assessorName}
-                      </span>
-                    </span>
-                  </div>
+      {view === "board" ? (
+        <div className="flex items-start gap-3.5 overflow-x-auto pb-2.5">
+          {STAGE_FILTERS.filter((f) => f.stage !== "all").map((column) => {
+            const cards = rows.filter((r) => r.stage === column.stage);
+            const over = dropTarget === column.stage;
+            return (
+              <div
+                key={column.stage}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDropTarget(column.stage as AdmissionStage);
+                }}
+                onDragLeave={() => setDropTarget((t) => (t === column.stage ? null : t))}
+                onDrop={() => dropOn(column.stage as AdmissionStage)}
+                className={cn(
+                  "flex w-[236px] flex-none flex-col gap-2 rounded-[14px] border p-2.5 transition-colors",
+                  over ? "border-[#1407A2]/[.35] bg-[#EEF0FE]" : "border-[var(--hairline)] bg-[var(--paper-sunken)]",
+                )}
+              >
+                <div className="flex items-center gap-2 border-b border-[var(--hairline)] px-1 pb-[9px] pt-0.5">
+                  <span className="text-xs font-semibold text-[var(--ink-strong)]">{column.label}</span>
+                  <span className="ml-auto text-[11.5px] text-[#9B9BA3]">{cards.length}</span>
+                </div>
+                {cards.map((card) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    draggable
+                    onDragStart={() => setDragging(card.id)}
+                    onDragEnd={() => {
+                      setDragging(null);
+                      setDropTarget(null);
+                    }}
+                    onClick={() => handleAction(card)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 rounded-[11px] border border-[var(--hairline)] bg-[var(--paper)] p-2.5 text-left transition-opacity",
+                      "cursor-grab active:cursor-grabbing hover:border-[#1407A2]/[.24]",
+                      dragging === card.id && "opacity-40",
+                    )}
+                  >
+                    <span className="text-[13px] font-medium leading-[1.3] text-[var(--ink-strong)]">{card.name}</span>
+                    <span className="text-[11.5px] text-[#9B9BA3]">{card.service}</span>
+                    <span className="text-[11.5px] leading-[1.4] text-[var(--ink-body)]">{card.headline}</span>
+                    {card.overdue && (
+                      <span className="rounded-full bg-[#FEF0C7] px-2 py-px text-[10.5px] font-medium text-[#B54708]">Overdue</span>
+                    )}
+                  </button>
                 ))}
+                {cards.length === 0 && <div className="px-2 py-3.5 text-center text-xs text-[#C9C9D0]">Empty</div>}
               </div>
-            )}
-          </section>
-
-          <section className="flex flex-col gap-2.5 rounded-[14px] border border-[#ECECF1] bg-white p-4">
-            <span className="flex items-center gap-2">
-              <span
-                className="h-[7px] w-[7px] flex-none rounded-full bg-[#8FA0FF]"
-                style={{ animation: "joyGlow 2.6s ease-in-out infinite" }}
-                aria-hidden="true"
-              />
-              <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[.09em] text-muted-foreground">
-                Ask Joy
-              </h2>
-            </span>
-            <div className="flex flex-col gap-px">
-              {[
-                "Who is stalled in the pipeline?",
-                "What is missing before the next admission?",
-                "Summarize this week's referrals",
-              ].map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() =>
-                    document.dispatchEvent(new CustomEvent("joy:ask", { detail: { question: p } }))
-                  }
-                  className="rounded-lg p-2 text-left text-[12.5px] leading-[1.4] text-muted-foreground transition-colors hover:bg-[#FAFAFB] hover:text-foreground"
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </section>
+            );
+          })}
         </div>
-      </div>
+      ) : (
+        <div className="grid items-start gap-[18px] lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div>
+            <p className="mb-4 mt-0 text-sm text-muted-foreground">
+              {needsYou === 0
+                ? "Nothing is waiting on you right now."
+                : `${needsYou} ${needsYou === 1 ? "record needs" : "records need"} you today.`}
+            </p>
+
+            {sections.map((section) => (
+              <WorkQueueSection
+                key={section.group}
+                section={section}
+                renderItem={(item) => (
+                  <AdmissionRow
+                    item={item}
+                    onAction={handleAction}
+                    onDelete={mayDelete(item) ? setDeleting : undefined}
+                    group={section.group}
+                  />
+                )}
+                emptyNote={
+                  section.group === "needs_you"
+                    ? "Nothing needs you in this view."
+                    : section.group === "waiting"
+                      ? "Nobody outside the office is holding anything up."
+                      : "Nothing is booked further ahead in this view."
+                }
+              />
+            ))}
+
+            {/* What Joy did on its own this morning — folded, because it is
+                reassurance rather than work. */}
+            <div className="flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => setHandledOpen((o) => !o)}
+                aria-expanded={handledOpen}
+                className="flex items-center gap-[9px] self-start text-left"
+              >
+                <span className="h-[7px] w-[7px] flex-none rounded-full bg-[#B9B9C1]" aria-hidden="true" />
+                <span className="text-[11px] font-semibold uppercase tracking-[.09em] text-[#9B9BA3]">Handled</span>
+                <span className="text-[11px] text-[#B9B9C1]">{seedAdmissionsHandled.length}</span>
+                <span className="ml-1 text-[12px] text-[#B9B9C1]">Completed by Joy today</span>
+                <span className="ml-1.5 text-[12px] text-[#9B9BA3] underline-offset-2 hover:underline">
+                  {handledOpen ? "Hide" : "Show"}
+                </span>
+              </button>
+              {handledOpen && (
+                <div className="overflow-hidden rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)]">
+                  {seedAdmissionsHandled.map((h) => (
+                    <div key={h.label} className="flex items-center gap-3.5 border-b border-[var(--hairline-soft)] px-[18px] py-[13px] last:border-0">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="#12B76A"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="flex-none"
+                        aria-hidden="true"
+                      >
+                        <path d="M3.4 8.4l2.8 2.8 6.4-6.6" />
+                      </svg>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-[13.5px] text-[var(--ink-strong)]">{h.label}</span>
+                        <span className="text-[11.5px] text-[#9B9BA3]">{h.who}</span>
+                      </span>
+                      <span className="ml-auto flex-none text-[11.5px] text-[#9B9BA3]">{h.time}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3.5">
+            <section className="flex flex-col gap-2.5 rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-4">
+              <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[.09em] text-muted-foreground">Today</h2>
+              {todaysEvents.length === 0 ? (
+                <p className="m-0 py-1 text-[12.5px] text-muted-foreground">No assessments booked today.</p>
+              ) : (
+                <div className="flex flex-col">
+                  {todaysEvents.map((e) => (
+                    <div key={e.id} className="flex items-center gap-2.5 border-b border-[var(--hairline-soft)] py-2 last:border-0">
+                      <span className="w-[62px] flex-none text-xs text-muted-foreground">
+                        {new Date(e.startsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                      </span>
+                      <span className="flex flex-col leading-[1.3]">
+                        <span className="text-[12.5px]">{e.clientName}</span>
+                        <span className="text-[11px] text-muted-foreground">RN assessment · {e.assessorName}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
 
       <NewReferralDrawer
         open={referralOpen}
@@ -556,10 +839,33 @@ export default function Admissions() {
         onSubmit={handleSchedule}
       />
 
-      <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-        Demo data, saved on this device. The queue logic, stage rules and duplicate check
-        are implemented and tested; connecting them to a database is the next step.
-      </p>
+      <ConfirmDeleteDialog
+        open={!!deleting}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title="Delete this record?"
+        subject={deleting ? `${deleting.name} · ${STAGE_LABELS[deleting.stage]}` : ""}
+        consequences={
+          deleting
+            ? admissionConsequences({
+                hasIntake: !!intakes[deleting.id],
+                hasAssessment: !!assessments[deleting.id],
+                hasConsents: !!consentSessions[deleting.id],
+              })
+            : []
+        }
+        askForReason
+        confirmLabel="Delete record"
+        onConfirm={(reason) => {
+          if (!deleting) return;
+          const { id, name } = deleting;
+          deleteAdmission(id, reason);
+          setDeleting(null);
+          toast(`${name} deleted`, {
+            description: "In Deleted items for 30 days.",
+            action: { label: "Undo", onClick: () => restoreDeleted(id) },
+          });
+        }}
+      />
     </>
   );
 }

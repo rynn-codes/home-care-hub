@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Clock, TriangleAlert } from "lucide-react";
+import { useOpenRequest } from "@/hooks/use-open-request";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { WorkQueueSection } from "@/components/work-queue/WorkQueueSection";
 import { buildWorkQueue, countNeedsYou } from "@/domain/workQueue";
@@ -79,6 +80,12 @@ export default function Hiring() {
   const [inviting, setInviting] = useState(false);
   const { hireEmployee } = useDemo();
   const navigate = useNavigate();
+
+  // The header's New menu lands here asking for the invite dialog.
+  const requested = useOpenRequest<"invite">();
+  useEffect(() => {
+    if (requested === "invite") setInviting(true);
+  }, [requested]);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -167,11 +174,7 @@ export default function Hiring() {
 
   return (
     <>
-      <PageHeader
-        title="Hiring"
-        description="Applicants and onboarding, organised by who is waiting on you."
-        actions={<Button onClick={() => setInviting(true)}>Invite a candidate</Button>}
-      />
+      <PageHeader title="Hiring" actions={<Button onClick={() => setInviting(true)}>Invite a candidate</Button>} />
 
       <p className="mb-5 text-sm text-muted-foreground">
         {needsYou === 0

@@ -33,12 +33,12 @@ export interface AgendaEntry {
 }
 
 export const todaysAgenda: AgendaEntry[] = [
-  { id: "a1", time: "8:00 AM", client: "Lian Huang", service: "Personal Care", assignee: "Chanel P.", note: "clocked in 7:56 AM", state: "in-progress" },
-  { id: "a2", time: "10:30 AM", client: "Marcus Bell", service: "Initial Assessment", assignee: "Kelsey Westley, RN", state: "scheduled" },
-  { id: "a3", time: "12:00 PM", client: "Ruth Alvarez", service: "Respite", assignee: "Unassigned", note: "3 caregivers available", state: "unassigned" },
+  { id: "a1", time: "8:00 AM", client: "Marilyn K", service: "Personal Care", assignee: "Chanel P.", note: "clocked in 7:56 AM", state: "in-progress" },
+  { id: "a2", time: "10:30 AM", client: "Robert H", service: "Initial Assessment", assignee: "Kelsey Westley, RN", state: "scheduled" },
+  { id: "a3", time: "12:00 PM", client: "Robert H", service: "Respite", assignee: "Unassigned", note: "3 caregivers available", state: "unassigned" },
   { id: "a4", time: "2:00 PM", client: "Brandon", service: "Field Orientation", assignee: "Shadowing Chanel P.", state: "scheduled" },
-  { id: "a5", time: "4:00 PM", client: "Edward Pham", service: "Personal Care", assignee: "Vanessa", state: "scheduled" },
-  { id: "a6", time: "6:30 PM", client: "Dolores Vance", service: "Personal Care", assignee: "Thylia", state: "scheduled" },
+  { id: "a5", time: "4:00 PM", client: "Jessie C", service: "Personal Care", assignee: "Vanessa J", state: "scheduled" },
+  { id: "a6", time: "6:30 PM", client: "Pamela P", service: "Personal Care", assignee: "Thylia B", state: "scheduled" },
 ];
 
 export interface CountRow {
@@ -89,7 +89,7 @@ export interface ActivityEntry {
 }
 
 export const recentActivity: ActivityEntry[] = [
-  { id: "r1", actor: "John Segura", message: "Care plan signed for Lian Huang", at: "9:41 AM" },
+  { id: "r1", actor: "John Segura", message: "Care plan signed for Marilyn K", at: "9:41 AM" },
   { id: "r2", actor: "Brandon", message: "Completed Gusto onboarding", at: "8:52 AM" },
   { id: "r3", actor: "Mercy Discharge Planning", message: "Referral received for R. Alvarez", at: "8:15 AM" },
   { id: "r4", actor: "Vanessa", message: "Released 12:00 PM shift to the open board", at: "7:38 AM" },
@@ -110,16 +110,16 @@ export interface MyTask {
 }
 
 /**
- * My Tasks — the approved dashboard mock's own list, verbatim. Susan Miller
- * and Lian Huang are seeded fictional clients; T. Johnson is a fictional
+ * My Tasks — the approved dashboard mock's own list, verbatim. Vince W
+ * and Marilyn K are seeded fictional clients; T. Johnson is a fictional
  * candidate. The four-done offset and nine-task total in the progress footer
  * are the mock's numbers: five visible tasks, four already ticked off-screen
  * this morning.
  */
 export const myTasks: MyTask[] = [
-  { id: "t1", title: "Call Susan Miller about increased hours", category: "Client follow-up", tag: "Client", time: "9:00 AM" },
+  { id: "t1", title: "Call Vince W about increased hours", category: "Client follow-up", tag: "Client", time: "9:00 AM" },
   { id: "t2", title: "Approve payroll for week ending 8/8", category: "Payroll", tag: "Payroll", time: "10:30 AM" },
-  { id: "t3", title: "Review assessment — Lian Huang", category: "Assessment", tag: "Assessment", time: "11:00 AM" },
+  { id: "t3", title: "Review assessment — Marilyn K", category: "Assessment", tag: "Assessment", time: "11:00 AM" },
   { id: "t4", title: "Interview: CNA candidate — T. Johnson", category: "Human Resources", tag: "HR", time: "2:00 PM" },
   { id: "t5", title: "Review billing exceptions", category: "Billing", tag: "Billing", time: "3:00 PM" },
 ];
@@ -146,9 +146,9 @@ export interface JoyInsight {
  * "propose change" and "draft only" authority.
  */
 export const joyInsights: JoyInsight[] = [
-  { id: "j1", message: "Ruth Alvarez's 12:00 PM shift matches 3 available caregivers by proximity and skills.", action: "Review matches" },
+  { id: "j1", message: "Robert H's 12:00 PM shift matches 3 available caregivers by proximity and skills.", action: "Review matches" },
   { id: "j2", message: "All 4 billing exceptions share one cause: missing clock-out. Corrections drafted.", action: "View drafts" },
-  { id: "j3", message: "Marcus Bell's intake is missing a medication list before the 10:30 assessment.", action: "Send request" },
+  { id: "j3", message: "Robert H's intake is missing a medication list before the 10:30 assessment.", action: "Send request" },
 ];
 
 /** Rotates daily so the greeting stays warm without becoming noise. */

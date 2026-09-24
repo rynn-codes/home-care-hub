@@ -17,7 +17,7 @@ function tomorrowLabel(): string {
  *
  * The consequence, stated plainly so it is a choice and not an accident: Home
  * now names people the Clients and Employees directories do not carry. Say the
- * word and these map onto Dolores Vance / Kelsey Westley / Brandon / Chanel P
+ * word and these map onto Pamela P / Kelsey Westley / Brandon / Chanel P
  * in one edit — the shapes are identical.
  */
 
@@ -92,14 +92,14 @@ export const HOME_NEEDS: HomeNeed[] = [
     href: "/payroll",
   },
   {
-    title: "Approve Susan Miller rate change",
+    title: "Approve Vince W rate change",
     subject: "$24.00 → $26.50/hr · requested by scheduling",
     pill: "Rate",
     cta: "Review",
     href: "/clients",
   },
   {
-    title: "Confirm Marcus Bell caregiver match",
+    title: "Confirm Robert H caregiver match",
     subject: "Joy prepared 3 candidates · start date Aug 26",
     pill: "Match",
     cta: "Review",
@@ -233,7 +233,7 @@ export const HOME_JOY: ReadonlyArray<{
     // human still owes something. Handled is green, Working is the primary
     // blue, Waiting is quiet.
     tone: "text-[#B54708]",
-    items: [{ text: "Approve Susan Miller rate change", to: "/brain/operations" }],
+    items: [{ text: "Approve Vince W rate change", to: "/brain/operations" }],
   },
 ];
 

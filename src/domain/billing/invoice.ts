@@ -119,6 +119,26 @@ export function isBillable(visit: Visit): boolean {
   return BILLABLE_EVENT_TYPES.includes(visit.eventType);
 }
 
+/** Everyone a visit serves: the client, then anyone in `alsoServes`. */
+export function servedPeople(visit: Visit): Array<{ personId: string; name: string }> {
+  return [{ personId: visit.clientPersonId ?? visit.clientName, name: visit.clientName }, ...(visit.alsoServes ?? [])];
+}
+
+export function hasCompanions(visit: Visit): boolean {
+  return (visit.alsoServes?.length ?? 0) > 0;
+}
+
+/** Whether this visit is one of `personId`'s (or `name`'s) — as client or companion. */
+export function visitServes(visit: Visit, personId: string, name: string): boolean {
+  return servedPeople(visit).some((p) => p.personId === personId || p.name === name);
+}
+
+/** "Charles S and Sara S". */
+export function servedNames(visit: Visit): string {
+  const names = servedPeople(visit).map((p) => p.name);
+  return names.length <= 1 ? (names[0] ?? "") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
 export type PaymentMethod = "card" | "ach" | "check";
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {

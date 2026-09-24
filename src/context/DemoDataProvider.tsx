@@ -128,6 +128,8 @@ interface DemoContextValue extends DemoState {
   undoProfileChange: (changeId: string) => void;
   deleteEmployee: (id: string, name: string, reason?: string | null) => void;
   deleteClient: (personId: string, name: string, reason?: string | null) => void;
+  /** Bin an admission record that never became a client. The provider refuses an admitted one. */
+  deleteAdmission: (admissionId: string, reason?: string | null) => void;
   restoreDeleted: (id: string) => void;
   purgeDeleted: (id: string) => void;
   logActivity: (input: { draft: ActivityDraft; subject: ActivitySubject }) => Interaction;
@@ -260,12 +262,30 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
    */
   const deleteContact = useCallback<DemoContextValue["deleteContact"]>((contactId) => {
     setState((s) => {
-      const { [contactId]: _dropped, ...edits } = s.contactEdits;
+      const { [contactId]: dropped, ...edits } = s.contactEdits;
+      const base = s.contacts.find((c) => c.id === contactId) ?? seedContacts.find((c) => c.id === contactId);
+      // Binned, not shredded: the card sits in Settings → Deleted items for
+      // its recovery window, with the edits that were laid over it.
+      const deletedRecords = base
+        ? [
+            binned({
+              id: contactId,
+              kind: "contact",
+              label: base.name,
+              sublabel: [base.title, base.organization].filter(Boolean).join(" · ") || "Contact",
+              by: currentUserRef.current.name,
+              reason: null,
+              payload: { kind: "contact", contact: base, edits: dropped ?? null } satisfies DeletedPayload,
+            }),
+            ...s.deletedRecords,
+          ]
+        : s.deletedRecords;
       return {
         ...s,
         contacts: s.contacts.filter((c) => c.id !== contactId),
         contactEdits: edits,
         deletedContactIds: [...s.deletedContactIds, contactId],
+        deletedRecords,
       };
     });
   }, []);
@@ -1039,6 +1059,41 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     }));
   }, [audit]);
 
+  const deleteAdmission = useCallback<DemoContextValue["deleteAdmission"]>((admissionId, reason) => {
+    setState((s) => {
+      const admission = s.admissions.find((a) => a.id === admissionId);
+      if (!admission) return s;
+      // Texas retention: a record that became a client is kept, not binned.
+      if (admission.stage === "admitted" || s.preOnboarding[admissionId]?.activatedAt) return s;
+      // The person row was made with the referral and goes with it. Matched
+      // by name, which is how the admission and the person are joined
+      // everywhere else in the demo (consentSessionForClient).
+      const person = s.people.find((p) => `${p.firstName} ${p.lastName}` === admission.name && !p.clientStatus) ?? null;
+      const mrNumber = s.mrNumbers[admissionId] ?? null;
+      const { [admissionId]: _mr, ...mrNumbers } = s.mrNumbers;
+      const payload: DeletedPayload = { kind: "admission", admission, person, mrNumber };
+      return {
+        ...s,
+        admissions: s.admissions.filter((a) => a.id !== admissionId),
+        people: person ? s.people.filter((p) => p.personId !== person.personId) : s.people,
+        mrNumbers,
+        deletedRecords: [
+          binned({
+            id: admissionId,
+            kind: "admission",
+            label: admission.name,
+            sublabel: `Admission · ${admission.stage.replace(/_/g, " ")}`,
+            by: currentUserRef.current.name,
+            reason,
+            payload,
+          }),
+          ...s.deletedRecords,
+        ],
+      };
+    });
+    audit({ action: "admission.deleted", entityType: "admission", entityId: admissionId, after: { reason: reason ?? null } });
+  }, [audit]);
+
   const restoreDeleted = useCallback<DemoContextValue["restoreDeleted"]>((id) => {
     setState((s) => {
       const record = s.deletedRecords.find((r) => r.id === id) as DeletedRecord<DeletedPayload> | undefined;
@@ -1381,6 +1436,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       undoProfileChange,
       deleteEmployee,
       deleteClient,
+      deleteAdmission,
       restoreDeleted,
       purgeDeleted,
       logActivity,
@@ -1403,7 +1459,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       renameSopCategory,
       moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory],
   );
 
   /**

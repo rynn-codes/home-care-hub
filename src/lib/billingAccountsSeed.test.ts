@@ -63,13 +63,14 @@ describe("the seeded accounts", () => {
     expect(yvonne.status).toBe("attention_needed");
   });
 
-  it("carries no rate for the client who deliberately has none", () => {
-    // billingSeed leaves one client unpriced on purpose: the interesting
-    // behaviour is Joy refusing to invoice rather than sending a zero.
-    const unpriced = seedBillingTerms.filter((t) => t.hourlyRate === null);
-    expect(unpriced.length).toBeGreaterThan(0);
-    for (const t of unpriced) {
-      expect(seedRatePlanVersions.some((r) => r.clientPersonId === t.clientPersonId)).toBe(false);
+  it("keeps rate versions in step with the billing terms", () => {
+    // Every priced client has a version in effect and nobody unpriced does —
+    // a rate version with no terms behind it would price a client Joy has
+    // not agreed a rate with. (Since the cast swap every seeded client is
+    // priced; the unpriced case is exercised by the invoice tests.)
+    for (const t of seedBillingTerms) {
+      const hasVersion = seedRatePlanVersions.some((r) => r.clientPersonId === t.clientPersonId);
+      expect(hasVersion, t.clientName).toBe(t.hourlyRate !== null);
     }
   });
 

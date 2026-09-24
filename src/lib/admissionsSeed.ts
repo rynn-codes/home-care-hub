@@ -1,18 +1,17 @@
 import type { AdmissionStage, AdmissionStatus } from "@/domain/admissions/stages";
 
 /**
- * Deterministic demo seed for the Admissions work queue.
+ * The Admissions queue the demo starts with.
  *
- * The people are the ones section 32 names, so the prototype demonstrates the
- * records the brief and the Golden Sprint 1 Demo describe — including Tammy
- * Wilson, whose New Referral is the demo's starting state.
+ * Two leads, both waiting on Joy, so the queue has something to show without
+ * inventing a pipeline of people who do not exist. The seven clients on the
+ * schedule are here as people with no open admission — they were admitted
+ * long ago — so the duplicate check knows them and a fresh enquiry about one
+ * of them surfaces the history instead of creating a second record.
  *
- * Staff names are Joy Health's real team; every client here is fictional and
- * must stay fictional. See the note in joySeed.ts.
+ * Staff names are Joy Health's real team. The two leads are placeholders.
  *
- * Demo seed only. Section 32 forbids mixing this into production migrations,
- * and section 25 requires these views to query the real domain once the
- * migrations are applied.
+ * Demo seed only. Section 32 forbids mixing this into production migrations.
  */
 export interface SeedAdmission {
   id: string;
@@ -27,100 +26,65 @@ export interface SeedAdmission {
   /** The action a user would take next. */
   action: string;
   waitingOn?: string | null;
+  /** When the ball landed in whoever's court it is in — the queue's "days waiting". */
+  waitingSince?: string | null;
   scheduledAt?: string | null;
   overdue?: boolean;
 }
 
+function waitingSince(daysAgo: number, hhmm = "09:00"): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  const [h, m] = hhmm.split(":").map(Number);
+  d.setHours(h, m, 0, 0);
+  return d.toISOString();
+}
+
 export const seedAdmissions: SeedAdmission[] = [
   {
-    id: "adm-tammy",
-    name: "Tammy Wilson",
+    id: "adm-chris",
+    name: "Chris R",
     stage: "new_referral",
     status: "active",
     service: "Personal Care",
     location: "Houston",
-    headline: "New referral — no one has called back yet",
-    meta: "Daughter is primary contact · received today, 9:14 AM",
-    action: "Start intake",
+    headline: "New lead — nothing started yet",
+    meta: "Referred 2 days ago",
+    action: "Start phone intake",
+    waitingOn: "Joy",
+    waitingSince: waitingSince(2, "10:15"),
   },
   {
-    id: "adm-ruth",
-    name: "Ruth Alvarez",
-    stage: "new_referral",
-    status: "active",
-    service: "Respite",
-    location: "Houston",
-    headline: "Referral from Mercy Discharge Planning",
-    meta: "Received today, 8:15 AM",
-    action: "Start intake",
-  },
-  {
-    id: "adm-susan-m",
-    name: "Susan Miller",
-    stage: "pre_onboarding",
-    status: "active",
-    service: "Personal Care",
-    location: "Bellaire",
-    headline: "Agreement ready for your review",
-    meta: "Assessment completed Aug 12",
-    action: "Review agreement",
-  },
-  {
-    id: "adm-robert",
-    name: "Robert Green",
-    stage: "ready_for_admission",
-    status: "active",
-    service: "Personal Care",
-    location: "Sugar Land",
-    headline: "Ready for admission — start of care targeted for Monday",
-    meta: "Care plan approved · payment set up",
-    action: "Prepare start of care",
-  },
-  {
-    id: "adm-marcus",
-    name: "Marcus Bell",
-    stage: "assessment",
-    status: "active",
-    service: "Personal Care",
-    location: "Houston · 77004",
-    headline: "RN assessment booked for Aug 17, 10:30 AM",
-    meta: "Kelsey Westley, RN · Daughter Susan Bell is primary contact",
-    action: "Open assessment",
-    scheduledAt: "2026-08-17T10:30:00Z",
-  },
-  {
-    id: "adm-evelyn",
-    name: "Evelyn Carter",
-    stage: "pre_onboarding",
-    status: "active",
-    service: "Personal Care",
-    location: "Katy",
-    headline: "Waiting on family signature",
-    meta: "Packet sent Aug 13 · reminder sent Aug 14",
-    action: "Send reminder",
-    waitingOn: "family signature",
-  },
-  {
-    id: "adm-harold",
-    name: "Harold Nguyen",
+    id: "adm-gill",
+    name: "Gill C",
     stage: "phone_intake",
     status: "active",
-    service: "Respite",
-    location: "Pearland",
-    headline: "Intake started Aug 11 and never finished",
-    meta: "Missing payment source and requested schedule",
-    action: "Finish intake",
-    overdue: true,
+    service: "Personal Care",
+    location: "Houston",
+    headline: "Phone intake started and not finished",
+    meta: "Started 4 days ago",
+    action: "Finish the intake",
+    waitingOn: "Joy",
+    waitingSince: waitingSince(4, "14:40"),
   },
 ];
 
+/** What Joy handled on its own this morning — the "Handled" fold on the queue. */
+export const seedAdmissionsHandled: Array<{ label: string; who: string; time: string }> = [
+  { label: "Assessment confirmation sent", who: "Jessie C · family notified", time: "9:42 AM" },
+  { label: "Intake summary generated", who: "Marilyn K · sections 1–4", time: "9:20 AM" },
+  { label: "Medication list requested", who: "Jessie C · before the 10:30 assessment", time: "8:58 AM" },
+  { label: "Service agreement reminder sent", who: "Vince W · reminder 2 of 2", time: "8:31 AM" },
+  { label: "Care plan drafted from assessment", who: "Robert H", time: "8:12 AM" },
+  { label: "Referral acknowledged", who: "Robert H · Mercy Discharge Planning", time: "7:04 AM" },
+];
+
 /**
- * The people behind the seeded admissions.
+ * The people behind the admissions and the clients.
  *
- * Every admission points at a person, so every seeded admission appears here —
- * otherwise the duplicate check would miss a record that is visibly sitting in
- * the queue, and entering "Tammy Wilson" would quietly create a second referral
- * for someone who already has one.
+ * Every admission points at a person, so the duplicate check sees the
+ * record that is visibly sitting in the queue. Nothing about the clients is
+ * recorded here beyond their names — see clientsSeed.
  */
 export interface SeedPerson {
   personId: string;
@@ -138,86 +102,13 @@ export interface SeedPerson {
 }
 
 export const seedPeople: SeedPerson[] = [
-  {
-    personId: "per-tammy",
-    firstName: "Tammy",
-    lastName: "Wilson",
-    phone: "(713) 555-0142",
-    email: null,
-    dateOfBirth: null,
-    responsiblePartyName: "Denise Wilson",
-    openAdmissionStage: "new_referral",
-  },
-  {
-    personId: "per-ruth",
-    firstName: "Ruth",
-    lastName: "Alvarez",
-    phone: "(832) 555-0119",
-    email: null,
-    dateOfBirth: "1941-09-08",
-    responsiblePartyName: null,
-    openAdmissionStage: "new_referral",
-  },
-  {
-    personId: "per-susan-m",
-    firstName: "Susan",
-    lastName: "Miller",
-    phone: "(713) 555-0163",
-    email: "s.miller@example.com",
-    dateOfBirth: "1948-01-30",
-    responsiblePartyName: "Paul Miller",
-    openAdmissionStage: "pre_onboarding",
-  },
-  {
-    personId: "per-robert",
-    firstName: "Robert",
-    lastName: "Green",
-    phone: "(281) 555-0104",
-    email: null,
-    dateOfBirth: "1937-05-19",
-    responsiblePartyName: "Angela Green",
-    openAdmissionStage: "ready_for_admission",
-  },
-  {
-    personId: "per-marcus",
-    firstName: "Marcus",
-    lastName: "Bell",
-    phone: "(713) 555-0134",
-    email: "susan.bell@example.com",
-    dateOfBirth: "1946-03-02",
-    responsiblePartyName: "Susan Bell",
-    openAdmissionStage: "assessment",
-  },
-  {
-    personId: "per-evelyn",
-    firstName: "Evelyn",
-    lastName: "Carter",
-    phone: "(281) 555-0177",
-    email: null,
-    dateOfBirth: "1939-11-20",
-    responsiblePartyName: "Grace Carter",
-    openAdmissionStage: "pre_onboarding",
-  },
-  {
-    personId: "per-harold",
-    firstName: "Harold",
-    lastName: "Nguyen",
-    phone: "(713) 555-0195",
-    email: null,
-    dateOfBirth: "1950-02-11",
-    responsiblePartyName: "Mai Nguyen",
-    openAdmissionStage: "phone_intake",
-  },
-  {
-    // No open admission — a past client, so a fresh enquiry is legitimate and
-    // should surface the history without blocking.
-    personId: "per-lian",
-    firstName: "Lian",
-    lastName: "Huang",
-    phone: "(713) 555-0188",
-    email: "family.huang@example.com",
-    dateOfBirth: "1944-06-14",
-    responsiblePartyName: "Johnathan Huang",
-    openAdmissionStage: null,
-  },
+  { personId: "c-marilyn", firstName: "Marilyn", lastName: "K", openAdmissionStage: null },
+  { personId: "c-jessie", firstName: "Jessie", lastName: "C", openAdmissionStage: null },
+  { personId: "c-pamela", firstName: "Pamela", lastName: "P", openAdmissionStage: null },
+  { personId: "c-charles", firstName: "Charles", lastName: "S", openAdmissionStage: null },
+  { personId: "c-sara", firstName: "Sara", lastName: "S", openAdmissionStage: null },
+  { personId: "c-vince", firstName: "Vince", lastName: "W", openAdmissionStage: null },
+  { personId: "c-robert", firstName: "Robert", lastName: "H", openAdmissionStage: null },
+  { personId: "per-chris", firstName: "Chris", lastName: "R", openAdmissionStage: "new_referral" },
+  { personId: "per-gill", firstName: "Gill", lastName: "C", openAdmissionStage: "phone_intake" },
 ];

@@ -118,6 +118,8 @@ export interface ClientRecord {
   location: string;
   status: ClientStatus;
   statusLabel: string;
+  /** From the seed only; a number issued in the demo lives in the store. */
+  mrNumber: string | null;
   payer: string;
   payerLine: string | null;
   services: string[];
@@ -249,6 +251,7 @@ export function buildClientRecord(input: ClientInput, today: string): ClientReco
     location: input.location ?? "Houston",
     status,
     statusLabel: CLIENT_STATUS_LABELS[status],
+    mrNumber: input.mrNumber ?? null,
     payer: input.payer ?? "Private Pay",
     payerLine: input.payerLine ?? null,
     services: input.services ?? [],

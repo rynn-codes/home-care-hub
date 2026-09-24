@@ -37,9 +37,9 @@ export const seedContacts: Contact[] = [
     phone: "(346) 453-6979",
     address: "6565 Fannin St, West Pavilion 801, Houston, TX 77030",
     notes: "Texas Voice Center is at the same address — voice, swallowing and general ENT.",
-    addedOn: daysAgo(0),
-    lastContactedOn: daysAgo(0),
-    referrals: [],
+    addedOn: daysAgo(96),
+    lastContactedOn: daysAgo(5),
+    referrals: ["adm-susan-m", "adm-robert"],
   },
   {
     id: "contact-okpara",
@@ -58,8 +58,8 @@ export const seedContacts: Contact[] = [
     notes:
       "By appointment only. Active on social — @exam.by.dr.o on Instagram, exam by dr.o on " +
       "Facebook, dr.curtisokpara on TikTok.",
-    addedOn: daysAgo(0),
-    lastContactedOn: daysAgo(0),
+    addedOn: daysAgo(74),
+    lastContactedOn: daysAgo(36),
     referrals: [],
   },
   {
@@ -76,9 +76,9 @@ export const seedContacts: Contact[] = [
     phone: "(346) 589-6432",
     address: null,
     notes: null,
-    addedOn: daysAgo(0),
-    lastContactedOn: daysAgo(0),
-    referrals: [],
+    addedOn: daysAgo(140),
+    lastContactedOn: daysAgo(112),
+    referrals: ["adm-marcus"],
   },
   {
     id: "contact-rhodes",
@@ -95,8 +95,8 @@ export const seedContacts: Contact[] = [
     phone: "(713) 256-8133",
     address: null,
     notes: "Office (469) 729-8738. Same organisation as Kerwin Jones.",
-    addedOn: daysAgo(0),
-    lastContactedOn: daysAgo(0),
+    addedOn: daysAgo(140),
+    lastContactedOn: null,
     referrals: [],
   },
 ];

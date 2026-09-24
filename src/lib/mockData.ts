@@ -150,8 +150,8 @@ const employees: Employee[] = [
 // was a separate list of twenty-five invented names; asking Joy "show me
 // clients" then answered with people who did not exist anywhere else.
 const clientNames = [
-  "Lian Huang", "Edward Pham", "Dolores Vance", "Susan Miller",
-  "Ruth Alvarez", "Evelyn Carter", "Theo Nakamura", "Augustin Vandermeer",
+  "Marilyn K", "Jessie C", "Pamela P", "Vince W",
+  "Robert H", "Robert H", "Charles S", "Sara S",
 ];
 
 const clients: Client[] = clientNames.map((name, i) => ({

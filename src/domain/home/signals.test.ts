@@ -187,7 +187,10 @@ describe("what counts as urgent", () => {
 
   it("puts an unpriced invoice ahead of an overdue one", () => {
     // Joy cannot chase a payment it has never asked for.
-    const billing = signal("billing");
+    // Every seeded client is priced, so the unpriced case is made here: strip
+    // one client's rate and Home must lead with it.
+    const [first, ...rest] = seedBillingTerms;
+    const billing = build({ billingTerms: [{ ...first, hourlyRate: null }, ...rest] }).find((s) => s.key === "billing")!;
     expect(billing.detail).toBe("Invoice with no rate");
   });
 

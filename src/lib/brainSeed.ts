@@ -9,10 +9,10 @@ import { agencyWeekLabel } from "@/domain/calendar/agencyWeek";
  * Sarah Johnson, Mrs. Davis, Mike Chen, Maya Patel…) are replaced by the demo's
  * unified cast: Joy Health's real staff (Chanel P, Bedjine Cupidon, Thylia,
  * Kelsey Westley RN, John Segura…) and the fictional clients every other
- * screen carries (Lian Huang, Dolores Vance, Susan Miller, Marcus Bell…).
+ * screen carries (Marilyn K, Pamela P, Vince W, Robert H…).
  * The items themselves anchor to facts other screens already show — Bedjine's
  * CPR really is the one expiring, Dolores's records authorization really is
- * the lapsed one, Susan Miller really did ask about increased hours — so The
+ * the lapsed one, Vince W really did ask about increased hours — so The
  * Brain can never contradict the module screens.
  *
  * CLIENT NAMES ARE FICTIONAL AND MUST STAY FICTIONAL — the same rule as every
@@ -145,11 +145,11 @@ export const brainWorking: BrainWorking[] = [
 
 export const brainHandled: Array<{ title: string; meta: string; time: string }> = [
   { title: "CPR renewal reminder sent", meta: "Bedjine Cupidon · expires Oct 1", time: "8:12 AM" },
-  { title: "Records authorization renewal request sent", meta: "Dolores Vance · lapsed Feb 1", time: "7:58 AM" },
+  { title: "Records authorization renewal request sent", meta: "Pamela P · lapsed Feb 1", time: "7:58 AM" },
   { title: "Schedule confirmation sent", meta: "Brandon · field orientation 2:00 PM", time: "7:42 AM" },
-  { title: "Medication list request sent", meta: "Marcus Bell · before the 10:30 assessment", time: "7:31 AM" },
+  { title: "Medication list request sent", meta: "Robert H · before the 10:30 assessment", time: "7:31 AM" },
   { title: "Shift confirmations sent to 6 caregivers", meta: `Week of ${shortDate(AGENCY_WEEK.start)}`, time: "7:14 AM" },
-  { title: "Referral acknowledged to Mercy Discharge Planning", meta: "Ruth Alvarez · admissions", time: "6:58 AM" },
+  { title: "Referral acknowledged to Mercy Discharge Planning", meta: "Robert H · admissions", time: "6:58 AM" },
 ];
 
 export const brainWaiting: Array<{ title: string; state: string; next: string; cta: string; href: string }> = [
@@ -161,7 +161,7 @@ export const brainWaiting: Array<{ title: string; state: string; next: string; c
     href: "/employees",
   },
   {
-    title: "Records authorization · Dolores Vance",
+    title: "Records authorization · Pamela P",
     state: "Renewal request resent this morning",
     next: "Waiting on the family · next follow-up tomorrow",
     cta: "View client",
@@ -175,7 +175,7 @@ export const brainWaiting: Array<{ title: string; state: string; next: string; c
     href: "/hiring",
   },
   {
-    title: "Family signature · Evelyn Carter",
+    title: "Family signature · Robert H",
     state: "Packet sent Aug 13 · reminder sent Aug 14",
     next: "Waiting on the family · Joy follows up again tomorrow",
     cta: "View admission",
@@ -187,11 +187,11 @@ export const brainWaiting: Array<{ title: string; state: string; next: string; c
  * The one decision waiting on a human. Deliberately not a rate change — the
  * mock's "18.00 → $19.50/hr" would put a client rate on screen, and rates are
  * e-mailed privately and never stored (the same recorded rule that keeps them
- * off Billing's Payers tab). Susan Miller's hours request is a real fact the
+ * off Billing's Payers tab). Vince W's hours request is a real fact the
  * roster already shows ("Asked about increased hours · Aug 21").
  */
 export const brainNeedsYou = {
-  title: "Hours increase · Susan Miller",
+  title: "Hours increase · Vince W",
   subject: "12 → 16 hrs / week, requested by the family Aug 21",
   detail:
     "Joy drafted the schedule change — one added Thursday afternoon shift, coverable by Vanessa — and the billing impact from the agreement. The workflow paused at the approval boundary.",
@@ -213,7 +213,7 @@ export const brainEvents: BrainEvent[] = [
   { date: agencyDay(2), title: "Payroll closes", meta: `Week of ${shortDate(AGENCY_WEEK.start)}`, cat: "Payroll", icon: "💵" },
   { date: agencyDay(2), title: "Approved invoices go out", meta: "The Monday send", cat: "Billing", icon: "📄" },
   { date: agencyDay(3), title: "Payroll processing", meta: "Gusto submission", cat: "Payroll", icon: "💵" },
-  { date: agencyDay(2), title: "RN assessment · Marcus Bell", meta: "10:30 AM · Kelsey Westley, RN", cat: "Agency", icon: "🩺" },
+  { date: agencyDay(2), title: "RN assessment · Robert H", meta: "10:30 AM · Kelsey Westley, RN", cat: "Agency", icon: "🩺" },
   { date: agencyDay(4), title: "Thylia's birthday", meta: "Caregiver since 2023", cat: "People", icon: "🎂" },
   { date: agencyDay(7), title: "Saturday billing run", meta: "Drafts next week's invoices", cat: "Billing", icon: "📄" },
   { date: agencyDay(9), title: "Bedjine's work anniversary", meta: "2 years with Joy Health", cat: "People", icon: "🎉" },
@@ -247,7 +247,7 @@ export const myEvents: MyEvent[] = [
   {
     time: "2:00 PM",
     duration: "45 min",
-    title: "Dolores Vance's family care conference",
+    title: "Pamela P's family care conference",
     meta: "With Kelsey Westley, RN · client home",
     joyNote: "Family confirmed · care plan prepared",
     tag: "Open client",
@@ -267,7 +267,7 @@ export const myEvents: MyEvent[] = [
 
 export const myTomorrow: Array<{ time: string; label: string }> = [
   { time: "9:30 AM", label: "Payroll review" },
-  { time: "1:00 PM", label: "Supervisory visit · Edward Pham" },
+  { time: "1:00 PM", label: "Supervisory visit · Jessie C" },
 ];
 
 export interface MyNeed {
@@ -282,7 +282,7 @@ export interface MyNeed {
 export const myNeeds: MyNeed[] = [
   {
     title: "Approve hours increase",
-    subject: "Susan Miller · 12 → 16 hrs / week",
+    subject: "Vince W · 12 → 16 hrs / week",
     joyNote: "Joy drafted the schedule change and the billing impact.",
     due: "Due today",
     cta: "Review & approve →",
@@ -311,10 +311,10 @@ export interface BrainActivity {
 
 export const brainActivity: BrainActivity[] = [
   { time: "8:12 AM", title: "Joy sent Bedjine Cupidon's CPR reminder", meta: "Joy · employees", cat: "Joy", cta: "View employee", href: "/employees" },
-  { time: "7:58 AM", title: "Dolores Vance's records authorization request was resent", meta: "Joy · clients", cat: "Joy", cta: "View client", href: "/clients" },
+  { time: "7:58 AM", title: "Pamela P's records authorization request was resent", meta: "Joy · clients", cat: "Joy", cta: "View client", href: "/clients" },
   { time: "7:42 AM", title: "Payroll reminders queued for 2 caregivers", meta: "Joy · payroll", cat: "Payroll", cta: "View payroll", href: "/payroll" },
   { time: "Yesterday", title: "Brandon completed Gusto onboarding", meta: "Candidate · hiring", cat: "Employees", cta: "View candidate", href: "/hiring" },
-  { time: "Yesterday", title: "Ruth Alvarez's Wednesday shift reopened — caregiver call-out", meta: "Scheduler · scheduling", cat: "Employees", cta: "View schedule", href: "/scheduling" },
-  { time: "Friday", title: "Incident classified for Dolores Vance — family notified", meta: "Kelsey Westley · incidents", cat: "Clients", cta: "View incident", href: "/reports/incidents" },
+  { time: "Yesterday", title: "Robert H's Wednesday shift reopened — caregiver call-out", meta: "Scheduler · scheduling", cat: "Employees", cta: "View schedule", href: "/scheduling" },
+  { time: "Friday", title: "Incident classified for Pamela P — family notified", meta: "Kelsey Westley · incidents", cat: "Clients", cta: "View incident", href: "/reports/incidents" },
   { time: "Friday", title: `Invoice batch approved for ${shortDate(agencyDay(-7))} – ${shortDate(agencyDay(-1))}`, meta: "Karynn Verrett · billing", cat: "Billing", cta: "View billing", href: "/billing" },
 ];
