@@ -40,6 +40,21 @@ import {
   type LibraryDocument,
 } from "@/domain/documents/library";
 import { moveCategory, renameCategory, withNewVersion, type Sop } from "@/domain/sops/sops";
+import type { DemoClockAttempt, DemoClockCorrection } from "@/lib/demoStore";
+import type { Visit } from "@/domain/scheduling/conflicts";
+import type { TimeOff } from "@/domain/scheduling/timeOff";
+import { unassignShift, type CoverageEvent } from "@/domain/scheduling/coverage";
+import type { ApprovedLocation, ClockPlace } from "@/domain/scheduling/locations";
+import type { ClockProposal } from "@/domain/scheduling/reminders";
+import type { ServiceShare } from "@/domain/scheduling/serviceMix";
+import type { VisitChange } from "@/domain/scheduling/visitChanges";
+import { purgeExpired, type VisitExpense } from "@/domain/scheduling/expenses";
+import type { VisitPay } from "@/domain/scheduling/visitPay";
+import type { ClientSchedule, ScheduleRevision } from "@/domain/scheduling/clientSchedule";
+import type { HouseholdBilling } from "@/domain/billing/households";
+import type { SupervisoryVisit } from "@/domain/supervision/supervision";
+import { bookSupervisoryVisit } from "@/domain/supervision/supervision";
+import type { VisitMileage } from "@/lib/schedulingExtrasSeed";
 
 /** What each kind of deleted record carries so it can be put back exactly. */
 export type DeletedPayload =
@@ -162,6 +177,49 @@ interface DemoContextValue extends DemoState {
   deleteSop: (id: string) => void;
   renameSopCategory: (from: string, to: string) => void;
   moveSopCategory: (from: string, to: string) => void;
+
+  /* ── Scheduling ───────────────────────────────────────────────────────── */
+
+  /** A visit added from Quick Add. */
+  addShift: (visit: Visit) => void;
+  /** Any event booked onto the one Joy schedule: an orientation, a supervisor visit, an office day. */
+  addScheduleEvent: (event: DemoScheduleEvent) => void;
+  requestTimeOff: (draft: { caregiverName: string; from: string; to: string; reason: string }) => TimeOff;
+  cancelTimeOff: (id: string) => void;
+  declineCover: (input: { visitId: string; confirmedWith: string; note: string | null }) => void;
+  saveCoverageEvent: (event: CoverageEvent) => void;
+  approveCoveragePlan: (id: string) => void;
+  approveCoverageOvertime: (id: string, approval: { caregiverName: string; hours: number; weekStart: string; reason: string }) => void;
+  reopenCoverageShift: (id: string, shiftId: string) => void;
+  cancelCoverageEvent: (id: string) => void;
+  approveOvertime: (approval: { caregiverName: string; hours: number; weekStart: string; reason: string }) => void;
+  authorizeEarlyStart: (visitId: string, allowed: boolean) => void;
+  recordClockAttempt: (attempt: DemoClockAttempt) => void;
+  recordClock: (visitId: string, which: "in" | "out", at: string) => void;
+  recordClockCorrection: (correction: DemoClockCorrection) => void;
+  setClockPlace: (visitId: string, which: "in" | "out", place: ClockPlace) => void;
+  proposeClock: (proposal: ClockProposal) => void;
+  decideClockProposal: (key: string, approved: boolean, by: string) => void;
+  setServiceMix: (clientPersonId: string, mix: ServiceShare[]) => void;
+  confirmServiceMix: (clientPersonId: string, by: string) => void;
+  recordVisitChange: (change: VisitChange) => void;
+  addApprovedLocation: (location: ApprovedLocation) => void;
+  decideLocation: (id: string, approve: boolean, by: string) => void;
+  recordMileage: (mileage: VisitMileage) => void;
+  /** Replaces the visit's items. Audit lines carry category and amount only — never a receipt or file name. */
+  recordExpenses: (visitId: string, items: VisitExpense[], by: string) => void;
+  recordVisitPay: (pay: VisitPay) => void;
+  askForPhone: (caregiverName: string, by: string, at: string) => void;
+  answerPhoneAsk: (caregiverName: string, phone: string, at: string) => void;
+  reviseSchedule: (revision: ScheduleRevision) => void;
+  addClientSchedule: (schedule: ClientSchedule) => void;
+  sendScheduleAgreement: (scheduleId: string, by: string, at: string) => void;
+  signScheduleAgreement: (scheduleId: string, by: string, at: string) => void;
+  setHouseholdBilling: (householdId: string, billing: HouseholdBilling, note?: string | null) => void;
+  setHouseholdRate: (householdId: string, rate: number | null, split: Record<string, number> | null) => void;
+  pairHousehold: (input: { clientPersonId: string; clientName: string; partnerPersonId: string; partnerName: string; billing: HouseholdBilling }) => void;
+  bookSupervision: (visit: SupervisoryVisit) => void;
+  completeSupervision: (visit: SupervisoryVisit) => void;
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null);
@@ -587,9 +645,28 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
           : p,
       );
 
+      // Starting care starts the supervisory clock: the RN's first visit is
+      // booked for ninety days out, so nobody has to remember to book it.
+      const person = s.people.find((p) => `${p.firstName} ${p.lastName}` === admission.name);
+      const due = new Date(`${startDate.slice(0, 10)}T12:00:00`);
+      due.setDate(due.getDate() + 90);
+      const supervisory = person && !s.supervisoryVisits.some((v) => v.clientPersonId === person.personId && !v.completedAt)
+        ? [
+            ...s.supervisoryVisits,
+            bookSupervisoryVisit({
+              id: newId("sv"),
+              clientPersonId: person.personId,
+              clientName: admission.name,
+              scheduledFor: due.toISOString().slice(0, 10),
+              assignedToUserId: "u-karynn",
+            }),
+          ]
+        : s.supervisoryVisits;
+
       return {
         ...s,
         people,
+        supervisoryVisits: supervisory,
         preOnboarding: {
           ...s.preOnboarding,
           [admissionId]: {
@@ -1403,9 +1480,352 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, sops: moveCategory(s.sops, from, to) }));
   }, [audit]);
 
+  /* ── Scheduling ─────────────────────────────────────────────────────── */
+
+  const addShift = useCallback<DemoContextValue["addShift"]>((visit) => {
+    audit({ action: "shift.created", entityType: "visit", entityId: visit.id, after: { clientName: visit.clientName, startsAt: visit.startsAt, caregiverName: visit.caregiverName } });
+    setState((s) => ({ ...s, shifts: [...s.shifts, visit] }));
+  }, [audit]);
+
+  const addScheduleEvent = useCallback<DemoContextValue["addScheduleEvent"]>((event) => {
+    audit({ action: `schedule.${event.eventType}.added`, entityType: "schedule_event", entityId: event.id, after: { clientName: event.clientName, startsAt: event.startsAt } });
+    setState((s) => ({ ...s, scheduleEvents: [event, ...s.scheduleEvents] }));
+  }, [audit]);
+
+  const requestTimeOff = useCallback<DemoContextValue["requestTimeOff"]>((draft) => {
+    const off: TimeOff = {
+      id: newId("off"),
+      caregiverName: draft.caregiverName,
+      from: draft.from,
+      to: draft.to,
+      reason: draft.reason.trim() || null,
+      requestedAt: new Date().toISOString(),
+      recordedBy: currentUserRef.current.name,
+    };
+    audit({ action: "time_off.requested", entityType: "employee", entityId: off.caregiverName, after: { from: off.from, to: off.to } });
+    setState((s) => ({ ...s, timeOff: [...s.timeOff, off] }));
+    return off;
+  }, [audit]);
+
+  const cancelTimeOff = useCallback<DemoContextValue["cancelTimeOff"]>((id) => {
+    const off = stateRef.current.timeOff.find((o) => o.id === id);
+    if (off) audit({ action: "time_off.cancelled", entityType: "employee", entityId: off.caregiverName, before: { from: off.from, to: off.to } });
+    setState((s) => {
+      const gone = s.timeOff.find((o) => o.id === id);
+      // The decisions taken on the days it opened go with it.
+      const opened = new Set(
+        gone
+          ? s.coverDecisions.filter((d) => {
+              const v = [...s.shifts].find((x) => x.id === d.visitId);
+              return v ? v.caregiverName === gone.caregiverName : false;
+            }).map((d) => d.visitId)
+          : [],
+      );
+      return { ...s, timeOff: s.timeOff.filter((o) => o.id !== id), coverDecisions: s.coverDecisions.filter((d) => !opened.has(d.visitId)) };
+    });
+  }, [audit]);
+
+  const declineCover = useCallback<DemoContextValue["declineCover"]>(({ visitId, confirmedWith, note }) => {
+    audit({ action: "cover.declined", entityType: "visit", entityId: visitId, after: { confirmedWith } });
+    setState((s) => ({
+      ...s,
+      coverDecisions: [
+        ...s.coverDecisions.filter((d) => d.visitId !== visitId),
+        { visitId, confirmedWith: confirmedWith.trim(), note, recordedBy: currentUserRef.current.name, recordedAt: new Date().toISOString() },
+      ],
+    }));
+  }, [audit]);
+
+  const saveCoverageEvent = useCallback<DemoContextValue["saveCoverageEvent"]>((event) => {
+    audit({ action: "coverage.plan_saved", entityType: "coverage_event", entityId: event.id, after: { clientName: event.clientName, shifts: event.shifts.length } });
+    setState((s) => ({
+      ...s,
+      coverageEvents: s.coverageEvents.some((e) => e.id === event.id) ? s.coverageEvents.map((e) => (e.id === event.id ? event : e)) : [...s.coverageEvents, event],
+    }));
+  }, [audit]);
+
+  const approveCoveragePlan = useCallback<DemoContextValue["approveCoveragePlan"]>((id) => {
+    audit({ action: "coverage.plan_approved", entityType: "coverage_event", entityId: id });
+    setState((s) => ({
+      ...s,
+      coverageEvents: s.coverageEvents.map((e) => (e.id === id ? { ...e, approvedAt: new Date().toISOString(), approvedBy: currentUserRef.current.name } : e)),
+    }));
+  }, [audit]);
+
+  const approveCoverageOvertime = useCallback<DemoContextValue["approveCoverageOvertime"]>((id, approval) => {
+    audit({ action: "coverage.overtime_approved", entityType: "coverage_event", entityId: id, after: { caregiverName: approval.caregiverName, hours: approval.hours, weekStart: approval.weekStart } });
+    setState((s) => ({
+      ...s,
+      coverageEvents: s.coverageEvents.map((e) =>
+        e.id === id
+          ? { ...e, overtimeApprovals: [...e.overtimeApprovals, { ...approval, approvedBy: currentUserRef.current.name, approvedAt: new Date().toISOString() }] }
+          : e,
+      ),
+    }));
+  }, [audit]);
+
+  const reopenCoverageShift = useCallback<DemoContextValue["reopenCoverageShift"]>((id, shiftId) => {
+    audit({ action: "coverage.shift_reopened", entityType: "coverage_event", entityId: id, after: { shiftId } });
+    setState((s) => ({ ...s, coverageEvents: s.coverageEvents.map((e) => (e.id === id ? unassignShift(e, shiftId) : e)) }));
+  }, [audit]);
+
+  const cancelCoverageEvent = useCallback<DemoContextValue["cancelCoverageEvent"]>((id) => {
+    audit({ action: "coverage.cancelled", entityType: "coverage_event", entityId: id });
+    setState((s) => ({ ...s, coverageEvents: s.coverageEvents.map((e) => (e.id === id ? { ...e, cancelledAt: new Date().toISOString() } : e)) }));
+  }, [audit]);
+
+  const approveOvertime = useCallback<DemoContextValue["approveOvertime"]>((approval) => {
+    audit({ action: "overtime.approved", entityType: "employee", entityId: approval.caregiverName, after: { hours: approval.hours, weekStart: approval.weekStart } });
+    setState((s) => ({
+      ...s,
+      overtimeApprovals: [...s.overtimeApprovals, { ...approval, approvedBy: currentUserRef.current.name, approvedAt: new Date().toISOString() }],
+    }));
+  }, [audit]);
+
+  const authorizeEarlyStart = useCallback<DemoContextValue["authorizeEarlyStart"]>((visitId, allowed) => {
+    audit({ action: allowed ? "visit.early_start_authorized" : "visit.early_start_withdrawn", entityType: "visit", entityId: visitId });
+    setState((s) => ({ ...s, earlyStarts: { ...s.earlyStarts, [visitId]: allowed } }));
+  }, [audit]);
+
+  const recordClockAttempt = useCallback<DemoContextValue["recordClockAttempt"]>((attempt) => {
+    setState((s) => ({ ...s, clockAttempts: [...s.clockAttempts, attempt] }));
+  }, []);
+
+  const recordClock = useCallback<DemoContextValue["recordClock"]>((visitId, which, at) => {
+    audit({ action: which === "in" ? "visit.clocked_in" : "visit.clocked_out", entityType: "visit", entityId: visitId, after: { at } });
+    setState((s) => ({
+      ...s,
+      clockEvents: { ...s.clockEvents, [visitId]: { ...s.clockEvents[visitId], [which === "in" ? "inAt" : "outAt"]: at } },
+    }));
+  }, [audit]);
+
+  const recordClockCorrection = useCallback<DemoContextValue["recordClockCorrection"]>((correction) => {
+    audit({
+      action: "visit.clock_corrected",
+      entityType: "visit",
+      entityId: correction.visitId,
+      after: { reasonCode: correction.reasonCode, actionCode: correction.actionCode, clockedInAt: correction.clockedInAt, clockedOutAt: correction.clockedOutAt },
+    });
+    setState((s) => ({
+      ...s,
+      clockCorrections: { ...s.clockCorrections, [correction.visitId]: correction },
+      clockEvents: {
+        ...s.clockEvents,
+        [correction.visitId]: {
+          inAt: correction.clockedInAt ?? s.clockEvents[correction.visitId]?.inAt ?? null,
+          outAt: correction.clockedOutAt ?? s.clockEvents[correction.visitId]?.outAt ?? null,
+        },
+      },
+    }));
+  }, [audit]);
+
+  const setClockPlace = useCallback<DemoContextValue["setClockPlace"]>((visitId, which, place) => {
+    setState((s) => ({ ...s, clockPlaces: { ...s.clockPlaces, [visitId]: { ...s.clockPlaces[visitId], [which]: place } } }));
+  }, []);
+
+  const proposeClock = useCallback<DemoContextValue["proposeClock"]>((proposal) => {
+    setState((s) => ({ ...s, clockProposals: { ...s.clockProposals, [`${proposal.visitId}:${proposal.which}`]: proposal } }));
+  }, []);
+
+  const decideClockProposal = useCallback<DemoContextValue["decideClockProposal"]>((key, approved, by) => {
+    const proposal = stateRef.current.clockProposals[key];
+    if (!proposal) return;
+    audit({ action: approved ? "visit.clock_proposal_approved" : "visit.clock_proposal_declined", entityType: "visit", entityId: proposal.visitId, after: { which: proposal.which, at: proposal.confirmedAt } });
+    setState((s) => {
+      const p = s.clockProposals[key];
+      if (!p) return s;
+      const decided: ClockProposal = { ...p, status: approved ? "approved" : "declined", decidedBy: by, decidedAt: new Date().toISOString() };
+      return {
+        ...s,
+        clockProposals: { ...s.clockProposals, [key]: decided },
+        clockEvents: approved
+          ? { ...s.clockEvents, [p.visitId]: { ...s.clockEvents[p.visitId], [p.which === "in" ? "inAt" : "outAt"]: p.confirmedAt } }
+          : s.clockEvents,
+      };
+    });
+  }, [audit]);
+
+  const setServiceMix = useCallback<DemoContextValue["setServiceMix"]>((clientPersonId, mix) => {
+    audit({ action: "care_plan.service_mix_changed", entityType: "client", entityId: clientPersonId, after: { mix: mix.map((m) => `${m.percent}% ${m.service}`).join(", ") } });
+    setState((s) => {
+      const { [clientPersonId]: _dropped, ...confirmed } = s.serviceMixConfirmed;
+      void _dropped;
+      return { ...s, serviceMixes: { ...s.serviceMixes, [clientPersonId]: mix }, serviceMixConfirmed: confirmed };
+    });
+  }, [audit]);
+
+  const confirmServiceMix = useCallback<DemoContextValue["confirmServiceMix"]>((clientPersonId, by) => {
+    audit({ action: "care_plan.service_mix_confirmed", entityType: "client", entityId: clientPersonId });
+    setState((s) => ({ ...s, serviceMixConfirmed: { ...s.serviceMixConfirmed, [clientPersonId]: { by, at: new Date().toISOString() } } }));
+  }, [audit]);
+
+  const recordVisitChange = useCallback<DemoContextValue["recordVisitChange"]>((change) => {
+    setState((s) => ({ ...s, visitChanges: [...s.visitChanges, change] }));
+  }, []);
+
+  const addApprovedLocation = useCallback<DemoContextValue["addApprovedLocation"]>((location) => {
+    audit({ action: "location.proposed", entityType: "client", entityId: location.clientPersonId, after: { label: location.label } });
+    setState((s) => ({ ...s, approvedLocations: [...s.approvedLocations, location] }));
+  }, [audit]);
+
+  const decideLocation = useCallback<DemoContextValue["decideLocation"]>((id, approve, by) => {
+    const loc = stateRef.current.approvedLocations.find((l) => l.id === id);
+    if (loc) audit({ action: approve ? "location.approved" : "location.declined", entityType: "client", entityId: loc.clientPersonId, after: { label: loc.label } });
+    setState((s) => ({
+      ...s,
+      approvedLocations: approve
+        ? s.approvedLocations.map((l) => (l.id === id ? { ...l, status: "approved" as const, decidedBy: by, decidedOn: new Date().toISOString() } : l))
+        : s.approvedLocations.filter((l) => l.id !== id),
+    }));
+  }, [audit]);
+
+  const recordMileage = useCallback<DemoContextValue["recordMileage"]>((mileage) => {
+    audit({ action: "visit.mileage_recorded", entityType: "visit", entityId: mileage.visitId, after: { actualMiles: mileage.actualMiles } });
+    setState((s) => ({ ...s, visitMileage: { ...s.visitMileage, [mileage.visitId]: mileage } }));
+  }, [audit]);
+
+  const recordExpenses = useCallback<DemoContextValue["recordExpenses"]>((visitId, items, by) => {
+    const before = stateRef.current.visitExpenses[visitId] ?? [];
+    const now = new Date();
+    // Category and amount only. A receipt's file name can carry a person's
+    // name or a pharmacy's, and the trail is read by more people than the visit.
+    const line = (e: VisitExpense) => `${e.category}:${e.amount}`;
+    for (const e of items) {
+      const prev = before.find((x) => x.id === e.id);
+      if (!prev) audit({ action: "visit.expenses_recorded", entityType: "visit", entityId: visitId, after: { item: line(e) } });
+      else if (!prev.deletedAt && e.deletedAt) audit({ action: "visit.expense_deleted", entityType: "visit", entityId: visitId, before: { item: line(e) } });
+      else if (prev.deletedAt && !e.deletedAt) audit({ action: "visit.expense_restored", entityType: "visit", entityId: visitId, after: { item: line(e) } });
+      else if (!prev.reviewedAt && e.reviewedAt) audit({ action: "visit.expense_reviewed", entityType: "visit", entityId: visitId, after: { item: line(e), by } });
+    }
+    setState((s) => ({ ...s, visitExpenses: { ...s.visitExpenses, [visitId]: purgeExpired(items, now) } }));
+  }, [audit]);
+
+  const recordVisitPay = useCallback<DemoContextValue["recordVisitPay"]>((pay) => {
+    audit({ action: "visit.pay_set", entityType: "visit", entityId: pay.visitId, after: { rate: pay.rate, rateKind: pay.rateKind, onCall: pay.onCall, payNextDay: pay.payNextDay } });
+    setState((s) => ({ ...s, visitPay: { ...s.visitPay, [pay.visitId]: pay } }));
+  }, [audit]);
+
+  const askForPhone = useCallback<DemoContextValue["askForPhone"]>((caregiverName, by, at) => {
+    audit({ action: "employee.phone_asked", entityType: "employee", entityId: caregiverName });
+    setState((s) => ({ ...s, phoneAsks: { ...s.phoneAsks, [caregiverName]: { askedBy: by, askedAt: at, answeredAt: null } } }));
+  }, [audit]);
+
+  const answerPhoneAsk = useCallback<DemoContextValue["answerPhoneAsk"]>((caregiverName, phone, at) => {
+    // The number goes on the record, never on the trail.
+    audit({ action: "employee.phone_given", entityType: "employee", entityId: caregiverName });
+    setState((s) => {
+      const employee = seedEmployees.find((e) => e.name === caregiverName);
+      if (!employee) return s;
+      const existing = s.employeeEdits[employee.id] ?? profileFromSeed(employee);
+      return {
+        ...s,
+        employeeEdits: { ...s.employeeEdits, [employee.id]: { ...existing, phone } },
+        phoneAsks: { ...s.phoneAsks, [caregiverName]: { ...(s.phoneAsks[caregiverName] ?? { askedBy: "", askedAt: at }), answeredAt: at } },
+      };
+    });
+  }, [audit]);
+
+  const reviseSchedule = useCallback<DemoContextValue["reviseSchedule"]>(({ ended, started }) => {
+    audit({ action: "schedule.changed", entityType: "client", entityId: started.clientPersonId, before: { scheduleId: ended.id }, after: { scheduleId: started.id, startsOn: started.startsOn } });
+    setState((s) => ({ ...s, clientSchedules: [...s.clientSchedules.map((x) => (x.id === ended.id ? ended : x)), started] }));
+  }, [audit]);
+
+  const addClientSchedule = useCallback<DemoContextValue["addClientSchedule"]>((schedule) => {
+    audit({ action: "schedule.created", entityType: "client", entityId: schedule.clientPersonId, after: { scheduleId: schedule.id, startsOn: schedule.startsOn } });
+    setState((s) => ({ ...s, clientSchedules: [...s.clientSchedules, schedule] }));
+  }, [audit]);
+
+  const sendScheduleAgreement = useCallback<DemoContextValue["sendScheduleAgreement"]>((scheduleId, by, at) => {
+    audit({ action: "schedule.agreement_sent", entityType: "client_schedule", entityId: scheduleId, after: { by } });
+    setState((s) => ({ ...s, clientSchedules: s.clientSchedules.map((x) => (x.id === scheduleId ? { ...x, agreementSentAt: at } : x)) }));
+  }, [audit]);
+
+  const signScheduleAgreement = useCallback<DemoContextValue["signScheduleAgreement"]>((scheduleId, by, at) => {
+    audit({ action: "schedule.agreement_signed", entityType: "client_schedule", entityId: scheduleId, after: { by } });
+    setState((s) => ({ ...s, clientSchedules: s.clientSchedules.map((x) => (x.id === scheduleId ? { ...x, agreementSignedAt: at, agreementSentAt: x.agreementSentAt ?? at } : x)) }));
+  }, [audit]);
+
+  const setHouseholdBilling = useCallback<DemoContextValue["setHouseholdBilling"]>((householdId, billing, note) => {
+    audit({ action: "household.billing_changed", entityType: "household", entityId: householdId, after: { billing } });
+    setState((s) => ({ ...s, households: s.households.map((h) => (h.id === householdId ? { ...h, billing, note: note ?? h.note ?? null } : h)) }));
+  }, [audit]);
+
+  const setHouseholdRate = useCallback<DemoContextValue["setHouseholdRate"]>((householdId, rate, split) => {
+    audit({ action: "household.rate_set", entityType: "household", entityId: householdId, after: { rate } });
+    setState((s) => ({ ...s, households: s.households.map((h) => (h.id === householdId ? { ...h, householdRate: rate, split } : h)) }));
+  }, [audit]);
+
+  const pairHousehold = useCallback<DemoContextValue["pairHousehold"]>((input) => {
+    const id = newId("hh");
+    audit({ action: "household.paired", entityType: "household", entityId: id, after: { members: [input.clientName, input.partnerName], billing: input.billing } });
+    setState((s) => ({
+      ...s,
+      households: [
+        ...s.households.filter((h) => !h.members.some((m) => m.personId === input.clientPersonId || m.personId === input.partnerPersonId)),
+        {
+          id,
+          label: `${input.clientName} and ${input.partnerName}`,
+          primaryPersonId: input.clientPersonId,
+          members: [
+            { personId: input.clientPersonId, name: input.clientName },
+            { personId: input.partnerPersonId, name: input.partnerName },
+          ],
+          billing: input.billing,
+        },
+      ],
+    }));
+  }, [audit]);
+
+  const bookSupervision = useCallback<DemoContextValue["bookSupervision"]>((visit) => {
+    audit({ action: "supervision.booked", entityType: "client", entityId: visit.clientPersonId, after: { scheduledFor: visit.scheduledFor } });
+    setState((s) => ({ ...s, supervisoryVisits: [...s.supervisoryVisits.filter((v) => v.id !== visit.id), visit] }));
+  }, [audit]);
+
+  const completeSupervision = useCallback<DemoContextValue["completeSupervision"]>((visit) => {
+    audit({ action: "supervision.completed", entityType: "client", entityId: visit.clientPersonId, after: { completedAt: visit.completedAt } });
+    setState((s) => ({ ...s, supervisoryVisits: s.supervisoryVisits.map((v) => (v.id === visit.id ? visit : v)) }));
+  }, [audit]);
+
   const value = useMemo<DemoContextValue>(
     () => ({
       ...state,
+      addShift,
+      addScheduleEvent,
+      requestTimeOff,
+      cancelTimeOff,
+      declineCover,
+      saveCoverageEvent,
+      approveCoveragePlan,
+      approveCoverageOvertime,
+      reopenCoverageShift,
+      cancelCoverageEvent,
+      approveOvertime,
+      authorizeEarlyStart,
+      recordClockAttempt,
+      recordClock,
+      recordClockCorrection,
+      setClockPlace,
+      proposeClock,
+      decideClockProposal,
+      setServiceMix,
+      confirmServiceMix,
+      recordVisitChange,
+      addApprovedLocation,
+      decideLocation,
+      recordMileage,
+      recordExpenses,
+      recordVisitPay,
+      askForPhone,
+      answerPhoneAsk,
+      reviseSchedule,
+      addClientSchedule,
+      sendScheduleAgreement,
+      signScheduleAgreement,
+      setHouseholdBilling,
+      setHouseholdRate,
+      pairHousehold,
+      bookSupervision,
+      completeSupervision,
       addReferral,
       addContact,
       editContact,
@@ -1459,7 +1879,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       renameSopCategory,
       moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision],
   );
 
   /**

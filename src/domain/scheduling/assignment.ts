@@ -7,6 +7,7 @@ import {
   hoursOf,
   type Visit,
 } from "@/domain/scheduling/conflicts";
+import { timeOffFor, timeOffLabel, type TimeOff } from "@/domain/scheduling/timeOff";
 
 /**
  * Whether a particular caregiver can take a particular shift.
@@ -32,6 +33,7 @@ import {
 
 export type AssignmentIssueKind =
   | "not_employed"
+  | "time_off"
   | "credential_blocked"
   | "credential_expires_before_shift"
   | "double_booked"
@@ -72,6 +74,8 @@ export interface AssignmentContext {
    * means nobody has asked yet, which is not the same as a refusal.
    */
   clientAgreedToTransport?: boolean;
+  /** Requested time off — a person on a day off cannot be offered that day's shift. */
+  timeOff?: readonly TimeOff[];
 }
 
 export interface AssignmentAssessment {
@@ -104,6 +108,16 @@ export function assessAssignment(candidate: Candidate, ctx: AssignmentContext): 
           : candidate.status === "onboarding"
             ? `${candidate.name} is still onboarding and not yet on cases`
             : `${candidate.name} is not an active employee`,
+      severity: "blocking",
+    });
+  }
+
+  // --- Time off ------------------------------------------------------------
+  const off = timeOffFor(ctx.timeOff ?? [], candidate.name, ctx.visit.startsAt);
+  if (off) {
+    issues.push({
+      kind: "time_off",
+      message: `${candidate.name} has requested off ${timeOffLabel(off)}${off.reason ? ` — ${off.reason}` : ""}`,
       severity: "blocking",
     });
   }

@@ -50,6 +50,12 @@ export interface Visit {
    * same as false. See `isBillable`.
    */
   billableOverride?: boolean;
+  /** Set when time off opened this shift: whose it was. See domain/scheduling/timeOff. */
+  coverFor?: string;
+  /** The recurring schedule this visit was generated from. See domain/scheduling/clientSchedule. */
+  seriesId?: string;
+  /** The coverage plan this shift belongs to. See domain/scheduling/coverage. */
+  coverageEventId?: string;
 }
 
 export type ConflictKind =

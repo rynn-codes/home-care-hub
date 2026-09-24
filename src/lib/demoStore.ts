@@ -21,6 +21,20 @@ import { reconcileFolders } from "@/domain/documents/library";
 import type { Sop } from "@/domain/sops/sops";
 import { seedDocumentFolders, seedDocuments } from "@/lib/documentsSeed";
 import { seedSops } from "@/lib/sopsSeed";
+import type { Visit } from "@/domain/scheduling/conflicts";
+import type { CoverDecision, TimeOff } from "@/domain/scheduling/timeOff";
+import type { CoverageEvent, OvertimeApproval } from "@/domain/scheduling/coverage";
+import type { Household } from "@/domain/billing/households";
+import type { ClientSchedule } from "@/domain/scheduling/clientSchedule";
+import type { ServiceShare } from "@/domain/scheduling/serviceMix";
+import type { ApprovedLocation, ClockPlace } from "@/domain/scheduling/locations";
+import type { ClockProposal } from "@/domain/scheduling/reminders";
+import type { VisitChange } from "@/domain/scheduling/visitChanges";
+import { purgeExpired as purgeExpiredExpenses, type VisitExpense } from "@/domain/scheduling/expenses";
+import type { VisitPay } from "@/domain/scheduling/visitPay";
+import type { SupervisoryVisit } from "@/domain/supervision/supervision";
+import { seedSupervisoryVisits } from "@/lib/supervisionSeed";
+import { seedApprovedLocations, seedClientSchedules, seedHouseholds, seedMileage, type VisitMileage } from "@/lib/schedulingExtrasSeed";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -265,6 +279,61 @@ export interface DemoState {
   documents: LibraryDocument[];
   documentFolders: string[];
   sops: Sop[];
+
+  /* ── Scheduling ─────────────────────────────────────────────────────── */
+
+  /** Visits added on the board (Quick Add), beyond the seed and the recurring schedules. */
+  shifts: Visit[];
+  timeOff: TimeOff[];
+  /** A family said no replacement is needed on a day time off opened. */
+  coverDecisions: CoverDecision[];
+  coverageEvents: CoverageEvent[];
+  overtimeApprovals: OvertimeApproval[];
+  /** Per-visit permission to be paid from an early clock-in. */
+  earlyStarts: Record<string, boolean>;
+  clockAttempts: DemoClockAttempt[];
+  /** Clock-in and clock-out recorded through the app, by visit id. */
+  clockEvents: Record<string, { inAt?: string | null; outAt?: string | null }>;
+  clockCorrections: Record<string, DemoClockCorrection>;
+  clockPlaces: Record<string, Partial<Record<"in" | "out", ClockPlace>>>;
+  /** Caregiver answers to Joy's suggested times, keyed `${visitId}:${which}`. */
+  clockProposals: Record<string, ClockProposal>;
+  households: Household[];
+  clientSchedules: ClientSchedule[];
+  serviceMixes: Record<string, ServiceShare[]>;
+  serviceMixConfirmed: Record<string, { by: string; at: string }>;
+  approvedLocations: ApprovedLocation[];
+  visitMileage: Record<string, VisitMileage>;
+  visitChanges: VisitChange[];
+  /** Expense items by visit id — receipt metadata only, never the image. */
+  visitExpenses: Record<string, VisitExpense[]>;
+  visitPay: Record<string, VisitPay>;
+  /** The office asked a caregiver for her phone number through her Joy app. */
+  phoneAsks: Record<string, { askedBy: string; askedAt: string; answeredAt: string | null }>;
+  supervisoryVisits: SupervisoryVisit[];
+}
+
+export interface DemoClockAttempt {
+  id: string;
+  visitId: string;
+  caregiverName: string;
+  action: "in" | "out";
+  at: string;
+  distanceMeters: number | null;
+  accuracyMeters: number | null;
+  verdict: string;
+  officeLine: string | null;
+}
+
+export interface DemoClockCorrection {
+  visitId: string;
+  clockedInAt: string | null;
+  clockedOutAt: string | null;
+  reasonCode: string;
+  actionCode: string;
+  note: string;
+  by: string;
+  at: string;
 }
 
 function initial(): DemoState {
@@ -310,6 +379,28 @@ function initial(): DemoState {
     documents: [...seedDocuments],
     documentFolders: [...seedDocumentFolders],
     sops: [...seedSops],
+    shifts: [],
+    timeOff: [],
+    coverDecisions: [],
+    coverageEvents: [],
+    overtimeApprovals: [],
+    earlyStarts: {},
+    clockAttempts: [],
+    clockEvents: {},
+    clockCorrections: {},
+    clockPlaces: {},
+    clockProposals: {},
+    households: [...seedHouseholds],
+    clientSchedules: [...seedClientSchedules],
+    serviceMixes: {},
+    serviceMixConfirmed: {},
+    approvedLocations: [...seedApprovedLocations],
+    visitMileage: Object.fromEntries(seedMileage.map((m) => [m.visitId, m])),
+    visitChanges: [],
+    visitExpenses: {},
+    visitPay: {},
+    phoneAsks: {},
+    supervisoryVisits: [...seedSupervisoryVisits],
   };
 }
 
@@ -352,6 +443,18 @@ export function loadDemoState(): DemoState {
       ...(merged.interactions ?? []),
       ...seedInteractions.filter((i) => !have.has(i.id)),
     ];
+    // A blob from before the admissions queue carried `waitingSince` reads
+    // the seed's, so the waiting badges do not all start today.
+    merged.admissions = (merged.admissions ?? []).map((a) => {
+      if (a.waitingSince !== undefined) return a;
+      const seeded = seedAdmissions.find((x) => x.id === a.id);
+      return seeded ? { ...a, waitingSince: seeded.waitingSince } : a;
+    });
+    // Expense items past their thirty days go too.
+    const now = new Date();
+    merged.visitExpenses = Object.fromEntries(
+      Object.entries(merged.visitExpenses ?? {}).map(([id, items]) => [id, purgeExpiredExpenses(items ?? [], now)]),
+    );
     return merged;
   } catch {
     return initial();
