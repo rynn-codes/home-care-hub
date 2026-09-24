@@ -16,6 +16,11 @@ import type { ProfileChange } from "@/domain/records/profileChanges";
 import type { EmployeeProfile } from "@/domain/employees/profile";
 import type { ClientStatusChange } from "@/domain/clients/roster";
 import { seedInteractions } from "@/lib/activitySeed";
+import type { LibraryDocument } from "@/domain/documents/library";
+import { reconcileFolders } from "@/domain/documents/library";
+import type { Sop } from "@/domain/sops/sops";
+import { seedDocumentFolders, seedDocuments } from "@/lib/documentsSeed";
+import { seedSops } from "@/lib/sopsSeed";
 
 /**
  * Demo persistence, backed by localStorage.
@@ -256,6 +261,10 @@ export interface DemoState {
   deletedClientIds: string[];
   /** Status set on a client record, over whatever the seed says. */
   clientStatuses: Record<string, ClientStatusChange>;
+  /** The document library — records only; the files live in lib/fileCache for the session. */
+  documents: LibraryDocument[];
+  documentFolders: string[];
+  sops: Sop[];
 }
 
 function initial(): DemoState {
@@ -298,6 +307,9 @@ function initial(): DemoState {
     deletedEmployeeIds: [],
     deletedClientIds: [],
     clientStatuses: {},
+    documents: [...seedDocuments],
+    documentFolders: [...seedDocumentFolders],
+    sops: [...seedSops],
   };
 }
 
@@ -331,6 +343,8 @@ export function loadDemoState(): DemoState {
     }
     // The bin empties itself: anything past its recovery window goes on load.
     merged.deletedRecords = partitionExpired(merged.deletedRecords ?? [], new Date().toISOString()).keep;
+    // A folder a document names is a folder, whatever the list says.
+    merged.documentFolders = reconcileFolders(merged.documentFolders ?? [], merged.documents ?? []);
     // Seeded activity added since this blob was written joins the list; nothing
     // somebody logged is touched.
     const have = new Set((merged.interactions ?? []).map((i) => i.id));

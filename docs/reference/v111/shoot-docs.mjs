@@ -1,0 +1,14 @@
+import { chromium } from "playwright";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await browser.newPage({ viewport: { width: 1380, height: 900 } });
+const errors = [];
+page.on("pageerror", (e) => errors.push(String(e)));
+const out = "/tmp/claude-0/-home-claude/d2433efc-dba1-5080-a930-43a82e41e69f/scratchpad/";
+await page.goto("http://localhost:8097/#/documents", { waitUntil: "networkidle" });
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}documents.png`, fullPage: true });
+await page.goto("http://localhost:8097/#/sops", { waitUntil: "networkidle" });
+await page.waitForTimeout(800);
+await page.screenshot({ path: `${out}sops.png`, fullPage: true });
+console.log("errors:", JSON.stringify(errors));
+await browser.close();

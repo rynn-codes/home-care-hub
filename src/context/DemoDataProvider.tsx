@@ -31,6 +31,15 @@ import { changeSummary, changedFieldLabels, type ProfileChange } from "@/domain/
 import { binned, type DeletedRecord } from "@/domain/records/deletion";
 import { interactionFromDraft, type ActivityDraft, type ActivitySubject, type Interaction } from "@/domain/records/activity";
 import { CLIENT_STATUS_LABELS, type ClientStatus } from "@/domain/clients/roster";
+import {
+  cleanFolderName,
+  moveFolderDocuments,
+  renameFolderOnDocuments,
+  tagDocument as tagDoc,
+  untagDocument,
+  type LibraryDocument,
+} from "@/domain/documents/library";
+import { moveCategory, renameCategory, withNewVersion, type Sop } from "@/domain/sops/sops";
 
 /** What each kind of deleted record carries so it can be put back exactly. */
 export type DeletedPayload =
@@ -39,8 +48,8 @@ export type DeletedPayload =
   | { kind: "employee"; employeeId: string; edits: EmployeeProfile | null; added: EmployeeProfile | null }
   | { kind: "client"; clientPersonId: string }
   | { kind: "admission"; admission: SeedAdmission; person: DemoState["people"][number] | null; mrNumber: string | null }
-  | { kind: "document"; document: unknown }
-  | { kind: "sop"; sop: unknown };
+  | { kind: "document"; document: LibraryDocument }
+  | { kind: "sop"; sop: Sop };
 
 /**
  * The demo's organization id.
@@ -133,6 +142,24 @@ interface DemoContextValue extends DemoState {
     lastServiceOn?: string | null;
     name?: string;
   }) => void;
+
+  /* ── Documents and SOPs ───────────────────────────────────────────────── */
+
+  /** Adds the record and returns its id. The file itself is the caller's to keep (lib/fileCache). */
+  uploadDocument: (doc: Omit<LibraryDocument, "id" | "uploadedAt" | "uploadedBy">) => string;
+  tagDocument: (id: string, tag: string, remove?: boolean) => void;
+  updateDocument: (id: string, patch: Partial<LibraryDocument>) => void;
+  duplicateDocument: (id: string) => void;
+  deleteDocument: (id: string) => void;
+  addDocumentFolder: (name: string) => void;
+  renameDocumentFolder: (from: string, to: string) => void;
+  deleteDocumentFolder: (name: string, moveTo: string) => void;
+  addSop: (input: { title: string; category: string; ownerName: string; content: string }) => string;
+  updateSop: (id: string, patch: Partial<Pick<Sop, "title" | "category">>) => void;
+  saveSopVersion: (id: string, content: string) => void;
+  deleteSop: (id: string) => void;
+  renameSopCategory: (from: string, to: string) => void;
+  moveSopCategory: (from: string, to: string) => void;
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null);
@@ -1055,7 +1082,8 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
           mrNumbers: p.mrNumber ? { ...s.mrNumbers, [id]: p.mrNumber } : s.mrNumbers,
         };
       }
-      // Documents and SOPs restore through their own modules' payloads.
+      if (p.kind === "document") return { ...s, deletedRecords, documents: [p.document, ...s.documents] };
+      if (p.kind === "sop") return { ...s, deletedRecords, sops: [p.sop, ...s.sops] };
       return { ...s, deletedRecords };
     });
     audit({ action: "record.restored", entityType: "deleted_record", entityId: id });
@@ -1164,6 +1192,162 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     });
   }, [audit]);
 
+  /* ── Documents ────────────────────────────────────────────────────────── */
+
+  const uploadDocument = useCallback<DemoContextValue["uploadDocument"]>((doc) => {
+    const id = newId("doc");
+    audit({ action: "document.uploaded", entityType: "document", entityId: id, after: { name: doc.name, folder: doc.folder } });
+    setState((s) => ({
+      ...s,
+      documents: [{ ...doc, id, uploadedAt: new Date().toISOString(), uploadedBy: currentUserRef.current.name }, ...s.documents],
+    }));
+    return id;
+  }, [audit]);
+
+  const tagDocument = useCallback<DemoContextValue["tagDocument"]>((id, tag, remove) => {
+    setState((s) => ({ ...s, documents: s.documents.map((d) => (d.id === id ? (remove ? untagDocument(d, tag) : tagDoc(d, tag)) : d)) }));
+  }, []);
+
+  const updateDocument = useCallback<DemoContextValue["updateDocument"]>((id, patch) => {
+    setState((s) => ({ ...s, documents: s.documents.map((d) => (d.id === id ? { ...d, ...patch } : d)) }));
+  }, []);
+
+  const duplicateDocument = useCallback<DemoContextValue["duplicateDocument"]>((id) => {
+    setState((s) => {
+      const doc = s.documents.find((d) => d.id === id);
+      if (!doc) return s;
+      const dot = doc.name.lastIndexOf(".");
+      const name = dot > 0 ? `${doc.name.slice(0, dot)} (copy)${doc.name.slice(dot)}` : `${doc.name} (copy)`;
+      const copy: LibraryDocument = { ...doc, id: newId("doc"), name, uploadedAt: new Date().toISOString(), uploadedBy: currentUserRef.current.name };
+      return { ...s, documents: [copy, ...s.documents] };
+    });
+  }, []);
+
+  const deleteDocument = useCallback<DemoContextValue["deleteDocument"]>((id) => {
+    audit({ action: "document.deleted", entityType: "document", entityId: id });
+    setState((s) => {
+      const doc = s.documents.find((d) => d.id === id);
+      if (!doc) return s;
+      return {
+        ...s,
+        documents: s.documents.filter((d) => d.id !== id),
+        deletedRecords: [
+          binned({
+            id,
+            kind: "document",
+            label: doc.name,
+            sublabel: `${doc.folder}${doc.tags.length ? ` · ${doc.tags.join(", ")}` : ""}`,
+            by: currentUserRef.current.name,
+            payload: { kind: "document", document: doc } satisfies DeletedPayload,
+          }),
+          ...s.deletedRecords,
+        ],
+      };
+    });
+  }, [audit]);
+
+  const addDocumentFolder = useCallback<DemoContextValue["addDocumentFolder"]>((raw) => {
+    const name = cleanFolderName(raw);
+    if (!name) return;
+    audit({ action: "document.folder_created", entityType: "document_folder", entityId: name });
+    setState((s) =>
+      s.documentFolders.some((f) => f.toLowerCase() === name.toLowerCase()) ? s : { ...s, documentFolders: [...s.documentFolders, name] },
+    );
+  }, [audit]);
+
+  const renameDocumentFolder = useCallback<DemoContextValue["renameDocumentFolder"]>((from, to) => {
+    const name = cleanFolderName(to);
+    if (!name || name === from) return;
+    audit({ action: "document.folder_renamed", entityType: "document_folder", entityId: from, after: { name } });
+    setState((s) => ({
+      ...s,
+      documentFolders: s.documentFolders.map((f) => (f === from ? name : f)),
+      documents: renameFolderOnDocuments(s.documents, from, name),
+    }));
+  }, [audit]);
+
+  const deleteDocumentFolder = useCallback<DemoContextValue["deleteDocumentFolder"]>((name, moveTo) => {
+    audit({ action: "document.folder_deleted", entityType: "document_folder", entityId: name, after: { movedTo: moveTo } });
+    setState((s) => {
+      // Every file has to live somewhere, so the last folder stays.
+      if (s.documentFolders.length < 2) return s;
+      const target = s.documentFolders.find((f) => f === moveTo && f !== name) ?? s.documentFolders.find((f) => f !== name);
+      if (!target) return s;
+      return {
+        ...s,
+        documentFolders: s.documentFolders.filter((f) => f !== name),
+        documents: moveFolderDocuments(s.documents, name, target),
+      };
+    });
+  }, [audit]);
+
+  /* ── SOPs ─────────────────────────────────────────────────────────────── */
+
+  const addSop = useCallback<DemoContextValue["addSop"]>((input) => {
+    const id = newId("sop");
+    const now = new Date().toISOString();
+    audit({ action: "sop.created", entityType: "sop", entityId: id, after: { title: input.title, category: input.category } });
+    setState((s) => ({
+      ...s,
+      sops: [
+        {
+          id,
+          title: input.title,
+          category: input.category,
+          ownerName: input.ownerName,
+          updatedAt: now,
+          versions: [{ version: 1, updatedAt: now, updatedBy: input.ownerName, content: input.content }],
+        },
+        ...s.sops,
+      ],
+    }));
+    return id;
+  }, [audit]);
+
+  const updateSop = useCallback<DemoContextValue["updateSop"]>((id, patch) => {
+    setState((s) => ({ ...s, sops: s.sops.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  }, []);
+
+  const saveSopVersion = useCallback<DemoContextValue["saveSopVersion"]>((id, content) => {
+    const now = new Date().toISOString();
+    const by = currentUserRef.current.name;
+    audit({ action: "sop.revised", entityType: "sop", entityId: id });
+    setState((s) => ({ ...s, sops: s.sops.map((x) => (x.id === id ? withNewVersion(x, content, by, now) : x)) }));
+  }, [audit]);
+
+  const deleteSop = useCallback<DemoContextValue["deleteSop"]>((id) => {
+    audit({ action: "sop.deleted", entityType: "sop", entityId: id });
+    setState((s) => {
+      const sop = s.sops.find((x) => x.id === id);
+      if (!sop) return s;
+      return {
+        ...s,
+        sops: s.sops.filter((x) => x.id !== id),
+        deletedRecords: [
+          binned({
+            id,
+            kind: "sop",
+            label: sop.title,
+            sublabel: `${sop.category} · v${sop.versions.length}`,
+            by: currentUserRef.current.name,
+            payload: { kind: "sop", sop } satisfies DeletedPayload,
+          }),
+          ...s.deletedRecords,
+        ],
+      };
+    });
+  }, [audit]);
+
+  const renameSopCategory = useCallback<DemoContextValue["renameSopCategory"]>((from, to) => {
+    audit({ action: "sop.category_renamed", entityType: "sop_category", entityId: from, after: { name: to } });
+    setState((s) => ({ ...s, sops: renameCategory(s.sops, from, to) }));
+  }, [audit]);
+
+  const moveSopCategory = useCallback<DemoContextValue["moveSopCategory"]>((from, to) => {
+    audit({ action: "sop.category_emptied", entityType: "sop_category", entityId: from, after: { movedTo: to } });
+    setState((s) => ({ ...s, sops: moveCategory(s.sops, from, to) }));
+  }, [audit]);
+
   const value = useMemo<DemoContextValue>(
     () => ({
       ...state,
@@ -1204,8 +1388,22 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       recordView,
       issueMrNumber,
       setClientStatus,
+      uploadDocument,
+      tagDocument,
+      updateDocument,
+      duplicateDocument,
+      deleteDocument,
+      addDocumentFolder,
+      renameDocumentFolder,
+      deleteDocumentFolder,
+      addSop,
+      updateSop,
+      saveSopVersion,
+      deleteSop,
+      renameSopCategory,
+      moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory],
   );
 
   /**

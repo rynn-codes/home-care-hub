@@ -171,6 +171,16 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "activity.deleted": "deleted a logged activity",
   "contact.deleted": "removed a contact",
   "admission.deleted": "deleted an admission record",
+  "document.uploaded": "added a document",
+  "document.deleted": "deleted a document",
+  "document.folder_created": "added a document folder",
+  "document.folder_renamed": "renamed a document folder",
+  "document.folder_deleted": "deleted a document folder",
+  "sop.created": "added a procedure",
+  "sop.revised": "saved a new version of a procedure",
+  "sop.deleted": "deleted a procedure",
+  "sop.category_renamed": "renamed a procedure category",
+  "sop.category_emptied": "emptied a procedure category",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {
