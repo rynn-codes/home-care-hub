@@ -123,6 +123,19 @@ function dateOnly(iso: string): string {
   return iso.slice(0, 10);
 }
 
+/** "Sep 15" — the day, as the office would say it. */
+function dayLabel(iso: string): string {
+  const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
+  return Number.isNaN(d.getTime()) ? iso.slice(0, 10) : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** "Tue, Sep 15 at 7:15 PM". */
+function momentLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 16).replace("T", " ");
+  return `${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} at ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+}
+
 /** The start of the workweek containing this instant, as a date string. */
 export function workweekStart(iso: string, startsOn = WORKWEEK_STARTS_ON): string {
   const d = new Date(iso);
@@ -260,7 +273,7 @@ export function findExceptions(input: {
         kind: "open_entry",
         entryId: entry.id,
         visitId: entry.visitId,
-        detail: `Still clocked in since ${entry.clockedInAt.slice(0, 16).replace("T", " ")}.`,
+        detail: `Still clocked in since ${momentLabel(entry.clockedInAt)}.`,
         blocking: true,
       });
       continue;
@@ -320,7 +333,7 @@ export function findExceptions(input: {
         kind: "awaiting_verification",
         entryId: null,
         visitId: visit.id,
-        detail: `The visit on ${dateOnly(visit.startsAt)} is under review. Approve the hours before payroll goes out.`,
+        detail: `The visit on ${dayLabel(visit.startsAt)} is under review. Approve the hours before payroll goes out.`,
         blocking: true,
       });
       continue;
@@ -330,7 +343,7 @@ export function findExceptions(input: {
       kind: "visit_without_time",
       entryId: null,
       visitId: visit.id,
-      detail: `A visit on ${dateOnly(visit.startsAt)} has no time recorded against it.`,
+      detail: `A visit on ${dayLabel(visit.startsAt)} has no time recorded against it.`,
       // Somebody may have worked and forgotten to clock in. Paying nothing for
       // it silently is the failure this catches.
       blocking: true,
