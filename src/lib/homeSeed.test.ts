@@ -48,12 +48,12 @@ describe("Joy's column", () => {
     }
   });
 
-  it("keeps amber for the one state that owes a human something", () => {
-    // The semantic rule: amber means a person still owes something. Handled is
-    // done, Working is Joy's, Waiting is somebody else's — none of them may
-    // wear it.
-    const amber = HOME_JOY.filter((g) => g.tone.includes("B54708"));
-    expect(amber.map((g) => g.label)).toEqual(["Needs you"]);
+  it("keeps the warm colour for the one state that owes a human something", () => {
+    // The semantic rule: a warm tone means a person still owes something.
+    // Handled is done, Working is Joy's, Waiting is somebody else's — none of
+    // them may wear it.
+    const warm = HOME_JOY.filter((g) => g.tone.includes("C2410C") || g.tone.includes("B54708"));
+    expect(warm.map((g) => g.label)).toEqual(["Needs you"]);
   });
 
   it("says what is waiting in one line, not four", () => {

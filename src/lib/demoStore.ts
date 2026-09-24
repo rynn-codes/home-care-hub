@@ -339,7 +339,11 @@ export interface DemoClockAttempt {
   id: string;
   visitId: string;
   caregiverName: string;
+  /** Who the visit was for, so Location Watch can say it without a lookup. */
+  clientName?: string;
   action: "in" | "out";
+  /** True when the agency's setting refused the clock rather than recording it. */
+  refused?: boolean;
   at: string;
   distanceMeters: number | null;
   accuracyMeters: number | null;

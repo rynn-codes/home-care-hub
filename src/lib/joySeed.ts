@@ -34,7 +34,7 @@ export interface AgendaEntry {
 
 export const todaysAgenda: AgendaEntry[] = [
   { id: "a1", time: "8:00 AM", client: "Marilyn K", service: "Personal Care", assignee: "Chanel P.", note: "clocked in 7:56 AM", state: "in-progress" },
-  { id: "a2", time: "10:30 AM", client: "Robert H", service: "Initial Assessment", assignee: "Kelsey Westley, RN", state: "scheduled" },
+  { id: "a2", time: "10:30 AM", client: "Jessie C", service: "Initial Assessment", assignee: "Kelsey Westley, RN", state: "scheduled" },
   { id: "a3", time: "12:00 PM", client: "Robert H", service: "Respite", assignee: "Unassigned", note: "3 caregivers available", state: "unassigned" },
   { id: "a4", time: "2:00 PM", client: "Brandon", service: "Field Orientation", assignee: "Shadowing Chanel P.", state: "scheduled" },
   { id: "a5", time: "4:00 PM", client: "Jessie C", service: "Personal Care", assignee: "Vanessa J", state: "scheduled" },

@@ -1,0 +1,17 @@
+import { chromium } from "playwright";
+import fs from "node:fs";
+const port = process.argv[3] ?? "8097";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await browser.newPage({ viewport: { width: 1380, height: 900 } });
+const base = `http://localhost:${port}/index.html`;
+const out = process.argv[2] ?? "/tmp/claude-0/-home-claude/d2433efc-dba1-5080-a930-43a82e41e69f/scratchpad/shots";
+fs.mkdirSync(out, { recursive: true });
+page.on("pageerror", (e) => console.log("PAGE ERROR", e.message));
+await page.goto(`${base}#/brain`);
+await page.waitForTimeout(900);
+await page.getByRole("button", { name: /more things Joy is watching/ }).click();
+await page.waitForTimeout(400);
+const rows = await page.locator("section:has(h2:text('What Joy noticed')) li a").evaluateAll((els) => els.map((e) => e.querySelector("span:nth-child(2) > span")?.textContent?.trim()));
+fs.writeFileSync(`${out}/noticed-${port}.txt`, rows.join("\n"));
+console.log(rows.length, "findings");
+await browser.close();

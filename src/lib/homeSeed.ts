@@ -1,3 +1,5 @@
+import { employeeAssignee, JOY, type Assignee, type Subject } from "@/domain/brain/subjects";
+
 /** "August 26" — the day after today, in the brief's own long form. */
 function tomorrowLabel(): string {
   const d = new Date();
@@ -6,30 +8,36 @@ function tomorrowLabel(): string {
 }
 
 /**
- * The Home screen's content, taken verbatim from Karynn's mockup.
+ * The Home screen's content, built from Karynn's mockup and then brought onto
+ * the one cast every other screen carries.
  *
- * Karynn, 24 August: "Make the Home Screen EXACTLY like the mockup." So the
- * copy, the counts and the row data below are the design's own, transcribed
- * rather than recomputed. Where earlier screens substituted the project's
- * unified cast for the mock's illustrative names, this screen does not — the
- * instruction was exactness, and the mock's people (Mrs. Davis, Joan Robinson,
- * David Okoro, Samantha Chen) are fictional, the same as ours.
+ * Karynn, 24 August: "Make the Home Screen EXACTLY like the mockup." The
+ * layout, the copy and the counts below are the design's own. The people are
+ * not: a Home that named a Mrs. Davis the Clients directory had never heard of
+ * was Joy contradicting itself, so the rows now point at the same records the
+ * rest of the product shows — Pamela P's care conference, Marilyn K's
+ * background check, Vince W's CPR — and every row that names somebody opens
+ * them.
  *
- * The consequence, stated plainly so it is a choice and not an accident: Home
- * now names people the Clients and Employees directories do not carry. Say the
- * word and these map onto Pamela P / Kelsey Westley / Brandon / Chanel P
- * in one edit — the shapes are identical.
+ * What is still the mockup's: the two orientation names (David Okoro,
+ * Samantha Chen) on the schedule card, which have no record behind them and
+ * are labelled by their link into Hiring rather than a person.
  */
 
 export const HOME_BRIEF = {
   headline: "Operations are in good shape.",
   paragraph:
-    "Payroll closes tomorrow. Joy is waiting on two corrected timecards and has already followed up with both caregivers. Mrs. Davis's family care conference is at 2:00 PM today.",
+    "Payroll closes tomorrow. Joy is waiting on two corrected timecards and has already followed up with both caregivers. Pamela P's family care conference is at 2:00 PM today.",
   // The mockup froze this at "tomorrow — August 24" because its today was the
   // 23rd. Ours is the real clock, so the date is computed: a card that says
   // "tomorrow" beside yesterday's date is the kind of small wrongness that
   // makes a person stop trusting every other number on the screen.
-  comingUp: { icon: "🎂", title: "Coming up tomorrow — Thylia's birthday", when: tomorrowLabel() },
+  comingUp: {
+    icon: "🎂",
+    title: "Coming up tomorrow — Thylia B's birthday",
+    when: tomorrowLabel(),
+    subject: { kind: "employee", id: "emp-thylia" } as Subject,
+  },
   allClear: "Nothing else needs your attention this morning.",
 };
 
@@ -40,8 +48,6 @@ export interface HomeEvent {
   meta: string;
   tag: string;
   done?: boolean;
-  /** The Now marker sits immediately above this row. */
-  nowBefore?: boolean;
   href: string;
 }
 
@@ -58,10 +64,9 @@ export const HOME_SCHEDULE: HomeEvent[] = [
   {
     time: "2:00 PM",
     duration: "45 min",
-    title: "Mrs. Davis · family care conference",
-    meta: "With Joan Robinson, RN · client home",
+    title: "Pamela P · family care conference",
+    meta: "With Robert Tanya R, RN · client home",
     tag: "Open client",
-    nowBefore: true,
     href: "/clients",
   },
   {
@@ -99,7 +104,7 @@ export const HOME_NEEDS: HomeNeed[] = [
     href: "/clients",
   },
   {
-    title: "Confirm Robert H caregiver match",
+    title: "Confirm Jessie C caregiver match",
     subject: "Joy prepared 3 candidates · start date Aug 26",
     pill: "Match",
     cta: "Review",
@@ -119,6 +124,8 @@ export interface HomeWaiting {
   sub: string;
   /** What Joy last did about it — the row's right-hand chip. */
   pill: string;
+  /** Who is carrying it: Joy, or a named person on the team. */
+  assignedTo: Assignee;
   href: string;
 }
 
@@ -127,24 +134,27 @@ export const HOME_WAITING: HomeWaiting[] = [
     icon: "check",
     tint: ["bg-[#FFF4E8]", "text-[#B54708]"],
     title: "Background check pending",
-    sub: "Sarah Johnson · requested 3 days ago",
+    sub: "Marilyn K · requested 3 days ago",
     pill: "Joy following up",
+    assignedTo: JOY,
     href: "/hiring",
   },
   {
     icon: "share",
     tint: ["bg-[#EEF0FE]", "text-primary"],
     title: "Family signature requested",
-    sub: "Mrs. Davis — Plan of Care · sent Tuesday",
-    pill: "2nd reminder sent",
+    sub: "Pamela P — Plan of Care · sent Tuesday",
+    pill: "Kelsey calling today",
+    assignedTo: employeeAssignee("emp-kelsey", "Kelsey Westley, RN"),
     href: "/clients",
   },
   {
     icon: "upload",
     tint: ["bg-[#ECFDF3]", "text-[#027A48]"],
     title: "CPR renewal requested",
-    sub: "Mike Chen · expires Aug 29",
+    sub: "Vince W · expires Aug 29",
     pill: "Reminder sent Friday",
+    assignedTo: JOY,
     href: "/employees",
   },
   {
@@ -153,11 +163,11 @@ export const HOME_WAITING: HomeWaiting[] = [
     title: "Gusto onboarding incomplete",
     sub: "Jane Smith · step 2 of 4",
     pill: "Joy nudged today",
+    assignedTo: JOY,
     href: "/employees",
   },
 ];
 
-/** Joy's four states, in the order CLAUDE.md fixes them. */
 /**
  * Joy's own work, in the four states CLAUDE.md fixes: HANDLED · WORKING ·
  * WAITING · NEEDS YOU, those words, that order, everywhere they appear.
@@ -229,18 +239,12 @@ export const HOME_JOY: ReadonlyArray<{
     n: 1,
     label: "Needs you",
     note: "",
-    // Amber, and the only amber in this column: this is the one state where a
+    // The one warm colour in this column: this is the one state where a
     // human still owes something. Handled is green, Working is the primary
     // blue, Waiting is quiet.
-    tone: "text-[#B54708]",
+    tone: "text-[#C2410C]",
     items: [{ text: "Approve Vince W rate change", to: "/brain/operations" }],
   },
-];
-
-export const HOME_ASK_CHIPS = [
-  "Show today's open shifts",
-  "What's missing for payroll?",
-  "Prepare tomorrow's schedule",
 ];
 
 /**

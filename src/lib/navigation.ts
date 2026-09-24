@@ -16,6 +16,12 @@ export function cameFrom(from: CameFrom): { from: CameFrom } {
   return { from };
 }
 
+/** The panel a screen was asked to restore when Back brought the user here. */
+export function readReopen(state: unknown): string | null {
+  const reopen = (state as { reopen?: unknown } | null)?.reopen;
+  return typeof reopen === "string" ? reopen : null;
+}
+
 export function readCameFrom(state: unknown): CameFrom | null {
   const from = (state as { from?: CameFrom } | null)?.from;
   return from && typeof from.label === "string" && typeof from.to === "string" ? from : null;

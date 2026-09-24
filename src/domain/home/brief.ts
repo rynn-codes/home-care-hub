@@ -1,4 +1,5 @@
 import { homeHeadline, type HomeSignal } from "@/domain/home/signals";
+import { holidaySentence, type USHoliday } from "@/domain/calendar/usHolidays";
 
 /**
  * The Morning Brief — the mockups' opening move, in Joy's voice.
@@ -19,8 +20,12 @@ export function morningBrief(input: {
   /** The next Saturday run's week, e.g. "2026-08-29". */
   upcomingBillingWeek: string;
   today: string;
+  /** Today's holiday, if it is one. The brief opens with it. */
+  holiday?: USHoliday | null;
 }): string {
   const sentences: string[] = [];
+
+  if (input.holiday) sentences.push(holidaySentence(input.holiday));
 
   // Today's shape first — the mock's own opening.
   if (input.visitsToday === 0) {

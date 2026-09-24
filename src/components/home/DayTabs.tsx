@@ -3,11 +3,14 @@ import { Link } from "react-router-dom";
 import { ClipboardCheck, CornerUpRight, Upload, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HOME_NEEDS, HOME_NEEDS_FOOTNOTE, HOME_SCHEDULE, HOME_WAITING } from "@/lib/homeSeed";
+import { assigneeName } from "@/domain/brain/subjects";
 import { Confetti } from "@/components/home/Confetti";
+import { nowIndex } from "@/components/home/nowIndex";
 
 /**
  * My Schedule · Needs Me · Waiting on Others — the mockup's working card,
- * transcribed. Rows, pills, the Now marker and the copy are the design's.
+ * transcribed. Rows, pills and the copy are the design's; the Now marker
+ * follows the real clock rather than sitting where the mockup froze it.
  */
 type Tab = "schedule" | "needs" | "waiting";
 
@@ -18,6 +21,16 @@ const WAITING_ICON = {
   upload: Upload,
   user: User,
 } as const;
+
+function NowLine() {
+  return (
+    <div className="flex items-center gap-3 pb-1 pt-2">
+      <span className="w-[88px] flex-none text-[12px] font-medium text-primary">Now</span>
+      <span className="h-[7px] w-[7px] flex-none rounded-full bg-primary" aria-hidden="true" />
+      <span className="h-px flex-1 bg-[#E9E9EF]" aria-hidden="true" />
+    </div>
+  );
+}
 
 export function DayTabs() {
   const [tab, setTab] = useState<Tab>("schedule");
@@ -36,8 +49,13 @@ export function DayTabs() {
     wasClear.current = allClear;
   }, [allClear]);
 
+  const now = nowIndex(
+    HOME_SCHEDULE.map((e) => e.time),
+    new Date(),
+  );
+
   return (
-    <section className="flex flex-col rounded-[14px] border border-[#ECECF1] bg-white px-[22px] py-5">
+    <section className="flex flex-col rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] px-[22px] py-5">
       <div className="mb-2 flex items-center gap-3.5">
         <div className="flex gap-0.5 rounded-[10px] bg-[#F4F4F6] p-[3px]" role="tablist" aria-label="Today">
           {(
@@ -55,7 +73,7 @@ export function DayTabs() {
               className={cn(
                 "whitespace-nowrap rounded-[8px] px-3.5 py-[7px] text-[12.5px] transition-colors",
                 tab === value
-                  ? "bg-white font-medium text-foreground shadow-[0_1px_2px_rgba(0,0,0,.05)]"
+                  ? "bg-[var(--paper)] font-medium text-foreground shadow-[0_1px_2px_rgba(0,0,0,.05)]"
                   : "font-normal text-muted-foreground hover:text-foreground",
               )}
             >
@@ -70,35 +88,24 @@ export function DayTabs() {
 
       {tab === "schedule" && (
         <div className="flex flex-col">
-          {HOME_SCHEDULE.map((e) => (
+          {HOME_SCHEDULE.map((e, i) => (
             <div key={e.title}>
-              {e.nowBefore && (
-                <div className="flex items-center gap-3 pb-1 pt-2">
-                  <span className="w-[88px] flex-none text-[12px] font-medium text-primary">Now</span>
-                  <span className="h-[7px] w-[7px] flex-none rounded-full bg-primary" aria-hidden="true" />
-                  <span className="h-px flex-1 bg-[#E9E9EF]" aria-hidden="true" />
-                </div>
-              )}
+              {i === now && <NowLine />}
               <Link
                 to={e.href}
-                className="flex items-start gap-4 border-t border-[#F3F3F6] py-4 transition-colors first:border-t-0 hover:bg-[#FCFCFD]"
+                className="flex items-start gap-4 border-t border-[var(--hairline-soft)] py-4 transition-colors first:border-t-0 hover:bg-[var(--paper-sunken)]"
               >
                 <span className="flex w-[88px] flex-none flex-col leading-[1.35]">
                   <span className="text-[13px] font-medium text-muted-foreground">{e.time}</span>
                   <span className="text-[11.5px] text-muted-foreground">{e.duration}</span>
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-[4px]">
-                  {/* The design dims completed rows to #9B9BA3/#B4B4BC, which
-                      fails the contrast bar the axe suite holds every screen
-                      to. Completed rows keep the accessible muted token and
-                      take a strike-through, which reads as done without the
-                      unreadable grey. */}
+                  {/* Completed rows keep the accessible muted token and take a
+                      strike-through, which reads as done without the
+                      unreadable grey the design used. */}
                   <span
                     className={cn(
                       "text-[15px] font-medium tracking-[-.01em]",
-                      // Same weight of mark as a cleared Needs-Me row: the
-                      // body-text ink, not a hairline grey that reads as a
-                      // rendering artefact.
                       e.done && "text-muted-foreground line-through decoration-[#5B6274] decoration-[1.5px]",
                     )}
                   >
@@ -117,6 +124,7 @@ export function DayTabs() {
               </Link>
             </div>
           ))}
+          {now >= HOME_SCHEDULE.length && <NowLine />}
         </div>
       )}
 
@@ -127,7 +135,7 @@ export function DayTabs() {
           {/* Progress under the tabs: how much of today's judgement is done. */}
           <div className="mb-1 pt-1">
             <div
-              className="h-1 flex-1 overflow-hidden rounded-full bg-[#F1F2F6]"
+              className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--wash-strong)]"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={HOME_NEEDS.length}
@@ -147,7 +155,7 @@ export function DayTabs() {
           {HOME_NEEDS.map((n) => {
             const isDone = Boolean(done[n.title]);
             return (
-              <div key={n.title} className="flex items-center gap-4 border-t border-[#F3F3F6] py-4">
+              <div key={n.title} className="flex items-center gap-4 border-t border-[var(--hairline-soft)] py-4">
                 <button
                   type="button"
                   onClick={() => setDone((d) => ({ ...d, [n.title]: !d[n.title] }))}
@@ -187,7 +195,7 @@ export function DayTabs() {
                 <span
                   className={cn(
                     "flex-none whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
-                    isDone ? "bg-[#F4F4F6] text-muted-foreground/70" : "bg-[#F1F2F6] text-[#5B6274]",
+                    isDone ? "bg-[#F4F4F6] text-muted-foreground/70" : "bg-[var(--wash-strong)] text-[var(--ink-body)]",
                   )}
                 >
                   {n.pill}
@@ -204,7 +212,7 @@ export function DayTabs() {
             );
           })}
 
-          <div className="flex items-center gap-3 border-t border-[#F3F3F6] pt-3">
+          <div className="flex items-center gap-3 border-t border-[var(--hairline-soft)] pt-3">
             <span className="flex-none whitespace-nowrap text-[12px] text-muted-foreground tabular-nums">
               {cleared} of {HOME_NEEDS.length} cleared
             </span>
@@ -224,7 +232,7 @@ export function DayTabs() {
               <Link
                 key={w.title}
                 to={w.href}
-                className="flex items-center gap-3.5 border-t border-[#F3F3F6] py-3.5 transition-colors first:border-t-0 hover:bg-[#FCFCFD]"
+                className="flex items-center gap-3.5 border-t border-[var(--hairline-soft)] py-3.5 transition-colors first:border-t-0 hover:bg-[var(--paper-sunken)]"
               >
                 <span className={cn("flex h-9 w-9 flex-none items-center justify-center rounded-[10px]", w.tint[0])}>
                   <Icon className={cn("h-[17px] w-[17px]", w.tint[1])} aria-hidden="true" strokeWidth={1.6} />
@@ -232,8 +240,11 @@ export function DayTabs() {
                 <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
                   <span className="text-[14px] font-medium tracking-[-.01em]">{w.title}</span>
                   <span className="text-[12.5px] text-muted-foreground">{w.sub}</span>
+                  <span className="text-[12px] text-muted-foreground">
+                    Assigned to <span className="font-medium text-primary">{assigneeName(w.assignedTo)}</span>
+                  </span>
                 </span>
-                <span className="flex-none whitespace-nowrap rounded-full bg-[#F1F2F6] px-2.5 py-1 text-[11px] font-medium text-[#5B6274]">
+                <span className="flex-none whitespace-nowrap rounded-full bg-[var(--wash-strong)] px-2.5 py-1 text-[11px] font-medium text-[var(--ink-body)]">
                   {w.pill}
                 </span>
               </Link>
@@ -241,7 +252,6 @@ export function DayTabs() {
           })}
         </div>
       )}
-
     </section>
   );
 }

@@ -15,6 +15,15 @@ export const OMBRE: CSSProperties = {
   color: "transparent",
 };
 
+/** A span inside a PageTitle that keeps its own colour — an emoji, which the gradient would blank out. */
+export function PlainSpan({ children }: { children: ReactNode }) {
+  return (
+    <span aria-hidden="true" style={{ WebkitTextFillColor: "initial", color: "initial" }}>
+      {children}
+    </span>
+  );
+}
+
 export function PageTitle({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <h1

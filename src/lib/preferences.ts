@@ -16,7 +16,7 @@ export interface Preferences {
 }
 
 const KEY = "joy.prefs";
-export const DEFAULT_PREFERENCES: Preferences = { showMyWork: false, appearance: "light" };
+export const DEFAULT_PREFERENCES: Preferences = { showMyWork: true, appearance: "system" };
 
 let current: Preferences = load();
 const listeners = new Set<() => void>();
