@@ -1,0 +1,27 @@
+import { chromium } from "playwright";
+import fs from "node:fs";
+const port = process.argv[3] ?? "8099";
+const out = process.argv[2] ?? "/tmp/claude-0/-home-claude/d2433efc-dba1-5080-a930-43a82e41e69f/scratchpad/shots";
+const pdf = process.argv[4] ?? "/tmp/claude-0/-home-claude/d2433efc-dba1-5080-a930-43a82e41e69f/scratchpad/Consent To Transport.pdf";
+fs.mkdirSync(out, { recursive: true });
+const base = `http://localhost:${port}/index.html`;
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const ctx = await browser.newContext({ viewport: { width: 1380, height: 900 } });
+const page = await ctx.newPage();
+page.on("pageerror", (e) => console.log("PAGE ERROR", e.message));
+page.on("console", (m) => { if (m.type() === "error") console.log("CONSOLE", m.text().slice(0, 200)); });
+const shot = (name) => page.screenshot({ path: `${out}/${name}-${port}.png`, fullPage: true });
+
+await page.goto(`${base}#/documents`);
+await page.waitForTimeout(900);
+await page.getByRole("button", { name: "Upload" }).click();
+await page.waitForTimeout(300);
+await page.locator('input[aria-label="Choose files"]').setInputFiles(pdf);
+await page.waitForTimeout(300);
+await page.getByRole("button", { name: /^Save to/ }).click();
+await page.waitForTimeout(600);
+await page.getByRole("button", { name: "Consent To Transport", exact: true }).click();
+await page.waitForTimeout(2500);
+await shot("pdf-1-open");
+console.log("pages:", await page.locator("figure[aria-label^='Page ']").count());
+await browser.close();

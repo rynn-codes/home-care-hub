@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { displayName, type LibraryDocument } from "@/domain/documents/library";
 import { recallFile } from "@/lib/fileCache";
 import { sampleText } from "@/lib/sampleFiles";
+import { PdfPages } from "@/components/documents/PdfPages";
 
 /**
  * Open a document without leaving the page.
@@ -11,6 +12,10 @@ import { sampleText } from "@/lib/sampleFiles";
  * shows the wording; a file added this session shows the image or PDF
  * itself; anything else has no copy to show, because the prototype has no
  * file storage and the screen would rather say so than open a blank tab.
+ *
+ * PDFs are drawn page by page rather than framed: the demo runs inside a
+ * sandbox that blocks the browser's PDF viewer, which shows a broken-file
+ * icon and nothing else.
  */
 export function DocumentPreviewDialog({ document, onOpenChange }: { document: LibraryDocument | null; onOpenChange: (open: boolean) => void }) {
   const file = document ? recallFile(document.id) : null;
@@ -18,16 +23,16 @@ export function DocumentPreviewDialog({ document, onOpenChange }: { document: Li
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!file) {
+    if (!file || document?.kind !== "image") {
       setUrl(null);
       return;
     }
     const next = URL.createObjectURL(file);
     setUrl(next);
     return () => URL.revokeObjectURL(next);
-  }, [file]);
+  }, [file, document?.kind]);
 
-  const showsFile = !!file && !!url && (document?.kind === "image" || document?.kind === "pdf");
+  const showsFile = !!file && (document?.kind === "pdf" || (document?.kind === "image" && !!url));
 
   return (
     <Dialog open={document !== null} onOpenChange={onOpenChange}>
@@ -56,7 +61,7 @@ export function DocumentPreviewDialog({ document, onOpenChange }: { document: Li
           document?.kind === "image" ? (
             <img src={url ?? undefined} alt={displayName(document.name)} className="max-h-[60vh] w-full rounded-[10px] object-contain" />
           ) : (
-            <iframe src={url ?? undefined} title={displayName(document?.name ?? "")} className="h-[60vh] w-full rounded-[10px] border border-[var(--hairline)]" />
+            file && <PdfPages file={file} />
           )
         ) : (
           <p className="m-0 rounded-[10px] border border-dashed border-[var(--hairline)] bg-[var(--paper-sunken)] px-3 py-2.5 text-[12.5px] leading-[1.5] text-muted-foreground">
