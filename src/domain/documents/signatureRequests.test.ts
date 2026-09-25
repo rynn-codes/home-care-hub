@@ -16,11 +16,27 @@ const request = () =>
   });
 
 describe("requesting a signature", () => {
-  it("needs a document, a client and a reason the family will read", () => {
+  it("needs a document and a client; the reason is optional", () => {
     expect(whyNotRequestSignature({ documentId: null, clientPersonId: "c-pamela", reason: "Because." })).toMatch(/document/);
     expect(whyNotRequestSignature({ documentId: "doc-1", clientPersonId: null, reason: "Because." })).toMatch(/whose/);
-    expect(whyNotRequestSignature({ documentId: "doc-1", clientPersonId: "c-pamela", reason: "Hi" })).toMatch(/why/);
+    expect(whyNotRequestSignature({ documentId: "doc-1", clientPersonId: "c-pamela", reason: "" })).toBeNull();
     expect(whyNotRequestSignature({ documentId: "doc-1", clientPersonId: "c-pamela", reason: "Needed before care starts." })).toBeNull();
+  });
+
+  it("keeps an empty reason empty rather than inventing one", () => {
+    const r = newSignatureRequest({
+      id: "sig-2",
+      documentId: "doc-1",
+      documentName: "Plan of Care.pdf",
+      clientPersonId: "c-pamela",
+      clientName: "Pamela P",
+      signerRole: "client",
+      signerName: "Pamela P",
+      reason: "   ",
+      requestedBy: "Karynn Verrett",
+      at: "2026-09-25T10:00:00.000Z",
+    });
+    expect(r.reason).toBe("");
   });
 
   it("starts pending, with nothing signed", () => {

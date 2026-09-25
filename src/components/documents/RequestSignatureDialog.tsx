@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
  * Ask a client, or the person who signs for them, to sign a file.
  *
  * The signer is worked out from the client's record: a responsible party
- * signs when there is one, otherwise the client. The reason is required and
- * goes to the family word for word, for the same reason the document request
- * card requires one — paperwork with no why gets ignored.
+ * signs when there is one, otherwise the client. A reason is optional — the
+ * file is named on the request, so it often explains itself — and when given
+ * it goes to the family word for word.
  */
 export function RequestSignatureDialog({
   document,
@@ -61,7 +61,7 @@ export function RequestSignatureDialog({
             <PenLine className="h-[18px] w-[18px] text-primary" aria-hidden="true" />
             Request a signature
           </DialogTitle>
-          <DialogDescription>{document ? `${displayName(document.name)} — who needs to sign it, and why.` : ""}</DialogDescription>
+          <DialogDescription>{document ? `${displayName(document.name)} — who needs to sign it.` : ""}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3.5">
@@ -109,10 +109,10 @@ export function RequestSignatureDialog({
 
           <div className="space-y-1">
             <Label htmlFor="sig-reason" className="text-[12px] font-medium">
-              Why Joy needs it
+              Why Joy needs it <span className="font-normal text-muted-foreground">(optional)</span>
             </Label>
-            <Input id="sig-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="The updated plan of care needs a signature before Monday." />
-            <p className="m-0 text-[12px] text-muted-foreground">Shown to the family word for word.</p>
+            <Input id="sig-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Needed before care starts on Monday." />
+            <p className="m-0 text-[12px] text-muted-foreground">If you give one, the family sees it word for word.</p>
           </div>
 
           <p className="m-0 rounded-[10px] border border-dashed border-[var(--hairline)] bg-[var(--paper-sunken)] px-3 py-2.5 text-[12px] leading-[1.5] text-muted-foreground">{SIGNATURE_LIMITS}</p>

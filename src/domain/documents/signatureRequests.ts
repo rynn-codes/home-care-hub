@@ -38,7 +38,7 @@ export interface SignatureRequest {
   signerRole: SignerRole;
   /** Who is expected to sign — the client, or the responsible party by name. */
   signerName: string;
-  /** Why Joy needs it, shown to the family word for word. */
+  /** Why Joy needs it, shown to the family word for word. Empty when the office gave none. */
   reason: string;
   requestedBy: string;
   requestedAt: string;
@@ -55,10 +55,10 @@ export interface SignatureRequest {
 export const SIGNATURE_LIMITS =
   "No signing provider is connected. Nothing stamps the file and nobody is notified — the request shows in the family portal when they next open it, and Joy records who signed and when.";
 
+/** The reason is optional — a signature on a named file explains itself more often than a paperwork request does. */
 export function whyNotRequestSignature(input: { documentId: string | null; clientPersonId: string | null; reason: string }): string | null {
   if (!input.documentId) return "Choose a document to sign.";
   if (!input.clientPersonId) return "Choose whose signature this is for.";
-  if (input.reason.trim().length < 6) return "Say why Joy needs it. The family sees this word for word.";
   return null;
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import {
-  Copy, Download, File, FileImage, FileSpreadsheet, FileText, Folder, FolderInput, FolderPlus, MoreHorizontal,
+  Copy, Download, Eye, File, FileImage, FileSpreadsheet, FileText, Folder, FolderInput, FolderPlus, MoreHorizontal,
   MoreVertical, Pencil, PenLine, RefreshCw, Search, Trash2, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { ConfirmDeleteDialog } from "@/components/records/ConfirmDeleteDialog";
 import { AddDocumentsDialog } from "@/components/documents/AddDocumentsDialog";
 import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
 import { RequestSignatureDialog } from "@/components/documents/RequestSignatureDialog";
+import { DocumentPreviewDialog } from "@/components/documents/DocumentPreviewDialog";
 import { requestsForDocument } from "@/domain/documents/signatureRequests";
 import { buildClientRoster } from "@/lib/clientRoster";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ export default function Documents() {
   } = useDemo();
   const mayWrite = canWrite(currentUser.role);
   const [signing, setSigning] = useState<LibraryDocument | null>(null);
+  const [previewing, setPreviewing] = useState<LibraryDocument | null>(null);
   const clients = useMemo(() => buildClientRoster({ people, admissions, consentSessions }), [people, admissions, consentSessions]);
   const [folder, setFolder] = useState("all");
   const [tag, setTag] = useState<string | null>(null);
@@ -289,7 +291,11 @@ export default function Documents() {
                       <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="m-0 truncate text-[13.5px] font-medium" title={doc.name}>{displayName(doc.name)}</p>
+                      <p className="m-0 truncate text-[13.5px] font-medium" title={doc.name}>
+                        <button type="button" onClick={() => setPreviewing(doc)} className="max-w-full truncate rounded-sm text-left hover:underline">
+                          {displayName(doc.name)}
+                        </button>
+                      </p>
                       <p className="m-0 flex flex-wrap items-center gap-x-1.5 text-[12px] text-muted-foreground">
                         <span>
                           {KIND_LABEL[doc.kind]} · {doc.folder} · {formatFileSize(doc.size)} ·{" "}
@@ -323,6 +329,10 @@ export default function Documents() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[200px]">
+                          <DropdownMenuItem onSelect={() => setPreviewing(doc)}>
+                            <Eye className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+                            Open
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => download(doc)}>
                             <Download className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
                             Download
@@ -402,6 +412,7 @@ export default function Documents() {
           toast.success(files.length === 1 ? `${displayName(name ?? files[0].name)} added to ${into}` : `${files.length} files added to ${into}`);
         }}
       />
+      <DocumentPreviewDialog document={previewing} onOpenChange={(open) => !open && setPreviewing(null)} />
       <RequestSignatureDialog document={signing} clients={clients} onOpenChange={(open) => !open && setSigning(null)} onRequest={(input) => requestSignature(input)} />
 
       <EditDocumentDialog

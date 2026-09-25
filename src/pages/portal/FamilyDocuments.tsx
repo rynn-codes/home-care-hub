@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Camera, Check, Clock, PenLine, TriangleAlert } from "lucide-react";
+import { Camera, Check, Clock, FileText, PenLine, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PortalFrame } from "@/components/portal/PortalFrame";
@@ -9,6 +9,7 @@ import { DOCUMENT_REQUEST_LABELS, type DocumentRequestState, type RequestedDocum
 import { ACCEPTED_UPLOAD_TYPES, checkUpload } from "@/domain/portal/uploads";
 import { requestsForFamily, whyNotSign, type SignatureRequest } from "@/domain/documents/signatureRequests";
 import { displayName } from "@/domain/documents/library";
+import { sampleText } from "@/lib/sampleFiles";
 import { seedRequestedDocuments } from "@/lib/familyPortalSeed";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import { useDemo } from "@/context/DemoDataProvider";
@@ -70,7 +71,9 @@ function SignRow({ request, onSign, onDecline }: { request: SignatureRequest; on
   const [drawn, setDrawn] = useState(false);
   const [declining, setDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+  const [reading, setReading] = useState(false);
   const problem = whyNotSign({ request, typedName, markDrawn: drawn });
+  const text = sampleText(request.documentId);
 
   if (request.status === "signed") {
     return (
@@ -112,13 +115,36 @@ function SignRow({ request, onSign, onDecline }: { request: SignatureRequest; on
             <PenLine className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
             <span className="text-base font-medium">{displayName(request.documentName)}</span>
           </span>
-          <span className="mt-1 block text-sm text-muted-foreground">{request.reason}</span>
+          {request.reason && <span className="mt-1 block text-sm text-muted-foreground">{request.reason}</span>}
           <span className="mt-0.5 block text-xs text-muted-foreground">
             For {request.signerName} · asked {when(request.requestedAt)}
           </span>
         </span>
         <span className="shrink-0 text-xs text-[hsl(var(--warning))]">Needs your signature</span>
       </div>
+
+      <button type="button" onClick={() => setReading((r) => !r)} className="mt-3 flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-2 hover:underline" aria-expanded={reading}>
+        <FileText className="h-4 w-4" aria-hidden="true" />
+        {reading ? "Hide the document" : "Read the document"}
+      </button>
+      {reading && (
+        <div className="mt-2 rounded-2xl border border-border bg-surface-muted p-4">
+          {text ? (
+            <div className="max-h-72 space-y-3 overflow-y-auto text-sm leading-relaxed">
+              <p className="m-0 rounded-lg bg-[hsl(var(--warning))]/10 px-3 py-2 text-xs font-medium text-[hsl(var(--warning))]">Test document. Not an agreement.</p>
+              {text.paragraphs.map((p, i) => (
+                <p key={i} className="m-0">
+                  {p}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="m-0 text-sm text-muted-foreground">
+              There is no copy of this file in the portal yet. Call <OfficeNumber /> and the office will send one before you sign.
+            </p>
+          )}
+        </div>
+      )}
 
       {!open && !declining && (
         <div className="mt-3 flex gap-2">
