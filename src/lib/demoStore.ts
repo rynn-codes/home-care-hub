@@ -31,6 +31,7 @@ import type { ApprovedLocation, ClockPlace } from "@/domain/scheduling/locations
 import type { ClockProposal } from "@/domain/scheduling/reminders";
 import type { VisitChange } from "@/domain/scheduling/visitChanges";
 import { purgeExpired as purgeExpiredExpenses, type VisitExpense } from "@/domain/scheduling/expenses";
+import type { SignatureRequest } from "@/domain/documents/signatureRequests";
 import type { VisitPay } from "@/domain/scheduling/visitPay";
 import type { SupervisoryVisit } from "@/domain/supervision/supervision";
 import { seedSupervisoryVisits } from "@/lib/supervisionSeed";
@@ -313,6 +314,8 @@ export interface DemoState {
   visitChanges: VisitChange[];
   /** Expense items by visit id — receipt metadata only, never the image. */
   visitExpenses: Record<string, VisitExpense[]>;
+  /** Signatures the office has asked clients and families for. See domain/documents/signatureRequests. */
+  signatureRequests: SignatureRequest[];
   visitPay: Record<string, VisitPay>;
   /** The office asked a caregiver for her phone number through her Joy app. */
   phoneAsks: Record<string, { askedBy: string; askedAt: string; answeredAt: string | null }>;
@@ -424,6 +427,7 @@ function initial(): DemoState {
     visitMileage: Object.fromEntries(seedMileage.map((m) => [m.visitId, m])),
     visitChanges: [],
     visitExpenses: {},
+    signatureRequests: [],
     visitPay: {},
     phoneAsks: {},
     supervisoryVisits: [...seedSupervisoryVisits],

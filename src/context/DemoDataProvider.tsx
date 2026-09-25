@@ -36,9 +36,11 @@ import {
   moveFolderDocuments,
   renameFolderOnDocuments,
   tagDocument as tagDoc,
+
   untagDocument,
   type LibraryDocument,
 } from "@/domain/documents/library";
+import { declineRequest, newSignatureRequest, signRequest, type SignerRole } from "@/domain/documents/signatureRequests";
 import { moveCategory, renameCategory, withNewVersion, type Sop } from "@/domain/sops/sops";
 import type { DemoClockAttempt, DemoClockCorrection } from "@/lib/demoStore";
 import type { Visit } from "@/domain/scheduling/conflicts";
@@ -176,6 +178,11 @@ interface DemoContextValue extends DemoState {
   addDocumentFolder: (name: string) => void;
   renameDocumentFolder: (from: string, to: string) => void;
   deleteDocumentFolder: (name: string, moveTo: string) => void;
+  /** Ask a client or their responsible party to sign a library document. Returns the request id. */
+  requestSignature: (input: { documentId: string; documentName: string; clientPersonId: string; clientName: string; signerRole: SignerRole; signerName: string; reason: string }) => string;
+  /** The signer typed their name and drew a mark. The mark is not stored. */
+  signSignatureRequest: (id: string, input: { typedName: string; markDrawn: boolean }) => void;
+  declineSignatureRequest: (id: string, reason: string) => void;
   addSop: (input: { title: string; category: string; ownerName: string; content: string }) => string;
   updateSop: (id: string, patch: Partial<Pick<Sop, "title" | "category">>) => void;
   saveSopVersion: (id: string, content: string) => void;
@@ -274,13 +281,16 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
    * session to whoever was signed in first.
    */
   const audit = useCallback(
-    (entry: Omit<AuditRecord, "organizationId" | "actor">) => {
+    (entry: Omit<AuditRecord, "organizationId" | "actor">, actor?: AuditRecord["actor"]) => {
+      // Signed-in office user unless the caller says who actually did it — a
+      // family member signing in the portal is not the office user who is
+      // also signed in on this browser.
       const user = currentUserRef.current;
       void recordAudit(
         {
           ...entry,
           organizationId: DEMO_ORG,
-          actor: { type: "user", userId: user.name },
+          actor: actor ?? { type: "user", userId: user.name },
         },
         new Date().toISOString(),
       ).then((result) => {
@@ -1357,6 +1367,33 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     return id;
   }, [audit]);
 
+  const requestSignature = useCallback<DemoContextValue["requestSignature"]>((input) => {
+    const id = newId("sig");
+    const request = newSignatureRequest({ ...input, id, requestedBy: currentUserRef.current.name, at: new Date().toISOString() });
+    audit({ action: "signature.requested", entityType: "signature_request", entityId: id, after: { documentId: input.documentId, clientPersonId: input.clientPersonId, signerRole: input.signerRole } });
+    setState((s) => ({ ...s, signatureRequests: [request, ...s.signatureRequests] }));
+    return id;
+  }, [audit]);
+
+  const signSignatureRequest = useCallback<DemoContextValue["signSignatureRequest"]>((id, input) => {
+    const current = stateRef.current.signatureRequests.find((r) => r.id === id);
+    if (!current) return;
+    const signed = signRequest({ request: current, typedName: input.typedName, markDrawn: input.markDrawn, at: new Date().toISOString() });
+    audit(
+      { action: "signature.signed", entityType: "signature_request", entityId: id, before: { status: current.status }, after: { status: "signed", signedName: signed.signedName, markDrawn: true } },
+      { type: "user", userId: signed.signedName ?? current.signerName },
+    );
+    setState((s) => ({ ...s, signatureRequests: s.signatureRequests.map((r) => (r.id === id ? signed : r)) }));
+  }, [audit]);
+
+  const declineSignatureRequest = useCallback<DemoContextValue["declineSignatureRequest"]>((id, reason) => {
+    const current = stateRef.current.signatureRequests.find((r) => r.id === id);
+    if (!current) return;
+    const declined = declineRequest({ request: current, reason, at: new Date().toISOString() });
+    audit({ action: "signature.declined", entityType: "signature_request", entityId: id, before: { status: current.status }, after: { status: "declined" } }, { type: "user", userId: current.signerName });
+    setState((s) => ({ ...s, signatureRequests: s.signatureRequests.map((r) => (r.id === id ? declined : r)) }));
+  }, [audit]);
+
   const tagDocument = useCallback<DemoContextValue["tagDocument"]>((id, tag, remove) => {
     setState((s) => ({ ...s, documents: s.documents.map((d) => (d.id === id ? (remove ? untagDocument(d, tag) : tagDoc(d, tag)) : d)) }));
   }, []);
@@ -2028,6 +2065,9 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       addDocumentFolder,
       renameDocumentFolder,
       deleteDocumentFolder,
+      requestSignature,
+      signSignatureRequest,
+      declineSignatureRequest,
       addSop,
       updateSop,
       saveSopVersion,
@@ -2035,7 +2075,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       renameSopCategory,
       moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, requestSignature, signSignatureRequest, declineSignatureRequest, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
   );
 
   /**

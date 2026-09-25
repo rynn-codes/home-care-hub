@@ -4,6 +4,8 @@ import { Check, FileText, Phone, Plus, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FamilyPortalCard } from "@/components/clients/FamilyPortalCard";
 import { RequestDocumentCard } from "@/components/clients/RequestDocumentCard";
+import { SignatureRequestsCard } from "@/components/clients/SignatureRequestsCard";
+import { requestsForClient } from "@/domain/documents/signatureRequests";
 import { RecordDetail, RecordHeader, RecordSectionLabel } from "@/components/records/RecordHeader";
 import { UndoChangeBanner } from "@/components/records/UndoChangeBanner";
 import { ActivityFeed } from "@/components/records/ActivityFeed";
@@ -111,7 +113,7 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
   const wanted = params.get("tab");
   const [tab, setTab] = useState<Tab>((TABS as readonly string[]).includes(wanted ?? "") ? (wanted as Tab) : "Profile");
   const [logging, setLogging] = useState<"phone" | "any" | null>(null);
-  const { interactions, logActivity, deleteActivity, recordView, currentUser, mrNumbers, issueMrNumber, setClientStatus, households } =
+  const { interactions, logActivity, deleteActivity, recordView, currentUser, mrNumbers, issueMrNumber, setClientStatus, households, signatureRequests } =
     useDemo();
   const companions = companionsOf(households, client.personId);
 
@@ -442,6 +444,10 @@ export function ClientRecordView({ client }: { client: ClientRecord }) {
               clientName={client.preferredName || client.name}
               requests={seedRequestedDocuments}
             />
+
+            {/* Signatures asked of this client, raised from a file's menu in
+                Documents and answered in the family portal. */}
+            <SignatureRequestsCard requests={requestsForClient(signatureRequests, client.personId)} />
           </div>
         </div>
       )}

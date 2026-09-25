@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import {
   Copy, Download, File, FileImage, FileSpreadsheet, FileText, Folder, FolderInput, FolderPlus, MoreHorizontal,
-  MoreVertical, Pencil, RefreshCw, Search, Trash2, Upload,
+  MoreVertical, Pencil, PenLine, RefreshCw, Search, Trash2, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { ConfirmDeleteDialog } from "@/components/records/ConfirmDeleteDialog";
 import { AddDocumentsDialog } from "@/components/documents/AddDocumentsDialog";
 import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
+import { RequestSignatureDialog } from "@/components/documents/RequestSignatureDialog";
+import { requestsForDocument } from "@/domain/documents/signatureRequests";
+import { buildClientRoster } from "@/lib/clientRoster";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/context/DemoDataProvider";
 import { canWrite } from "@/domain/access/roles";
@@ -40,8 +43,11 @@ export default function Documents() {
   const {
     documents, documentFolders, currentUser, uploadDocument, updateDocument, duplicateDocument, deleteDocument, restoreDeleted,
     addDocumentFolder, renameDocumentFolder, deleteDocumentFolder,
+    signatureRequests, requestSignature, people, admissions, consentSessions,
   } = useDemo();
   const mayWrite = canWrite(currentUser.role);
+  const [signing, setSigning] = useState<LibraryDocument | null>(null);
+  const clients = useMemo(() => buildClientRoster({ people, admissions, consentSessions }), [people, admissions, consentSessions]);
   const [folder, setFolder] = useState("all");
   const [tag, setTag] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -292,6 +298,17 @@ export default function Documents() {
                         {doc.tags.map((t) => (
                           <span key={t} className="rounded-full bg-[var(--hairline-soft)] px-2 py-[1px] text-[11px] text-[var(--ink-body)]">{t}</span>
                         ))}
+                        {requestsForDocument(signatureRequests, doc.id).map((r) => (
+                          <span
+                            key={r.id}
+                            className={cn(
+                              "rounded-full px-2 py-[1px] text-[11px] font-medium",
+                              r.status === "pending" ? "bg-[#FFFAEB] text-[#B54708]" : r.status === "signed" ? "bg-[#ECFDF3] text-[#027A48]" : "bg-[#FEF3F2] text-[#B42318]",
+                            )}
+                          >
+                            {r.status === "pending" ? "Signature pending" : r.status === "signed" ? "Signed" : "Signature declined"} · {r.clientName}
+                          </span>
+                        ))}
                       </p>
                     </div>
                     {mayWrite && (
@@ -351,6 +368,10 @@ export default function Documents() {
                             <Pencil className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
                             Rename & tags
                           </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => setSigning(doc)}>
+                            <PenLine className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+                            Request signature
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-[#B42318] focus:text-[#B42318]" onSelect={() => setDeleting(doc)}>
                             <Trash2 className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
@@ -381,6 +402,8 @@ export default function Documents() {
           toast.success(files.length === 1 ? `${displayName(name ?? files[0].name)} added to ${into}` : `${files.length} files added to ${into}`);
         }}
       />
+      <RequestSignatureDialog document={signing} clients={clients} onOpenChange={(open) => !open && setSigning(null)} onRequest={(input) => requestSignature(input)} />
+
       <EditDocumentDialog
         document={editing}
         folders={folders}
