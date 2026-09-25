@@ -40,7 +40,14 @@ import {
   untagDocument,
   type LibraryDocument,
 } from "@/domain/documents/library";
-import { declineRequest, newSignatureRequest, signRequest, type SignerRole } from "@/domain/documents/signatureRequests";
+import type { SigningTemplate } from "@/domain/signing/templates";
+import type { TemplateField } from "@/domain/signing/fields";
+import {
+  correctEnvelope as correctEnv, countersignEnvelope as countersignEnv, createEnvelope as createEnv, declineEnvelope as declineEnv, editEnvelope as editEnv,
+  markViewed as markEnvViewed, recordCopySent, sendEnvelope as sendEnv, signEnvelope as signEnv, voidEnvelope as voidEnv,
+  type Delivery, type Envelope, type FieldValue, type PrefillSource, type SignerRole,
+} from "@/domain/signing/envelopes";
+import { hydrateFiles } from "@/lib/fileCache";
 import { moveCategory, renameCategory, withNewVersion, type Sop } from "@/domain/sops/sops";
 import type { DemoClockAttempt, DemoClockCorrection } from "@/lib/demoStore";
 import { seedDocuments } from "@/lib/documentsSeed";
@@ -180,10 +187,35 @@ interface DemoContextValue extends DemoState {
   renameDocumentFolder: (from: string, to: string) => void;
   deleteDocumentFolder: (name: string, moveTo: string) => void;
   /** Ask a client or their responsible party to sign a library document. Returns the request id. */
-  requestSignature: (input: { documentId: string; documentName: string; clientPersonId: string; clientName: string; signerRole: SignerRole; signerName: string; reason: string }) => string;
-  /** The signer typed their name and drew a mark. The mark is not stored. */
-  signSignatureRequest: (id: string, input: { typedName: string; markDrawn: boolean }) => void;
-  declineSignatureRequest: (id: string, reason: string) => void;
+  /** Signing: forms with boxes placed once, and requests made from them. See domain/signing. */
+  saveSigningTemplate: (template: SigningTemplate) => void;
+  deleteSigningTemplate: (id: string) => void;
+  createEnvelope: (input: {
+    templateId: string | null;
+    document?: { id: string; name: string; pages: number; fields: TemplateField[] };
+    clientPersonId: string;
+    clientName: string;
+    signerRole: SignerRole;
+    signerName: string;
+    prefill: PrefillSource;
+    delivery: Delivery;
+    message?: string;
+    /** Boxes and values as reviewed before sending; otherwise the template's and Joy's prefill. */
+    fields?: TemplateField[];
+    values?: Record<string, FieldValue>;
+    /** Send in the same step, so the office's one click is one record. */
+    send?: boolean;
+  }) => string;
+  editEnvelope: (id: string, patch: Partial<Pick<Envelope, "fields" | "values" | "signerRole" | "signerName" | "message" | "textTo" | "emailTo">>) => void;
+  sendEnvelope: (id: string) => void;
+  markEnvelopeViewed: (id: string) => void;
+  signEnvelope: (id: string, input: { typedName: string; markDrawn: boolean; values: Record<string, FieldValue> }) => void;
+  declineEnvelope: (id: string, reason: string) => void;
+  countersignEnvelope: (id: string, input: { typedName: string; markDrawn: boolean }) => void;
+  voidEnvelope: (id: string, reason: string) => void;
+  /** Voids this one and returns the id of the fresh draft. */
+  correctEnvelope: (id: string, reason: string) => string;
+  recordEnvelopeCopy: (id: string, to: string) => void;
   addSop: (input: { title: string; category: string; ownerName: string; content: string }) => string;
   updateSop: (id: string, patch: Partial<Pick<Sop, "title" | "category">>) => void;
   saveSopVersion: (id: string, content: string) => void;
@@ -313,6 +345,10 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   // Said once. Photos on logged activity are the usual way to fill a device,
   // and the person needs to hear it before a refresh loses their afternoon.
   const warnedStorage = useRef(false);
+  useEffect(() => {
+    void hydrateFiles();
+  }, []);
+
   useEffect(() => {
     if (saveDemoState(state) || warnedStorage.current) return;
     warnedStorage.current = true;
@@ -1368,32 +1404,102 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     return id;
   }, [audit]);
 
-  const requestSignature = useCallback<DemoContextValue["requestSignature"]>((input) => {
-    const id = newId("sig");
-    const request = newSignatureRequest({ ...input, id, requestedBy: currentUserRef.current.name, at: new Date().toISOString() });
-    audit({ action: "signature.requested", entityType: "signature_request", entityId: id, after: { documentId: input.documentId, clientPersonId: input.clientPersonId, signerRole: input.signerRole } });
-    setState((s) => ({ ...s, signatureRequests: [request, ...s.signatureRequests] }));
+  // ------------------------------------------------------------ signing --
+  // Every transition is recorded under the person who made it: the office
+  // for sending, voiding and countersigning; the signer for opening, signing
+  // and declining. Values (a name, a date, a tick) go on the record; the
+  // drawn mark never does.
+  const saveSigningTemplate = useCallback<DemoContextValue["saveSigningTemplate"]>((template) => {
+    audit({ action: "signing.template_saved", entityType: "signing_template", entityId: template.id, after: { name: template.name, documentId: template.documentId, fields: template.fields.length } });
+    setState((s) => {
+      const exists = s.signingTemplates.some((t) => t.id === template.id);
+      const stamped = { ...template, updatedAt: new Date().toISOString() };
+      return { ...s, signingTemplates: exists ? s.signingTemplates.map((t) => (t.id === template.id ? stamped : t)) : [stamped, ...s.signingTemplates] };
+    });
+  }, [audit]);
+
+  const deleteSigningTemplate = useCallback<DemoContextValue["deleteSigningTemplate"]>((id) => {
+    audit({ action: "signing.template_deleted", entityType: "signing_template", entityId: id });
+    setState((s) => ({
+      ...s,
+      signingTemplates: s.signingTemplates.filter((t) => t.id !== id),
+      retiredSeedTemplateIds: s.retiredSeedTemplateIds.includes(id) ? s.retiredSeedTemplateIds : [...s.retiredSeedTemplateIds, id],
+    }));
+  }, [audit]);
+
+  const createEnvelope = useCallback<DemoContextValue["createEnvelope"]>((input) => {
+    const id = newId("env");
+    const template = input.templateId ? stateRef.current.signingTemplates.find((t) => t.id === input.templateId) ?? null : null;
+    const by = currentUserRef.current.name;
+    const at = new Date().toISOString();
+    let env = createEnv({ id, template, document: input.document, clientPersonId: input.clientPersonId, clientName: input.clientName, signerRole: input.signerRole, signerName: input.signerName, prefill: input.prefill, by, at });
+    env = { ...env, textTo: input.delivery.textTo, emailTo: input.delivery.emailTo, message: input.message ?? "", fields: input.fields ?? env.fields, values: input.values ?? env.values };
+    env.needsCountersign = env.fields.some((f) => f.kind === "agency_signature");
+    audit({ action: "signing.request_created", entityType: "signing_request", entityId: id, after: { documentId: env.documentId, clientPersonId: env.clientPersonId, signerRole: env.signerRole, templateId: env.templateId } });
+    if (input.send) {
+      env = sendEnv(env, by, at);
+      audit({ action: "signing.request_sent", entityType: "signing_request", entityId: id, before: { status: "draft" }, after: { status: env.status } });
+    }
+    setState((s) => ({ ...s, envelopes: [env, ...s.envelopes] }));
     return id;
   }, [audit]);
 
-  const signSignatureRequest = useCallback<DemoContextValue["signSignatureRequest"]>((id, input) => {
-    const current = stateRef.current.signatureRequests.find((r) => r.id === id);
+  const envelopeUpdate = useCallback((id: string, fn: (env: Envelope, by: string, at: string) => Envelope, action: string, actor?: AuditRecord["actor"], after?: Record<string, unknown>) => {
+    const current = stateRef.current.envelopes.find((e) => e.id === id);
     if (!current) return;
-    const signed = signRequest({ request: current, typedName: input.typedName, markDrawn: input.markDrawn, at: new Date().toISOString() });
-    audit(
-      { action: "signature.signed", entityType: "signature_request", entityId: id, before: { status: current.status }, after: { status: "signed", signedName: signed.signedName, markDrawn: true } },
-      { type: "user", userId: signed.signedName ?? current.signerName },
-    );
-    setState((s) => ({ ...s, signatureRequests: s.signatureRequests.map((r) => (r.id === id ? signed : r)) }));
+    const by = currentUserRef.current.name;
+    const next = fn(current, by, new Date().toISOString());
+    audit({ action, entityType: "signing_request", entityId: id, before: { status: current.status }, after: { status: next.status, ...after } }, actor);
+    setState((s) => ({ ...s, envelopes: s.envelopes.map((e) => (e.id === id ? next : e)) }));
   }, [audit]);
 
-  const declineSignatureRequest = useCallback<DemoContextValue["declineSignatureRequest"]>((id, reason) => {
-    const current = stateRef.current.signatureRequests.find((r) => r.id === id);
+  const editEnvelope = useCallback<DemoContextValue["editEnvelope"]>((id, patch) => {
+    envelopeUpdate(id, (env, by, at) => editEnv(env, patch, by, at), "signing.request_edited");
+  }, [envelopeUpdate]);
+
+  const sendEnvelope = useCallback<DemoContextValue["sendEnvelope"]>((id) => {
+    envelopeUpdate(id, (env, by, at) => sendEnv(env, by, at), "signing.request_sent");
+  }, [envelopeUpdate]);
+
+  const markEnvelopeViewed = useCallback<DemoContextValue["markEnvelopeViewed"]>((id) => {
+    const current = stateRef.current.envelopes.find((e) => e.id === id);
+    if (!current || current.status !== "sent") return;
+    envelopeUpdate(id, (env, _by, at) => markEnvViewed(env, at), "signing.request_viewed", { type: "user", userId: current.signerName });
+  }, [envelopeUpdate]);
+
+  const signEnvelope = useCallback<DemoContextValue["signEnvelope"]>((id, input) => {
+    envelopeUpdate(id, (env, _by, at) => signEnv(env, input, at), "signing.request_signed", { type: "user", userId: input.typedName.trim() }, { markDrawn: true });
+  }, [envelopeUpdate]);
+
+  const declineEnvelope = useCallback<DemoContextValue["declineEnvelope"]>((id, reason) => {
+    const current = stateRef.current.envelopes.find((e) => e.id === id);
     if (!current) return;
-    const declined = declineRequest({ request: current, reason, at: new Date().toISOString() });
-    audit({ action: "signature.declined", entityType: "signature_request", entityId: id, before: { status: current.status }, after: { status: "declined" } }, { type: "user", userId: current.signerName });
-    setState((s) => ({ ...s, signatureRequests: s.signatureRequests.map((r) => (r.id === id ? declined : r)) }));
+    envelopeUpdate(id, (env, _by, at) => declineEnv(env, reason, at), "signing.request_declined", { type: "user", userId: current.signerName });
+  }, [envelopeUpdate]);
+
+  const countersignEnvelope = useCallback<DemoContextValue["countersignEnvelope"]>((id, input) => {
+    envelopeUpdate(id, (env, by, at) => countersignEnv(env, input, by, at), "signing.request_countersigned", undefined, { markDrawn: true });
+  }, [envelopeUpdate]);
+
+  const voidEnvelope = useCallback<DemoContextValue["voidEnvelope"]>((id, reason) => {
+    envelopeUpdate(id, (env, by, at) => voidEnv(env, reason, by, at), "signing.request_voided", undefined, { reason: reason.trim() });
+  }, [envelopeUpdate]);
+
+  const correctEnvelope = useCallback<DemoContextValue["correctEnvelope"]>((id, reason) => {
+    const current = stateRef.current.envelopes.find((e) => e.id === id);
+    if (!current) return id;
+    const newId_ = newId("env");
+    const by = currentUserRef.current.name;
+    const at = new Date().toISOString();
+    const { voided, draft } = correctEnv(current, { newId: newId_, reason, by, at });
+    audit({ action: "signing.request_corrected", entityType: "signing_request", entityId: id, before: { status: current.status }, after: { status: "voided", replacedBy: newId_, reason: reason.trim() } });
+    setState((s) => ({ ...s, envelopes: [draft, ...s.envelopes.map((e) => (e.id === id ? voided : e))] }));
+    return newId_;
   }, [audit]);
+
+  const recordEnvelopeCopy = useCallback<DemoContextValue["recordEnvelopeCopy"]>((id, to) => {
+    envelopeUpdate(id, (env, by, at) => recordCopySent(env, to, by, at), "signing.copy_sent", undefined, { to: to.trim() });
+  }, [envelopeUpdate]);
 
   const tagDocument = useCallback<DemoContextValue["tagDocument"]>((id, tag, remove) => {
     setState((s) => ({ ...s, documents: s.documents.map((d) => (d.id === id ? (remove ? untagDocument(d, tag) : tagDoc(d, tag)) : d)) }));
@@ -2068,9 +2174,18 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       addDocumentFolder,
       renameDocumentFolder,
       deleteDocumentFolder,
-      requestSignature,
-      signSignatureRequest,
-      declineSignatureRequest,
+      saveSigningTemplate,
+      deleteSigningTemplate,
+      createEnvelope,
+      editEnvelope,
+      sendEnvelope,
+      markEnvelopeViewed,
+      signEnvelope,
+      declineEnvelope,
+      countersignEnvelope,
+      voidEnvelope,
+      correctEnvelope,
+      recordEnvelopeCopy,
       addSop,
       updateSop,
       saveSopVersion,
@@ -2078,7 +2193,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       renameSopCategory,
       moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, requestSignature, signSignatureRequest, declineSignatureRequest, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, saveSigningTemplate, deleteSigningTemplate, createEnvelope, editEnvelope, sendEnvelope, markEnvelopeViewed, signEnvelope, declineEnvelope, countersignEnvelope, voidEnvelope, correctEnvelope, recordEnvelopeCopy, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
   );
 
   /**

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 // The standalone demo build (published as a hosted single-file page for
 // Karynn to click through) has no server to answer deep links, so routes live
@@ -36,6 +37,10 @@ import Billing from "./pages/Billing";
 import Payroll from "./pages/Payroll";
 import Reports from "./pages/Reports";
 import Documents from "./pages/Documents";
+import Signing from "./pages/Signing";
+import TemplateBuilder from "./pages/TemplateBuilder";
+import NewSigningRequest from "./pages/NewSigningRequest";
+import SigningRequest from "./pages/SigningRequest";
 import Sops from "./pages/Sops";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -48,6 +53,7 @@ import PortalClosed from "./pages/portal/PortalClosed";
 import PortalFamilyHome from "./pages/portal/FamilyHome";
 import PortalFamilyMoments from "./pages/portal/FamilyMoments";
 import PortalFamilyDocuments from "./pages/portal/FamilyDocuments";
+import PortalFamilySign from "./pages/portal/FamilySign";
 import PortalDocuments from "./pages/portal/Documents";
 import PortalWorkforceHome from "./pages/portal/WorkforceHome";
 import PortalEmployeeSchedule from "./pages/portal/EmployeeSchedule";
@@ -56,6 +62,15 @@ import { PortalSessionProvider } from "@/context/PortalSessionProvider";
 import { RequirePortal } from "@/components/portal/RequirePortal";
 
 const queryClient = new QueryClient();
+
+/** A new screen starts at the top. Hash routing keeps the old scroll otherwise. */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -66,6 +81,7 @@ const App = () => (
         <DemoDataProvider>
         <PortalSessionProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
@@ -96,6 +112,7 @@ const App = () => (
               <Route path="/portal/care" element={<PortalFamilyHome />} />
               <Route path="/portal/care/moments" element={<PortalFamilyMoments />} />
               <Route path="/portal/care/documents" element={<PortalFamilyDocuments />} />
+              <Route path="/portal/care/sign/:id" element={<PortalFamilySign />} />
             </Route>
             {/* Everything inside the shell requires a session. The real boundary
                 is row level security in the database; this only keeps people out
@@ -147,6 +164,10 @@ const App = () => (
               <Route path="/payroll" element={<Payroll />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/documents" element={<Documents />} />
+              <Route path="/documents/signing" element={<Signing />} />
+              <Route path="/documents/signing/new" element={<NewSigningRequest />} />
+              <Route path="/documents/signing/templates/:id" element={<TemplateBuilder />} />
+              <Route path="/documents/signing/:id" element={<SigningRequest />} />
               <Route path="/sops" element={<Sops />} />
               <Route path="/settings" element={<Settings />} />
 

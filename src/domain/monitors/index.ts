@@ -5,10 +5,11 @@ import { locationWatch } from "./location";
 import { addressWatch } from "./address";
 import { agreementWatch } from "./agreement";
 import { expenseWatch } from "./expense";
+import { signingWatch } from "./signing";
 import type { Monitor } from "./types";
 
 /** Every monitor Joy runs, in the order their findings are listed within a severity. */
-export const MONITORS: readonly Monitor[] = [paperworkWatch, admissionWatch, evvWatch, locationWatch, addressWatch, agreementWatch, expenseWatch];
+export const MONITORS: readonly Monitor[] = [paperworkWatch, admissionWatch, evvWatch, locationWatch, addressWatch, agreementWatch, expenseWatch, signingWatch];
 
 export * from "./types";
 export * from "./run";

@@ -31,7 +31,9 @@ import type { ApprovedLocation, ClockPlace } from "@/domain/scheduling/locations
 import type { ClockProposal } from "@/domain/scheduling/reminders";
 import type { VisitChange } from "@/domain/scheduling/visitChanges";
 import { purgeExpired as purgeExpiredExpenses, type VisitExpense } from "@/domain/scheduling/expenses";
-import type { SignatureRequest } from "@/domain/documents/signatureRequests";
+import type { SigningTemplate } from "@/domain/signing/templates";
+import type { Envelope } from "@/domain/signing/envelopes";
+import { seedSigningTemplates } from "@/lib/signingSeed";
 import type { VisitPay } from "@/domain/scheduling/visitPay";
 import type { SupervisoryVisit } from "@/domain/supervision/supervision";
 import { seedSupervisoryVisits } from "@/lib/supervisionSeed";
@@ -320,8 +322,12 @@ export interface DemoState {
   visitChanges: VisitChange[];
   /** Expense items by visit id — receipt metadata only, never the image. */
   visitExpenses: Record<string, VisitExpense[]>;
-  /** Signatures the office has asked clients and families for. See domain/documents/signatureRequests. */
-  signatureRequests: SignatureRequest[];
+  /** Forms with boxes placed for signing. See domain/signing/templates. */
+  signingTemplates: SigningTemplate[];
+  /** Seeded templates the office deleted; they never come back on load. */
+  retiredSeedTemplateIds: string[];
+  /** Signing requests: one document, one client, one signer, and everything that happened. See domain/signing/envelopes. */
+  envelopes: Envelope[];
   visitPay: Record<string, VisitPay>;
   /** The office asked a caregiver for her phone number through her Joy app. */
   phoneAsks: Record<string, { askedBy: string; askedAt: string; answeredAt: string | null }>;
@@ -434,7 +440,9 @@ function initial(): DemoState {
     visitMileage: Object.fromEntries(seedMileage.map((m) => [m.visitId, m])),
     visitChanges: [],
     visitExpenses: {},
-    signatureRequests: [],
+    signingTemplates: [...seedSigningTemplates],
+    retiredSeedTemplateIds: [],
+    envelopes: [],
     visitPay: {},
     phoneAsks: {},
     supervisoryVisits: [...seedSupervisoryVisits],
@@ -487,6 +495,10 @@ export function loadDemoState(): DemoState {
       ...seedDocuments.filter((d) => !haveDocs.has(d.id) && !retired.has(d.id) && !binnedDocs.has(d.id)),
       ...(merged.documents ?? []),
     ];
+    // The same for seeded signing templates.
+    const haveTpl = new Set((merged.signingTemplates ?? []).map((t) => t.id));
+    const retiredTpl = new Set(merged.retiredSeedTemplateIds ?? []);
+    merged.signingTemplates = [...seedSigningTemplates.filter((t) => !haveTpl.has(t.id) && !retiredTpl.has(t.id)), ...(merged.signingTemplates ?? [])];
     // A folder a document names is a folder, whatever the list says.
     merged.documentFolders = reconcileFolders(merged.documentFolders ?? [], merged.documents ?? []);
     // Seeded activity added since this blob was written joins the list; nothing

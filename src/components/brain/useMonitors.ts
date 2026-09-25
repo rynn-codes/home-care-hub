@@ -15,7 +15,7 @@ import { loadMemory, MONITORS, runMonitors, saveMemory, type Finding } from "@/d
  * memory of first-seen dates is written back after each run.
  */
 export function useMonitors(): { findings: Finding[]; ranAt: string } {
-  const { people, admissions, consentSessions, intakes, assignments, clockAttempts, approvedLocations, clientSchedules, visitExpenses } = useDemo();
+  const { people, admissions, consentSessions, intakes, assignments, clockAttempts, approvedLocations, clientSchedules, visitExpenses, envelopes } = useDemo();
   const agency = useAgencySettings();
   const today = new Date().toISOString().slice(0, 10);
   const memory = useRef(loadMemory());
@@ -40,13 +40,14 @@ export function useMonitors(): { findings: Finding[]; ranAt: string } {
       approvedLocations,
       clientSchedules,
       visitExpenses,
+      envelopes,
       mileageRatePerMile: agency.mileageRatePerMile,
       clientNames: Object.fromEntries(seedClients.map((c) => [c.personId, `${c.firstName} ${c.lastName}`])),
       today,
       now: new Date(`${today}T12:00:00`),
     };
     return runMonitors(MONITORS, inputs, memory.current, `${today}T00:00:00.000Z`);
-  }, [people, admissions, consentSessions, intakes, assignments, clockAttempts, approvedLocations, clientSchedules, visitExpenses, agency.mileageRatePerMile, today]);
+  }, [people, admissions, consentSessions, intakes, assignments, clockAttempts, approvedLocations, clientSchedules, visitExpenses, envelopes, agency.mileageRatePerMile, today]);
 
   useEffect(() => {
     memory.current = run.memory;

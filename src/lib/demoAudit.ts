@@ -85,7 +85,18 @@ export type AuditOutcome =
  * it puts a person's name on something they did not do — and it belongs in a
  * failing test rather than in the database.
  */
-export async function recordAudit(entry: AuditRecord, at: string): Promise<AuditOutcome> {
+export function recordAudit(entry: AuditRecord, at: string): Promise<AuditOutcome> {
+  // One at a time. The capturing store holds a single "last written" slot, so
+  // two entries recorded in the same instant — a request created and sent in
+  // one click — would otherwise race and one of them would come back empty.
+  const run = chain.then(() => recordNow(entry, at));
+  chain = run.then(() => undefined, () => undefined);
+  return run;
+}
+
+let chain: Promise<void> = Promise.resolve();
+
+async function recordNow(entry: AuditRecord, at: string): Promise<AuditOutcome> {
   const result = await writer.record(entry);
   // `in` rather than `!result.ok`: tsconfig has strictNullChecks off, and
   // TypeScript will not narrow a union by a boolean discriminant without it —
@@ -181,6 +192,18 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "sop.deleted": "deleted a procedure",
   "sop.category_renamed": "renamed a procedure category",
   "sop.category_emptied": "emptied a procedure category",
+  "signing.template_saved": "set up a form for signing",
+  "signing.template_deleted": "removed a signing template",
+  "signing.request_created": "started a signing request",
+  "signing.request_edited": "edited a signing request",
+  "signing.request_sent": "sent a document to sign",
+  "signing.request_viewed": "opened a document to sign",
+  "signing.request_signed": "signed a document",
+  "signing.request_declined": "declined to sign",
+  "signing.request_countersigned": "countersigned a document",
+  "signing.request_voided": "voided a signing request",
+  "signing.request_corrected": "corrected a signing request",
+  "signing.copy_sent": "sent a signed copy",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {

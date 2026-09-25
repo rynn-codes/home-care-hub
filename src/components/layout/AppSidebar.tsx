@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   BarChart3, BookOpen, Brain, CalendarCheck, CalendarDays, ClipboardCheck, ClipboardList, Contact, FolderOpen,
-  Home, Receipt, Settings, ShieldAlert, UserCog, UserPlus, Users, Wallet,
+  Home, PenLine, Receipt, Settings, ShieldAlert, UserCog, UserPlus, Users, Wallet,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
@@ -63,6 +63,7 @@ function useNav(): NavItem[] {
       children: [
         ...(showMyWork ? [{ title: "My Work", url: "/brain/my-work", icon: ClipboardCheck, area: "my_work" as Area }] : []),
         { title: "Documents", url: "/documents", icon: FolderOpen, area: "documents" },
+        { title: "Signing", url: "/documents/signing", icon: PenLine, area: "documents" },
         { title: "SOPs", url: "/sops", icon: BookOpen, area: "sops" },
       ],
     },

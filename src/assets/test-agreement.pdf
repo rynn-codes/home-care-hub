@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2831 >>
+stream
+BT /F2 16 Tf 60.0 732.0 Td (TEST - Mock Service Agreement) Tj ET
+BT /F1 9 Tf 60.0 710.0 Td (Joy Health · sample wording for trying signatures · not an agreement) Tj ET
+BT /F2 9 Tf 60.0 690.0 Td (CLIENT NAME) Tj ET
+0.5 w 115.5 687.0 m 360.0 687.0 l S
+BT /F2 9 Tf 380.0 690.0 Td (DATE OF BIRTH) Tj ET
+0.5 w 444.5 687.0 m 552.0 687.0 l S
+BT /F2 9 Tf 60.0 664.0 Td (ADDRESS) Tj ET
+0.5 w 97.5 661.0 m 552.0 661.0 l S
+BT /F2 9 Tf 60.0 638.0 Td (PHONE) Tj ET
+0.5 w 88.5 635.0 m 260.0 635.0 l S
+BT /F2 9 Tf 280.0 638.0 Td (MR #) Tj ET
+0.5 w 304.0 635.0 m 400.0 635.0 l S
+BT /F2 9 Tf 420.0 638.0 Td (START OF CARE) Tj ET
+0.5 w 484.5 635.0 m 552.0 635.0 l S
+BT /F1 10 Tf 60.0 608.0 Td (THIS IS A TEST DOCUMENT. It exists so the office can try asking for a signature and see what the) Tj ET
+BT /F1 10 Tf 60.0 593.5 Td (family sees. It is not an agreement and creates no obligation for anyone.) Tj ET
+BT /F1 10 Tf 60.0 573.0 Td (1. Parties. This sample names a home care agency \("the agency"\) and a client or the person who) Tj ET
+BT /F1 10 Tf 60.0 558.5 Td (signs for them \("the client"\).) Tj ET
+BT /F1 10 Tf 60.0 540.0 Td (2. Services. The agency would provide non-medical personal care on the days and hours agreed in) Tj ET
+BT /F1 10 Tf 60.0 525.5 Td (the plan of care, delivered by trained caregivers. Tick the services that apply:) Tj ET
+0.6 w 70.0 505.0 12 12 re S
+BT /F1 10 Tf 88.0 507.0 Td (Personal care) Tj ET
+0.6 w 195.0 505.0 12 12 re S
+BT /F1 10 Tf 213.0 507.0 Td (Companionship) Tj ET
+0.6 w 320.0 505.0 12 12 re S
+BT /F1 10 Tf 338.0 507.0 Td (Light housekeeping) Tj ET
+0.6 w 445.0 505.0 12 12 re S
+BT /F1 10 Tf 463.0 507.0 Td (Respite) Tj ET
+BT /F1 10 Tf 60.0 485.0 Td (3. Rates and billing. Sample rates would be stated here, with billing weekly in arrears and) Tj ET
+BT /F1 10 Tf 60.0 470.5 Td (payment due on receipt of the invoice.) Tj ET
+BT /F1 10 Tf 60.0 452.0 Td (4. Changes and cancellation. Either side could change or end the arrangement with reasonable) Tj ET
+BT /F1 10 Tf 60.0 437.5 Td (notice, as the plan of care and agency policy describe.) Tj ET
+BT /F1 10 Tf 60.0 419.0 Td (5. Signing. Signing below would confirm the client has read this document and agrees to it. In) Tj ET
+BT /F1 10 Tf 60.0 404.5 Td (this test nothing is stamped onto a file and nobody is notified. Joy records only the typed name) Tj ET
+BT /F1 10 Tf 60.0 390.0 Td (and the time.) Tj ET
+BT /F2 9 Tf 60.0 345.5 Td (CLIENT OR RESPONSIBLE PARTY SIGNATURE) Tj ET
+0.5 w 232.5 342.5 m 390.0 342.5 l S
+BT /F2 9 Tf 410.0 345.5 Td (DATE) Tj ET
+0.5 w 434.0 342.5 m 552.0 342.5 l S
+BT /F2 9 Tf 60.0 301.5 Td (FOR THE AGENCY) Tj ET
+0.5 w 129.0 298.5 m 390.0 298.5 l S
+BT /F2 9 Tf 410.0 301.5 Td (DATE) Tj ET
+0.5 w 434.0 298.5 m 552.0 298.5 l S
+BT /F1 8 Tf 60.0 257.5 Td (Test document. Not an agreement. Generated for the Joy Health prototype.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000003134 00000 n 
+0000003204 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3279
+%%EOF

@@ -19,6 +19,8 @@ export interface AddDocumentsInput {
   folder: string;
   tags: string[];
   adminsOnly: boolean;
+  /** File it away, or file it and go straight to placing signature boxes on it. */
+  purpose: "file" | "sign";
 }
 
 /** Choose the file, say where it files and what to tag it with. */
@@ -39,6 +41,7 @@ export function AddDocumentsDialog({
   const [folder, setFolder] = useState(folders[0] ?? "");
   const [tags, setTags] = useState<string[]>([]);
   const [adminsOnly, setAdminsOnly] = useState(false);
+  const [purpose, setPurpose] = useState<"file" | "sign">("file");
   const { tagPresets } = useAgencySettings();
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -50,6 +53,7 @@ export function AddDocumentsDialog({
     setFolder(folders[0] ?? "");
     setTags([]);
     setAdminsOnly(false);
+    setPurpose("file");
     setDragging(false);
   }, [files, folders]);
 
@@ -70,7 +74,8 @@ export function AddDocumentsDialog({
       return next;
     });
   };
-  const problem = chosen.length === 0 ? "Choose a file." : single && !name.trim() ? "The file needs a name." : null;
+  const canSign = single !== null && single.name.toLowerCase().endsWith(".pdf");
+  const problem = chosen.length === 0 ? "Choose a file." : single && !name.trim() ? "The file needs a name." : purpose === "sign" && !canSign ? "Signing needs one PDF." : null;
 
   return (
     <Dialog open={files !== null} onOpenChange={onOpenChange}>
@@ -83,6 +88,29 @@ export function AddDocumentsDialog({
           <DialogDescription>Choose the file, say where it files and what to tag it with.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3.5">
+          <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="What is this for">
+            {(
+              [
+                ["file", "Add a file", "File it in Documents."],
+                ["sign", "Set up for signing", "One PDF. Place the boxes next."],
+              ] as const
+            ).map(([value, label, hint]) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={purpose === value}
+                onClick={() => setPurpose(value)}
+                className={cn(
+                  "rounded-[10px] border px-3 py-2 text-left transition-colors",
+                  purpose === value ? "border-[#1407A2]/30 bg-[#EFEDFB]" : "border-[var(--hairline)] bg-[var(--paper)] hover:border-primary",
+                )}
+              >
+                <span className={cn("block text-[13px] font-medium", purpose === value && "text-primary")}>{label}</span>
+                <span className="block text-[11.5px] text-muted-foreground">{hint}</span>
+              </button>
+            ))}
+          </div>
           <input
             ref={input}
             type="file"
@@ -171,12 +199,12 @@ export function AddDocumentsDialog({
             disabled={!!problem}
             onClick={() => {
               if (problem) return;
-              onAdd({ files: chosen, name: single ? `${name.trim()}${ext}` : null, folder, tags, adminsOnly });
+              onAdd({ files: chosen, name: single ? `${name.trim()}${ext}` : null, folder, tags, adminsOnly, purpose });
               onOpenChange(false);
             }}
           >
             <Save className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Save to {folder}
+            {purpose === "sign" ? "Save and place boxes" : `Save to ${folder}`}
           </Button>
         </DialogFooter>
       </DialogContent>

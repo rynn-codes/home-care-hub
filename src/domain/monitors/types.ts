@@ -6,6 +6,7 @@ import type { ClientSchedule } from "@/domain/scheduling/clientSchedule";
 import type { VisitExpense } from "@/domain/scheduling/expenses";
 import type { AdmissionStage, AdmissionStatus } from "@/domain/admissions/stages";
 import type { IntakeAnswers } from "@/domain/admissions/intake";
+import type { Envelope } from "@/domain/signing/envelopes";
 
 /**
  * The monitors: the things Joy checks every day and only speaks up about
@@ -76,6 +77,8 @@ export interface MonitorInputs {
   approvedLocations: ApprovedLocation[];
   clientSchedules: ClientSchedule[];
   visitExpenses: Record<string, VisitExpense[]>;
+  /** Signing requests, for the ones waiting on somebody. */
+  envelopes: Envelope[];
   mileageRatePerMile: number;
   clientNames: Record<string, string>;
   /** ISO date. */

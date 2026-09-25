@@ -1,15 +1,12 @@
 import { useRef, useState } from "react";
-import { Camera, Check, Clock, FileText, PenLine, TriangleAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
+import { Camera, Check, ChevronRight, Clock, PenLine, TriangleAlert } from "lucide-react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
 import { OfficeNumber } from "@/components/portal/OfficeNumber";
-import { SignaturePad } from "@/components/portal/SignaturePad";
 import { DOCUMENT_REQUEST_LABELS, type DocumentRequestState, type RequestedDocument } from "@/domain/portal/familyPortal";
 import { ACCEPTED_UPLOAD_TYPES, checkUpload } from "@/domain/portal/uploads";
-import { requestsForFamily, whyNotSign, type SignatureRequest } from "@/domain/documents/signatureRequests";
+import { envelopesForFamily, waitingOnSigner, type Envelope } from "@/domain/signing/envelopes";
 import { displayName } from "@/domain/documents/library";
-import { sampleText } from "@/lib/sampleFiles";
 import { seedRequestedDocuments } from "@/lib/familyPortalSeed";
 import { usePortalSession } from "@/context/PortalSessionProvider";
 import { useDemo } from "@/context/DemoDataProvider";
@@ -25,10 +22,8 @@ import { cn } from "@/lib/utils";
  * the caregiver's screen uses, and the bytes would go through the same
  * `DocumentStorageService` port — which is still not connected, and says so.
  *
- * Signing is the same shape as the office's own consents: a typed name and a
- * drawn mark. The mark stays on the screen for the signer; Joy records who
- * signed and when. No signing provider is connected, so nothing is stamped
- * onto the file — the screen says so rather than implying a certified copy.
+ * Signing opens its own page: the form drawn with the office's boxes on it,
+ * a walk from box to box, and one signature at the bottom.
  */
 
 const STATE_ICON: Record<DocumentRequestState, { icon: typeof Check; tone: string }> = {
@@ -65,137 +60,29 @@ function Row({ doc, picked, onPick }: { doc: RequestedDocument; picked: string |
 
 const when = (iso: string) => new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-function SignRow({ request, onSign, onDecline }: { request: SignatureRequest; onSign: (typedName: string) => void; onDecline: (reason: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const [typedName, setTypedName] = useState("");
-  const [drawn, setDrawn] = useState(false);
-  const [declining, setDeclining] = useState(false);
-  const [declineReason, setDeclineReason] = useState("");
-  const [reading, setReading] = useState(false);
-  const problem = whyNotSign({ request, typedName, markDrawn: drawn });
-  const text = sampleText(request.documentId);
-
-  if (request.status === "signed") {
-    return (
-      <li className="px-4 py-4">
-        <div className="flex items-start justify-between gap-3">
-          <span className="min-w-0">
-            <span className="flex items-center gap-2">
-              <Check className="h-4 w-4 shrink-0 text-[hsl(var(--success))]" aria-hidden="true" />
-              <span className="text-base font-medium">{displayName(request.documentName)}</span>
-            </span>
-            <span className="mt-1 block text-sm text-muted-foreground">
-              Signed by {request.signedName} · {when(request.signedAt ?? request.requestedAt)}
-            </span>
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground">Signed</span>
-        </div>
-      </li>
-    );
-  }
-  if (request.status === "declined") {
-    return (
-      <li className="px-4 py-4">
-        <div className="flex items-start justify-between gap-3">
-          <span className="min-w-0">
-            <span className="text-base font-medium">{displayName(request.documentName)}</span>
-            <span className="mt-1 block text-sm text-muted-foreground">You declined this{request.declinedReason ? ` — ${request.declinedReason}` : ""}. The office has been told.</span>
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground">Declined</span>
-        </div>
-      </li>
-    );
-  }
-
+function SignRow({ env }: { env: Envelope }) {
+  const waiting = waitingOnSigner(env);
+  const line =
+    env.status === "signed" || env.status === "completed"
+      ? `Signed by ${env.signedName} · ${when(env.signedAt ?? env.createdAt)}`
+      : env.status === "declined"
+        ? `You declined this${env.declinedReason ? ` — ${env.declinedReason}` : ""}.`
+        : `For ${env.signerName} · sent ${when(env.sentAt ?? env.createdAt)}`;
   return (
-    <li className="px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
+    <li>
+      <Link to={`/portal/care/sign/${env.id}`} className="flex items-center justify-between gap-3 px-4 py-4 transition-colors hover:bg-muted/40">
         <span className="min-w-0">
           <span className="flex items-center gap-2">
-            <PenLine className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
-            <span className="text-base font-medium">{displayName(request.documentName)}</span>
+            {waiting ? <PenLine className="h-4 w-4 shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" /> : <Check className="h-4 w-4 shrink-0 text-[hsl(var(--success))]" aria-hidden="true" />}
+            <span className="text-base font-medium">{displayName(env.documentName)}</span>
           </span>
-          {request.reason && <span className="mt-1 block text-sm text-muted-foreground">{request.reason}</span>}
-          <span className="mt-0.5 block text-xs text-muted-foreground">
-            For {request.signerName} · asked {when(request.requestedAt)}
-          </span>
+          <span className="mt-1 block text-sm text-muted-foreground">{line}</span>
         </span>
-        <span className="shrink-0 text-xs text-[hsl(var(--warning))]">Needs your signature</span>
-      </div>
-
-      <button type="button" onClick={() => setReading((r) => !r)} className="mt-3 flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-2 hover:underline" aria-expanded={reading}>
-        <FileText className="h-4 w-4" aria-hidden="true" />
-        {reading ? "Hide the document" : "Read the document"}
-      </button>
-      {reading && (
-        <div className="mt-2 rounded-2xl border border-border bg-surface-muted p-4">
-          {text ? (
-            <div className="max-h-72 space-y-3 overflow-y-auto text-sm leading-relaxed">
-              <p className="m-0 rounded-lg bg-[hsl(var(--warning))]/10 px-3 py-2 text-xs font-medium text-[hsl(var(--warning))]">Test document. Not an agreement.</p>
-              {text.paragraphs.map((p, i) => (
-                <p key={i} className="m-0">
-                  {p}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <p className="m-0 text-sm text-muted-foreground">
-              There is no copy of this file in the portal yet. Call <OfficeNumber /> and the office will send one before you sign.
-            </p>
-          )}
-        </div>
-      )}
-
-      {!open && !declining && (
-        <div className="mt-3 flex gap-2">
-          <Button className="h-12 flex-1 rounded-2xl text-base" onClick={() => setOpen(true)}>
-            Sign
-          </Button>
-          <Button variant="ghost" className="h-12 rounded-2xl text-base" onClick={() => setDeclining(true)}>
-            Not now
-          </Button>
-        </div>
-      )}
-
-      {declining && (
-        <div className="mt-3 space-y-2">
-          <Input value={declineReason} onChange={(e) => setDeclineReason(e.target.value)} placeholder="Why not — optional, the office will see it" className="h-12 rounded-2xl text-base" />
-          <div className="flex gap-2">
-            <Button variant="outline" className="h-12 flex-1 rounded-2xl text-base" onClick={() => onDecline(declineReason)}>
-              Decline to sign
-            </Button>
-            <Button variant="ghost" className="h-12 rounded-2xl text-base" onClick={() => setDeclining(false)}>
-              Back
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {open && (
-        <div className="mt-4 space-y-4 rounded-2xl border border-border bg-surface-muted p-4">
-          <div className="space-y-1.5">
-            <label htmlFor={`typed-${request.id}`} className="block text-sm font-medium">
-              Type your full name
-            </label>
-            <Input id={`typed-${request.id}`} value={typedName} onChange={(e) => setTypedName(e.target.value)} placeholder={request.signerName} autoComplete="name" className="h-12 rounded-2xl bg-surface text-base" />
-          </div>
-          <div className="space-y-1.5">
-            <p className="m-0 text-sm font-medium">Draw your signature</p>
-            <SignaturePad onChange={setDrawn} />
-          </div>
-          <p className="m-0 text-xs leading-[1.5] text-muted-foreground">
-            By signing you agree to {displayName(request.documentName)}. Joy records your typed name and the time. No signing provider is connected, so nothing is stamped onto the file and the drawing is not stored.
-          </p>
-          <div className="flex gap-2">
-            <Button className="h-12 flex-1 rounded-2xl text-base" disabled={!!problem} title={problem ?? undefined} onClick={() => onSign(typedName)}>
-              Sign {displayName(request.documentName)}
-            </Button>
-            <Button variant="ghost" className="h-12 rounded-2xl text-base" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+        <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+          {waiting ? <span className="text-[hsl(var(--warning))]">Needs your signature</span> : env.status === "declined" ? "Declined" : "Signed"}
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </Link>
     </li>
   );
 }
@@ -206,12 +93,12 @@ export default function FamilyDocuments() {
   const [picked, setPicked] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const { grant } = usePortalSession();
-  const { signatureRequests, signSignatureRequest, declineSignatureRequest } = useDemo();
+  const { envelopes } = useDemo();
 
   const docs = seedRequestedDocuments;
   const outstanding = docs.filter((d) => d.state === "needed").length;
-  const toSign = grant ? requestsForFamily(signatureRequests, grant) : [];
-  const pendingSignatures = toSign.filter((r) => r.status === "pending").length;
+  const toSign = grant ? envelopesForFamily(envelopes, grant) : [];
+  const pendingSignatures = toSign.filter(waitingOnSigner).length;
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -244,8 +131,8 @@ export default function FamilyDocuments() {
         <>
           <p className="mt-8 text-xs font-medium uppercase tracking-wide text-muted-foreground">To sign</p>
           <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-surface">
-            {toSign.map((r) => (
-              <SignRow key={r.id} request={r} onSign={(typedName) => signSignatureRequest(r.id, { typedName, markDrawn: true })} onDecline={(reason) => declineSignatureRequest(r.id, reason)} />
+            {toSign.map((e) => (
+              <SignRow key={e.id} env={e} />
             ))}
           </ul>
         </>
