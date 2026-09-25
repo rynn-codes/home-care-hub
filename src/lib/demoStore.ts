@@ -274,6 +274,12 @@ export interface DemoState {
   interactions: Interaction[];
   /** The bin. Anything deleted waits here until its recovery window closes. */
   deletedRecords: DeletedRecord[];
+  /**
+   * Seeded documents the office has deleted. A seed added after a browser
+   * first saved its state joins the library on load; one on this list never
+   * comes back, even after the bin lets go of it.
+   */
+  retiredSeedDocumentIds: string[];
   /** Edits to seeded employees, keyed by id — the seed is a file and cannot change. */
   employeeEdits: Record<string, EmployeeProfile>;
   /** People added on the Employees screen, newest first. */
@@ -400,6 +406,7 @@ function initial(): DemoState {
     profileChanges: [],
     interactions: [...seedInteractions],
     deletedRecords: [],
+    retiredSeedDocumentIds: [],
     employeeEdits: {},
     addedEmployees: [],
     deletedEmployeeIds: [],
@@ -471,6 +478,15 @@ export function loadDemoState(): DemoState {
     }
     // The bin empties itself: anything past its recovery window goes on load.
     merged.deletedRecords = partitionExpired(merged.deletedRecords ?? [], new Date().toISOString()).keep;
+    // Seeded documents added since this blob was written join the library,
+    // unless the office deleted them — nothing uploaded or renamed is touched.
+    const haveDocs = new Set((merged.documents ?? []).map((d) => d.id));
+    const retired = new Set(merged.retiredSeedDocumentIds ?? []);
+    const binnedDocs = new Set((merged.deletedRecords ?? []).filter((r) => r.kind === "document").map((r) => r.id));
+    merged.documents = [
+      ...seedDocuments.filter((d) => !haveDocs.has(d.id) && !retired.has(d.id) && !binnedDocs.has(d.id)),
+      ...(merged.documents ?? []),
+    ];
     // A folder a document names is a folder, whatever the list says.
     merged.documentFolders = reconcileFolders(merged.documentFolders ?? [], merged.documents ?? []);
     // Seeded activity added since this blob was written joins the list; nothing

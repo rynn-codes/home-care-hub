@@ -43,6 +43,7 @@ import {
 import { declineRequest, newSignatureRequest, signRequest, type SignerRole } from "@/domain/documents/signatureRequests";
 import { moveCategory, renameCategory, withNewVersion, type Sop } from "@/domain/sops/sops";
 import type { DemoClockAttempt, DemoClockCorrection } from "@/lib/demoStore";
+import { seedDocuments } from "@/lib/documentsSeed";
 import type { Visit } from "@/domain/scheduling/conflicts";
 import type { TimeOff } from "@/domain/scheduling/timeOff";
 import { unassignShift, type CoverageEvent } from "@/domain/scheduling/coverage";
@@ -1418,9 +1419,11 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     setState((s) => {
       const doc = s.documents.find((d) => d.id === id);
       if (!doc) return s;
+      const seeded = seedDocuments.some((d) => d.id === id);
       return {
         ...s,
         documents: s.documents.filter((d) => d.id !== id),
+        retiredSeedDocumentIds: seeded && !s.retiredSeedDocumentIds.includes(id) ? [...s.retiredSeedDocumentIds, id] : s.retiredSeedDocumentIds,
         deletedRecords: [
           binned({
             id,

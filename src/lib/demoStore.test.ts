@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { loadDemoState, resetDemoState, saveDemoState } from "@/lib/demoStore";
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
+import { TEST_SIGNATURE_DOCUMENT } from "@/lib/documentsSeed";
 
 describe("restricted answers", () => {
   beforeEach(() => {
@@ -43,5 +44,33 @@ describe("restricted answers", () => {
   it("marks the social security number as the restricted field", () => {
     const restricted = ASSESSMENT_QUESTIONS.filter((q) => q.restricted).map((q) => q.id);
     expect(restricted).toContain("ssn");
+  });
+});
+
+describe("seeded documents", () => {
+  beforeEach(() => {
+    resetDemoState();
+  });
+
+  it("starts with the test document for trying signatures, named as a test", () => {
+    const doc = loadDemoState().documents.find((d) => d.id === TEST_SIGNATURE_DOCUMENT.id);
+    expect(doc?.name).toMatch(/^TEST/);
+  });
+
+  it("adds a seed document to a browser that saved its state before the seed existed", () => {
+    const state = loadDemoState();
+    state.documents = state.documents.filter((d) => d.id !== TEST_SIGNATURE_DOCUMENT.id);
+    saveDemoState(state);
+
+    expect(loadDemoState().documents.map((d) => d.id)).toContain(TEST_SIGNATURE_DOCUMENT.id);
+  });
+
+  it("does not bring back a seed document the office deleted", () => {
+    const state = loadDemoState();
+    state.documents = state.documents.filter((d) => d.id !== TEST_SIGNATURE_DOCUMENT.id);
+    state.retiredSeedDocumentIds = [TEST_SIGNATURE_DOCUMENT.id];
+    saveDemoState(state);
+
+    expect(loadDemoState().documents.map((d) => d.id)).not.toContain(TEST_SIGNATURE_DOCUMENT.id);
   });
 });
