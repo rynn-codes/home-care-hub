@@ -36,6 +36,10 @@ export interface VisitClock {
   state: ClockState;
   /** Server time. Never the browser's. */
   clockedInAt: string | null;
+  /** When paid time starts. The clock-in, unless an early tap was held to the grace line. */
+  countsFrom: string | null;
+  /** Minutes between the tap and when the time counts from. */
+  heldMinutes: number;
   clockedOutAt: string | null;
   /** Set when clock-out happened with something outstanding. §11. */
   exceptionReason: string | null;
@@ -46,6 +50,8 @@ export function newClock(visitId: string): VisitClock {
     visitId,
     state: "not_started",
     clockedInAt: null,
+    countsFrom: null,
+    heldMinutes: 0,
     clockedOutAt: null,
     exceptionReason: null,
   };
@@ -104,11 +110,21 @@ export function requestClockIn(record: VisitRecord): VisitRecord {
   return { ...record, clock: { ...record.clock, state: "requested" } };
 }
 
-/** Called with the time the *server* recorded. */
-export function confirmClockIn(record: VisitRecord, serverTime: string): VisitRecord {
+/**
+ * Called with the time the *server* recorded. An early clock-in verdict
+ * (domain/scheduling/earlyClockIn) says when the paid time starts; without
+ * one it starts at the tap.
+ */
+export function confirmClockIn(record: VisitRecord, serverTime: string, early?: { countsFrom: string; heldMinutes: number } | null): VisitRecord {
   return {
     ...record,
-    clock: { ...record.clock, state: "clocked_in", clockedInAt: serverTime },
+    clock: {
+      ...record.clock,
+      state: "clocked_in",
+      clockedInAt: serverTime,
+      countsFrom: early?.countsFrom ?? serverTime,
+      heldMinutes: early?.heldMinutes ?? 0,
+    },
   };
 }
 
@@ -214,7 +230,9 @@ export function clockOutWithException(
 export function elapsed(clock: VisitClock, asOf: Date): string | null {
   if (!clock.clockedInAt) return null;
   const end = clock.clockedOutAt ? new Date(clock.clockedOutAt) : asOf;
-  const ms = end.getTime() - new Date(clock.clockedInAt).getTime();
+  // From when the time counts, not from the tap — a held early clock-in has
+  // not started earning yet.
+  const ms = end.getTime() - new Date(clock.countsFrom ?? clock.clockedInAt).getTime();
   if (ms < 0) return null;
   const mins = Math.floor(ms / 60_000);
   return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;

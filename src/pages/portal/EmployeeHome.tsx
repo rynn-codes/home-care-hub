@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarDays, ChevronRight, TriangleAlert } from "lucide-react";
 import { PortalFrame } from "@/components/portal/PortalFrame";
 import { usePortalSession } from "@/context/PortalSessionProvider";
+import { useDemo } from "@/context/DemoDataProvider";
 import { employeeHome, mySchedule, type MyVisit } from "@/domain/portal/employeeHome";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { demoCaregiverName } from "@/lib/portalDemo";
@@ -47,7 +48,13 @@ function VisitCard({ visit, primary }: { visit: MyVisit; primary?: boolean }) {
 
 export default function EmployeeHome() {
   const { grant } = usePortalSession();
+  const { phoneAsks, answerPhoneAsk } = useDemo();
+  const [phone, setPhone] = useState("");
   const asOf = useMemo(() => new Date(), []);
+  // The office asks for a number by the caregiver's name on the roster, which
+  // is the name the schedule carries, not the greeting.
+  const rosterName = demoCaregiverName(asOf) || grant?.greetingName || "";
+  const ask = phoneAsks[rosterName] ?? null;
 
   const view = useMemo(() => {
     const name = grant?.greetingName ?? "there";
@@ -74,6 +81,36 @@ export default function EmployeeHome() {
       <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
         {view.greeting}
       </h1>
+
+      {/* The office asked for a phone number, so Joy can remind her to clock
+          out. Answered here, once, and the ask goes away. */}
+      {ask && ask.answeredAt === null && (
+        <div className="mt-8 rounded-2xl border border-[#DDE1FA] bg-[#F7F8FE] p-5">
+          <p className="m-0 text-base leading-snug">The office needs a phone number for you, so Joy can remind you to clock out.</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(713) 555-0142"
+              aria-label="Your phone number"
+              className="h-12 min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 text-base"
+            />
+            <button
+              type="button"
+              disabled={phone.trim().length < 7}
+              onClick={() => {
+                answerPhoneAsk(rosterName, phone.trim(), new Date().toISOString());
+                setPhone("");
+              }}
+              className="h-12 rounded-xl bg-primary px-5 text-base font-medium text-primary-foreground disabled:opacity-50"
+            >
+              Send it
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ---------------------------------------------------------- today -- */}
       <p className="mt-8 text-xs font-medium uppercase tracking-wide text-muted-foreground">

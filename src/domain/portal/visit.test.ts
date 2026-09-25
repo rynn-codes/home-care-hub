@@ -26,6 +26,8 @@ function complete(over: Partial<VisitRecord> = {}): VisitRecord {
       visitId: "v1",
       state: "clocked_in",
       clockedInAt: "2026-08-20T09:01:00",
+      countsFrom: "2026-08-20T09:01:00",
+      heldMinutes: 0,
       clockedOutAt: null,
       exceptionReason: null,
     },

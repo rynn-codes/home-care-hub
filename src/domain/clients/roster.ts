@@ -82,6 +82,8 @@ export interface ClientInput {
   phone?: string | null;
   email?: string | null;
   address?: string | null;
+  /** The mapped position of the service address, once the office has geocoded it. None are mapped yet. */
+  coordinates?: { lat: number; lng: number } | null;
   location?: string | null;
   status?: ClientStatus;
   /** Issued once from initials and the last four of an SSN; never derived. See domain/records/mrNumber. */

@@ -38,7 +38,7 @@ export const seedPortalGrants: Array<PortalGrant & { id: string; phone: E164 }> 
     personId: "p-susan",
     subjectPersonId: "p-marcus",
     greetingName: "Susan",
-    subjectName: "Marcus",
+    subjectName: "Jessie",
     state: "pre_admission",
     active: true,
     // §9.1's widened grant: Susan is the responsible party, and money is her
