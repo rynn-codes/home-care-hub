@@ -5,47 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Joy Health</title>
     <meta name="description" content="Joy Health's operations platform: admissions, scheduling, care plans, billing and payroll in one calm place." />
-    <meta name="author" content="Joy Health" />
-
-    <meta property="og:title" content="Joy Health" />
-    <meta property="og:description" content="Joy Health's operations platform: admissions, scheduling, care plans, billing and payroll in one calm place." />
-    <meta property="og:type" content="website" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <!--
-      Loaded without blocking the first paint.
-
-      A plain stylesheet link here holds rendering until Google answers. On an
-      office connection that is imperceptible; on a caregiver's phone in a
-      client's house with one bar it is a blank white screen, and if the request
-      never resolves the app never appears at all. That is not hypothetical —
-      it is exactly what happened in a sandbox with no egress, where the load
-      event never fired and healthy pages timed out.
-
-      `rel="preload"` fetches without blocking, then the onload handler promotes
-      it to a stylesheet once it arrives. The noscript copy keeps the fonts for
-      anybody with JavaScript disabled. Text paints immediately in the fallback
-      stack either way, and `display=swap` swaps the real face in when it lands.
-
-      The better fix is self-hosting both families — one fewer third party, no
-      DNS lookup, and nothing to fail. That needs the font files, so it is a job
-      for whoever has network access, not something to fake here.
-    -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700;1,300..500&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700;1,300..500&display=swap"
-      />
-    </noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..700;1,300..500&display=swap">
+    <style>
+      /*
+        The page scrolls the way any page does.
+        It owned a bounded scroll region until 25 August, so that a pinned Talk
+        to Joy card had a viewport to hold against — the host sizes this frame
+        to the page's own height, and a frame taller than the window means the
+        HOST scrolls, which no fixed element inside can survive. The card is
+        gone at Karynn's word, and the constraint went with it rather than
+        outliving its reason: what it costs is real estate, letterboxing the
+        prototype into part of the window for a benefit nothing now collects.
+      */
+      html, body { margin: 0; }
+    </style>
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

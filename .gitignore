@@ -11,6 +11,8 @@ node_modules
 dist
 dist-demo
 dist-ssr
+# The single-file demo page, built by scripts/build-demo.mjs
+demo
 *.local
 
 # Editor directories and files

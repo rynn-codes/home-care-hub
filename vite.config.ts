@@ -27,6 +27,11 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mcpPlugin(), mode === "development" && componentTagger()].filter(Boolean),
+  build: {
+    // The single-file demo has nowhere to fetch an image from, so every asset
+    // is inlined as a data URL. A served build keeps Vite's usual 4 KB cut-off.
+    assetsInlineLimit: process.env.VITE_STANDALONE_DEMO === "true" ? 1024 * 1024 : 4096,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

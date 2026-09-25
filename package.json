@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "npm run typecheck && vite build",
     "build:dev": "npm run typecheck && vite build --mode development",
+    "demo": "node scripts/build-demo.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
