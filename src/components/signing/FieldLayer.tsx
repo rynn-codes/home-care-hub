@@ -95,7 +95,7 @@ export function FieldLayer({
   };
 
   return (
-    <div className="absolute inset-0" onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onClick={() => mode === "edit" && onSelect?.(null)}>
+    <div className={cn("absolute inset-0", mode === "edit" && "select-none")} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onClick={() => mode === "edit" && onSelect?.(null)}>
       {fields
         .filter((f) => f.page === page)
         .map((f) => {

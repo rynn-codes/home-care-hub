@@ -132,6 +132,12 @@ function useOpenRequest(): string | null {
       window.history.replaceState({ ...(window.history.state ?? {}), usr: { ...(state ?? {}), open: undefined } }, "");
     }
   }, [requested, state]);
+  // Reset a tick later so the same request twice in a row still counts as a change.
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => setOpen(null), 0);
+    return () => clearTimeout(t);
+  }, [open]);
   return open;
 }
 

@@ -1,22 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { GripVertical, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PagesWithFields, useDocumentFile } from "@/components/signing/PagesWithFields";
+import { FieldPalette, FieldProperties, nextFieldId } from "@/components/signing/FieldEditor";
 import { useDemo } from "@/context/DemoDataProvider";
 import { displayName } from "@/domain/documents/library";
-import { FIELD_KINDS, FIELD_SPECS, FILL_LABELS, type FieldFill, type FieldKind } from "@/domain/signing/fields";
+import type { FieldKind } from "@/domain/signing/fields";
 import { addField, newTemplate, removeField, updateField, whyNotSaveTemplate, type SigningTemplate } from "@/domain/signing/templates";
 import { keepTemplateFile } from "@/lib/fileStore";
 import { pdfPageCount } from "@/lib/pdfRender";
 import { cn } from "@/lib/utils";
-
-let seq = 0;
-const fieldId = () => `f-${Date.now().toString(36)}-${(seq++).toString(36)}`;
 
 /**
  * Place boxes on a form once.
@@ -58,7 +56,7 @@ export default function TemplateBuilder() {
   const add = (kind: FieldKind, page = 1, x = 0.1, y = 0.1) => {
     if (!template) return;
     const n = template.fields.filter((f) => f.page === page).length;
-    const id = fieldId();
+    const id = nextFieldId();
     setTemplate(addField(template, { id, kind, page, x, y: y === 0.1 ? Math.min(0.9, 0.1 + n * 0.035) : y }));
     setSelected(id);
   };
@@ -126,72 +124,18 @@ export default function TemplateBuilder() {
             <Input id="tpl-name" value={template?.name ?? ""} onChange={(e) => setTemplate((t) => (t ? { ...t, name: e.target.value } : t))} className="mt-1" />
           </section>
 
-          <section className="rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-4">
-            <h2 className="m-0 text-[13px] font-semibold">Boxes</h2>
-            <p className="m-0 mt-0.5 text-[12px] text-muted-foreground">Drag onto the page, or click to add.</p>
-            <ul className="m-0 mt-3 grid list-none grid-cols-2 gap-1.5 p-0">
-              {FIELD_KINDS.map((kind) => {
-                const spec = FIELD_SPECS[kind];
-                return (
-                  <li key={kind}>
-                    <button
-                      type="button"
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("text/joy-field", kind);
-                        e.dataTransfer.effectAllowed = "copy";
-                      }}
-                      onClick={() => add(kind)}
-                      className="flex w-full items-center gap-1.5 rounded-[8px] border border-[var(--hairline)] bg-[var(--paper-sunken)] px-2 py-1.5 text-left text-[12px] hover:border-primary"
-                      title={spec.hint}
-                    >
-                      <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <span className="truncate">{spec.label}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+          <FieldPalette onAdd={(kind) => add(kind)} />
 
-          <section className="rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-4">
-            <h2 className="m-0 text-[13px] font-semibold">{current ? current.label : "Selected box"}</h2>
-            {!current ? (
-              <p className="m-0 mt-0.5 text-[12px] text-muted-foreground">Click a box on the page to change what it is called, who fills it, or whether it is required. Arrow keys nudge it; Delete removes it.</p>
-            ) : (
-              <div className="mt-3 space-y-3">
-                <div className="space-y-1">
-                  <Label htmlFor="fld-label" className="text-[12px] font-medium">Label</Label>
-                  <Input id="fld-label" value={current.label} onChange={(e) => setTemplate((t) => (t ? updateField(t, current.id, { label: e.target.value }) : t))} />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="fld-fill" className="text-[12px] font-medium">Who fills it</Label>
-                  <select id="fld-fill" value={current.fill} onChange={(e) => setTemplate((t) => (t ? updateField(t, current.id, { fill: e.target.value as FieldFill }) : t))} className="h-9 w-full rounded-md border border-input bg-background px-2 text-[13px]">
-                    {(Object.keys(FILL_LABELS) as FieldFill[]).map((fill) => (
-                      <option key={fill} value={fill}>{FILL_LABELS[fill]}</option>
-                    ))}
-                  </select>
-                </div>
-                {template && template.pages > 1 && (
-                  <div className="space-y-1">
-                    <Label htmlFor="fld-page" className="text-[12px] font-medium">Page</Label>
-                    <select id="fld-page" value={current.page} onChange={(e) => setTemplate((t) => (t ? updateField(t, current.id, { page: Number(e.target.value) }) : t))} className="h-9 w-full rounded-md border border-input bg-background px-2 text-[13px]">
-                      {Array.from({ length: template.pages }, (_, i) => i + 1).map((p) => (
-                        <option key={p} value={p}>Page {p}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <label className={cn("flex items-center gap-2 text-[13px]", current.fill === "joy" && "opacity-60")}>
-                  <input type="checkbox" checked={current.required} onChange={(e) => setTemplate((t) => (t ? updateField(t, current.id, { required: e.target.checked }) : t))} className="h-4 w-4 accent-[hsl(var(--primary))]" />
-                  Required before signing
-                </label>
-                <button type="button" onClick={() => { setTemplate((t) => (t ? removeField(t, current.id) : t)); setSelected(null); }} className="text-[12.5px] text-[#B42318] underline-offset-4 hover:underline">
-                  Remove this box
-                </button>
-              </div>
-            )}
-          </section>
+          <FieldProperties
+            field={current}
+            pages={template?.pages ?? 1}
+            onChange={(patch) => current && setTemplate((t) => (t ? updateField(t, current.id, patch) : t))}
+            onRemove={() => {
+              if (!current) return;
+              setTemplate((t) => (t ? removeField(t, current.id) : t));
+              setSelected(null);
+            }}
+          />
 
           {template && template.fields.length > 0 && (
             <section className="rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-4">

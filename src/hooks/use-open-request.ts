@@ -11,6 +11,12 @@ import { useLocation } from "react-router-dom";
  *
  * The state is cleared after it is read so a refresh, or Back, does not open
  * the dialog a second time. Same pattern as Scheduling's `scheduleFor`.
+ *
+ * The value also resets to null a tick after it is handed over, so the same
+ * request twice in a row — "New Client" from Admissions, close it, "New
+ * Client" again — is seen as a change both times. Without that the second
+ * click navigated to the same value and the screen, watching for a change,
+ * saw none.
  */
 export function useOpenRequest<T extends string>(): T | null {
   const { state } = useLocation();
@@ -25,6 +31,12 @@ export function useOpenRequest<T extends string>(): T | null {
       "",
     );
   }, [requested, state]);
+
+  useEffect(() => {
+    if (!once) return;
+    const t = setTimeout(() => setOnce(null), 0);
+    return () => clearTimeout(t);
+  }, [once]);
 
   return once;
 }

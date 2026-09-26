@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PagesWithFields, useDocumentFile } from "@/components/signing/PagesWithFields";
+import { FieldPalette, FieldProperties, nextFieldId } from "@/components/signing/FieldEditor";
 import { useDemo } from "@/context/DemoDataProvider";
 import { useAgencySettings } from "@/lib/agencyStore";
 import { buildClientRoster } from "@/lib/clientRoster";
 import { displayName } from "@/domain/documents/library";
-import { isSignerField, type TemplateField } from "@/domain/signing/fields";
+import { clampField, isSignerField, newField, type FieldKind, type TemplateField } from "@/domain/signing/fields";
 import {
   createEnvelope as buildEnvelope, defaultDelivery, deliveryEmail, deliveryMessage, prefillValues, SIGNING_LIMITS, whyNotSend, type FieldValue, type PrefillSource, type SignerRole,
 } from "@/domain/signing/envelopes";
@@ -44,6 +45,19 @@ export default function NewSigningRequest() {
   const [message, setMessage] = useState("");
   const [fields, setFields] = useState<TemplateField[]>([]);
   const [values, setValues] = useState<Record<string, FieldValue>>({});
+  // "Fill in" is the usual mode. "Boxes" lets the office add one more line
+  // for this request only — the template is untouched.
+  const [layout, setLayout] = useState<"fill" | "boxes">("fill");
+  const [selected, setSelected] = useState<string | null>(null);
+  const current = fields.find((f) => f.id === selected) ?? null;
+  const addBox = (kind: FieldKind, page = 1, x = 0.1, y?: number) => {
+    const n = fields.filter((f) => f.page === page).length;
+    const f = newField({ id: nextFieldId(), kind, page, x, y: y ?? Math.min(0.9, 0.1 + n * 0.035) });
+    setFields((prev) => [...prev, f]);
+    if (f.kind === "checkbox") setValues((v) => ({ ...v, [f.id]: false }));
+    setSelected(f.id);
+    setLayout("boxes");
+  };
 
   const template = signingTemplates.find((t) => t.id === templateId) ?? null;
   const client = clients.find((c) => c.personId === clientId) ?? null;
@@ -207,6 +221,22 @@ export default function NewSigningRequest() {
             </section>
           )}
 
+          {template && layout === "boxes" && (
+            <>
+              <FieldPalette onAdd={(kind) => addBox(kind)} hint="For this request only. Drag onto the page, or click to add. The template is not changed." />
+              <FieldProperties
+                field={current}
+                pages={template.pages}
+                onChange={(patch) => current && setFields((prev) => prev.map((f) => (f.id === current.id ? clampField({ ...f, ...patch }) : f)))}
+                onRemove={() => {
+                  if (!current) return;
+                  setFields((prev) => prev.filter((f) => f.id !== current.id));
+                  setSelected(null);
+                }}
+              />
+            </>
+          )}
+
           {template && signerFields.length > 0 && (
             <section className="rounded-[14px] border border-[var(--hairline)] bg-[var(--paper)] p-4">
               <h2 className="m-0 text-[13px] font-semibold">What {signerName ? signerName.split(" ")[0] : "the signer"} completes</h2>
@@ -231,17 +261,43 @@ export default function NewSigningRequest() {
             <p className="rounded-[14px] border border-dashed border-[var(--hairline)] bg-[var(--paper-sunken)] px-4 py-8 text-center text-[13px] text-muted-foreground">Choose a form to see the page.</p>
           ) : (
             <>
-              <p className="m-0 mb-2 text-[12px] text-muted-foreground">
-                {client ? "Check what Joy filled in. Anything with a grey or blue box can be typed into before sending; amber boxes are for the signer." : "Choose a client and Joy fills what the record knows."}
-              </p>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="m-0 text-[12px] text-muted-foreground">
+                  {layout === "boxes"
+                    ? "Drag a box into place. Click one to say what it is called and who fills it."
+                    : client
+                      ? "Check what Joy filled in. Grey and blue boxes can be typed into before sending; amber boxes are for the signer."
+                      : "Choose a client and Joy fills what the record knows."}
+                </p>
+                <div className="flex rounded-[9px] border border-[var(--hairline)] p-0.5 text-[12px]" role="tablist" aria-label="Page mode">
+                  {(
+                    [
+                      ["fill", "Fill in"],
+                      ["boxes", "Add or move boxes"],
+                    ] as const
+                  ).map(([mode, label]) => (
+                    <button key={mode} type="button" role="tab" aria-selected={layout === mode} onClick={() => setLayout(mode)} className={cn("rounded-[7px] px-2.5 py-1", layout === mode ? "bg-[var(--wash-strong)] font-medium" : "text-muted-foreground hover:text-foreground")}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <PagesWithFields
                 file={file}
                 pages={template.pages}
                 fields={fields}
-                mode="fill"
+                mode={layout === "boxes" ? "edit" : "fill"}
                 values={values}
                 canFill={(f) => f.fill === "joy" || f.fill === "office"}
                 onValue={(id, v) => setValues((prev) => ({ ...prev, [id]: v }))}
+                selectedId={selected}
+                onSelect={setSelected}
+                onChange={(id, patch) => setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)))}
+                onRemove={(id) => {
+                  setFields((prev) => prev.filter((f) => f.id !== id));
+                  setSelected((s) => (s === id ? null : s));
+                }}
+                onDropKind={({ kind, page, x, y }) => addBox(kind as FieldKind, page, x, y)}
               />
             </>
           )}

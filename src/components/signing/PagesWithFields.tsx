@@ -72,7 +72,7 @@ export function PagesWithFields({
   }
 
   return (
-    <div className="space-y-4">
+    <div className={mode === "edit" ? "space-y-4 select-none" : "space-y-4"}>
       {Array.from({ length: pages }, (_, i) => i + 1).map((page) => (
         <div
           key={page}

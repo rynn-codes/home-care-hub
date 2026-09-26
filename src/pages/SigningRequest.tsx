@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PagesWithFields, useDocumentFile } from "@/components/signing/PagesWithFields";
+import { FieldPalette, FieldProperties, nextFieldId } from "@/components/signing/FieldEditor";
+import { clampField, newField, type FieldKind, type TemplateField } from "@/domain/signing/fields";
+import { cn } from "@/lib/utils";
 import { StatusPill } from "@/components/signing/StatusPill";
 import { SignaturePad } from "@/components/portal/SignaturePad";
 import { OFFICE_NUMBER } from "@/components/portal/OfficeNumber";
@@ -51,6 +54,18 @@ export default function SigningRequest() {
 
   const [editing, setEditing] = useState(false);
   const [draftValues, setDraftValues] = useState<Record<string, FieldValue>>({});
+  const [draftFields, setDraftFields] = useState<TemplateField[]>([]);
+  const [layout, setLayout] = useState<"fill" | "boxes">("fill");
+  const [selected, setSelected] = useState<string | null>(null);
+  const current = draftFields.find((f) => f.id === selected) ?? null;
+  const addBox = (kind: FieldKind, page = 1, x = 0.1, y?: number) => {
+    const n = draftFields.filter((f) => f.page === page).length;
+    const f = newField({ id: nextFieldId(), kind, page, x, y: y ?? Math.min(0.9, 0.1 + n * 0.035) });
+    setDraftFields((prev) => [...prev, f]);
+    if (f.kind === "checkbox") setDraftValues((v) => ({ ...v, [f.id]: false }));
+    setSelected(f.id);
+    setLayout("boxes");
+  };
   const [draftText, setDraftText] = useState<string>("");
   const [draftEmail, setDraftEmail] = useState<string>("");
   const [draftMessage, setDraftMessage] = useState("");
@@ -74,13 +89,16 @@ export default function SigningRequest() {
 
   const startEditing = () => {
     setDraftValues({ ...env.values });
+    setDraftFields(env.fields.map((f) => ({ ...f })));
+    setLayout("fill");
+    setSelected(null);
     setDraftText(env.textTo ?? "");
     setDraftEmail(env.emailTo ?? "");
     setDraftMessage(env.message);
     setEditing(true);
   };
   const saveEdits = () => {
-    editEnvelope(env.id, { values: draftValues, textTo: draftText.trim() || null, emailTo: draftEmail.trim() || null, message: draftMessage });
+    editEnvelope(env.id, { fields: draftFields, values: draftValues, textTo: draftText.trim() || null, emailTo: draftEmail.trim() || null, message: draftMessage });
     setEditing(false);
     toast.success("Saved");
   };
@@ -147,8 +165,55 @@ export default function SigningRequest() {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div>
-          {editing && <p className="m-0 mb-2 text-[12px] text-muted-foreground">Grey and blue boxes can be typed into. Amber boxes are the signer's.</p>}
-          <PagesWithFields file={file} pages={env.pages} fields={env.fields} mode={editing ? "fill" : "view"} values={values} canFill={canFill} onValue={(fid, v) => setDraftValues((p) => ({ ...p, [fid]: v }))} />
+          {editing && (
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="m-0 text-[12px] text-muted-foreground">{layout === "boxes" ? "Drag a box into place. Click one to say what it is called and who fills it." : "Grey and blue boxes can be typed into. Amber boxes are the signer's."}</p>
+              <div className="flex rounded-[9px] border border-[var(--hairline)] p-0.5 text-[12px]" role="tablist" aria-label="Page mode">
+                {(
+                  [
+                    ["fill", "Fill in"],
+                    ["boxes", "Add or move boxes"],
+                  ] as const
+                ).map(([mode, label]) => (
+                  <button key={mode} type="button" role="tab" aria-selected={layout === mode} onClick={() => setLayout(mode)} className={cn("rounded-[7px] px-2.5 py-1", layout === mode ? "bg-[var(--wash-strong)] font-medium" : "text-muted-foreground hover:text-foreground")}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <PagesWithFields
+            file={file}
+            pages={env.pages}
+            fields={editing ? draftFields : env.fields}
+            mode={editing ? (layout === "boxes" ? "edit" : "fill") : "view"}
+            values={values}
+            canFill={canFill}
+            onValue={(fid, v) => setDraftValues((p) => ({ ...p, [fid]: v }))}
+            selectedId={selected}
+            onSelect={setSelected}
+            onChange={(id, patch) => setDraftFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)))}
+            onRemove={(id) => {
+              setDraftFields((prev) => prev.filter((f) => f.id !== id));
+              setSelected((s) => (s === id ? null : s));
+            }}
+            onDropKind={({ kind, page, x, y }) => addBox(kind as FieldKind, page, x, y)}
+          />
+          {editing && layout === "boxes" && (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <FieldPalette onAdd={(kind) => addBox(kind)} hint="For this request only. Drag onto the page, or click to add." />
+              <FieldProperties
+                field={current}
+                pages={env.pages}
+                onChange={(patch) => current && setDraftFields((prev) => prev.map((f) => (f.id === current.id ? clampField({ ...f, ...patch }) : f)))}
+                onRemove={() => {
+                  if (!current) return;
+                  setDraftFields((prev) => prev.filter((f) => f.id !== current.id));
+                  setSelected(null);
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <aside className="space-y-4">
