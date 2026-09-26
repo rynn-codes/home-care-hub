@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/context/DemoDataProvider";
-import { canWrite, readOnlyReason } from "@/domain/access/roles";
+import { canView, canWrite, readOnlyReason, type Area } from "@/domain/access/roles";
 import { ROLE_LABELS } from "@/domain/consents/witness";
 import type { DemoUser } from "@/lib/demoStore";
 
@@ -24,6 +24,7 @@ const DEMO_USERS: DemoUser[] = [
   { name: "Kelsey Westley", role: "rn_clinical" },
   { name: "John Segura", role: "intake_coordinator" },
   { name: "State Surveyor", role: "auditor" },
+  { name: "Bookkeeper", role: "bookkeeper" },
 ];
 
 /**
@@ -31,12 +32,12 @@ const DEMO_USERS: DemoUser[] = [
  * the screen reads `state.open` through use-open-request. Karynn, 29
  * September: "New button at the top right, doesn't work on every page."
  */
-const NEW_ACTIONS = [
-  { label: "New Client", to: "/admissions", state: { open: "referral" } },
-  { label: "New Employee", to: "/hiring", state: { open: "invite" } },
-  { label: "Schedule Shift", to: "/scheduling", state: { open: "shift" } },
-  { label: "New Assessment", to: "/admissions", state: { open: "assessment" } },
-  { label: "Add Task", to: "/brain", state: { open: "task" } },
+const NEW_ACTIONS: ReadonlyArray<{ label: string; to: string; state: Record<string, string>; area: Area }> = [
+  { label: "New Client", to: "/admissions", state: { open: "referral" }, area: "admissions" },
+  { label: "New Employee", to: "/hiring", state: { open: "invite" }, area: "hiring" },
+  { label: "Schedule Shift", to: "/scheduling", state: { open: "shift" }, area: "scheduling" },
+  { label: "New Assessment", to: "/admissions", state: { open: "assessment" }, area: "admissions" },
+  { label: "Add Task", to: "/brain", state: { open: "task" }, area: "brain" },
 ];
 
 /**
@@ -88,7 +89,7 @@ export function AppHeader() {
         initialQuery={typed}
       />
 
-      {canWrite(currentUser.role) && (
+      {canWrite(currentUser.role) && NEW_ACTIONS.some((a) => canView(currentUser.role, a.area)) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -100,7 +101,7 @@ export function AppHeader() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[222px] rounded-[14px] p-1.5">
-            {NEW_ACTIONS.map((action) => (
+            {NEW_ACTIONS.filter((a) => canView(currentUser.role, a.area)).map((action) => (
               <DropdownMenuItem key={action.label} asChild className="rounded-[9px] px-3 py-2.5 text-[13px]">
                 <Link to={action.to} state={action.state}>
                   {action.label}

@@ -29,6 +29,7 @@ import { seedPayrollPeople, seedTimeEntries } from "@/lib/payrollSeed";
 import { seedEmployees } from "@/lib/employeesSeed";
 import { seedIssuedInvoices, seedPayments } from "@/lib/receivablesSeed";
 import { useDemo } from "@/context/DemoDataProvider";
+import { canView, type Area } from "@/domain/access/roles";
 import { cn } from "@/lib/utils";
 
 /**
@@ -195,7 +196,7 @@ export default function Reports() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [period, setPeriod] = useState<ReportPeriod>("month");
   const [selected, setSelected] = useState<ReportKey>("revenue_summary");
-  const { recordedPayments, issuedInvoices, invoiceEdits, refunds, visitExpenses } = useDemo();
+  const { recordedPayments, issuedInvoices, invoiceEdits, refunds, visitExpenses, currentUser } = useDemo();
   const agency = useAgencySettings();
 
   // The seeds plus anything recorded through the app, with edits to seeded
@@ -330,13 +331,17 @@ export default function Reports() {
           <div className="mt-6 space-y-2">
             {(
               [
-                { to: "/reports/investor", title: "Investor report", blurb: "One month's collected revenue and the share due. No client information." },
-                { to: "/reports/supervision", title: "Supervision", blurb: "Every RN supervisory visit, and who is due." },
-                { to: "/reports/incidents", title: "Incidents", blurb: "The agency-wide incident log and each one's obligations." },
-                { to: "/reports/incidents/annual", title: "Yearly incident report", blurb: "Every incident in the year, and whether Joy met each obligation." },
-                { to: "/reports/audit", title: "Audit", blurb: "Who did what, when — the trail a surveyor reads." },
-              ] as const
-            ).map((card) => (
+                { to: "/reports/investor", area: "reports", title: "Investor report", blurb: "One month's collected revenue and the share due. No client information." },
+                { to: "/reports/supervision", area: "supervision", title: "Supervision", blurb: "Every RN supervisory visit, and who is due." },
+                { to: "/reports/incidents", area: "incidents", title: "Incidents", blurb: "The agency-wide incident log and each one's obligations." },
+                { to: "/reports/incidents/annual", area: "incidents", title: "Yearly incident report", blurb: "Every incident in the year, and whether Joy met each obligation." },
+                { to: "/reports/audit", area: "audit", title: "Audit", blurb: "Who did what, when — the trail a surveyor reads." },
+              ] as ReadonlyArray<{ to: string; area: Area; title: string; blurb: string }>
+            )
+              // Only the screens this role may open. A card that leads to a
+              // refusal is a promise the page cannot keep.
+              .filter((card) => canView(currentUser.role, card.area))
+              .map((card) => (
               <Link
                 key={card.to}
                 to={card.to}

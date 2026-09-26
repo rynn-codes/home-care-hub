@@ -3,14 +3,16 @@
  *
  * Karynn, 30 August, the week of a survey: "I want to have a role for
  * auditor. Where they can have access but can only see certain things."
+ * And 26 September: "Add the bookkeeper as a role that only sees Reports
+ * and Billing."
  *
- * ── Deny by default, for the one role that is narrowed ───────────────────
+ * ── Deny by default, for the roles that are narrowed ─────────────────────
  *
  * Every staff role is granted `"all"` — their access is unchanged, because a
  * permissions layer that narrows the owner on the day it ships gets switched
- * off. The auditor gets an allowlist. A screen added next month is invisible
- * to a surveyor until somebody adds it here on purpose. Never invert this to
- * a blocklist.
+ * off. The auditor and the bookkeeper get allowlists. A screen added next
+ * month is invisible to them until somebody adds it here on purpose. Never
+ * invert this to a blocklist.
  *
  * ── None of this is security ─────────────────────────────────────────────
  *
@@ -35,6 +37,8 @@ export type Area =
   | "billing"
   | "payroll"
   | "reports"
+  /** RN supervisory visits: a care record that lives under Reports, not a money report. */
+  | "supervision"
   | "audit"
   | "incidents"
   | "documents"
@@ -43,6 +47,14 @@ export type Area =
 
 /** What a licensure surveyor is shown. Everything else is invisible to them. */
 export const AUDITOR_AREAS: readonly Area[] = ["clients", "employees", "incidents", "documents", "sops", "audit"];
+
+/**
+ * What the bookkeeper is shown: the money, and nothing about anybody's
+ * care. Reports for the month's numbers and the lists to reconcile; Billing
+ * to record payments and see what is owed. Client names appear on invoices
+ * because a bookkeeper needs them; health information never does.
+ */
+export const BOOKKEEPER_AREAS: readonly Area[] = ["reports", "billing"];
 
 const GRANTS: Record<UserRole, "all" | readonly Area[]> = {
   ceo_admin: "all",
@@ -55,6 +67,7 @@ const GRANTS: Record<UserRole, "all" | readonly Area[]> = {
   employee: "all",
   client_contact: "all",
   auditor: AUDITOR_AREAS,
+  bookkeeper: BOOKKEEPER_AREAS,
 };
 
 export function canView(role: UserRole, area: Area): boolean {
@@ -87,9 +100,10 @@ export function canSeeMarketing(role: UserRole): boolean {
 }
 
 export function whyNotArea(role: UserRole, area: Area): string {
-  return canView(role, area)
-    ? ""
-    : `${AREA_LABELS[area]} is not part of this survey session. Ask the agency's administrator if you need it.`;
+  if (canView(role, area)) return "";
+  return role === "auditor"
+    ? `${AREA_LABELS[area]} is not part of this survey session. Ask the agency's administrator if you need it.`
+    : `${AREA_LABELS[area]} is not part of your role. Ask the agency's administrator if you need it.`;
 }
 
 export const AREA_LABELS: Record<Area, string> = {
@@ -105,6 +119,7 @@ export const AREA_LABELS: Record<Area, string> = {
   billing: "Billing",
   payroll: "Payroll",
   reports: "Reports",
+  supervision: "Supervision",
   audit: "Audit log",
   incidents: "Incidents",
   documents: "Documents",
@@ -116,7 +131,7 @@ export const AREA_LABELS: Record<Area, string> = {
 const PATH_AREAS: ReadonlyArray<[string, Area]> = [
   ["/reports/audit", "audit"],
   ["/reports/incidents", "incidents"],
-  ["/reports/supervision", "reports"],
+  ["/reports/supervision", "supervision"],
   ["/reports/investor", "reports"],
   ["/clients", "clients"],
   ["/employees", "employees"],

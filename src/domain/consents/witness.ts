@@ -29,7 +29,9 @@ export type UserRole =
   | "employee"
   | "client_contact"
   /** A licensure surveyor: read-only, and shown an allowlist of screens. See domain/access/roles. */
-  | "auditor";
+  | "auditor"
+  /** The bookkeeper: Reports and Billing, nothing clinical. See domain/access/roles. */
+  | "bookkeeper";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   ceo_admin: "Admin / Owner",
@@ -42,6 +44,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   employee: "Caregiver",
   client_contact: "Client contact",
   auditor: "Auditor",
+  bookkeeper: "Bookkeeper",
 };
 
 /** The only roles that may witness a client's signature on the packet. */

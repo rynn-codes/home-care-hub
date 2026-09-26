@@ -161,7 +161,7 @@ export interface AgencySettings {
 }
 
 /** The roles margins are shown to by default. */
-export const DEFAULT_PROFIT_ROLES: readonly UserRole[] = ["ceo_admin", "billing", "payroll"];
+export const DEFAULT_PROFIT_ROLES: readonly UserRole[] = ["ceo_admin", "billing", "payroll", "bookkeeper"];
 /** The roles the setting can be granted to at all. Field staff and families never see margins. */
 export const PROFIT_ROLE_CHOICES: readonly UserRole[] = [
   "ceo_admin",
@@ -171,6 +171,7 @@ export const PROFIT_ROLE_CHOICES: readonly UserRole[] = [
   "hr",
   "intake_coordinator",
   "rn_clinical",
+  "bookkeeper",
 ];
 
 export function canSeeProfit(role: UserRole, visibleTo: readonly UserRole[]): boolean {

@@ -81,7 +81,7 @@ function useNav(): NavItem[] {
       icon: BarChart3,
       area: "reports",
       children: [
-        { title: "Supervision", url: "/reports/supervision", icon: CalendarCheck, area: "reports" },
+        { title: "Supervision", url: "/reports/supervision", icon: CalendarCheck, area: "supervision" },
         { title: "Incidents", url: "/reports/incidents", icon: ShieldAlert, area: "incidents" },
         { title: "Audit", url: "/reports/audit", icon: ClipboardCheck, area: "audit" },
       ],

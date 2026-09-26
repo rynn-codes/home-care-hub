@@ -163,7 +163,11 @@ export default function Settings() {
                       ? "Everything, including approvals with money on both sides."
                       : key === "rn_clinical"
                         ? "Assessments, care plans, supervisory visits — and one of two roles that can take a client's signature."
-                        : "Referrals, intake and scheduling. No clinical sign-off, no rates."}
+                        : key === "auditor"
+                          ? "Read-only. Clients, employees, incidents, documents, SOPs and the audit log — the screens a surveyor asks for."
+                          : key === "bookkeeper"
+                            ? "Reports and Billing only. Records payments, reconciles against the bank, runs the month's numbers. Nothing clinical."
+                            : "Referrals, intake and scheduling. No clinical sign-off, no rates."}
                   </p>
                 </div>
                 <span className={PILL}>From the database</span>

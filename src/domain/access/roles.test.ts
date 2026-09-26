@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AUDITOR_AREAS, areaForPath, canView, canWrite, landingFor, readOnlyReason, whyNotArea } from "./roles";
+import { AUDITOR_AREAS, BOOKKEEPER_AREAS, areaForPath, canView, canWrite, landingFor, readOnlyReason, whyNotArea } from "./roles";
 
 describe("the auditor role", () => {
   it("sees only the allowlisted areas", () => {
@@ -26,6 +26,26 @@ describe("the auditor role", () => {
   });
 });
 
+describe("the bookkeeper role", () => {
+  it("sees Reports and Billing and nothing about care", () => {
+    expect(BOOKKEEPER_AREAS).toEqual(["reports", "billing"]);
+    for (const area of BOOKKEEPER_AREAS) expect(canView("bookkeeper", area)).toBe(true);
+    for (const area of ["home", "clients", "employees", "scheduling", "payroll", "documents", "settings", "audit", "incidents", "supervision"] as const) {
+      expect(canView("bookkeeper", area)).toBe(false);
+    }
+  });
+
+  it("can record a payment — it is not a read-only session", () => {
+    expect(canWrite("bookkeeper")).toBe(true);
+    expect(readOnlyReason("bookkeeper")).toBeNull();
+  });
+
+  it("lands on Reports and is told why a screen is not theirs", () => {
+    expect(landingFor("bookkeeper")).toBe("/reports");
+    expect(whyNotArea("bookkeeper", "clients")).toContain("not part of your role");
+  });
+});
+
 describe("every staff role keeps everything", () => {
   it("is unchanged on the day the layer ships", () => {
     for (const role of ["ceo_admin", "scheduler", "payroll", "billing", "hr"] as const) {
@@ -38,7 +58,8 @@ describe("every staff role keeps everything", () => {
 describe("the router's reading of a path", () => {
   it("takes the longest prefix", () => {
     expect(areaForPath("/reports/audit/evv")).toBe("audit");
-    expect(areaForPath("/reports/supervision")).toBe("reports");
+    expect(areaForPath("/reports/supervision")).toBe("supervision");
+    expect(areaForPath("/reports/investor")).toBe("reports");
     expect(areaForPath("/brain/my-work")).toBe("my_work");
     expect(areaForPath("/brain/operations")).toBe("brain");
     expect(areaForPath("/")).toBe("home");
