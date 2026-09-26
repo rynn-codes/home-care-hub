@@ -36,6 +36,7 @@ import Scheduling from "./pages/Scheduling";
 import Billing from "./pages/Billing";
 import Payroll from "./pages/Payroll";
 import Reports from "./pages/Reports";
+import InvestorReport from "./pages/InvestorReport";
 import Documents from "./pages/Documents";
 import Signing from "./pages/Signing";
 import TemplateBuilder from "./pages/TemplateBuilder";
@@ -135,6 +136,7 @@ const App = () => (
               <Route path="/reports/incidents" element={<Incidents />} />
               <Route path="/reports/incidents/annual" element={<IncidentReport />} />
               <Route path="/reports/supervision" element={<Supervision />} />
+              <Route path="/reports/investor" element={<InvestorReport />} />
               <Route path="/operations" element={<Operations />} />
               <Route path="/operations/hiring" element={<Navigate to="/hiring" replace />} />
               <Route path="/operations/portal" element={<PortalActivity />} />

@@ -21,6 +21,8 @@ import {
   type ReportResult,
 } from "@/domain/reports/reports";
 import { csvFilename, reportToCsv } from "@/domain/reports/csv";
+import { adjustmentsLog, investorShare, paymentsReceived, payrollCost, reimbursements, revenueByClient, revenueSummary } from "@/domain/reports/financials";
+import { useAgencySettings } from "@/lib/agencyStore";
 import { seedVisits } from "@/lib/schedulingSeed";
 import { seedBillingTerms } from "@/lib/billingSeed";
 import { seedPayrollPeople, seedTimeEntries } from "@/lib/payrollSeed";
@@ -58,13 +60,11 @@ import { cn } from "@/lib/utils";
  * own.
  */
 
-const ORDER: ReportKey[] = [
-  "revenue_by_month",
-  "hours_by_service",
-  "caregiver_utilization",
-  "net_margin",
-  "unbillable",
-  "outstanding",
+/** The nav, in groups: the money first, then the work, then what it cost. */
+const GROUPS: Array<{ title: string; keys: ReportKey[] }> = [
+  { title: "Money", keys: ["revenue_summary", "revenue_by_client", "outstanding", "payments_received", "adjustments_log", "investor_share"] },
+  { title: "Care delivered", keys: ["revenue_by_month", "hours_by_service", "caregiver_utilization", "unbillable", "net_margin"] },
+  { title: "Cost", keys: ["payroll_cost", "reimbursements"] },
 ];
 
 const PERIODS: ReportPeriod[] = ["week", "month", "last_month", "quarter"];
@@ -194,8 +194,22 @@ function ReportBody({ report }: { report: ReportResult }) {
 export default function Reports() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [period, setPeriod] = useState<ReportPeriod>("month");
-  const [selected, setSelected] = useState<ReportKey>("revenue_by_month");
-  const { recordedPayments, issuedInvoices } = useDemo();
+  const [selected, setSelected] = useState<ReportKey>("revenue_summary");
+  const { recordedPayments, issuedInvoices, invoiceEdits, refunds, visitExpenses } = useDemo();
+  const agency = useAgencySettings();
+
+  // The seeds plus anything recorded through the app, with edits to seeded
+  // invoices applied — the same list Billing reads, so a figure here and a
+  // figure there are the same fact.
+  const invoices = useMemo(
+    () => [...issuedInvoices, ...seedIssuedInvoices].map((i) => ({ ...i, ...(invoiceEdits[i.id] ?? {}) })),
+    [issuedInvoices, invoiceEdits],
+  );
+  const payments = useMemo(() => [...seedPayments, ...recordedPayments], [recordedPayments]);
+  const rateFor = useMemo(() => {
+    const byName = new Map(seedEmployees.map((e) => [e.name, typeof e.baseRate === "number" ? e.baseRate : null]));
+    return (name: string) => byName.get(name) ?? null;
+  }, []);
 
   const range = useMemo(() => resolvePeriod(period, today), [period, today]);
 
@@ -229,15 +243,16 @@ export default function Reports() {
       // Deliberately not filtered by the period. "Who owes us money" is a
       // question about now — narrowing it to last month would hide the
       // ninety-day debt, which is the only one that really matters.
-      outstanding: outstandingInvoices({
-        invoices: [...issuedInvoices, ...seedIssuedInvoices],
-        // The seeds plus anything recorded through the app, so this report and
-        // the Billing screen's outstanding list are the same fact.
-        payments: [...seedPayments, ...recordedPayments],
-        asOf: today,
-      }),
+      outstanding: outstandingInvoices({ invoices, payments, asOf: today }),
+      revenue_summary: revenueSummary({ invoices, payments, range }),
+      revenue_by_client: revenueByClient({ invoices, payments, range }),
+      payments_received: paymentsReceived({ invoices, payments, range }),
+      adjustments_log: adjustmentsLog({ invoices, refunds, range }),
+      investor_share: investorShare({ payments, range, percent: agency.investor.sharePercent, basis: agency.investor.basis, investorName: agency.investor.name }),
+      payroll_cost: payrollCost({ entries: seedTimeEntries, nameFor, rateFor, range }),
+      reimbursements: reimbursements({ visitExpenses, visits: seedVisits, mileageRatePerMile: agency.mileageRatePerMile, range }),
     }),
-    [range, today, nameFor, recordedPayments, issuedInvoices],
+    [range, today, nameFor, invoices, payments, refunds, visitExpenses, rateFor, agency.investor.sharePercent, agency.investor.basis, agency.investor.name, agency.mileageRatePerMile],
   );
 
   const report = reports[selected];
@@ -276,8 +291,11 @@ export default function Reports() {
 
       <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
         <nav aria-label="Reports">
-          <ul className="space-y-2">
-            {ORDER.map((key) => {
+          {GROUPS.map((group) => (
+          <div key={group.title} className="mb-4">
+          <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+          <ul className="space-y-1.5">
+            {group.keys.map((key) => {
               const r = reports[key];
               return (
                 <li key={key}>
@@ -286,7 +304,7 @@ export default function Reports() {
                     onClick={() => setSelected(key)}
                     aria-current={key === selected ? "true" : undefined}
                     className={cn(
-                      "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-3 text-left text-sm transition-colors",
+                      "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors",
                       key === selected
                         ? "border-primary bg-[hsl(var(--primary-soft))] font-medium text-[hsl(var(--accent-foreground))]"
                         : "border-border bg-surface hover:bg-surface-muted",
@@ -304,12 +322,15 @@ export default function Reports() {
               );
             })}
           </ul>
+          </div>
+          ))}
 
           {/* The reports that are screens of their own. Each card is the
               link, not a card with a button in it. */}
           <div className="mt-6 space-y-2">
             {(
               [
+                { to: "/reports/investor", title: "Investor report", blurb: "One month's collected revenue and the share due. No client information." },
                 { to: "/reports/supervision", title: "Supervision", blurb: "Every RN supervisory visit, and who is due." },
                 { to: "/reports/incidents", title: "Incidents", blurb: "The agency-wide incident log and each one's obligations." },
                 { to: "/reports/incidents/annual", title: "Yearly incident report", blurb: "Every incident in the year, and whether Joy met each obligation." },

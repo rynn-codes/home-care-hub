@@ -42,15 +42,31 @@ export type ReportKey =
   | "caregiver_utilization"
   | "net_margin"
   | "unbillable"
-  | "outstanding";
+  | "outstanding"
+  // The money reports, September: what was billed, what came in, what went
+  // back out, and the investor's share of it. See domain/reports/financials.
+  | "revenue_summary"
+  | "revenue_by_client"
+  | "payments_received"
+  | "adjustments_log"
+  | "investor_share"
+  | "payroll_cost"
+  | "reimbursements";
 
 export const REPORT_LABELS: Record<ReportKey, string> = {
-  revenue_by_month: "Revenue by month",
+  revenue_by_month: "Scheduled revenue by month",
   hours_by_service: "Hours by service",
   caregiver_utilization: "Caregiver utilisation",
   net_margin: "Net margin by client",
   unbillable: "Unbillable hours",
   outstanding: "Outstanding invoices",
+  revenue_summary: "Revenue: billed, net, collected",
+  revenue_by_client: "Revenue by client",
+  payments_received: "Payments received",
+  adjustments_log: "Credits, write-offs and refunds",
+  investor_share: "Investor share",
+  payroll_cost: "Payroll cost",
+  reimbursements: "Caregiver reimbursements",
 };
 
 export type ReportState = "computed" | "needs_input" | "empty";

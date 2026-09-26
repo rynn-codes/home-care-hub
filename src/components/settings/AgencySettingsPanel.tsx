@@ -14,7 +14,10 @@ import {
   EARLY_CLOCK_IN_GRACE_OPTIONS,
   GEOFENCE_OPTIONS,
   PLAN_OF_CARE_LABELS,
+  INVESTOR_BASIS_LABELS,
   PROFIT_ROLE_CHOICES,
+  canSeeProfit,
+  type InvestorBasis,
   SWITCH_GROUPS,
   SWITCH_GROUP_LABELS,
   describeDistance,
@@ -30,6 +33,7 @@ import {
   setAgencyField,
   setAgencyProfileField,
   setAgencySwitch,
+  setInvestorField,
   setNotification,
   setTagPresets,
   useAgencySettings,
@@ -123,6 +127,56 @@ export function AgencySettingsPanel() {
           </div>
         </div>
       </section>
+
+      {canSeeProfit(currentUser.role, s.profitVisibleTo) && (
+        <section className={CARD}>
+          <h2 className={H2}>Investor share</h2>
+          <p className={cn(HINT, "mt-1")}>
+            The investor is paid monthly on collected revenue. Set the percentage and what it is a percentage of; Reports → Investor share
+            works it out by month, and the investor report carries the figures and nothing about any client.
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="investor-name" className="text-[12.5px]">Investor</Label>
+              <Input id="investor-name" value={s.investor.name} disabled={!mayWrite} onChange={(e) => setInvestorField("name", e.target.value)} placeholder="Name" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="investor-email" className="text-[12.5px]">Report goes to</Label>
+              <Input id="investor-email" type="email" inputMode="email" value={s.investor.email} disabled={!mayWrite} onChange={(e) => setInvestorField("email", e.target.value)} placeholder="name@example.com" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="investor-percent" className="text-[12.5px]">Share of collected revenue</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="investor-percent"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value={s.investor.sharePercent}
+                  disabled={!mayWrite}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    if (n >= 0 && n <= 100) setInvestorField("sharePercent", n);
+                  }}
+                  className="h-10 w-[110px] rounded-[9px] border border-[var(--hairline)] bg-[var(--paper)] px-3 text-[13px]"
+                />
+                <span className="text-[13px] text-muted-foreground">%</span>
+              </div>
+              <p className={HINT}>0 means there is no investor share and the report says so.</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="investor-basis" className="text-[12.5px]">Percentage of</Label>
+              <select id="investor-basis" value={s.investor.basis} disabled={!mayWrite} onChange={(e) => setInvestorField("basis", e.target.value as InvestorBasis)} className={SELECT}>
+                {(Object.keys(INVESTOR_BASIS_LABELS) as InvestorBasis[]).map((b) => (
+                  <option key={b} value={b}>{INVESTOR_BASIS_LABELS[b]}</option>
+                ))}
+              </select>
+              <p className={HINT}>Money that arrived in the month, by the date it arrived. Billed and unpaid is never in it.</p>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className={CARD}>
         <h2 className={H2}>Tags</h2>

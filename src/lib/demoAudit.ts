@@ -204,6 +204,7 @@ export const AUDIT_PHRASES: Record<string, string> = {
   "signing.request_voided": "voided a signing request",
   "signing.request_corrected": "corrected a signing request",
   "signing.copy_sent": "sent a signed copy",
+  "report.investor_sent": "sent the investor's monthly report",
 };
 
 export function auditPhrase(entry: StoredAuditEntry): string {

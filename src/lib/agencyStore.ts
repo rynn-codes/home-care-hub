@@ -5,8 +5,7 @@ import {
   DEFAULT_AGENCY_SETTINGS,
   type AgencyProfile,
   type AgencySettings,
-  type NotificationSettings,
-} from "@/domain/agency/settings";
+  type NotificationSettings, type InvestorSettings } from "@/domain/agency/settings";
 
 /**
  * Agency settings, kept apart from the demo's record store.
@@ -57,6 +56,11 @@ function load(): AgencySettings {
         AGENCY_SWITCHES.map((s) => [s.key, (p.switches ?? {})[s.key] ?? s.default]),
       ),
       notifications: { ...d.notifications, ...(p.notifications ?? {}) },
+      investor: {
+        ...d.investor,
+        ...(p.investor ?? {}),
+        sharePercent: typeof p.investor?.sharePercent === "number" && p.investor.sharePercent >= 0 ? p.investor.sharePercent : d.investor.sharePercent,
+      },
     };
   } catch {
     return d;
@@ -83,6 +87,10 @@ export function setAgencyProfileField<K extends keyof AgencyProfile>(key: K, val
 
 export function setAgencyField<K extends keyof AgencySettings>(key: K, value: AgencySettings[K]) {
   write({ ...current, [key]: value });
+}
+
+export function setInvestorField<K extends keyof InvestorSettings>(key: K, value: InvestorSettings[K]) {
+  write({ ...current, investor: { ...current.investor, [key]: value } });
 }
 
 export function setTagPresets(area: TagArea, tags: string[]) {

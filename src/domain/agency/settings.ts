@@ -118,6 +118,30 @@ export interface NotificationSettings {
   beforeEndMinutes: number;
 }
 
+/**
+ * The investor's share of the month's collected revenue.
+ *
+ * Karynn, 26 September: "We have an investor involved and we pay him monthly
+ * based on collected monthly rev." The percentage is a business term, so it
+ * lives in Settings rather than in code, and the basis is explicit: what
+ * came in less what went back out, or what came in before refunds.
+ */
+export type InvestorBasis = "net_collected" | "collected";
+
+export const INVESTOR_BASIS_LABELS: Record<InvestorBasis, string> = {
+  net_collected: "Collected, less refunds",
+  collected: "Collected, before refunds",
+};
+
+export interface InvestorSettings {
+  name: string;
+  /** 0 means no investor. */
+  sharePercent: number;
+  basis: InvestorBasis;
+  /** Where the monthly report goes. */
+  email: string;
+}
+
 export interface AgencySettings {
   profile: AgencyProfile;
   calendarStart: CalendarStart;
@@ -133,6 +157,7 @@ export interface AgencySettings {
   profitVisibleTo: UserRole[];
   switches: Record<string, boolean>;
   notifications: NotificationSettings;
+  investor: InvestorSettings;
 }
 
 /** The roles margins are shown to by default. */
@@ -188,6 +213,7 @@ export const DEFAULT_AGENCY_SETTINGS: AgencySettings = {
   profitVisibleTo: [...DEFAULT_PROFIT_ROLES],
   switches: Object.fromEntries(AGENCY_SWITCHES.map((s) => [s.key, s.default])),
   notifications: { beforeStart: true, beforeStartMinutes: 60, beforeEnd: true, beforeEndMinutes: 15 },
+  investor: { name: "", sharePercent: 0, basis: "net_collected", email: "" },
 };
 
 /** Metres, in the words an office in Houston uses: feet under a quarter mile, miles above. */

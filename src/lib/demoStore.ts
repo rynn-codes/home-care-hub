@@ -348,6 +348,20 @@ export interface DemoState {
   /** Adjustments and voids on SEEDED invoices, by invoice id. Issued ones carry theirs. */
   invoiceEdits: Record<string, { total?: number; adjustments?: InvoiceAdjustment[]; writtenOffOn?: string; writtenOffReason?: string }>;
   refunds: Refund[];
+  /** Investor reports recorded as sent: month, amount and where. No client names anywhere in it. */
+  investorReportsSent: InvestorReportSent[];
+}
+
+export interface InvestorReportSent {
+  id: string;
+  /** YYYY-MM. */
+  month: string;
+  amount: number;
+  percent: number;
+  basis: string;
+  to: string;
+  sentAt: string;
+  by: string;
 }
 
 export interface DemoClockAttempt {
@@ -443,6 +457,7 @@ function initial(): DemoState {
     signingTemplates: [...seedSigningTemplates],
     retiredSeedTemplateIds: [],
     envelopes: [],
+    investorReportsSent: [],
     visitPay: {},
     phoneAsks: {},
     supervisoryVisits: [...seedSupervisoryVisits],

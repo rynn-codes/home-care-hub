@@ -117,6 +117,7 @@ const PATH_AREAS: ReadonlyArray<[string, Area]> = [
   ["/reports/audit", "audit"],
   ["/reports/incidents", "incidents"],
   ["/reports/supervision", "reports"],
+  ["/reports/investor", "reports"],
   ["/clients", "clients"],
   ["/employees", "employees"],
   ["/people", "people"],

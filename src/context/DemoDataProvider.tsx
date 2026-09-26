@@ -216,6 +216,8 @@ interface DemoContextValue extends DemoState {
   /** Voids this one and returns the id of the fresh draft. */
   correctEnvelope: (id: string, reason: string) => string;
   recordEnvelopeCopy: (id: string, to: string) => void;
+  /** The investor's monthly report, recorded as sent. Figures only; no client is named anywhere in it. */
+  recordInvestorReportSent: (input: { month: string; amount: number; percent: number; basis: string; to: string }) => void;
   addSop: (input: { title: string; category: string; ownerName: string; content: string }) => string;
   updateSop: (id: string, patch: Partial<Pick<Sop, "title" | "category">>) => void;
   saveSopVersion: (id: string, content: string) => void;
@@ -1501,6 +1503,15 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     envelopeUpdate(id, (env, by, at) => recordCopySent(env, to, by, at), "signing.copy_sent", undefined, { to: to.trim() });
   }, [envelopeUpdate]);
 
+  const recordInvestorReportSent = useCallback<DemoContextValue["recordInvestorReportSent"]>((input) => {
+    const id = newId("irpt");
+    audit({ action: "report.investor_sent", entityType: "report", entityId: id, after: { month: input.month, amount: input.amount, percent: input.percent, to: input.to } });
+    setState((s) => ({
+      ...s,
+      investorReportsSent: [{ id, ...input, sentAt: new Date().toISOString(), by: currentUserRef.current.name }, ...s.investorReportsSent],
+    }));
+  }, [audit]);
+
   const tagDocument = useCallback<DemoContextValue["tagDocument"]>((id, tag, remove) => {
     setState((s) => ({ ...s, documents: s.documents.map((d) => (d.id === id ? (remove ? untagDocument(d, tag) : tagDoc(d, tag)) : d)) }));
   }, []);
@@ -2186,6 +2197,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       voidEnvelope,
       correctEnvelope,
       recordEnvelopeCopy,
+      recordInvestorReportSent,
       addSop,
       updateSop,
       saveSopVersion,
@@ -2193,7 +2205,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       renameSopCategory,
       moveSopCategory,
     }),
-    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, saveSigningTemplate, deleteSigningTemplate, createEnvelope, editEnvelope, sendEnvelope, markEnvelopeViewed, signEnvelope, declineEnvelope, countersignEnvelope, voidEnvelope, correctEnvelope, recordEnvelopeCopy, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
+    [state, addReferral, addContact, editContact, deleteContact, restoreContact, logContact, saveIntake, completeIntake, saveAssessment, saveConsents, savePreOnboarding, approveAdmission, activateClient, scheduleAssessment, retryCommunication, assignShift, hireEmployee, recordExternalPayment, approveDraft, sendInvoice, setCurrentUser, reset, saveEmployee, setEmployeeStatus, undoProfileChange, deleteEmployee, deleteClient, deleteAdmission, restoreDeleted, purgeDeleted, logActivity, deleteActivity, recordView, issueMrNumber, setClientStatus, uploadDocument, tagDocument, updateDocument, duplicateDocument, deleteDocument, addDocumentFolder, renameDocumentFolder, deleteDocumentFolder, saveSigningTemplate, deleteSigningTemplate, createEnvelope, editEnvelope, sendEnvelope, markEnvelopeViewed, signEnvelope, declineEnvelope, countersignEnvelope, voidEnvelope, correctEnvelope, recordEnvelopeCopy, recordInvestorReportSent, addSop, updateSop, saveSopVersion, deleteSop, renameSopCategory, moveSopCategory, addShift, addScheduleEvent, requestTimeOff, cancelTimeOff, declineCover, saveCoverageEvent, approveCoveragePlan, approveCoverageOvertime, reopenCoverageShift, cancelCoverageEvent, approveOvertime, authorizeEarlyStart, recordClockAttempt, recordClock, recordClockCorrection, setClockPlace, proposeClock, decideClockProposal, setServiceMix, confirmServiceMix, recordVisitChange, addApprovedLocation, decideLocation, recordMileage, recordExpenses, recordVisitPay, askForPhone, answerPhoneAsk, reviseSchedule, addClientSchedule, sendScheduleAgreement, signScheduleAgreement, setHouseholdBilling, setHouseholdRate, pairHousehold, bookSupervision, completeSupervision, saveLtciEnrollment, savePayerSetup, saveDraftEdit, saveFirstPayment, adjustInvoice, voidInvoice, refundInvoice, resendInvoice],
   );
 
   /**
