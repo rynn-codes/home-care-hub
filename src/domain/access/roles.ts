@@ -6,13 +6,15 @@
  * And 26 September: "Add the bookkeeper as a role that only sees Reports
  * and Billing."
  *
- * ── Deny by default, for the roles that are narrowed ─────────────────────
+ * ── The roles, 1 October ─────────────────────────────────────────────────
  *
- * Every staff role is granted `"all"` — their access is unchanged, because a
- * permissions layer that narrows the owner on the day it ships gets switched
- * off. The auditor and the bookkeeper get allowlists. A screen added next
- * month is invisible to them until somebody adds it here on purpose. Never
- * invert this to a blocklist.
+ * Admin/Owner sees everything. RN sees everything but the money. Operations
+ * sees everything but the money and the RN's duties — and may be let into
+ * some of the money from Settings → Roles, one area at a time. Finance sees
+ * the money and the records it bills against. The auditor and the bookkeeper
+ * get short allowlists. A screen added next month is invisible to a narrowed
+ * role until somebody adds it here on purpose. Never invert this to a
+ * blocklist. The owner can never be narrowed.
  *
  * ── None of this is security ─────────────────────────────────────────────
  *
@@ -56,14 +58,38 @@ export const AUDITOR_AREAS: readonly Area[] = ["clients", "employees", "incident
  */
 export const BOOKKEEPER_AREAS: readonly Area[] = ["reports", "billing"];
 
+export const ALL_AREAS: readonly Area[] = [
+  "home", "my_work", "brain", "hiring", "admissions", "clients", "employees", "people", "scheduling", "billing", "payroll", "reports", "supervision", "audit", "incidents", "documents", "sops", "settings",
+];
+
+/** The money: what the RN never sees and Operations sees only when let in. */
+export const FINANCE_AREAS: readonly Area[] = ["billing", "payroll", "reports"];
+
+/** What Finance is shown: the money, and the records it bills and pays against. */
+export const FINANCE_GRANT: readonly Area[] = ["home", "my_work", "brain", "billing", "payroll", "reports", "clients", "employees", "people", "documents"];
+
+const EVERYTHING_BUT_MONEY: readonly Area[] = ALL_AREAS.filter((a) => !FINANCE_AREAS.includes(a));
+
+/**
+ * The finance areas Operations has been let into. Set from Settings → Roles
+ * (lib/agencyStore keeps it with the agency settings) so the sidebar, the
+ * router and the tab strips all read one answer.
+ */
+let operationsFinance: readonly Area[] = [];
+
+export function configureOperationsFinance(areas: readonly Area[]) {
+  operationsFinance = areas.filter((a) => FINANCE_AREAS.includes(a));
+}
+
+export function operationsFinanceAreas(): readonly Area[] {
+  return operationsFinance;
+}
+
 const GRANTS: Record<UserRole, "all" | readonly Area[]> = {
   ceo_admin: "all",
-  intake_coordinator: "all",
-  rn_clinical: "all",
-  scheduler: "all",
-  payroll: "all",
-  billing: "all",
-  hr: "all",
+  rn_clinical: EVERYTHING_BUT_MONEY,
+  operations: EVERYTHING_BUT_MONEY,
+  finance: FINANCE_GRANT,
   employee: "all",
   client_contact: "all",
   auditor: AUDITOR_AREAS,
@@ -71,12 +97,33 @@ const GRANTS: Record<UserRole, "all" | readonly Area[]> = {
 };
 
 export function canView(role: UserRole, area: Area): boolean {
-  const grant = GRANTS[role];
+  const grant = grantsFor(role);
   return grant === "all" || grant.includes(area);
 }
 
 export function grantsFor(role: UserRole): "all" | readonly Area[] {
-  return GRANTS[role];
+  const grant = GRANTS[role];
+  if (role === "operations" && grant !== "all") return [...grant, ...operationsFinance.filter((a) => !grant.includes(a))];
+  return grant;
+}
+
+/**
+ * The RN's duties as a job function: completing an assessment, signing a
+ * plan of care. Operations records and schedules; it does not do these.
+ * Supervisory visits and witnessing a signature have their own, stricter
+ * rules (a current RN licence; domain/clinical/registeredNurse) and are not
+ * loosened by this.
+ */
+export function canDoClinical(role: UserRole): boolean {
+  return role === "ceo_admin" || role === "rn_clinical";
+}
+
+export function clinicalRefusal(role: UserRole): string {
+  return canDoClinical(role) ? "" : `This is the RN's to complete. Your role is ${AREA_ROLE_LABEL(role)}, so you can gather and record; the RN signs it off.`;
+}
+
+function AREA_ROLE_LABEL(role: UserRole): string {
+  return { ceo_admin: "Admin / Owner", rn_clinical: "RN", operations: "Operations", finance: "Finance", employee: "Caregiver", client_contact: "Client contact", auditor: "Auditor", bookkeeper: "Bookkeeper" }[role];
 }
 
 /** Whether this session may change anything at all. */
@@ -164,5 +211,5 @@ export function landingFor(role: UserRole): string {
   const grant = grantsFor(role);
   if (grant === "all") return "/";
   const first = grant[0];
-  return first === "audit" ? "/reports/audit" : `/${first}`;
+  return first === "audit" ? "/reports/audit" : first === "supervision" ? "/reports/supervision" : first === "my_work" ? "/brain/my-work" : `/${first}`;
 }

@@ -22,7 +22,8 @@ import type { DemoUser } from "@/lib/demoStore";
 const DEMO_USERS: DemoUser[] = [
   { name: "Karynn Verrett", role: "ceo_admin" },
   { name: "Kelsey Westley", role: "rn_clinical" },
-  { name: "John Segura", role: "intake_coordinator" },
+  { name: "John Segura", role: "operations" },
+  { name: "Finance", role: "finance" },
   { name: "State Surveyor", role: "auditor" },
   { name: "Bookkeeper", role: "bookkeeper" },
 ];

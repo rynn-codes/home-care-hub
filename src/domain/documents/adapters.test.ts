@@ -105,18 +105,18 @@ describe("document access", () => {
   const base = { userId: "u", organizationId: "org-1" };
 
   // The rule this whole module exists for, mirrored from the RLS policy.
-  it("gives a scheduler the general credential but not the background check", async () => {
+  it("gives Finance the general credential? No — gives Operations the general credential, and Finance nothing but payroll", async () => {
     expect(
-      await access.mayView({ ...base, userRole: "scheduler", document: doc({ sensitivity: "general_credential" }) }),
+      await access.mayView({ ...base, userRole: "operations", document: doc({ sensitivity: "general_credential" }) }),
     ).toBe(true);
     expect(
-      await access.mayView({ ...base, userRole: "scheduler", document: doc() }),
+      await access.mayView({ ...base, userRole: "finance", document: doc({ sensitivity: "general_credential" }) }),
     ).toBe(false);
   });
 
-  it("keeps a background check from an RN, who is clinical rather than HR", async () => {
+  it("keeps a background check from an RN, who is clinical rather than Operations", async () => {
     expect(await access.mayView({ ...base, userRole: "rn_clinical", document: doc() })).toBe(false);
-    expect(await access.mayView({ ...base, userRole: "hr", document: doc() })).toBe(true);
+    expect(await access.mayView({ ...base, userRole: "operations", document: doc() })).toBe(true);
   });
 
   it("refuses across organizations whatever the role", async () => {

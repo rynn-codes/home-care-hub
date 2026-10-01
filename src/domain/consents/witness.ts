@@ -18,14 +18,18 @@
  * is a guard rail, and the comment says so rather than letting it look finished.
  */
 
+/**
+ * The roles, as Karynn named them on 1 October: Admin/Owner, RN, Operations,
+ * Finance, Caregiver, Auditor, Bookkeeper — plus the client contact, who only
+ * ever sees the family portal. The earlier intake coordinator, scheduler and
+ * HR roles are all Operations now; payroll and billing are Finance. What each
+ * one may open lives in domain/access/roles.
+ */
 export type UserRole =
   | "ceo_admin"
-  | "intake_coordinator"
   | "rn_clinical"
-  | "scheduler"
-  | "payroll"
-  | "billing"
-  | "hr"
+  | "operations"
+  | "finance"
   | "employee"
   | "client_contact"
   /** A licensure surveyor: read-only, and shown an allowlist of screens. See domain/access/roles. */
@@ -35,17 +39,26 @@ export type UserRole =
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   ceo_admin: "Admin / Owner",
-  intake_coordinator: "Intake coordinator",
   rn_clinical: "RN",
-  scheduler: "Scheduler",
-  payroll: "Payroll",
-  billing: "Billing",
-  hr: "HR",
+  operations: "Operations",
+  finance: "Finance",
   employee: "Caregiver",
   client_contact: "Client contact",
   auditor: "Auditor",
   bookkeeper: "Bookkeeper",
 };
+
+export const USER_ROLES: readonly UserRole[] = ["ceo_admin", "rn_clinical", "operations", "finance", "employee", "client_contact", "auditor", "bookkeeper"];
+
+/** A role stored before 1 October reads as the one that replaced it. */
+export function normalizeRole(raw: unknown): UserRole {
+  const legacy: Record<string, UserRole> = { intake_coordinator: "operations", scheduler: "operations", hr: "operations", payroll: "finance", billing: "finance" };
+  if (typeof raw === "string") {
+    if ((USER_ROLES as readonly string[]).includes(raw)) return raw as UserRole;
+    if (legacy[raw]) return legacy[raw];
+  }
+  return "operations";
+}
 
 /** The only roles that may witness a client's signature on the packet. */
 export const WITNESS_ROLES: UserRole[] = ["rn_clinical", "ceo_admin"];

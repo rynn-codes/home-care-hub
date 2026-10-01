@@ -1,4 +1,5 @@
 import type { UserRole } from "@/domain/consents/witness";
+import type { Area } from "@/domain/access/roles";
 import { DEFAULT_TAG_PRESETS, type TagArea } from "@/domain/agency/tagPresets";
 import { DEFAULT_PROFILE_UNDO_HOURS } from "@/domain/records/profileChanges";
 
@@ -158,21 +159,14 @@ export interface AgencySettings {
   switches: Record<string, boolean>;
   notifications: NotificationSettings;
   investor: InvestorSettings;
+  /** The money areas Operations has been let into. See domain/access/roles. */
+  operationsFinance: Area[];
 }
 
 /** The roles margins are shown to by default. */
-export const DEFAULT_PROFIT_ROLES: readonly UserRole[] = ["ceo_admin", "billing", "payroll", "bookkeeper"];
+export const DEFAULT_PROFIT_ROLES: readonly UserRole[] = ["ceo_admin", "finance", "bookkeeper"];
 /** The roles the setting can be granted to at all. Field staff and families never see margins. */
-export const PROFIT_ROLE_CHOICES: readonly UserRole[] = [
-  "ceo_admin",
-  "scheduler",
-  "billing",
-  "payroll",
-  "hr",
-  "intake_coordinator",
-  "rn_clinical",
-  "bookkeeper",
-];
+export const PROFIT_ROLE_CHOICES: readonly UserRole[] = ["ceo_admin", "finance", "operations", "rn_clinical", "bookkeeper"];
 
 export function canSeeProfit(role: UserRole, visibleTo: readonly UserRole[]): boolean {
   if (role === "auditor" || role === "employee" || role === "client_contact") return false;
@@ -215,6 +209,7 @@ export const DEFAULT_AGENCY_SETTINGS: AgencySettings = {
   switches: Object.fromEntries(AGENCY_SWITCHES.map((s) => [s.key, s.default])),
   notifications: { beforeStart: true, beforeStartMinutes: 60, beforeEnd: true, beforeEndMinutes: 15 },
   investor: { name: "", sharePercent: 0, basis: "net_collected", email: "" },
+  operationsFinance: [],
 };
 
 /** Metres, in the words an office in Houston uses: feet under a quarter mile, miles above. */

@@ -1,7 +1,7 @@
 import { seedAdmissions, seedPeople, type SeedAdmission, type SeedPerson } from "@/lib/admissionsSeed";
 import { seedAssessments, seedConsentSessions, seedIntakes } from "@/lib/admissionProgressSeed";
 import { ASSESSMENT_QUESTIONS } from "@/domain/assessment/questions";
-import type { UserRole } from "@/domain/consents/witness";
+import { normalizeRole, type UserRole } from "@/domain/consents/witness";
 import type { RnLicence } from "@/domain/clinical/registeredNurse";
 import type { HiredEmployee } from "@/domain/hiring/pipeline";
 import type { Contact } from "@/domain/people/contacts";
@@ -499,6 +499,8 @@ export function loadDemoState(): DemoState {
         gateOverride: legacy.gateOverride ?? null,
       };
     }
+    // A role stored under an old name reads as the one that replaced it.
+    merged.currentUser = { ...merged.currentUser, role: normalizeRole(merged.currentUser?.role) };
     // The bin empties itself: anything past its recovery window goes on load.
     merged.deletedRecords = partitionExpired(merged.deletedRecords ?? [], new Date().toISOString()).keep;
     // Seeded documents added since this blob was written join the library,

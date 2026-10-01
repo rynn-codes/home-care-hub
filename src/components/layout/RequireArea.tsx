@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDemo } from "@/context/DemoDataProvider";
+import { useAgencySettings } from "@/lib/agencyStore";
 import { AREA_LABELS, areaForPath, canView, landingFor, whyNotArea } from "@/domain/access/roles";
 
 /**
@@ -15,6 +16,7 @@ import { AREA_LABELS, areaForPath, canView, landingFor, whyNotArea } from "@/dom
 export function RequireArea({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { currentUser } = useDemo();
+  useAgencySettings();
   const area = areaForPath(pathname);
   if (!area || canView(currentUser.role, area)) return <>{children}</>;
   return (

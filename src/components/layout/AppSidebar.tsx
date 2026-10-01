@@ -7,6 +7,7 @@ import logo from "@/assets/logo.png";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/context/DemoDataProvider";
+import { useAgencySettings } from "@/lib/agencyStore";
 import { canView, grantsFor, type Area } from "@/domain/access/roles";
 import type { UserRole } from "@/domain/consents/witness";
 import { usePreferences } from "@/lib/preferences";
@@ -106,8 +107,11 @@ function visibleNav(items: NavItem[], role: UserRole): NavItem[] {
     }
     for (const c of children) out.push({ title: c.title, url: c.url, icon: c.icon, area: c.area });
   }
+  // Only the auditor's rows follow their allowlist order; everybody else
+  // keeps the menu's order, so a money row Operations is let into sits where
+  // it always sits rather than at the bottom.
   const grant = grantsFor(role);
-  if (grant === "all") return out;
+  if (grant === "all" || role !== "auditor") return out;
   return [...out].sort((a, b) => grant.indexOf(a.area) - grant.indexOf(b.area));
 }
 
@@ -116,6 +120,8 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { currentUser } = useDemo();
+  // Subscribed so a change to Operations' finance access redraws the menu.
+  useAgencySettings();
   const nav = visibleNav(useNav(), currentUser.role);
 
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname === url || pathname.startsWith(`${url}/`));

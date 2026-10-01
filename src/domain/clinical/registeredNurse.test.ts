@@ -37,8 +37,8 @@ describe("who counts as an RN", () => {
     expect(isRegisteredNurse(lapsed, "2026-07-31")).toBe(true);
   });
 
-  it("says no to a scheduler, an administrator and nobody at all", () => {
-    expect(isRegisteredNurse({ role: "scheduler" }, TODAY)).toBe(false);
+  it("says no to Operations, an administrator and nobody at all", () => {
+    expect(isRegisteredNurse({ role: "operations" }, TODAY)).toBe(false);
     expect(isRegisteredNurse({ role: "ceo_admin" }, TODAY)).toBe(false);
     expect(isRegisteredNurse(null, TODAY)).toBe(false);
   });

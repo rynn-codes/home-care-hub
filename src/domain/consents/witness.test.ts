@@ -11,15 +11,7 @@ describe("who may take a signature", () => {
   it("allows an RN and the Admin/Owner, and nobody else", () => {
     expect(canWitnessSignature("rn_clinical")).toBe(true);
     expect(canWitnessSignature("ceo_admin")).toBe(true);
-    for (const role of [
-      "intake_coordinator",
-      "scheduler",
-      "payroll",
-      "billing",
-      "hr",
-      "employee",
-      "client_contact",
-    ] as UserRole[]) {
+    for (const role of ["operations", "finance", "employee", "client_contact", "auditor", "bookkeeper"] as UserRole[]) {
       expect(canWitnessSignature(role), `${role} must not witness`).toBe(false);
     }
   });
@@ -36,9 +28,9 @@ describe("who may take a signature", () => {
 
   // A blocked screen that does not say why gets worked around.
   it("explains the refusal to the person, and says what they can still do", () => {
-    const message = witnessRefusal("intake_coordinator");
+    const message = witnessRefusal("operations");
     expect(message).toMatch(/RN or the Admin\/Owner/);
-    expect(message).toMatch(/Intake coordinator/);
+    expect(message).toMatch(/Operations/);
     expect(message).toMatch(/record their decisions/);
     expect(witnessRefusal("rn_clinical")).toBe("");
   });

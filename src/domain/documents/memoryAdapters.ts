@@ -137,11 +137,11 @@ export class NullExtractionService implements CredentialExtractionService {
 
 /** §19's sensitivity rules, mirroring can_read_document_sensitivity in 0005. */
 const READABLE_BY: Record<DocumentSensitivity, string[]> = {
-  general_credential: ["ceo_admin", "rn_clinical", "hr", "scheduler"],
-  clinical_credential: ["ceo_admin", "rn_clinical", "hr"],
-  identity_sensitive: ["ceo_admin", "hr"],
-  background_sensitive: ["ceo_admin", "hr"],
-  payroll_sensitive: ["ceo_admin", "payroll"],
+  general_credential: ["ceo_admin", "rn_clinical", "operations"],
+  clinical_credential: ["ceo_admin", "rn_clinical", "operations"],
+  identity_sensitive: ["ceo_admin", "operations"],
+  background_sensitive: ["ceo_admin", "operations"],
+  payroll_sensitive: ["ceo_admin", "finance"],
   health_sensitive: ["ceo_admin", "rn_clinical"],
 };
 

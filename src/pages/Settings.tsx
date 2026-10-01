@@ -4,10 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { AgencySettingsPanel } from "@/components/settings/AgencySettingsPanel";
 import { DeletedItems } from "@/components/settings/DeletedItems";
+import { RolesPanel } from "@/components/settings/RolesPanel";
 import { MicrophoneCheck } from "@/components/settings/MicrophoneCheck";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/context/DemoDataProvider";
-import { ROLE_LABELS } from "@/domain/consents/witness";
 import { setPreference, usePreferences, type Appearance } from "@/lib/preferences";
 import logo from "@/assets/logo.png";
 
@@ -153,31 +153,7 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="roles" className="mt-4">
-          <div className={cn(CARD, "max-w-2xl")}>
-            {Object.entries(ROLE_LABELS).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-4 border-b border-[var(--hairline-soft)] py-3 last:border-0">
-                <div>
-                  <p className="m-0 text-sm font-medium">{label}</p>
-                  <p className="m-0 text-[12.5px] text-muted-foreground">
-                    {key === "ceo_admin"
-                      ? "Everything, including approvals with money on both sides."
-                      : key === "rn_clinical"
-                        ? "Assessments, care plans, supervisory visits — and one of two roles that can take a client's signature."
-                        : key === "auditor"
-                          ? "Read-only. Clients, employees, incidents, documents, SOPs and the audit log — the screens a surveyor asks for."
-                          : key === "bookkeeper"
-                            ? "Reports and Billing only. Records payments, reconciles against the bank, runs the month's numbers. Nothing clinical."
-                            : "Referrals, intake and scheduling. No clinical sign-off, no rates."}
-                  </p>
-                </div>
-                <span className={PILL}>From the database</span>
-              </div>
-            ))}
-            <p className="mb-0 mt-3 text-xs text-muted-foreground">
-              The grants themselves live in the migrations (row-level security, tested per role) — this screen reads them, it
-              never edits them. The header's "view as" switch shows each role's world in the prototype.
-            </p>
-          </div>
+          <RolesPanel />
         </TabsContent>
 
         <TabsContent value="notify" className="mt-4">

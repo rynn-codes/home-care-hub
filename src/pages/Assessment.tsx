@@ -19,6 +19,7 @@ import {
 } from "@/domain/assessment/questions";
 import { INTAKE_QUESTIONS, displayAnswer } from "@/domain/admissions/intake";
 import { cn } from "@/lib/utils";
+import { canDoClinical, clinicalRefusal } from "@/domain/access/roles";
 
 /**
  * The RN assessment.
@@ -44,7 +45,7 @@ import { cn } from "@/lib/utils";
 export default function Assessment() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const { admissions, intakes, assessments, saveAssessment } = useDemo();
+  const { admissions, intakes, assessments, saveAssessment, currentUser } = useDemo();
 
   const admission = admissions.find((a) => a.id === id);
   const intake = intakes[id];
@@ -311,7 +312,8 @@ export default function Assessment() {
           </ul>
 
           <div className="mt-7 flex flex-wrap gap-2 border-t border-border pt-5">
-            <Button disabled={!canCompleteAssessment(answers)} onClick={() => setPhase("signing")}>
+            {!canDoClinical(currentUser.role) && <p className="m-0 text-sm text-muted-foreground">{clinicalRefusal(currentUser.role)}</p>}
+          <Button disabled={!canCompleteAssessment(answers) || !canDoClinical(currentUser.role)} onClick={() => setPhase("signing")}>
               Review consents with {admission.name.split(" ")[0]}
             </Button>
             <Button variant="ghost" onClick={() => setPhase("questions")}>

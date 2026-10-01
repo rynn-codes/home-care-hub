@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AUDITOR_AREAS, BOOKKEEPER_AREAS, areaForPath, canView, canWrite, landingFor, readOnlyReason, whyNotArea } from "./roles";
+import { AUDITOR_AREAS, BOOKKEEPER_AREAS, FINANCE_AREAS, areaForPath, canDoClinical, canView, canWrite, configureOperationsFinance, landingFor, readOnlyReason, whyNotArea } from "./roles";
 
 describe("the auditor role", () => {
   it("sees only the allowlisted areas", () => {
@@ -46,12 +46,35 @@ describe("the bookkeeper role", () => {
   });
 });
 
-describe("every staff role keeps everything", () => {
-  it("is unchanged on the day the layer ships", () => {
-    for (const role of ["ceo_admin", "scheduler", "payroll", "billing", "hr"] as const) {
-      expect(canView(role, "settings")).toBe(true);
-      expect(canWrite(role)).toBe(true);
-    }
+describe("the owner, the RN, Operations and Finance", () => {
+  it("lets the owner see everything", () => {
+    for (const area of ["settings", "billing", "payroll", "reports", "clients"] as const) expect(canView("ceo_admin", area)).toBe(true);
+  });
+
+  it("keeps the money from the RN", () => {
+    for (const area of FINANCE_AREAS) expect(canView("rn_clinical", area)).toBe(false);
+    for (const area of ["clients", "admissions", "supervision", "scheduling", "documents"] as const) expect(canView("rn_clinical", area)).toBe(true);
+  });
+
+  it("keeps the money and the RN's duties from Operations until the owner lets them in", () => {
+    configureOperationsFinance([]);
+    for (const area of FINANCE_AREAS) expect(canView("operations", area)).toBe(false);
+    expect(canView("operations", "scheduling")).toBe(true);
+    expect(canView("operations", "hiring")).toBe(true);
+    expect(canDoClinical("operations")).toBe(false);
+    expect(canDoClinical("rn_clinical")).toBe(true);
+    expect(canDoClinical("ceo_admin")).toBe(true);
+
+    configureOperationsFinance(["billing"]);
+    expect(canView("operations", "billing")).toBe(true);
+    expect(canView("operations", "payroll")).toBe(false);
+    configureOperationsFinance([]);
+  });
+
+  it("gives Finance the money and the records it bills against, nothing clinical", () => {
+    for (const area of ["billing", "payroll", "reports", "clients"] as const) expect(canView("finance", area)).toBe(true);
+    for (const area of ["admissions", "supervision", "incidents", "settings", "hiring"] as const) expect(canView("finance", area)).toBe(false);
+    expect(canDoClinical("finance")).toBe(false);
   });
 });
 

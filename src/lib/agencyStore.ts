@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { normalizeRole } from "@/domain/consents/witness";
+import { FINANCE_AREAS, configureOperationsFinance, type Area } from "@/domain/access/roles";
 import type { TagArea } from "@/domain/agency/tagPresets";
 import {
   AGENCY_SWITCHES,
@@ -21,6 +23,7 @@ import {
 const KEY = "joy.agency";
 
 let current: AgencySettings = load();
+configureOperationsFinance(current.operationsFinance);
 const listeners = new Set<() => void>();
 
 function load(): AgencySettings {
@@ -51,11 +54,12 @@ function load(): AgencySettings {
           ? (p.tagPresets.documents as string[])
           : [...d.tagPresets.documents],
       },
-      profitVisibleTo: Array.isArray(p.profitVisibleTo) ? p.profitVisibleTo : d.profitVisibleTo,
+      profitVisibleTo: Array.isArray(p.profitVisibleTo) ? [...new Set(p.profitVisibleTo.map((r) => normalizeRole(r)))] : d.profitVisibleTo,
       switches: Object.fromEntries(
         AGENCY_SWITCHES.map((s) => [s.key, (p.switches ?? {})[s.key] ?? s.default]),
       ),
       notifications: { ...d.notifications, ...(p.notifications ?? {}) },
+      operationsFinance: Array.isArray(p.operationsFinance) ? (p.operationsFinance as Area[]).filter((a) => FINANCE_AREAS.includes(a)) : d.operationsFinance,
       investor: {
         ...d.investor,
         ...(p.investor ?? {}),
@@ -69,6 +73,7 @@ function load(): AgencySettings {
 
 function write(next: AgencySettings) {
   current = next;
+  configureOperationsFinance(current.operationsFinance);
   try {
     window.localStorage.setItem(KEY, JSON.stringify(current));
   } catch {
