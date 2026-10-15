@@ -46,3 +46,29 @@ turns the distance check on for real.
 through an aggregator for Medicaid-funded care only; Joy is private pay.
 Revisit only if Joy takes a Medicaid or managed-care contract (that would
 be an HHAeXchange integration).
+
+## Payment chime (asked 15 October 2026)
+
+A cash-register chime when an invoice is paid. Not Shopify's own
+recording (theirs); a synthesised chime in the browser, or a sound
+Karynn supplies. Plays when a payment is recorded in Billing today, and
+when a Stripe payment lands once connected. A per-device preference in
+Settings → Appearance with a "Try it" button. Browsers stay silent until
+the person has clicked once on the page.
+
+## Mobile app for caregivers and families (asked 15 October 2026)
+
+The two portals are already phone-first with text-code sign-in: clock in
+and out with location, schedule, notes, mileage, documents, signing,
+billing. Depends on Supabase so phones and the office share one record.
+
+**Step 1 — installable web app.** Manifest, icons, service worker: home
+screen install, full-screen, survives a dropped connection, push
+notifications on iPhone and Android. A few days.
+
+**Step 2 — store app from the same code.** Capacitor wrap for App Store
+and Google Play: same screens, better push and background location. A few
+weeks with store review; Apple developer account $99/yr, Google $25 once.
+
+**Not planned.** A separate native app. Doubles the code for no gain at
+this size.
