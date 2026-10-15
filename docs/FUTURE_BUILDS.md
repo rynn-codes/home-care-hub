@@ -72,3 +72,13 @@ weeks with store review; Apple developer account $99/yr, Google $25 once.
 
 **Not planned.** A separate native app. Doubles the code for no gain at
 this size.
+
+## Shift reminders by text (asked 15 October 2026)
+
+Already designed: each visit carries a ladder (before start, at start,
+before end, escalation to the office after the Settings delay), with the
+exact text and time shown on the visit sheet. Settings → Agency →
+Notifications holds the switches and lead times. Nothing is sent because
+Spruce is not wired. Needs: the Spruce API connection, and a scheduled
+job on Supabase that reads the day's visits every few minutes, sends the
+due reminders, and records each send on the visit.
