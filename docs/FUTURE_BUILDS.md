@@ -82,3 +82,13 @@ Notifications holds the switches and lead times. Nothing is sent because
 Spruce is not wired. Needs: the Spruce API connection, and a scheduled
 job on Supabase that reads the day's visits every few minutes, sends the
 due reminders, and records each send on the visit.
+
+## Hourly clock for office staff (asked 15 October 2026)
+
+Today the clock belongs to visits only; office staff have no way to clock
+a workday and Payroll never sees their hours. Build: a "Workday" clock in
+the workforce portal for office staff (in, out, breaks; no client, no
+geofence); an "Office hours" section in Payroll and the Payroll cost
+report with the same per-workweek overtime rule; corrections through the
+existing clock-correction path; salaried staff left out. A day or two
+once the backend is in.
