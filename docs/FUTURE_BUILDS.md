@@ -1,5 +1,15 @@
 # Future builds
 
+## Standing rule (Karynn, 15 October 2026)
+
+Every piece of data in this project is mock until a developer has
+reviewed it for HIPAA. No real client, family or employee information
+goes in, and nothing connected — database, texts, payments — touches a
+real person. So: build and connect freely against mock data, and do not
+pad replies with HIPAA reminders. The code's own guard rails (no SSN or
+drawn signature in browser storage, MR numbers never derived from digits)
+stay as they are; they are design, not reminders.
+
 Things Karynn has asked for and said "commit that to memory". Each entry
 says what, why, and what it depends on. Nothing here is started until she
 says so; the list exists so a question asked in October is not lost by
